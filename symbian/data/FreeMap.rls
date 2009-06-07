@@ -31,10 +31,8 @@
 // When user requests ECommand1 event, text below is shown.
 #define qtn_command1_text "Hello World!"
 
-#define qtn_loc_resource_file_1 "\\resource\\apps\\FreeMap_0x2001EB29"
-
 #define qtn_about_dialog_title "About"
 
-#define qtn_about_dialog_text "FreeMap Version 1.0.0\n\nAuthor: Ehud Shabtai\n\nSupport: your support email here\n\n(c) GPL"
+#define qtn_about_dialog_text "FreeMap Version 0.14.2.1\n\nAuthor: Ehud Shabtai\n\nSupport: your support email here\n\n(c) GPL"
 
 // End of File

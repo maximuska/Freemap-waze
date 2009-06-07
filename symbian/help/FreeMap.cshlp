@@ -2,7 +2,7 @@
 <!DOCTYPE cshproj SYSTEM "/epoc32/tools/cshlpcmp/dtd/cshproj.dtd">
 <?xml:stylesheet href="/epoc32/tools/cshlpcmp/xsl/CSHproj.xsl" title="CS-Help project" type="text/xsl"?>
 <cshproj>
-<helpfileUID>0x2001EB29</helpfileUID>
+<helpfileUID>0xE001EB29</helpfileUID>
 <directories>
 	<input></input>
 	<output></output>
@@ -13,7 +13,7 @@
 	<source>
 	<xmlfile>FreeMap.xml</xmlfile>
 	</source>
-	<destination>FreeMap_0x2001EB29.hlp</destination>
+	<destination>FreeMap.hlp</destination>
 	<customization>custom.xml</customization>
 	</files>
 </cshproj>

@@ -274,7 +274,7 @@ RESOURCE LOCALISABLE_APP_INFO r_localisable_app_info
 		caption = qtn_caption_string;
 
 		number_of_icons = 1;
-	   	icon_file = "\\resource\\apps\\FreeMap_0x2001EB29.mif";
+	   	icon_file = "\\resource\\apps\\FreeMap.mif";
 		};
 	}
 

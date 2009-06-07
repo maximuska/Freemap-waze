@@ -51,8 +51,8 @@ typedef unsigned short      uint16_t;
 #elif defined (__SYMBIAN32__)
 #include "symbian/roadmap_symbian_porting.h"
   #ifdef __SERIES60_31__
-  #define __REMOVE_PLATSEC_DIAGNOSTIC_STRINGS__
-  #warning "SERIES60_31 : __REMOVE_PLATSEC_DIAGNOSTIC_STRINGS__ defined!"
+//  #define __REMOVE_PLATSEC_DIAGNOSTIC_STRINGS__
+//  #warning "SERIES60_31 : __REMOVE_PLATSEC_DIAGNOSTIC_STRINGS__ defined!"
   #endif
 #include <e32def.h>
 #endif

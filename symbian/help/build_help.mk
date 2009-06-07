@@ -12,26 +12,26 @@ do_nothing :
 MAKMAKE :
 	cshlpcmp FreeMap.cshlp
 ifeq (WINS,$(findstring WINS, $(PLATFORM)))
-	copy FreeMap_0x2001EB29.hlp $(EPOCROOT)epoc32\$(PLATFORM)\c\resource\help
+	copy FreeMap.hlp $(EPOCROOT)epoc32\$(PLATFORM)\c\resource\help
 endif
 
 BLD : do_nothing
 
 CLEAN :
-	del FreeMap_0x2001EB29.hlp
-	del FreeMap_0x2001EB29.hlp.hrh
+	del FreeMap.hlp
+	del FreeMap.hlp.hrh
 
 LIB : do_nothing
 
 CLEANLIB : do_nothing
 
 RESOURCE : do_nothing
-		
+
 FREEZE : do_nothing
 
 SAVESPACE : do_nothing
 
 RELEASABLES :
-	@echo FreeMap_0x2001EB29.hlp
+	@echo FreeMap.hlp
 
 FINAL : do_nothing

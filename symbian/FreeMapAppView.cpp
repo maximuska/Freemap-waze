@@ -38,7 +38,7 @@ extern "C" {
 #include "ssd_keyboard.h"
 }
 
-#include <FreeMap_0x2001EB29.rsg>
+#include <FreeMap.rsg>
 
 static SsdKeyboardCallback kbd_callback = NULL;
 static void *kbd_context = NULL;

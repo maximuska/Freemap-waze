@@ -1,0 +1,48 @@
+N menu
+T left_softkey
+P 7, -20
+A left_softkey
+B -4 -4 61 22
+F 16
+C softkeys_state 0
+
+N right_softkey
+T right_softkey
+P -7 -20
+A right_softkey
+B -61 -4 4 22
+F 16
+C softkeys_state 0
+
+N menu
+T left_softkey
+P -7, -20
+A left_softkey
+B -61 -4 4 22
+F 16
+C softkeys_state 1
+
+N time_to_dest
+T time_to_dest
+P 125 -12
+F 16
+L 4
+C wide_screen 1
+
+N dist_to_dest
+T dist_to_dest
+P 190 -12
+F 16
+L 4
+C wide_screen 1
+
+N seperator
+I bar_separator
+P 100 -20
+C wide_screen 1
+
+N seperator
+I bar_separator
+P -100 -20
+C wide_screen 1
+

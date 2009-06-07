@@ -1,0 +1,108 @@
+N logo
+I top_logo
+P 0 0
+B -4 -4 22 22
+A about
+
+N seperator
+I bar_separator
+P 27 0
+C skin_state 0
+
+N gps_reception
+I top_satellite_off
+I top_satellite_off
+I top_satellite_on
+I top_satellite_on
+P 28 1
+S GPS_reception
+
+N seperator
+I bar_separator
+P 48 0
+C skin_state 0
+
+N privacy
+I top_privacy_invisible
+I top_privacy_invisible
+I top_privacy_nickname
+I top_privacy_anonymous
+P 51 2
+B -4 -4 22 22
+S privacy_state
+A privacy_settings
+
+N seperator
+I bar_separator
+P 72 0
+C skin_state 0
+
+N alerts 
+I top_alerts
+I top_alerts
+I top_alerts
+I top_alerts
+I top_alerts
+P 74 1
+S alerts_state
+B -4 -4 22 39
+A real_time_alerts_list
+
+N num_alerts
+T num_alerts
+P 90 8
+F 10
+S alerts_state
+
+N seperator
+I bar_separator
+P 106 0
+C skin_state 0
+
+N responses
+I top_responses
+P 110 1
+C alerts_state 3
+
+N seperator
+I bar_separator
+P 129 0
+C skin_state 0
+
+N sound
+I top_mute
+P 131 1
+S navigation_guidance_state
+
+N seperator
+I bar_separator
+P 151 0
+S navigation_guidance_state
+C skin_state 0
+
+N on_line
+I top_not_connected
+P 152 1
+C real_time_state 0
+
+N clock
+T clock
+P -12 3
+F 14
+C softkeys_state 0
+
+N clock
+T clock
+P -82 3
+F 14
+C softkeys_state 1
+
+N right_softkey
+T right_softkey
+P -7 2
+A right_softkey
+B -61 -4 4 22
+F 16
+C softkeys_state 1
+
+Y 1
