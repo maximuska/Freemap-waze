@@ -138,5 +138,16 @@ const char *roadmap_path_temporary (void);
 
 int roadmap_path_is_directory (const char *name);
 
+/** Function receives a resource (tail) path with respect to a resources base directory,
+ *   searches over a list of possible base - dir locations
+ *   and constructs a full path by appending resource tail path to the base directory.
+ *   The sample of the path constructed in out_path buffer:
+ *   [c:\Data\Freemap]\<prefix><filename><suffix>
+ *   
+ *   Function returns 0 on success, !0 on failure.
+ *   Suffix and prefix are not mandatory and can be NULL or "".
+ */
+int roadmap_construct_res_path(char* out_path, size_t out_sz, const char *filename, const char *suffix, const char* prefix );
+
 #endif // INCLUDE__ROADMAP_PATH__H
 

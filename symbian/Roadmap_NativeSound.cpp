@@ -209,13 +209,19 @@ int CRoadMapNativeSound::PlayList(const RoadMapSoundList list)
      const char *name = roadmap_sound_list_get (list, i);
      RoadMapSound sound =
                     (RoadMapSound) roadmap_res_get (RES_SOUND, RES_NOCREATE, name);
-     if (sound) {
-       PlaySound (sound);
-     } else {
-       char sound_filename[MAX_SOUND_NAME];
-       char *path = roadmap_path_join (roadmap_path_user (), "sound");
-       snprintf(sound_filename, sizeof(sound_filename), "%s\\%s.mp3", path, name);
-       PlayFile (sound_filename);
+    if (sound) {
+		PlaySound (sound);
+    } else {
+		char sound_filename[MAX_SOUND_NAME];
+		if( roadmap_construct_res_path(
+			sound_filename,
+			sizeof(sound_filename),
+			name,
+			".mp3",
+			"sound\\" ) == KErrNone )
+		{
+			PlayFile( sound_filename );
+		}
      }
   }
   

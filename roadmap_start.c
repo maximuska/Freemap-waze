@@ -238,7 +238,7 @@ static void roadmap_start_about (void) {
    char about[500];
 
    snprintf (about, sizeof(about),
-                       "Waze 0.14.2.0\n"
+                       "Freemap-Waze 0.14.2.0-mk2\n"
                        "(c)LinQmap \n"
                        "www.waze.co.il \n");
 
