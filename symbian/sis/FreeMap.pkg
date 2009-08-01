@@ -29,7 +29,7 @@
 ;"..\..\Maps\map77001.gzm"-"!:\Data\Freemap\Maps\map77001.gzm"
 
 "$(EPOCROOT)\epoc32\data\z\resource\apps\FreeMap.rsc"-"!:\resource\apps\FreeMap.rsc"
-"$(EPOCROOT)\epoc32\data\z\resource\apps\FreeMap_aif.mif"-"!:\resource\apps\FreeMap_aif.mif"
+"$(EPOCROOT)\epoc32\data\z\resource\apps\FreeMapWaze_aif.mif"-"!:\resource\apps\FreeMapWaze_aif.mif"
 "..\help\FreeMap.hlp"-"!:\resource\help\FreeMap.hlp"
 
 "$(EPOCROOT)\epoc32\data\z\private\10003a3f\import\apps\FreeMap_reg.rsc"-"!:\private\10003a3f\import\apps\FreeMap_reg.rsc"
