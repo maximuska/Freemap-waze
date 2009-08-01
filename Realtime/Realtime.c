@@ -671,8 +671,8 @@ void OnTransactionCompleted( BOOL bTransactionSucceeded)
 
     // Count errors. If too many consequent errors encountered - try to switch server.
     if( bTransactionSucceeded == FALSE ) {
-        if( ++consequentFailedTransactions > 0 ) { //TODO: fixme to ~ '2'
-            // 3 consequent errors, switching server, loggin again
+        if( ++consequentFailedTransactions > 1 ) {
+            // 2 consequent errors, switching server, logging in again
             RT_SwitchToOtherWebService();
         }
     }else{
