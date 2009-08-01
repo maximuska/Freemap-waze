@@ -1,3 +1,13 @@
+# Web-service to be use for RT traffic updates.
+# The application will switch to waze server if unavailable
+#  http://m-k.ath.cx:8081/rtserver - supports data compression
+Realtime.Web-Service Address: http://m-k.ath.cx:8081/rtserver
+
+# How often to download traffic updates.
+# generally, using smaller values makes battery life shorter,
+# increases ammount of data downloaded but makes traffic information more relevant.
+Realtime.Refresh rate (minutes): 0.5
+
 Style.Use Pretty Lines: yes
 Shapes.Declutter: 1300
 Polygons.Declutter: 1300

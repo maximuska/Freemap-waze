@@ -2,6 +2,7 @@
  *
  * LICENSE:
  *
+ *   Copyright 2009 Maxim Kalaev
  *   Copyright 2008 Giant Steps Ltd
  *   Copyright 2008 Ehud Shabtai
  *
@@ -163,12 +164,12 @@ int roadmap_net_connect_async (const char *protocol,
 	return 0;
 }
 
-int roadmap_net_send_socket (RoadMapSocket s, const void *data, int length, int wait) {
+int roadmap_net_send_socket (RoadMapSocket s, const void *data, int length, int ) {
 
    int total = length;
    CRoadMapNativeNet* net = (CRoadMapNativeNet*)s;
    
-   roadmap_net_mon_send(length);
+   roadmap_net_mon_send(length); //TBD: move to the native code
    
    while (length > 0) {
       int res = net->Write(data, length);
@@ -185,7 +186,7 @@ int roadmap_net_send_socket (RoadMapSocket s, const void *data, int length, int 
    return total;
 }
 
-int roadmap_net_send_http (RoadMapSocket s, const void *ptr, int in_size, int wait) 
+int roadmap_net_send_http (RoadMapSocket s, const void *ptr, int in_size, int ) 
 {
   int data_size = in_size;
   CRoadMapNativeNet *n = (CRoadMapNativeNet *)s;
@@ -208,6 +209,7 @@ int roadmap_net_send_http (RoadMapSocket s, const void *ptr, int in_size, int wa
       if (*cur == 0) 
       {
         net->SetRequestProperty("User-Agent", roadmap_start_version());
+        net->SetRequestProperty("Accept-Encoding", "gzip, deflate");
         net->SetReadyToSendData(true);
         break;
       }
@@ -232,7 +234,6 @@ int roadmap_net_send_http (RoadMapSocket s, const void *ptr, int in_size, int wa
     free(start);
   }
 
-  roadmap_net_mon_send(data_size);
   // Send the body data
   if (data_size) net->Write(ptr, data_size);
 
@@ -253,23 +254,22 @@ int roadmap_net_receive (RoadMapSocket s, void *data, int size) {
   CRoadMapNativeNet* net = (CRoadMapNativeNet*)s;
   int received = net->Read(data, size);
 
-   if (received == 0) {
+   if (received < 0) {
       roadmap_net_mon_error("Error in recv.");
       return -1; /* On UNIX, this is sign of an error. */
    }
 
-   roadmap_net_mon_recv(received);
    return received;
 }
 
 
-RoadMapSocket roadmap_net_listen(int port) {
+RoadMapSocket roadmap_net_listen(int) {
 
    return ROADMAP_INVALID_SOCKET; // TODO implement
 }
 
 
-RoadMapSocket roadmap_net_accept(RoadMapSocket server_socket) {
+RoadMapSocket roadmap_net_accept(RoadMapSocket) {
 
    return ROADMAP_INVALID_SOCKET; // TODO implement
 }
@@ -278,8 +278,8 @@ RoadMapSocket roadmap_net_accept(RoadMapSocket server_socket) {
 void roadmap_net_close (RoadMapSocket s) 
 {
   CRoadMapNativeNet* net = (CRoadMapNativeNet*)s;
-  net->Close();
-  //delete(net);
+  net->Close();  // Schedules object self-destruction 
+  
   roadmap_net_mon_disconnect();
 }
 
@@ -293,19 +293,10 @@ void roadmap_net_shutdown ()
 }
 
 int roadmap_net_unique_id (unsigned char *buffer, unsigned int size) {
-   struct MD5Context context;
    unsigned char digest[16];
    time_t tm;
-
    time(&tm);
-      
-//   MD5Init (&context);
-//   MD5Update (&context, (unsigned char *)&tm, sizeof(tm));
-//   MD5Final (digest, &context);
-
-//   if (size > sizeof(digest)) size = sizeof(digest);
    memcpy(buffer, digest, size);
-
    return size;
 }
 

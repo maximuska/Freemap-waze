@@ -320,7 +320,6 @@ CRoadMapNativeSocket::~CRoadMapNativeSocket()
   delete m_pWriteSocket; 
   delete m_pReadSocket;
   delete m_pTimeoutTimer;
-  roadmap_net_mon_disconnect();
 }
 
 CRoadMapNativeSocket* CRoadMapNativeSocket::NewL(const char *apHostname, int aPort, 

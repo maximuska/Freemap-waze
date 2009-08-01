@@ -76,7 +76,6 @@
 #define  RT_CFG_PRM_WEBSRV_Var         RTPrm_WebServiceAddress
 #define  RT_CFG_PRM_WEBSRV_Name        ("Web-Service Address")
 #define  RT_CFG_PRM_WEBSRV_Default     ("http://212.150.51.90:80/rtserver")
-//#define  RT_CFG_PRM_WEBSRV_Default     ("http://62.219.147.126:80/rtserver")
 
 const char*  RT_CFG_GetWebServiceAddress();
 
@@ -128,7 +127,7 @@ typedef enum tagERTVisabilityGroup
 
    VisGrp__count,
    VisGrp__invalid
-   
+
 }  ERTVisabilityGroup;
 
 
@@ -136,13 +135,13 @@ typedef enum tagERTVisabilityGroup
 // Visability Report group:
 typedef enum tagERTVisabilityReport
 {
-   
+
    VisRep_Anonymous = 1,
    VisRep_NickName ,
-   
+
    VisRep__count,
    VisRep__invalid
-   
+
 }  ERTVisabilityReport;
 
 const char*          ERTVisabilityGroup_to_string  ( ERTVisabilityGroup e);
@@ -161,7 +160,7 @@ const char*          ERTVisabilityReport_to_string( ERTVisabilityReport e);
 typedef enum tagEVersionUpgradeSeverity
 {
    VUS_NA,
-   
+
    VUS_Low,
    VUS_Medium,
    VUS_Hi
@@ -205,7 +204,7 @@ typedef enum tagETransactionStatus
    TS_Idle,
    TS_Active,
    TS_Stopping,
-   
+
    TS__count,
    TS__invalid
 

@@ -3,6 +3,7 @@
  * 
  * LICENSE:
  *
+ *   Copyright 2009 Maxim Kalaev
  *   Copyright 2008 Giant Steps Ltd.
  *   Copyright 2008 Ehud Shabtai
  *
@@ -116,17 +117,19 @@ void CDialogTimer::Start()
 
 
 CRoadMapNativeNet::CRoadMapNativeNet(const char *apHostname, int aPort)
+	: m_pConnectCallback(NULL),
+	  m_context(NULL),
+	  m_pDialogTimer(NULL)  
 {
   m_hostname = strdup(apHostname);
   m_port = aPort;
   
-  m_pConnectCallback = NULL;
-  m_context = NULL;
 }
 
 CRoadMapNativeNet::~CRoadMapNativeNet()
 {
-  delete m_pRepository;
+	delete m_pRepository;
+	delete m_pDialogTimer;
 }
 
 void CRoadMapNativeNet::ConstructL(RoadMapNetConnectCallback apCallback, void* apContext)
@@ -148,38 +151,11 @@ void CRoadMapNativeNet::ConstructL(RoadMapNetConnectCallback apCallback, void* a
 
 bool CRoadMapNativeNet::OfflineProfileSwitch()
 {
-  bool retVal = false;
-  /*
-  //TODO include this
-  //  Not sure we need this at this stage
-  
-  //  Check chosen profile (necessary for the selection options in Offline mode)
-  TInt currentProfileId;
-  m_pRepository->Get(KProEngActiveProfile, currentProfileId);
-  
-  // Close the connection only if
-  // a) this is not the first time and
-  // b) the profile has changed and
-  // c) either the previous or the current profile is Offline (5 = Offline)
-  if (m_LastProfileId != -1 && m_LastProfileId != currentProfileId &&
-     (m_LastProfileId == 5 || currentProfileId == 5))
-  {// Close and uninitialize
-    retVal = true;
-  }
-  m_LastProfileId = currentProfileId;
-  */
-  return retVal;
+  return false;
 }
 
 void CRoadMapNativeNet::StartL()
 {
-  if ( OfflineProfileSwitch() )
-  {
-    m_pConnection->Close();
-    m_pSocketServer->Close();
-    m_isConnectionOpen = false;
-  }
-  
   StartConnectionL();
 }
 

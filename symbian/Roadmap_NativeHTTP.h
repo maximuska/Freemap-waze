@@ -2,6 +2,7 @@
  *
  * LICENSE:
  *
+ *   Copyright 2009 Maxim Kalaev
  *   Copyright 2008 Giant Steps Ltd.
  *   Copyright 2008 Ehud Shabtai
  *
@@ -30,24 +31,39 @@
 
 #include "Roadmap_NativeNet.h"
 
+#include <httpstringconstants.h>
 #include <http/RHTTPSession.h>
 #include <http/MHTTPDataSupplier.h>
 #include <http/MHTTPTransactionCallback.h>
 
+#include <zlib.h>
 
-#define MAX_WRITE_BUFFERS 20
-
-typedef enum 
+class PostDataSupplier: public MHTTPDataSupplier
 {
-  EConnStatusNotStarted = -1,
-  EConnStatusConnected = 4,
-  EConnStatusClosed = -2,
-  EConnStatusError = 100
-} EConnStatus;
+public:
+    PostDataSupplier( void );
+    virtual ~PostDataSupplier( void );
+
+    // MHTTPDataSupplier interface
+    virtual TBool GetNextDataPart(TPtrC8& aDataPart);
+    virtual void  ReleaseData();
+    virtual TInt  OverallDataSize();
+    virtual TInt  Reset();
+
+    // Interface to add data to be posted
+    void          InitL( RHTTPTransaction& transaction );
+    void          AddDataL( const TDesC8& aDes );
+
+protected:
+    CBufSeg*         m_Data;
+    TBool            m_finalized; 
+    size_t           m_overAllSize;
+    RHTTPTransaction m_Transaction;
+};
+
 
 class CRoadMapNativeHTTP :  public CActive, 
                             public CRoadMapNativeNet,
-                            public MHTTPDataSupplier,
                             public MHTTPTransactionCallback
 {
 
@@ -59,80 +75,84 @@ public:
   //  From CRoadMapNativeNet
   virtual void OpenL(ENativeSockType aSockType);  
   virtual void ConnectL(const TDesC& aHostname, int aPort);
-  
-  virtual int Read(void *data, int length);
-  virtual int Write(const void *data, int length);
+  virtual int  Read(void *data, int length);
+  virtual int  Write(const void *data, int length);
   virtual void Close();
-  
   virtual void StartPolling(void* apInputCallback, void* apIO);
   virtual void StopPolling();  
   
-  //  From MHTTPDataSupplier
+  //  From MHTTPTransactionCallback
   virtual void MHFRunL(RHTTPTransaction aTransaction, const THTTPEvent &aEvent);
   virtual TInt MHFRunError(TInt aError, RHTTPTransaction aTransaction, const THTTPEvent &aEvent);
-  virtual TBool GetNextDataPart(TPtrC8& aDataPart);
-  virtual void ReleaseData();
-  virtual TInt OverallDataSize();
-  virtual TInt Reset();
   
-  void SetRequestProperty(const char* aKey, const char* aValue);
   inline bool ReadyToSendData()  { return m_IsReadyToSendData; }
+  void SetRequestProperty(const char* aKey, const char* aValue);
   void SetReadyToSendData(bool aIsReady);
   
 protected:
   CRoadMapNativeHTTP(const char *http_type, const char *apHostname, int aPort);
   static CRoadMapNativeHTTP* CRoadMapNativeHTTP::NewLC(const char *http_type, const char *apHostname, int aPort, RoadMapNetConnectCallback apCallback, void* apContext);
   void ConstructL(RoadMapNetConnectCallback apCallback, void* apContext);
-  int IssueCallback(TPtrC8 &data);
   
   void ConnectWithParamsL();
   TInt ConnAsyncStart(TConnPref &aConnPrefs);
   TInt ConnAsyncStart();
   
+  void ProcessReceivedHttpHeader( RHTTPTransaction aTransaction );
+  void ProcessReceivedHttpBodyChunk( RHTTPTransaction aTransaction );
+  void SelfSignalDataEvent();
+
+  TInt ReadHttpHeader( void* buf, TInt maxSize );
+  TInt ReadHttpBodyChunk( void* buf, TInt maxSize );
+  void IssueCallback();
+  
   void RunL();
   void DoCancel();
-  EConnStatus m_eConnStatus;
   
-private:
   void SetHeaderL(RHTTPHeaders aHeaders, TInt aHdrField, const TDesC8& aHdrValue);
   TInt TranslateToStringField(const char* aField);
-  //void SetHttpVersion(HTTP::TStrings aHttpVersion);
   void SetConnectionParams();
-  void OpenSession();
+  virtual void OpenSession();
   
-  RHTTPSession m_Session;
-  RHTTPTransaction m_Transaction;
+  enum EConnStatus{
+    EConnStatusNotStarted      = -1,
+    EConnStatusConnected       = 4,
+    EConnStatusDataReceived    = 5,
+    EConnStatusTransactionDone = 6,
+    EConnStatusClosed = -2,
+    EConnStatusError  = -100
+  }m_eConnStatus;
   
-  HBufC8* m_WriteBuffers[MAX_WRITE_BUFFERS];
-  int m_NumWriteBuffers;
-  int m_NumWriteSent;
+  // Symbian HTTP
+  RHTTPSession       m_Session;
+  RHTTPTransaction   m_Transaction;
+  
+  // Posting data data
+  CUri8*             m_pUri8;
+  HTTP::TStrings     m_HttpMethod;
+  PostDataSupplier   m_PostData;
+  bool               m_IsReadyToSendData;
 
-  HBufC8* m_ReadBuffer;
+  // Receiving reply
+  int                m_ContentLength; // Not used much
+  int                m_Status;
+  TPtrC8             m_contentEncoding;
+  MHTTPDataSupplier* m_pBodySup;
+  TBuf8<64>          m_CurReplyHttpHeader;
+  TPtrC8             m_CurBodyChunk;
   
-  bool m_IsLastChunk;
-  bool m_IsReadyToSendData;
-  int m_ContentLength;
-  TPtrC8 m_DataChunk;
-  int m_Status;
-  
-  void *m_RecvCallback;
-  void *m_apIO;	  
-  CUri8* m_pUri8;
-  const char *m_httpType;
+  void*                m_RecvCallback;  /* RoadMapIO */
+  void*                m_apIO;          /* roadmap_main_io */
   CActiveSchedulerWait iSchedulerWait;
-};
 
-class CDestroyTimer : public CTimer 
-{
-public: 
-  virtual ~CDestroyTimer();
-  static CDestroyTimer* NewL(CRoadMapNativeHTTP& aObj);
-  void ConstructL(CRoadMapNativeHTTP &aObj);
-protected:
-	CDestroyTimer();
-  virtual void RunL();
-  
-  CRoadMapNativeHTTP* m_pObj;
+  // Decompressing Gzip Content Encoding
+  struct deflate_ctx_t{
+      z_stream stream;
+      bool     gotHeaders;
+      TUint32  crc;
+      
+      void InitL( void );
+  }m_DeflateCtxt;
 };
 
 

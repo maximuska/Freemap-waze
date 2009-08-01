@@ -118,11 +118,10 @@ protected:
   CRepository* m_pRepository;
   
   RoadMapNetConnectCallback m_pConnectCallback;
-  void *m_context;
-  char *m_hostname;
-  int   m_port;
+  void*                     m_context;
+  const char*               m_hostname;
+  int                       m_port;
   
-  CAknWaitDialog* m_pWaitDialog;
   CDialogTimer* m_pDialogTimer;
   
   int m_isHttp; //  =1 if this is an http protocol
