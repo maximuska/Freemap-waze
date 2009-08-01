@@ -2,6 +2,7 @@
  *
  * LICENSE:
  *
+ *   Copyright 2009 Maxim Kalaev
  *   Copyright 2008 Ehud Shabtai
  *
  *   RoadMap is free software; you can redistribute it and/or modify
@@ -29,7 +30,6 @@
 
 #include <FreeMap.rsg>
 
-//@@ #include "FreeMap_0x2001EB29.hlp.hrh"
 #include "FreeMap.hrh"
 #include "FreeMap.pan"
 #include "FreeMapApplication.h"
@@ -52,47 +52,30 @@ extern TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType);
 extern void roadmap_canvas_new (RWindow& aWindow, int initWidth, int initHeight);
 int global_FreeMapLock();
 int global_FreeMapUnlock();
-static RMutex* pSyncMutex = NULL; 
 static int FM_ref = 0;
 
-#define BACKLIGHT_DISABLE_INTERVAL	2000		// Miliseconds 
+#define BACKLIGHT_DISABLE_INTERVAL	2000		// Miliseconds
 
 
 // ============================ MEMBER FUNCTIONS ===============================
 
 int global_FreeMapLock()
 {
-  if ( pSyncMutex == NULL )
-  {
-    pSyncMutex = new RMutex();
-    if ( pSyncMutex == NULL )
-    {
-      roadmap_log(ROADMAP_ERROR, "Mutex not created!");
-      return KErrGeneral;
+    // Current Symbian implementation is based on active scheduler,
+    //  such that no mutexes are required as there is only one thread in the system.
+    // Actually, it's not clear why the function is not empty, checkme later.
+    if (FM_ref > 0) {
+        return 1;
     }
-    pSyncMutex->CreateLocal();
-  }
-  
-  if (FM_ref > 0) {
-    return 1;
-  }
-  FM_ref++;
-  pSyncMutex->Wait();
-  return KErrNone;
+    FM_ref++;
+    return KErrNone;
 }
 
 int global_FreeMapUnlock()
 {
-  if ( pSyncMutex == NULL )
-  {
-    //ERROR!
-    roadmap_log(ROADMAP_ERROR, "Mutex not initialized!");
-  }
   FM_ref--;
-  pSyncMutex->Signal();
   return KErrNone;
 }
-
 
 static void roadmap_start_event (int event) {
    switch (event) {
@@ -101,9 +84,6 @@ static void roadmap_start_event (int event) {
       break;
    }
 }
-
-
-
 
 
 CStartTimer::CStartTimer(TInt aPriority)
@@ -171,35 +151,35 @@ void CFreeMapAppUi::ConstructL()
 
 	// Init rotation params
 	HandleRotationChange(true);
-	 
+
 	// Create view object
 	iAppView = CFreeMapAppView::NewL( ApplicationRect() );
-	
+
 	// View is fullscreen but we also want to hide the pane and softkeys
 	//StatusPane()->MakeVisible(EFalse);
 	//Cba()->MakeVisible(EFalse);
 	iAppView->SetMopParent(this);
 	AddToStackL(iAppView);
-	
+
 	// Init the qwerty mapping
 	InitQwertyMappingsL();
-	
+
 	// Init and start the backlight timer active object
-    if ( m_pBLTimer == NULL ) 
+    if ( m_pBLTimer == NULL )
 	{
 		m_pBLTimer = CBackLightTimer::NewL( ETrue );
 	}
     m_pBLTimer->Start();
-    
+
 	// Return control to the system before showing anything onscreen
 	if ( m_pStartTimer == NULL )
 	{
 	  m_pStartTimer = CStartTimer::NewL();
 	}
-  
-  
+
+
 	m_pStartTimer->Start();
-  
+
 	global_FreeMapLock();
    roadmap_start_subscribe (roadmap_start_event);
 	roadmap_start(0, NULL);
@@ -210,7 +190,7 @@ void CFreeMapAppUi::ConstructL()
 // C++ default constructor can NOT contain any code, that might leave.
 // -----------------------------------------------------------------------------
 //
-CFreeMapAppUi::CFreeMapAppUi() : m_InputCapabilities( TCoeInputCapabilities::ENone )  
+CFreeMapAppUi::CFreeMapAppUi() : m_InputCapabilities( TCoeInputCapabilities::ENone )
 {
   	m_pStartTimer = NULL;
   	m_pBLTimer = NULL;
@@ -239,7 +219,7 @@ CFreeMapAppUi::~CFreeMapAppUi()
 	{
 		delete m_pBLTimer;
 		m_pBLTimer = NULL;
-	}	
+	}
 	if( m_pQwertyKeyMappings )
 	{
 		delete m_pQwertyKeyMappings;
@@ -248,7 +228,7 @@ CFreeMapAppUi::~CFreeMapAppUi()
 	if( m_pPtiEngine )
 	{
 		delete m_pPtiEngine;
-		m_pQwertyKeyMappings = NULL;				
+		m_pQwertyKeyMappings = NULL;
 	}
 }
 
@@ -276,7 +256,7 @@ TKeyResponse CFreeMapAppUi::HandleKeyEventL(const TKeyEvent& aKeyEvent,TEventCod
 	if (global_FreeMapLock() != 0) return EKeyWasNotConsumed;
 	TKeyResponse res = EKeyWasNotConsumed;
 	// Process the data
-	res = roadmap_main_process_key( aKeyEvent.iScanCode, aType );	
+	res = roadmap_main_process_key( aKeyEvent.iScanCode, aType );
 	global_FreeMapUnlock();
 	return res;
 }
@@ -301,7 +281,7 @@ void CFreeMapAppUi::HandleRotationChange(bool bInitOnly)
                                               sizeAndRot);
   if ( !bInitOnly && (sizeAndRot.iPixelSize != m_ScreenSize) )
   {// rotation changed
-    roadmap_canvas_new (iAppView->GetWindow(), 
+    roadmap_canvas_new (iAppView->GetWindow(),
                         sizeAndRot.iPixelSize.iWidth,
                         sizeAndRot.iPixelSize.iHeight);
     iAppView->Draw(ApplicationRect());  //  or just use roadmap_canvas_refresh();
@@ -340,8 +320,8 @@ void CFreeMapAppUi::InitQwertyMappingsL()
 	/* Currently hebrew only !!! */
 	/* TODO :: initialize the set of the languages */
 	TLanguage lang = ELangHebrew;
-    CPtiCoreLanguage* pCoreLanguage;    
-	
+    CPtiCoreLanguage* pCoreLanguage;
+
     if ( !CFeatureDiscovery::IsFeatureSupportedL( KFeatureIdQwertyInput ) )
 	{
 		m_pQwertyKeyMappings = NULL;
@@ -357,14 +337,14 @@ void CFreeMapAppUi::InitQwertyMappingsL()
     }
     // Instantiate the engine
     m_pPtiEngine = CPtiEngine::NewL( ETrue );
-    
+
 	// Make a language object based on current language
     pCoreLanguage = static_cast<CPtiCoreLanguage*> ( m_pPtiEngine->GetLanguage( lang ) );
-	
+
 	// Get the keyboard mappings for the language
 	m_pQwertyKeyMappings = static_cast<CPtiQwertyKeyMappings*>( pCoreLanguage->GetQwertyKeymappings());
 
-	
+
 }
 
 TBool  CFreeMapAppUi::GetUnicodeForScanCodeL( TInt aScanCode, TUint16 &aUnicodeOut ) const
@@ -374,34 +354,34 @@ TBool  CFreeMapAppUi::GetUnicodeForScanCodeL( TInt aScanCode, TUint16 &aUnicodeO
     TBuf<20> iResUnicode;
     TBuf8<20> iResUtf8;
     TBool iRes = EFalse;
-    
-    
-    // Exceptional cases handling 
+
+
+    // Exceptional cases handling
     switch ( key )
 	{
-    	case EPtiKeyQwertySpace:	// SPACE - return the utf8 0x20 
+    	case EPtiKeyQwertySpace:	// SPACE - return the utf8 0x20
 		{
 			aUnicodeOut = 0x20;
 			return ETrue;
 		}
     	default: break;
 	}
-    
-    
+
+
     // If no qwerty return false
     if ( m_pQwertyKeyMappings )
     {
 	    m_pQwertyKeyMappings->GetDataForKey( key, iResUnicode, EPtiCaseLower );
-	    
+
 	    // If the mapping fail return false
 	    if ( iResUnicode.Length() )
 		{
 			HBufC8* pTmpBuf;
 			TUint8 *ptr;
-			
+
 			// Convert to UTF8
 			CnvUtfConverter::ConvertFromUnicodeToUtf8( iResUtf8, iResUnicode );
-			pTmpBuf = iResUtf8.AllocLC(); 
+			pTmpBuf = iResUtf8.AllocLC();
 			ptr = reinterpret_cast<TUint8*>( &aUnicodeOut );
 			Mem::Copy( ptr, pTmpBuf->Ptr(), iResUtf8.Length() );
 			CleanupStack::PopAndDestroy( pTmpBuf );
@@ -412,7 +392,7 @@ TBool  CFreeMapAppUi::GetUnicodeForScanCodeL( TInt aScanCode, TUint16 &aUnicodeO
     		roadmap_log( ROADMAP_INFO, "GetUnicodeForScanCodeL(..) - No qwerty mapping for the ScanCode %d", aScanCode );
     	}
     }
-    return ( iRes ); 
+    return ( iRes );
 }
 
 void CFreeMapAppUi::SetBackLiteOn( TBool aValue )
@@ -422,7 +402,7 @@ void CFreeMapAppUi::SetBackLiteOn( TBool aValue )
 
 
 TCoeInputCapabilities CFreeMapAppUi::InputCapabilities() const
-{	
+{
 	TCoeInputCapabilities caps(  CCoeAppUi::InputCapabilities() );
 	caps.SetCapabilities( m_InputCapabilities );
 	return caps;
@@ -436,7 +416,7 @@ void CFreeMapAppUi::SetInputCapabilities( TUint aCapabilities )
 
 // -----------------------------------------------------------------------------
 
-CBackLightTimer::CBackLightTimer( TInt aPriority, TBool aEnable ) : 
+CBackLightTimer::CBackLightTimer( TInt aPriority, TBool aEnable ) :
 	CTimer( aPriority ), iEnable( aEnable )
 {
 }
@@ -462,9 +442,9 @@ void CBackLightTimer::ConstructL()
 	// Enable the timer work
 	iEnable = ETrue;
 	SetBLDisableInterval( BACKLIGHT_DISABLE_INTERVAL );
-	
+
 	CTimer::ConstructL();
-	// Add to active scheduler	
+	// Add to active scheduler
 	CActiveScheduler::Add( this );
 }
 
@@ -480,11 +460,11 @@ void CBackLightTimer::RunL()
 	User::LeaveIfError( iStatus.Int() );
 
 	// Otherwise reset the inactivity and resubmit the timer
-	if ( iEnable )	
+	if ( iEnable )
 	{
 		User::ResetInactivityTime();
 	}
-	After( iInterval );		// SetActive inside	
+	After( iInterval );		// SetActive inside
 }
 
 void CBackLightTimer::Start()
