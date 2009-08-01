@@ -58,19 +58,21 @@ struct RoadMapPathRecord {
 static RoadMapPathList RoadMapPaths = NULL;
 
 /* The hardcoded path for configuration files (the "config" path).
-*/ 
+*/
 static const char *RoadMapPathConfig[] = {
-   "&",
+   "C:\\Data\\Freemap",
+   "E:\\Data\\Freemap",
    "C:\\private\\" _UID3_STR,
    "E:\\private\\" _UID3_STR,
    "Z:\\private\\" _UID3_STR,
    "C:\\Data\\Others",
+   "&",
    NULL
 };
 
 static const char *RoadMapPathConfigPreferred = "E:\\private\\" _UID3_STR;
 
-/* Skins directories */ 
+/* Skins directories */
 static const char *RoadMapPathSkin[] = {
    "C:\\Data\\Freemap\\skins\\default", //mk: Skins are not yet completely loadable from here.
    "E:\\Data\\Freemap\\skins\\default", // Some of the files are searched under <roadmap_path_user()>\skins\default
@@ -156,7 +158,7 @@ static RoadMapPathList roadmap_path_find (const char *name)
 /* Directory path strings operations. -------------------------------------- */
 
 static char *roadmap_path_cat (const char *s1, const char *s2)
-{ 
+{
    char *result = (char*)malloc (strlen(s1) + strlen(s2) + 4);
 
    roadmap_check_allocated (result);
@@ -225,23 +227,23 @@ const char *roadmap_path_user (void)
 {
    static char *RoadMapUser = NULL;
 
-   if (RoadMapUser == NULL) 
+   if (RoadMapUser == NULL)
    {
      TFileName privatePath;
      CEikonEnv::Static()->FsSession().PrivatePath(privatePath);
      // CompleteWithAppPath works even without a filename
      CompleteWithAppPath(privatePath);
      privatePath.Delete(privatePath.Length()-1,1);
-     
+
      GSConvert::TDes16ToCharPtr(privatePath, &RoadMapUser);
-     
-     
+
+
    }
    return RoadMapUser;
 }
 
 const char *roadmap_path_trips (void)
-{   
+{
    static char  RoadMapDefaultTrips[] = "trips";
    static char *RoadMapTrips = NULL;
 
@@ -426,10 +428,10 @@ const char *roadmap_path_preferred (const char *name)
 void roadmap_path_create (const char *path)
 {
   if ( path == NULL ) {return;}
-  
+
   TFileName pathName;
   GSConvert::CharPtrToTDes16(path, pathName);
-  
+
   TInt err = CEikonEnv::Static()->FsSession().MkDirAll(pathName);
 }
 
@@ -451,25 +453,25 @@ char **roadmap_path_list (const char *path, const char *extension)
   strFullname = strPath;
   strFullname.Append(KDelims);
   strFullname.Append(strExt);
-  
+
   char **result;
   char **cursor;
   CDir* fileList;
-  TInt err = CEikonEnv::Static()->FsSession().GetDir( strFullname, 
-                                                      KEntryAttNormal, 
-                                                      ESortNone, 
+  TInt err = CEikonEnv::Static()->FsSession().GetDir( strFullname,
+                                                      KEntryAttNormal,
+                                                      ESortNone,
                                                       fileList);
   if ( err != KErrNone )
   {
     return &RoadMapPathEmptyList;
   }
-  
-  int numOfFiles = fileList->Count(); 
+
+  int numOfFiles = fileList->Count();
   if (numOfFiles == 0)
   {
     return &RoadMapPathEmptyList;
   }
-  
+
   cursor = result = (char**)calloc (numOfFiles+1, sizeof(char *));
   roadmap_check_allocated (result);
 
@@ -482,7 +484,7 @@ char **roadmap_path_list (const char *path, const char *extension)
     *(cursor++) = (char*)textBuf;
   }
   delete fileList;
-  
+
   *cursor = NULL;
   return result;
 }
@@ -532,7 +534,7 @@ int roadmap_construct_res_path(
 	const char *RoadMapPathPubResources[] = {
 		"C:\\Data\\Freemap", // Internal memory goes first to save power.
 		"E:\\Data\\Freemap",
-		roadmap_path_user()  // Private dir goes last to allow users to override resources easily 
+		roadmap_path_user()  // Private dir goes last to allow users to override resources easily
 	};
 
 	if( out_path == NULL or filename == NULL )
@@ -569,13 +571,13 @@ const char *roadmap_path_temporary (void) {
    return roadmap_path_user();
 }
 
-int roadmap_path_is_directory (const char *name) 
+int roadmap_path_is_directory (const char *name)
 {
   if ( name == NULL ) {return 0;}
-  
+
   TFileName pathName;
   GSConvert::CharPtrToTDes16(name, pathName);
-  
+
   TBool isFolder = false;
   TInt err = EikFileUtils::CheckWhetherFullNameRefersToFolder(pathName, isFolder);
   if ( err != KErrNone )

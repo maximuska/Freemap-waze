@@ -36,8 +36,9 @@
 
 "backup_registration.xml"-"!:\private\E001EB29\backup_registration.xml"
 
+"..\..\resources\preferences"-"!:\Data\Freemap\preferences"
+
 "..\..\resources\lang"-"!:\private\E001EB29\lang"
-"..\..\resources\preferences"-"!:\private\E001EB29\preferences"
 "..\..\resources\sprites"-"!:\private\E001EB29\sprites"
 "..\..\resources\font.ttf"-"!:\private\E001EB29\font.ttf"
 "..\..\resources\quick.menu"-"!:\private\E001EB29\quick.menu"
