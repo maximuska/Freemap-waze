@@ -1,7 +1,7 @@
 # Web-service to be use for RT traffic updates.
-# The application will switch to waze server if unavailable
-#  http://m-k.ath.cx:8081/rtserver - supports data compression
-Realtime.Web-Service Address: http://m-k.ath.cx:8081/rtserver
+# The application will switch to default waze server if unavailable
+# Realtime.Web-Service Address: http://m-k.ath.cx:8081/rtserver
+Realtime.Web-Service Address: http://212.150.51.92/rtserver
 
 # How often to download traffic updates.
 # generally, using smaller values makes battery life shorter,
