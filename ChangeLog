@@ -1,6 +1,6 @@
-1Aug2009 Release -mk4
+3Aug2009 Release -mk4
 - Small fix in Symbian HTTP data handling
-- Configuring RT-server to waze's supporting gzip content encoding.
+- Configuring application to use waze's RT-server supporting gzip content encoding.
 
 1Aug2009 Release -mk3
 - Added support for gzip Content Encoding in Symbian HTTP.
