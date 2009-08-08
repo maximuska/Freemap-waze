@@ -167,6 +167,7 @@ TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType)
 			return EKeyWasConsumed;
 		}
 	}
+	#ifndef __WINS__
 	// Conversions for the not standard codes
 	switch( code )
 	{
@@ -175,6 +176,7 @@ TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType)
 		case EStdKeyHash  	: code = '#';        break;
 		default				: break;
 	}
+	#endif
 	// Regular keys - phone or qwerty 
 	if ( USING_PHONE_KEYPAD  )
 	{

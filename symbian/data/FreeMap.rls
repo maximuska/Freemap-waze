@@ -35,6 +35,6 @@
 
 #define qtn_loc_resource_file_1 "\\resource\\apps\\FreeMap"
 
-#define qtn_about_dialog_text "FreeMap Version 0.14.2-mk4\n\nAuthor: Ehud Shabtai\n\nSupport: your support email here\n\n(c) GPL"
+#define qtn_about_dialog_text "FreeMap Version 0.14.2-mk4A\n\nAuthor: Ehud Shabtai\n\nSupport: your support email here\n\n(c) GPL"
 
 // End of File
