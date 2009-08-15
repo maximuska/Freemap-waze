@@ -37,7 +37,7 @@ void *roadmap_history_before (char category, void *cursor);
 void *roadmap_history_after  (char category, void *cursor);
 
 void roadmap_history_get (char category, void *cursor, char *argv[]);
- 
+
 void roadmap_history_purge (int count);
 void roadmap_history_save  (void);
 

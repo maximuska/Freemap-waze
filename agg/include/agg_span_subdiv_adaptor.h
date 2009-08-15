@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ namespace agg
 {
 
     //=================================================span_subdiv_adaptor
-    template<class Interpolator, unsigned SubpixelShift = 8> 
+    template<class Interpolator, unsigned SubpixelShift = 8>
     class span_subdiv_adaptor
     {
     public:
@@ -51,14 +51,14 @@ namespace agg
             m_subdiv_size(1 << m_subdiv_shift),
             m_subdiv_mask(m_subdiv_size - 1) {}
 
-        span_subdiv_adaptor(interpolator_type& interpolator, 
-                             unsigned subdiv_shift = 4) : 
+        span_subdiv_adaptor(interpolator_type& interpolator,
+                             unsigned subdiv_shift = 4) :
             m_subdiv_shift(subdiv_shift),
             m_subdiv_size(1 << m_subdiv_shift),
             m_subdiv_mask(m_subdiv_size - 1),
             m_interpolator(&interpolator) {}
 
-        span_subdiv_adaptor(interpolator_type& interpolator, 
+        span_subdiv_adaptor(interpolator_type& interpolator,
                              double x, double y, unsigned len,
                              unsigned subdiv_shift = 4) :
             m_subdiv_shift(subdiv_shift),
@@ -75,18 +75,18 @@ namespace agg
         void interpolator(interpolator_type& intr) { m_interpolator = &intr; }
 
         //----------------------------------------------------------------
-        const trans_type& transformer() const 
-        { 
-            return *m_interpolator->transformer(); 
+        const trans_type& transformer() const
+        {
+            return *m_interpolator->transformer();
         }
-        void transformer(const trans_type& trans) 
-        { 
-            m_interpolator->transformer(trans); 
+        void transformer(const trans_type& trans)
+        {
+            m_interpolator->transformer(trans);
         }
 
         //----------------------------------------------------------------
         unsigned subdiv_shift() const { return m_subdiv_shift; }
-        void subdiv_shift(unsigned shift) 
+        void subdiv_shift(unsigned shift)
         {
             m_subdiv_shift = shift;
             m_subdiv_size = 1 << m_subdiv_shift;
@@ -112,8 +112,8 @@ namespace agg
             {
                 unsigned len = m_len;
                 if(len > m_subdiv_size) len = m_subdiv_size;
-                m_interpolator->resynchronize(double(m_src_x) / double(subpixel_scale) + len, 
-                                              m_src_y, 
+                m_interpolator->resynchronize(double(m_src_x) / double(subpixel_scale) + len,
+                                              m_src_y,
                                               len);
                 m_pos = 0;
             }

@@ -97,7 +97,7 @@ void roadmap_dialog_new_color (const char *frame, const char *name);
  * The optional callback is called each time a new selection is being made,
  * not when the OK button is called--that is the job of the OK button
  * callback.
- * 
+ *
  * Note: A choice widget is expected to be able to retrive its text labels
  *       from its internal data structures.
  */
@@ -239,7 +239,7 @@ static __inline void roadmap_dialog_add_button_i
    roadmap_dialog_add_button (roadmap_lang_get (label), callback);
 }
 
-static __inline void *roadmap_dialog_get_data_i 
+static __inline void *roadmap_dialog_get_data_i
                         (const char *frame, const char *name) {
 
    return roadmap_dialog_get_data
@@ -264,13 +264,13 @@ static __inline void roadmap_dialog_protect_i
 
    roadmap_dialog_protect (roadmap_lang_get (frame), roadmap_lang_get (name));
 }
-         
+
 static __inline void roadmap_dialog_set_focus_i
                      (const char *frame, const char *name) {
 
    roadmap_dialog_set_focus (roadmap_lang_get (frame), roadmap_lang_get (name));
 }
-         
+
 #define roadmap_dialog_activate      roadmap_dialog_activate_i
 #define roadmap_dialog_hide          roadmap_dialog_hide_i
 #define roadmap_dialog_new_label     roadmap_dialog_new_label_i

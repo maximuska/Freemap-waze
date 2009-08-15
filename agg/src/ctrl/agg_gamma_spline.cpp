@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -28,7 +28,7 @@ namespace agg
 {
 
     //------------------------------------------------------------------------
-    gamma_spline::gamma_spline() : 
+    gamma_spline::gamma_spline() :
         m_x1(0), m_y1(0), m_x2(10), m_y2(10), m_cur_x(0.0)
     {
         values(1.0, 1.0, 1.0, 1.0);
@@ -36,8 +36,8 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    double gamma_spline::y(double x) const 
-    { 
+    double gamma_spline::y(double x) const
+    {
         if(x < 0.0) x = 0.0;
         if(x > 1.0) x = 1.0;
         double val = m_spline.get(x);
@@ -109,7 +109,7 @@ namespace agg
     //------------------------------------------------------------------------
     unsigned gamma_spline::vertex(double* vx, double* vy)
     {
-        if(m_cur_x == 0.0) 
+        if(m_cur_x == 0.0)
         {
             *vx = m_x1;
             *vy = m_y1;
@@ -117,18 +117,18 @@ namespace agg
             return path_cmd_move_to;
         }
 
-        if(m_cur_x > 1.0) 
+        if(m_cur_x > 1.0)
         {
             return path_cmd_stop;
         }
-        
+
         *vx = m_x1 + m_cur_x * (m_x2 - m_x1);
         *vy = m_y1 + y(m_cur_x) * (m_y2 - m_y1);
 
         m_cur_x += 1.0 / (m_x2 - m_x1);
         return path_cmd_line_to;
     }
-  
+
 
 
 }

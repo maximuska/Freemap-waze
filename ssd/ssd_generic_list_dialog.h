@@ -23,32 +23,32 @@
 #define _SSD_GENERIC_LIST_DIALOG_H__
 
 typedef int(*PFN_ON_ITEM_SELECTED)(SsdWidget widget, const char* selection,const void *value, void* context);
-  
-void ssd_generic_list_dialog_show(	const char*				title, 
-												int						count, 
-												const char**			labels,
-												const void**			values,
-												PFN_ON_ITEM_SELECTED	on_item_selected,
-												PFN_ON_ITEM_SELECTED	on_item_deleted,
-												void*						context);
+
+void ssd_generic_list_dialog_show(  const char*             title,
+                                                int                     count,
+                                                const char**            labels,
+                                                const void**            values,
+                                                PFN_ON_ITEM_SELECTED    on_item_selected,
+                                                PFN_ON_ITEM_SELECTED    on_item_deleted,
+                                                void*                       context);
 
 void ssd_generic_icon_list_dialog_show(
-                                  const char*			  title,
-                                  int					  count,
-                                  const char**			  labels,
-                                  const void**			  values,
+                                  const char*             title,
+                                  int                     count,
+                                  const char**            labels,
+                                  const void**            values,
                                   const char**            icons,
-                                  const int*			  flags,
-                                  PFN_ON_ITEM_SELECTED	  on_item_selected,
+                                  const int*              flags,
+                                  PFN_ON_ITEM_SELECTED    on_item_selected,
                                   PFN_ON_ITEM_SELECTED    on_item_deleted,
-                                  void*					  context,
-                                  const char*             left_softkey_text, 
-                                  SsdSoftKeyCallback	  left_softkey_callback,
+                                  void*                   context,
+                                  const char*             left_softkey_text,
+                                  SsdSoftKeyCallback      left_softkey_callback,
                                   int                     list_height,
                                   int                     dialog_flags,
                                   BOOL                    add_next_button);
 
-                                                         
+
 void ssd_generic_list_dialog_hide (void);
 
 void ssd_generic_list_dialog_hide_all (void);

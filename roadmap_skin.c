@@ -102,7 +102,7 @@ void roadmap_skin_toggle (void) {
 
 int roadmap_skin_state(){
    if (!strcmp (CurrentSubSkin, "day")) {
-	   return 0;
+       return 0;
    } else {
       return 1;
    }

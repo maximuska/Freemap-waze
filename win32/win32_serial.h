@@ -25,7 +25,7 @@
 #include <windows.h>
 
 typedef struct Win32SerialConn {
-   
+
    HANDLE handle;
    char name[20];
    char mode[10];
@@ -34,7 +34,7 @@ typedef struct Win32SerialConn {
    int data_count;
    int ref_count;
    int valid;
-   
+
 } Win32SerialConn;
 
 #endif //__WIN32_SERIAL_

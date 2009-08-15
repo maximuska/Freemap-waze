@@ -63,14 +63,14 @@ BOOL roadmap_device_events_os_init()
       assert(0);
       return TRUE;
    }
-   
+
    eventPleaseQuit = CreateEvent( NULL, FALSE /* Manual? */, FALSE, NULL);
    if( !eventPleaseQuit)
    {
       roadmap_log( ROADMAP_ERROR, "roadmap_device_events_os_init() - Failed to create event");
       return FALSE;
    }
-   
+
    MonitorThread = CreateThread( NULL, // SD,
                                  0,    // Stack size
                                  DeviceEventsMonitorThread,
@@ -82,13 +82,13 @@ BOOL roadmap_device_events_os_init()
    if( !MonitorThread)
    {
       roadmap_log( ROADMAP_ERROR, "roadmap_device_events_os_init() - Failed to create thread");
-      
+
       CloseHandle( eventPleaseQuit);
       eventPleaseQuit = NULL;
-      
+
       return FALSE;
    }
-   
+
    return TRUE;
 }
 
@@ -98,13 +98,13 @@ void  roadmap_device_events_os_term()
    {
       if( eventPleaseQuit)
          SetEvent( eventPleaseQuit);
-      
+
       if( WAIT_OBJECT_0 != WaitForSingleObject( MonitorThread, 3000))
       {
          roadmap_log( ROADMAP_ERROR, "roadmap_device_events_os_term() - Monitor thread failed to shutdown within 3 seconds - KILLING IT!");
          TerminateThread( MonitorThread, -1);
       }
-      
+
       CloseHandle( MonitorThread);
       MonitorThread = NULL;
    }
@@ -128,15 +128,15 @@ DWORD WINAPI DeviceEventsMonitorThread( void* params)
    DWORD                   dwEventsCount = sizeof(Events)/sizeof(HANDLE);
    DWORD                   dwWaitRes;
    BOOL                    bQuit = FALSE;
-   
+
    memset( &NT, 0, sizeof(CE_NOTIFICATION_TRIGGER));
-   
-   NT.dwSize = sizeof(CE_NOTIFICATION_TRIGGER); 
-   NT.dwType = CNT_EVENT; 
+
+   NT.dwSize = sizeof(CE_NOTIFICATION_TRIGGER);
+   NT.dwType = CNT_EVENT;
 
    Events[CORE_DEVICE_EVENTS_COUNT + 0] = eventShuttingDown;
    Events[CORE_DEVICE_EVENTS_COUNT + 1] = eventPleaseQuit;
-   
+
    // Create all events and triggers:
    for( i=0; i<CORE_DEVICE_EVENTS_COUNT; i++)
    {
@@ -145,12 +145,12 @@ DWORD WINAPI DeviceEventsMonitorThread( void* params)
 
       swprintf( EventName,    L"%S", get_device_event_name(i));
       swprintf( EventFullName,L"\\\\.\\Notifications\\NamedEvents\\%s", EventName);
-      
-      NT.dwEvent        = get_win32_device_event_id(i); 
+
+      NT.dwEvent        = get_win32_device_event_id(i);
       NT.lpszApplication= EventFullName;
       Events   [i]      = CreateEvent( NULL, FALSE /* Manual? */, FALSE, EventName);
       Triggers [i]      = CeSetUserNotificationEx( 0, &NT, NULL);
-      
+
       if( !Events[i] || !Triggers[i])
       {
          while(i--)
@@ -160,19 +160,19 @@ DWORD WINAPI DeviceEventsMonitorThread( void* params)
                CeClearUserNotification( Triggers[i]);
                Triggers[i] = NULL;
             }
-         
+
             if( Events[i])
             {
                CloseHandle( Events[i]);
                Events[i] = NULL;
             }
          }
-         
+
          roadmap_log( ROADMAP_ERROR, "DeviceEventsMonitorThread() - Failed to create event or trigger %d; Error: %d", i, GetLastError());
-         return -1;  
+         return -1;
       }
    }
-   
+
    do
    {
       dwWaitRes = WaitForMultipleObjects( dwEventsCount, Events, FALSE, INFINITE);
@@ -182,7 +182,7 @@ DWORD WINAPI DeviceEventsMonitorThread( void* params)
          roadmap_log( ROADMAP_ERROR, "DeviceEventsMonitorThread() - Unexpected value (%d) returned from 'WaitFor...'", dwWaitRes);
          break;
       }
-      
+
       dwWaitRes -= WAIT_OBJECT_0;
       roadmap_log( ROADMAP_DEBUG, "DeviceEventsMonitorThread() - Got event %d (%s)", dwWaitRes, get_device_event_name(dwWaitRes));
 
@@ -207,13 +207,13 @@ DWORD WINAPI DeviceEventsMonitorThread( void* params)
          case CORE_DEVICE_EVENTS_COUNT+1:
             bQuit = TRUE;
             break;
-         
+
          default:
             assert(0);
       }
-      
-   }  while( !bQuit);   
-   
+
+   }  while( !bQuit);
+
    for( i=0; i<CORE_DEVICE_EVENTS_COUNT; i++)
    {
       if( Triggers[i])

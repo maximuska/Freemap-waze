@@ -23,7 +23,7 @@
   *  FTC_ICache extends FTC_GCache.  For an implementation example,
   *  see FTC_ImageCache in `src/cache/ftbasic.c'.
   */
-  
+
 
   /*************************************************************************/
   /*                                                                       */

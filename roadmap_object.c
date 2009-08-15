@@ -52,7 +52,7 @@ struct RoadMapObjectDescriptor {
    RoadMapDynamicString name; /* Name displayed, need not be unique. */
 
    RoadMapDynamicString sprite; /* Icon for the object on the map. */
-   
+
    RoadMapDynamicString image; /* Icon for the object on the map. */
 
    RoadMapGpsPosition position;
@@ -172,9 +172,9 @@ void roadmap_object_remove (RoadMapDynamicString id) {
       roadmap_string_release(cursor->id);
       roadmap_string_release(cursor->name);
       roadmap_string_release(cursor->sprite);
-      
+
       roadmap_string_release(cursor->image);
-      
+
       free (cursor);
    }
 }

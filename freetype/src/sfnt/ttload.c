@@ -232,7 +232,7 @@
 #ifdef TT_CONFIG_OPTION_EMBEDDED_BITMAPS
       else if ( table.Tag == TTAG_bhed )
         goto head_retry;
-#endif  /* TT_CONFIG_OPTION_EMBEDDED_BITMAPS */      
+#endif  /* TT_CONFIG_OPTION_EMBEDDED_BITMAPS */
     }
 
     if ( has_head == 0 )
@@ -811,8 +811,8 @@
     FT_ULong   table_size;
     FT_Byte**  ptable;
     FT_ULong*  ptable_size;
-    
-    
+
+
     FT_TRACE2(( "TT_Load_%s_Metrics: %08p\n", vertical ? "Vertical"
                                                        : "Horizontal",
                                               face ));
@@ -821,7 +821,7 @@
     {
       ptable      = &face->vert_metrics;
       ptable_size = &face->vert_metrics_size;
-      
+
       /* The table is optional, quit silently if it wasn't found.      */
       /*                                                               */
       /* XXX: Some fonts have a valid vertical header with a non-null  */
@@ -865,12 +865,12 @@
         goto Exit;
       }
     }
-    
+
     if ( FT_FRAME_EXTRACT( table_size, *ptable ) )
       goto Exit;
-      
+
     *ptable_size = table_size;
-    
+
   Exit:
     return error;
   }
@@ -1748,17 +1748,17 @@
     {
       if ( p + record_size > limit )
         break;
-        
+
       face->hdmx_record_sizes[nn] = p[0];
       p                          += record_size;
     }
-    
+
     face->hdmx_record_count = nn;
     face->hdmx_table_size   = table_size;
 
   Exit:
     return error;
-    
+
   Fail:
     FT_FRAME_RELEASE( face->hdmx_table );
     face->hdmx_table_size = 0;
@@ -1771,7 +1771,7 @@
   {
     FT_Stream  stream = face->root.stream;
     FT_Memory  memory = stream->memory;
-    
+
 
     FT_FREE( face->hdmx_record_sizes );
     FT_FRAME_RELEASE( face->hdmx_table );

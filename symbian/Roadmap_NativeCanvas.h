@@ -4,10 +4,10 @@
  *
  *   Copyright 2008 Giant Steps Ltd.
  *   Copyright 2008 Ehud Shabtai
- *    Based off Nokia wiki example code at 
+ *    Based off Nokia wiki example code at
  *    http://wiki.forum.nokia.com/index.php/How_to_draw_image_to_screen_directly
  *    http://wiki.forum.nokia.com/index.php/Anti-tearing_with_CDirectScreenBitmap
- * 
+ *
  *   This file is part of RoadMap.
  *
  *   RoadMap is free software; you can redistribute it and/or modify
@@ -35,7 +35,7 @@
 #include <w32std.h>
 //#include <cdsb.h>   //  for CDirectScreenBitmap
 
-#define DEFAULT_BPP 4     //  bgra = (32/8) 
+#define DEFAULT_BPP 4     //  bgra = (32/8)
 //  This class is a wrapper for CDirectScreenAccess
 
 class CRoadmapNativeCanvas : public MDirectScreenAccess
@@ -44,47 +44,47 @@ public:
   static CRoadmapNativeCanvas* NewL(RWsSession& aWsSession, CWsScreenDevice& aScreenDevice, RWindow& aWindow);
   static CRoadmapNativeCanvas* NewLC(RWsSession& aWsSession, CWsScreenDevice& aScreenDevice, RWindow& aWindow);
   virtual ~CRoadmapNativeCanvas();
- 
+
   inline CWsScreenDevice& GetScreenDevice(){return m_ScreenDevice;}
   inline RWindow& GetWindow(){return m_Window;}
   inline CFbsBitGc* GetScreenGc(){return m_pGc;}
- 
+
   inline void SetBuffer(const unsigned char* pBuf, int bufSize) { m_pBuffer = pBuf; m_BufSize = bufSize;  }
-  
+
   int Start();
   void Stop();
-  
+
   //  This is called on every refresh
   void UpdateScreen();
-  
+
 private:
   //ctor (invoked by NewL/C)
   CRoadmapNativeCanvas(RWsSession& aWsSession, CWsScreenDevice& aScreenDevice, RWindow& aWindow);
   void ConstructL();
   void Restart(RDirectScreenAccess::TTerminationReasons aReason);
   void AbortNow(RDirectScreenAccess::TTerminationReasons aReason);
- 
-  //  These are internal methods called by UpdateScreen() 
+
+  //  These are internal methods called by UpdateScreen()
 //  void BeginUpdate();
 //  void EndUpdate();
- 
+
 private:
   CWsScreenDevice&      m_ScreenDevice;
   RWsSession&           m_WsSession;
   RWindow&              m_Window;
- 
+
   CDirectScreenAccess*  m_pDirectScreenAccess;
   RRegion*              m_pRegion;
   CFbsBitGc*            m_pGc;
   CFbsBitmap*           m_pBitmap;
-  
+
   //  Buffer to copy to the bitmap
   const unsigned char*  m_pBuffer;
   int                   m_BufSize;
-  
+
 //  CDirectScreenBitmap*  m_pDSBitmap;
 //  TUint8*               m_pScreenAddress;
-  
+
   TBool                 m_bDrawing;
   TRequestStatus        m_bUpdateComplete;
 };

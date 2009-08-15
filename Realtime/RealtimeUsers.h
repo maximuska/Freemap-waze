@@ -18,8 +18,8 @@
  */
 
 
-#ifndef	__FREEMAP_REALTIMEUSERS_H__
-#define	__FREEMAP_REALTIMEUSERS_H__
+#ifndef __FREEMAP_REALTIMEUSERS_H__
+#define __FREEMAP_REALTIMEUSERS_H__
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -85,4 +85,4 @@ LPRTUserLocation  RTUsers_UserByID  ( LPRTUsers this, int  iUserID);
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#endif	//	__FREEMAP_REALTIMEUSERS_H__
+#endif  //  __FREEMAP_REALTIMEUSERS_H__

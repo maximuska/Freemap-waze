@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ namespace agg
     {
     public:
         typedef T value_type;
-        pod_array_adaptor(T* array, unsigned size) : 
+        pod_array_adaptor(T* array, unsigned size) :
             m_array(array), m_size(size) {}
 
         unsigned size() const { return m_size; }
@@ -98,7 +98,7 @@ namespace agg
         void add(const T& v)         { m_array[m_size++] = v; }
         void push_back(const T& v)   { m_array[m_size++] = v; }
         void inc_size(unsigned size) { m_size += size; }
-        
+
         unsigned size() const { return m_size; }
         const T& operator [] (unsigned i) const { return m_array[i]; }
               T& operator [] (unsigned i)       { return m_array[i]; }
@@ -122,14 +122,14 @@ namespace agg
         ~pod_array() { pod_allocator<T>::deallocate(m_array, m_size); }
         pod_array() : m_array(0), m_size(0) {}
 
-        pod_array(unsigned size) : 
-            m_array(pod_allocator<T>::allocate(size)), 
-            m_size(size) 
+        pod_array(unsigned size) :
+            m_array(pod_allocator<T>::allocate(size)),
+            m_size(size)
         {}
 
-        pod_array(const self_type& v) : 
-            m_array(pod_allocator<T>::allocate(v.m_size)), 
-            m_size(v.m_size) 
+        pod_array(const self_type& v) :
+            m_array(pod_allocator<T>::allocate(v.m_size)),
+            m_size(v.m_size)
         {
             memcpy(m_array, v.m_array, sizeof(T) * m_size);
         }
@@ -186,8 +186,8 @@ namespace agg
         void capacity(unsigned cap, unsigned extra_tail=0);
         unsigned capacity() const { return m_capacity; }
 
-        // Allocate n elements. All data is lost, 
-        // but elements can be accessed in range 0...size-1. 
+        // Allocate n elements. All data is lost,
+        // but elements can be accessed in range 0...size-1.
         void allocate(unsigned size, unsigned extra_tail=0);
 
         // Resize keeping the content.
@@ -226,7 +226,7 @@ namespace agg
     };
 
     //------------------------------------------------------------------------
-    template<class T> 
+    template<class T>
     void pod_vector<T>::capacity(unsigned cap, unsigned extra_tail)
     {
         m_size = 0;
@@ -239,7 +239,7 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
-    template<class T> 
+    template<class T>
     void pod_vector<T>::allocate(unsigned size, unsigned extra_tail)
     {
         capacity(size, extra_tail);
@@ -248,7 +248,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class T> 
+    template<class T>
     void pod_vector<T>::resize(unsigned new_size)
     {
         if(new_size > m_size)
@@ -269,8 +269,8 @@ namespace agg
 
     //------------------------------------------------------------------------
     template<class T> pod_vector<T>::pod_vector(unsigned cap, unsigned extra_tail) :
-        m_size(0), 
-        m_capacity(cap + extra_tail), 
+        m_size(0),
+        m_capacity(cap + extra_tail),
         m_array(pod_allocator<T>::allocate(m_capacity)) {}
 
     //------------------------------------------------------------------------
@@ -283,7 +283,7 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
-    template<class T> const pod_vector<T>& 
+    template<class T> const pod_vector<T>&
     pod_vector<T>::operator = (const pod_vector<T>&v)
     {
         allocate(v.m_size);
@@ -293,12 +293,12 @@ namespace agg
 
     //------------------------------------------------------------------------
     template<class T> void pod_vector<T>::serialize(int8u* ptr) const
-    { 
-        if(m_size) memcpy(ptr, m_array, m_size * sizeof(T)); 
+    {
+        if(m_size) memcpy(ptr, m_array, m_size * sizeof(T));
     }
 
     //------------------------------------------------------------------------
-    template<class T> 
+    template<class T>
     void pod_vector<T>::deserialize(const int8u* data, unsigned byte_size)
     {
         byte_size /= sizeof(T);
@@ -307,10 +307,10 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
-    template<class T> 
+    template<class T>
     void pod_vector<T>::insert_at(unsigned pos, const T& val)
     {
-        if(pos >= m_size) 
+        if(pos >= m_size)
         {
             m_array[m_size] = val;
         }
@@ -324,12 +324,12 @@ namespace agg
 
     //---------------------------------------------------------------pod_bvector
     // A simple class template to store Plain Old Data, similar to std::deque
-    // It doesn't reallocate memory but instead, uses blocks of data of size 
-    // of (1 << S), that is, power of two. The data is NOT contiguous in memory, 
+    // It doesn't reallocate memory but instead, uses blocks of data of size
+    // of (1 << S), that is, power of two. The data is NOT contiguous in memory,
     // so the only valid access method is operator [] or curr(), prev(), next()
-    // 
-    // There reallocs occure only when the pool of pointers to blocks needs 
-    // to be extended (it happens very rarely). You can control the value 
+    //
+    // There reallocs occure only when the pool of pointers to blocks needs
+    // to be extended (it happens very rarely). You can control the value
     // of increment to reallocate the pointer buffer. See the second constructor.
     // By default, the incremeent value equals (1 << S), i.e., the block size.
     //------------------------------------------------------------------------
@@ -337,7 +337,7 @@ namespace agg
     {
     public:
         enum block_scale_e
-        {   
+        {
             block_shift = S,
             block_size  = 1 << block_shift,
             block_mask  = block_size - 1
@@ -399,17 +399,17 @@ namespace agg
         }
 
         const T& at(unsigned i) const
-        { 
+        {
             return m_blocks[i >> block_shift][i & block_mask];
         }
 
-        T& at(unsigned i) 
-        { 
+        T& at(unsigned i)
+        {
             return m_blocks[i >> block_shift][i & block_mask];
         }
 
         T value_at(unsigned i) const
-        { 
+        {
             return m_blocks[i >> block_shift][i & block_mask];
         }
 
@@ -456,10 +456,10 @@ namespace agg
         unsigned byte_size() const;
         void serialize(int8u* ptr) const;
         void deserialize(const int8u* data, unsigned byte_size);
-        void deserialize(unsigned start, const T& empty_val, 
+        void deserialize(unsigned start, const T& empty_val,
                          const int8u* data, unsigned byte_size);
 
-        template<class ByteAccessor> 
+        template<class ByteAccessor>
         void deserialize(ByteAccessor data)
         {
             remove_all();
@@ -537,7 +537,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class T, unsigned S> 
+    template<class T, unsigned S>
     void pod_bvector<T, S>::free_tail(unsigned size)
     {
         if(size < m_size)
@@ -570,7 +570,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class T, unsigned S> 
+    template<class T, unsigned S>
     pod_bvector<T, S>::pod_bvector(unsigned block_ptr_inc) :
         m_size(0),
         m_num_blocks(0),
@@ -582,13 +582,13 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class T, unsigned S> 
+    template<class T, unsigned S>
     pod_bvector<T, S>::pod_bvector(const pod_bvector<T, S>& v) :
         m_size(v.m_size),
         m_num_blocks(v.m_num_blocks),
         m_max_blocks(v.m_max_blocks),
-        m_blocks(v.m_max_blocks ? 
-                 pod_allocator<T*>::allocate(v.m_max_blocks) : 
+        m_blocks(v.m_max_blocks ?
+                 pod_allocator<T*>::allocate(v.m_max_blocks) :
                  0),
         m_block_ptr_inc(v.m_block_ptr_inc)
     {
@@ -602,8 +602,8 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class T, unsigned S> 
-    const pod_bvector<T, S>& 
+    template<class T, unsigned S>
+    const pod_bvector<T, S>&
     pod_bvector<T, S>::operator = (const pod_bvector<T, S>& v)
     {
         unsigned i;
@@ -624,14 +624,14 @@ namespace agg
     template<class T, unsigned S>
     void pod_bvector<T, S>::allocate_block(unsigned nb)
     {
-        if(nb >= m_max_blocks) 
+        if(nb >= m_max_blocks)
         {
             T** new_blocks = pod_allocator<T*>::allocate(m_max_blocks + m_block_ptr_inc);
 
             if(m_blocks)
             {
-                memcpy(new_blocks, 
-                       m_blocks, 
+                memcpy(new_blocks,
+                       m_blocks,
                        m_num_blocks * sizeof(T*));
 
                 pod_allocator<T*>::deallocate(m_blocks, m_max_blocks);
@@ -660,7 +660,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class T, unsigned S> 
+    template<class T, unsigned S>
     inline void pod_bvector<T, S>::add(const T& val)
     {
         *data_ptr() = val;
@@ -669,7 +669,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class T, unsigned S> 
+    template<class T, unsigned S>
     inline void pod_bvector<T, S>::remove_last()
     {
         if(m_size) --m_size;
@@ -677,7 +677,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class T, unsigned S> 
+    template<class T, unsigned S>
     void pod_bvector<T, S>::modify_last(const T& val)
     {
         remove_last();
@@ -686,7 +686,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class T, unsigned S> 
+    template<class T, unsigned S>
     int pod_bvector<T, S>::allocate_continuous_block(unsigned num_elements)
     {
         if(num_elements < block_size)
@@ -716,7 +716,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class T, unsigned S> 
+    template<class T, unsigned S>
     unsigned pod_bvector<T, S>::byte_size() const
     {
         return m_size * sizeof(T);
@@ -724,7 +724,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class T, unsigned S> 
+    template<class T, unsigned S>
     void pod_bvector<T, S>::serialize(int8u* ptr) const
     {
         unsigned i;
@@ -736,7 +736,7 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
-    template<class T, unsigned S> 
+    template<class T, unsigned S>
     void pod_bvector<T, S>::deserialize(const int8u* data, unsigned byte_size)
     {
         remove_all();
@@ -753,8 +753,8 @@ namespace agg
 
     // Replace or add a number of elements starting from "start" position
     //------------------------------------------------------------------------
-    template<class T, unsigned S> 
-    void pod_bvector<T, S>::deserialize(unsigned start, const T& empty_val, 
+    template<class T, unsigned S>
+    void pod_bvector<T, S>::deserialize(unsigned start, const T& empty_val,
                                         const int8u* data, unsigned byte_size)
     {
         while(m_size < start)
@@ -782,11 +782,11 @@ namespace agg
 
     //---------------------------------------------------------block_allocator
     // Allocator for arbitrary POD data. Most usable in different cache
-    // systems for efficient memory allocations. 
+    // systems for efficient memory allocations.
     // Memory is allocated with blocks of fixed size ("block_size" in
     // the constructor). If required size exceeds the block size the allocator
     // creates a new block of the required size. However, the most efficient
-    // use is when the average reqired size is much less than the block size. 
+    // use is when the average reqired size is much less than the block size.
     //------------------------------------------------------------------------
     class block_allocator
     {
@@ -831,7 +831,7 @@ namespace agg
             m_rest(0)
         {
         }
-       
+
 
         int8u* allocate(unsigned size, unsigned alignment=1)
         {
@@ -841,7 +841,7 @@ namespace agg
                 int8u* ptr = m_buf_ptr;
                 if(alignment > 1)
                 {
-                    unsigned align = 
+                    unsigned align =
                         (alignment - unsigned((size_t)ptr) % alignment) % alignment;
 
                     size += align;
@@ -868,15 +868,15 @@ namespace agg
         void allocate_block(unsigned size)
         {
             if(size < m_block_size) size = m_block_size;
-            if(m_num_blocks >= m_max_blocks) 
+            if(m_num_blocks >= m_max_blocks)
             {
-                block_type* new_blocks = 
+                block_type* new_blocks =
                     pod_allocator<block_type>::allocate(m_max_blocks + m_block_ptr_inc);
 
                 if(m_blocks)
                 {
-                    memcpy(new_blocks, 
-                           m_blocks, 
+                    memcpy(new_blocks,
+                           m_blocks,
                            m_num_blocks * sizeof(block_type));
                     pod_allocator<block_type>::deallocate(m_blocks, m_max_blocks);
                 }
@@ -885,7 +885,7 @@ namespace agg
             }
 
             m_blocks[m_num_blocks].size = size;
-            m_blocks[m_num_blocks].data = 
+            m_blocks[m_num_blocks].data =
                 m_buf_ptr =
                 pod_allocator<int8u>::allocate(size);
 
@@ -915,7 +915,7 @@ namespace agg
         quick_sort_threshold = 9
     };
 
-    
+
     //-----------------------------------------------------------swap_elements
     template<class T> inline void swap_elements(T& a, T& b)
     {
@@ -935,7 +935,7 @@ namespace agg
         typename Array::value_type* e2;
 
         int  stack[80];
-        int* top = stack; 
+        int* top = stack;
         int  limit = arr.size();
         int  base = 0;
 
@@ -956,16 +956,16 @@ namespace agg
                 i = base + 1;
                 j = limit - 1;
 
-                // now ensure that *i <= *base <= *j 
-                e1 = &(arr[j]); 
+                // now ensure that *i <= *base <= *j
+                e1 = &(arr[j]);
                 e2 = &(arr[i]);
                 if(less(*e1, *e2)) swap_elements(*e1, *e2);
 
-                e1 = &(arr[base]); 
+                e1 = &(arr[base]);
                 e2 = &(arr[i]);
                 if(less(*e1, *e2)) swap_elements(*e1, *e2);
 
-                e1 = &(arr[j]); 
+                e1 = &(arr[j]);
                 e2 = &(arr[base]);
                 if(less(*e1, *e2)) swap_elements(*e1, *e2);
 
@@ -1034,7 +1034,7 @@ namespace agg
 
 
     //------------------------------------------------------remove_duplicates
-    // Remove duplicates from a sorted array. It doesn't cut the 
+    // Remove duplicates from a sorted array. It doesn't cut the
     // tail of the array, it just returns the number of remaining elements.
     //-----------------------------------------------------------------------
     template<class Array, class Equal>
@@ -1080,7 +1080,7 @@ namespace agg
         while(end - beg > 1)
         {
             unsigned mid = (end + beg) >> 1;
-            if(less(val, arr[mid])) end = mid; 
+            if(less(val, arr[mid])) end = mid;
             else                    beg = mid;
         }
 

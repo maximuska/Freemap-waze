@@ -27,7 +27,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void CReceiverThreadMgr::HandleTask( DataInfo& r)
 {
-	r.iSize = roadmap_net_receive( r.socket, r.pData, r.iSize);
+    r.iSize = roadmap_net_receive( r.socket, r.pData, r.iSize);
 
    // The next method-call (SendMessage) is blocking.
    // Current thread will be halted until the main thread will complete its handling

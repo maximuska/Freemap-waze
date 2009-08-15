@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ namespace agg
 
     private:
         conv_close_polygon(const conv_close_polygon<VertexSource>&);
-        const conv_close_polygon<VertexSource>& 
+        const conv_close_polygon<VertexSource>&
             operator = (const conv_close_polygon<VertexSource>&);
 
         VertexSource* m_source;
@@ -56,7 +56,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class VertexSource> 
+    template<class VertexSource>
     void conv_close_polygon<VertexSource>::rewind(unsigned path_id)
     {
         m_source->rewind(path_id);
@@ -65,9 +65,9 @@ namespace agg
     }
 
 
-    
+
     //------------------------------------------------------------------------
-    template<class VertexSource> 
+    template<class VertexSource>
     unsigned conv_close_polygon<VertexSource>::vertex(double* x, double* y)
     {
         unsigned cmd = path_cmd_stop;

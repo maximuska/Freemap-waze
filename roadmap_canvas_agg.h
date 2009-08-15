@@ -54,7 +54,7 @@ RoadMapImage roadmap_canvas_agg_load_image (const char *path,
 void roadmap_canvas_agg_free_image (RoadMapImage image);
 
 void roadmap_canvas_native_draw_multiple_lines (int count, int *lines,
-				RoadMapGuiPoint *points, int r, int g, int b, int thickness);
+                RoadMapGuiPoint *points, int r, int g, int b, int thickness);
 
 #endif // INCLUDE__ROADMAP_CANVAS_AGG__H
 

@@ -124,9 +124,9 @@
       p      = face->horz_metrics;
       limit  = p + face->horz_metrics_size;
     }
-    
+
     k = header->number_Of_HMetrics;
-    
+
     if ( k > 0 )
     {
       if ( idx < (FT_UInt)k )
@@ -134,7 +134,7 @@
         p += 4 * idx;
         if ( p + 4 > limit )
           goto NoData;
-          
+
         *aadvance = FT_NEXT_USHORT( p );
         *abearing = FT_NEXT_SHORT( p );
       }
@@ -143,7 +143,7 @@
         p += 4 * ( k - 1 );
         if ( p + 4 > limit )
           goto NoData;
-          
+
         *aadvance = FT_NEXT_USHORT( p );
         p += 2 + 2 * ( idx - k );
         if ( p + 2 > limit )
@@ -233,7 +233,7 @@
     FT_Byte*  result      = NULL;
     FT_ULong  record_size = face->hdmx_record_size;
     FT_Byte*  record      = face->hdmx_table + 8;
-    
+
 
     for ( nn = 0; nn < face->hdmx_record_count; nn++ )
       if ( face->hdmx_record_sizes[nn] == ppem )

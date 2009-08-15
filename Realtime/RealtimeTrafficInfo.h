@@ -22,68 +22,68 @@
  *
  *
  */
- 
- 
-#ifndef	__REALTIME_ROAD_INFO_H__
-#define	__REALTIME_TRAFFIC_INFO_H__
+
+
+#ifndef __REALTIME_ROAD_INFO_H__
+#define __REALTIME_TRAFFIC_INFO_H__
 
 #include "../roadmap_plugin.h"
 
-#define RT_TRAFFIC_INFO_MAXIMUM_TRAFFIC_INFO_COUNT 		500
-#define RT_TRAFFIC_INFO_ADDRESS_MAXSIZE 	100
-#define RT_TRAFFIC_INFO_MAX_DESCRIPTION		250
-#define RT_TRAFFIC_INFO_MAX_NODES 			50
+#define RT_TRAFFIC_INFO_MAXIMUM_TRAFFIC_INFO_COUNT      500
+#define RT_TRAFFIC_INFO_ADDRESS_MAXSIZE     100
+#define RT_TRAFFIC_INFO_MAX_DESCRIPTION     250
+#define RT_TRAFFIC_INFO_MAX_NODES           50
 
 #define ALERT_ID_OFFSET 100000
 
 #define MAX_LINES 3000
 
-#define TRAFFIC_OK	  0
+#define TRAFFIC_OK    0
 #define TRAFFIC_MILD  1
 #define TRAFFIC_BAD   2
 
 //////////////////////////////////////////////////////////////////////////////
-typedef struct 
+typedef struct
 {
-	PluginLine 		pluginLine;
-	RoadMapPosition positionFrom;
-	RoadMapPosition positionTo;
-	int iDirection;
-	int iFirstShape;
-	int iLastShape;
-	int iType;
-	int iSpeed;
-	int iTrafficInfoId;
+    PluginLine      pluginLine;
+    RoadMapPosition positionFrom;
+    RoadMapPosition positionTo;
+    int iDirection;
+    int iFirstShape;
+    int iLastShape;
+    int iType;
+    int iSpeed;
+    int iTrafficInfoId;
 } RTTrafficInfoLines;
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//	Segment
+//  Segment
 typedef struct
 {
-    int iNodeId;			// The Segments Node ID
-    RoadMapPosition Position; 
+    int iNodeId;            // The Segments Node ID
+    RoadMapPosition Position;
 } RTTrafficInfoNode;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//	Road Info
+//  Road Info
 typedef struct
 {
-    int iID; 			//	Alert ID (within the server)
-    double fSpeed; 	// Alowed speed to alert
-    int iType; 		//  Alert Type
-    char sStreet [RT_TRAFFIC_INFO_ADDRESS_MAXSIZE+1]; // The Street name	
-    char sCity		[RT_TRAFFIC_INFO_ADDRESS_MAXSIZE+1]; // The City name
-    char sStart	[RT_TRAFFIC_INFO_ADDRESS_MAXSIZE+1]; // The Start name
-    char sEnd 	[RT_TRAFFIC_INFO_ADDRESS_MAXSIZE+1]; // The End name
-	 int 	iNumNodes;	
-	 int   iDirection; 
-	 RTTrafficInfoNode sNodes[RT_TRAFFIC_INFO_MAX_NODES];
-	 char sDescription[RT_TRAFFIC_INFO_MAX_DESCRIPTION+1];
+    int iID;            //  Alert ID (within the server)
+    double fSpeed;  // Alowed speed to alert
+    int iType;      //  Alert Type
+    char sStreet [RT_TRAFFIC_INFO_ADDRESS_MAXSIZE+1]; // The Street name
+    char sCity      [RT_TRAFFIC_INFO_ADDRESS_MAXSIZE+1]; // The City name
+    char sStart [RT_TRAFFIC_INFO_ADDRESS_MAXSIZE+1]; // The Start name
+    char sEnd   [RT_TRAFFIC_INFO_ADDRESS_MAXSIZE+1]; // The End name
+     int    iNumNodes;
+     int   iDirection;
+     RTTrafficInfoNode sNodes[RT_TRAFFIC_INFO_MAX_NODES];
+     char sDescription[RT_TRAFFIC_INFO_MAX_DESCRIPTION+1];
 } RTTrafficInfo;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//	Realtime Traffic info table
+//  Realtime Traffic info table
 typedef struct
 {
     RTTrafficInfo *pTrafficInfo[RT_TRAFFIC_INFO_MAXIMUM_TRAFFIC_INFO_COUNT];
@@ -91,8 +91,8 @@ typedef struct
 } RTTrafficInfos;
 
 typedef struct{
-	RTTrafficInfoLines *pRTTrafficInfoLines[MAX_LINES];
-	int iCount;
+    RTTrafficInfoLines *pRTTrafficInfoLines[MAX_LINES];
+    int iCount;
 }RTTrafficLines;
 
 void    RTTrafficInfo_InitRecord(RTTrafficInfo *pTrafficInfo);

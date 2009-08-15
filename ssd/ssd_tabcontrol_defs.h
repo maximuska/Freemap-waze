@@ -20,7 +20,7 @@
 
 #ifndef __SSD_TABCONTROL_DEFS_H__
 #define __SSD_TABCONTROL_DEFS_H__
-  
+
 #define  MAX_TAB_COUNT                 ( 7)
 #define  TAB_TEXT_SIZE                 ( 6)
 #define  INVALID_TAB_INDEX             (-1)
@@ -51,7 +51,7 @@ typedef enum tag_tabsline_side
 {
    left,
    right
-   
+
 }  tabsline_side;
 
 // Tabs-line (GUI) info:
@@ -70,7 +70,7 @@ typedef struct tag_tab_info
    const char*       title;
    SsdWidget         tab;
    SsdDrawCallback   draw_cb;
-   
+
 }  tab_info, *tab_info_ptr;
 
 // Tab-control context:

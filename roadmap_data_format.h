@@ -24,26 +24,26 @@
 #ifndef _ROADMAP_DATA_FORMAT__H_
 #define _ROADMAP_DATA_FORMAT__H_
 
-#define ROADMAP_DATA_TYPE   		".wdf"
-#define ROADMAP_DATA_SIGNATURE	"WZDF"
+#define ROADMAP_DATA_TYPE           ".wdf"
+#define ROADMAP_DATA_SIGNATURE  "WZDF"
 
-#define ROADMAP_DATA_ENDIAN_CORRECT		0x00000001
-#define ROADMAP_DATA_ENDIAN_REVERSED	0x01000000
+#define ROADMAP_DATA_ENDIAN_CORRECT     0x00000001
+#define ROADMAP_DATA_ENDIAN_REVERSED    0x01000000
 
-#define ROADMAP_DATA_CURRENT_VERSION	0x00020000
+#define ROADMAP_DATA_CURRENT_VERSION    0x00020000
 
 typedef struct {
 
-	char				signature[4];
-	unsigned int	endianness;
-	unsigned int	version;
-	unsigned int	num_sections;
-	unsigned int	byte_alignment_bits;	
+    char                signature[4];
+    unsigned int    endianness;
+    unsigned int    version;
+    unsigned int    num_sections;
+    unsigned int    byte_alignment_bits;
 } roadmap_data_header;
 
 typedef struct {
 
-	unsigned int	end_offset;
+    unsigned int    end_offset;
 } roadmap_data_entry;
 #endif // _ROADMAP_DATA_FORMAT__H_
 

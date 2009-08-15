@@ -20,7 +20,7 @@
 
 #ifndef __SSD_TABCONTROL_H__
 #define __SSD_TABCONTROL_H__
-  
+
 #include "ssd/ssd_widget.h"
 #include "ssd/ssd_dialog.h"
 
@@ -29,7 +29,7 @@ typedef void* SsdTcCtx;
 typedef BOOL(*PFN_ON_TAB_LOOSE_FOCUS)  (  int         tab);
 typedef void(*PFN_ON_TAB_GAIN_FOCUS)   (  int         tab);
 typedef BOOL(*PFN_ON_KEY_PRESSED)      (  int         tab,
-                                          const char* utf8char, 
+                                          const char* utf8char,
                                           uint32_t    flags);
 
 SsdTcCtx    ssd_tabcontrol_new(  const char*             name,
@@ -43,7 +43,7 @@ SsdTcCtx    ssd_tabcontrol_new(  const char*             name,
                                  int                     tabs_count,
                                  int                     active_tab);
 
-void        ssd_tabcontrol_show           ( SsdTcCtx tabcontrol);                
+void        ssd_tabcontrol_show           ( SsdTcCtx tabcontrol);
 SsdWidget   ssd_tabcontrol_get_tab        ( SsdTcCtx tabcontrol, int tab);
 SsdWidget   ssd_tabcontrol_get_active_tab ( SsdTcCtx tabcontrol);
 void        ssd_tabcontrol_set_active_tab ( SsdTcCtx tabcontrol, int tab);

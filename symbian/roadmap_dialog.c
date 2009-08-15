@@ -83,16 +83,16 @@ struct roadmap_dialog_item {
 
    int widget_type;
 
-#if 0   
+#if 0
    NOPH_Form_t form;
    NOPH_FormCommandMgr_t cmd_mgr;
    NOPH_Item_t item;
 #else
    int form;
    int cmd_mgr;
-   int item;   
+   int item;
 #endif
-   
+
    short rank;
    short count;
    RoadMapDialogItem children;
@@ -182,10 +182,10 @@ static void roadmap_dialog_hide_window (RoadMapDialogItem dialog) {
    if (RoadMapDialogCurrent != dialog) {
       RoadMapDialogItem itr;
       for (itr = RoadMapDialogCurrent; itr && (itr->prev_dialog != dialog);
-      	   itr = itr->prev_dialog);
+           itr = itr->prev_dialog);
 
       if (!itr) return;
-      
+
       assert (itr);
       itr->prev_dialog = itr->prev_dialog->prev_dialog;
 
@@ -237,7 +237,7 @@ static void roadmap_dialog_edit_flow (void) {
       while (item->parent != NULL) {
          item = item->parent;
       }
-         
+
       if (RoadMapDialogCurrent == item) {
          (*callback) (item->name, item->context);
       }
@@ -269,7 +269,7 @@ static void roadmap_dialog_chosen (char *name, void *context) {
          while (item->parent != NULL) {
             item = item->parent;
          }
-         
+
          if (RoadMapDialogCurrent != item) {
             roadmap_log(ROADMAP_DEBUG, "****** callback(%s) not current (%s)! Ignoring!\n", item->name, RoadMapDialogCurrent->name);
             break;
@@ -296,7 +296,7 @@ static void roadmap_dialog_chosen (char *name, void *context) {
          while (item->parent != NULL) {
             item = item->parent;
          }
-         
+
          if (RoadMapDialogCurrent != item) {
             roadmap_log(ROADMAP_DEBUG, "****** callback(%s) not current (%s)! Ignoring!\n", item->name, RoadMapDialogCurrent->name);
             break;
@@ -412,7 +412,7 @@ void roadmap_dialog_hide (const char *name) {
 void roadmap_dialog_new_entry (const char *frame, const char *name,
                                RoadMapDialogCallback callback) {
 
-#if 0                               
+#if 0
    NOPH_TextField_t item = NOPH_TextField_new (name, "", 100, NOPH_TextField_ANY);
    RoadMapDialogItem child = roadmap_dialog_new_item (frame, name, (NOPH_Item_t)item);
    child->widget_type = ROADMAP_WIDGET_ENTRY;
@@ -420,7 +420,7 @@ void roadmap_dialog_new_entry (const char *frame, const char *name,
    child->callback = callback;
 
    NOPH_FormCommandMgr_addCallback(RoadMapDialogCurrent->cmd_mgr, (NOPH_Item_t)item, roadmap_dialog_chosen, "", child);
-#endif   
+#endif
 }
 
 
@@ -447,7 +447,7 @@ void roadmap_dialog_new_progress (const char *frame, const char *name) {
    child = roadmap_dialog_new_item (frame, name, (NOPH_Item_t)item);
    child->widget_type = ROADMAP_WIDGET_PROGRESS;
    child->value = "";
-#endif   
+#endif
 }
 
 
@@ -461,7 +461,7 @@ void roadmap_dialog_new_password (const char *frame, const char *name) {
    child->widget_type = ROADMAP_WIDGET_PASSWORD;
    child->value = "";
    NOPH_FormCommandMgr_addCallback(RoadMapDialogCurrent->cmd_mgr, (NOPH_Item_t)item, roadmap_dialog_chosen, "", child);
-#endif   
+#endif
 }
 
 
@@ -553,7 +553,7 @@ void roadmap_dialog_new_list (const char  *frame, const char  *name) {
 
    child->item = item;
    child->widget_type = ROADMAP_WIDGET_LIST;
-#endif   
+#endif
 }
 
 
@@ -563,7 +563,7 @@ void roadmap_dialog_show_list (const char  *frame,
                                char **labels,
                                void **values,
                                RoadMapDialogCallback callback) {
-#if 0                               
+#if 0
    int i;
    RoadMapDialogItem parent;
    RoadMapDialogItem child;
@@ -571,7 +571,7 @@ void roadmap_dialog_show_list (const char  *frame,
    char *empty_list[1] = {""};
 
    parent = roadmap_dialog_get (RoadMapDialogCurrent, frame);
-#if 0   
+#if 0
    if (parent->item == 0) {
       roadmap_log (ROADMAP_ERROR,
                    "list %s in dialog %s filled before built", name, frame);
@@ -608,26 +608,26 @@ void roadmap_dialog_show_list (const char  *frame,
       choice[i].value = values[i];
       choice[i].callback = callback;
    }
-   
+
    //qsort(choice, count, sizeof(*choice), listview_sort_cmp);
 
    for (i = 0; i < count; ++i) {
 
       NOPH_ChoiceGroup_append(child->item, choice[i].value, 0);
    }
-   
+
    child->choice = choice;
    child->num_choices = count;
    child->value  = choice[0].value;
 
    NOPH_FormCommandMgr_addCallback(RoadMapDialogCurrent->cmd_mgr, (NOPH_Item_t)child->item, roadmap_dialog_chosen, "", child);
-#endif   
+#endif
 }
 
 
 void roadmap_dialog_add_button (const char *label,
                                 RoadMapDialogCallback callback) {
-#if 0                                
+#if 0
    RoadMapDialogItem dialog = RoadMapDialogCurrent;
    RoadMapDialogItem child;
 
@@ -637,7 +637,7 @@ void roadmap_dialog_add_button (const char *label,
    child->widget_type = ROADMAP_WIDGET_BUTTON;
 
    NOPH_FormCommandMgr_addCommand (dialog->cmd_mgr, label, roadmap_dialog_chosen, "", child);
-#endif   
+#endif
 }
 
 
@@ -838,7 +838,7 @@ void  roadmap_dialog_set_data (const char *frame, const char *name,
             }
          }
       }
-      
+
       if ((i == this_item->num_choices) && this_item->data_is_string) {
 
          RoadMapDialogSelection *choice;

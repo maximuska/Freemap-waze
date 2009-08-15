@@ -29,11 +29,11 @@
 #include "editor/db/editor_db.h"
 #include "editor/db/editor_dictionary.h"
 
-#define ED_MARKER_DIRTY   				0x1
-#define ED_MARKER_UPLOAD  			 	0x2
-#define ED_MARKER_DELETED 			 	0x4
-#define ED_MARKER_MAX_ATTRS 		 	5
-#define ED_MARKER_MAX_STRING_SIZE 	100
+#define ED_MARKER_DIRTY                 0x1
+#define ED_MARKER_UPLOAD                0x2
+#define ED_MARKER_DELETED               0x4
+#define ED_MARKER_MAX_ATTRS             5
+#define ED_MARKER_MAX_STRING_SIZE   100
 
 typedef struct editor_marker_type {
    const char *name;
@@ -47,7 +47,7 @@ typedef struct editor_marker_type {
 } EditorMarkerType;
 
 typedef struct editor_db_marker_s {
-   int	         time;
+   int           time;
    int            longitude;
    int            latitude;
    EditorString   note;
@@ -66,7 +66,7 @@ int editor_marker_add (int longitude,
                        unsigned char flags,
                        const char *note,
                        const char *icon);
-   
+
 int  editor_marker_count (void);
 
 void editor_marker_position(int marker,

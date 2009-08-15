@@ -35,10 +35,10 @@ typedef enum tagEDialogExitCode {
 
    dec_ok,
    dec_cancel,
-   
+
    dec_yes,
    dec_no,
-   
+
    dec_commit,
    dec_abort,
    dec_retry,
@@ -52,9 +52,9 @@ typedef void(*PFN_ON_INPUT_DIALOG_CLOSED) (int exit_code, const char* input,
                                            void* context);
 typedef void(*PFN_ON_INPUT_CHANGED)       (const char* new_text, void* context);
 
-SsdWidget   ssd_dialog_new (  const char*          name, 
-                              const char*          title, 
-                              PFN_ON_DIALOG_CLOSED on_dialog_closed, 
+SsdWidget   ssd_dialog_new (  const char*          name,
+                              const char*          title,
+                              PFN_ON_DIALOG_CLOSED on_dialog_closed,
                               int                  flags);
 
 SsdWidget ssd_dialog_activate (const char *name, void *context);

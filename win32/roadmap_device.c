@@ -28,19 +28,19 @@
 #include "../roadmap_device.h"
 
 /***********************************************************/
-/*	Name 		: roadmap_device_initialize
-/*	Purpose 	: Loads the backlight parameter from the configuration
- * 					and updates the application. Returns the loaded value			 
+/*  Name        : roadmap_device_initialize
+/*  Purpose     : Loads the backlight parameter from the configuration
+ *                  and updates the application. Returns the loaded value
  */
 int roadmap_device_initialize( void )
 {
-	return 0;
+    return 0;
 }
 
 /***********************************************************/
-/*	Name 		: roadmap_device_set_backlight
-/*	Purpose 	: Sets the backlight of the display to be always on
- * 					if the parameter is zero the device system defaults are used			 
+/*  Name        : roadmap_device_set_backlight
+/*  Purpose     : Sets the backlight of the display to be always on
+ *                  if the parameter is zero the device system defaults are used
  */
 void roadmap_device_set_backlight( int alwaysOn )
 {

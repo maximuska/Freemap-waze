@@ -5,23 +5,23 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
-// Bessel function (besj) was adapted for use in AGG library by Andy Wilk 
+// Bessel function (besj) was adapted for use in AGG library by Andy Wilk
 // Contact: castor.vulgaris@gmail.com
 //----------------------------------------------------------------------------
 
@@ -43,17 +43,17 @@ namespace agg
     const double intersection_epsilon = 1.0e-30;
 
     //------------------------------------------------------------cross_product
-    AGG_INLINE double cross_product(double x1, double y1, 
-                                    double x2, double y2, 
+    AGG_INLINE double cross_product(double x1, double y1,
+                                    double x2, double y2,
                                     double x,  double y)
     {
         return (x - x2) * (y2 - y1) - (y - y2) * (x2 - x1);
     }
 
     //--------------------------------------------------------point_in_triangle
-    AGG_INLINE bool point_in_triangle(double x1, double y1, 
-                                      double x2, double y2, 
-                                      double x3, double y3, 
+    AGG_INLINE bool point_in_triangle(double x1, double y1,
+                                      double x2, double y2,
+                                      double x3, double y3,
                                       double x,  double y)
     {
         bool cp1 = cross_product(x1, y1, x2, y2, x, y) < 0.0;
@@ -79,8 +79,8 @@ namespace agg
     }
 
     //------------------------------------------------calc_line_point_distance
-    AGG_INLINE double calc_line_point_distance(double x1, double y1, 
-                                               double x2, double y2, 
+    AGG_INLINE double calc_line_point_distance(double x1, double y1,
+                                               double x2, double y2,
                                                double x,  double y)
     {
         double dx = x2-x1;
@@ -94,8 +94,8 @@ namespace agg
     }
 
     //-------------------------------------------------------calc_line_point_u
-    AGG_INLINE double calc_segment_point_u(double x1, double y1, 
-                                           double x2, double y2, 
+    AGG_INLINE double calc_segment_point_u(double x1, double y1,
+                                           double x2, double y2,
                                            double x,  double y)
     {
         double dx = x2 - x1;
@@ -103,7 +103,7 @@ namespace agg
 
         if(dx == 0 && dy == 0)
         {
-	        return 0;
+            return 0;
         }
 
         double pdx = x - x1;
@@ -113,29 +113,29 @@ namespace agg
     }
 
     //---------------------------------------------calc_line_point_sq_distance
-    AGG_INLINE double calc_segment_point_sq_distance(double x1, double y1, 
-                                                     double x2, double y2, 
+    AGG_INLINE double calc_segment_point_sq_distance(double x1, double y1,
+                                                     double x2, double y2,
                                                      double x,  double y,
                                                      double u)
     {
         if(u <= 0)
         {
-	        return calc_sq_distance(x, y, x1, y1);
+            return calc_sq_distance(x, y, x1, y1);
         }
-        else 
+        else
         if(u >= 1)
         {
-	        return calc_sq_distance(x, y, x2, y2);
+            return calc_sq_distance(x, y, x2, y2);
         }
         return calc_sq_distance(x, y, x1 + u * (x2 - x1), y1 + u * (y2 - y1));
     }
 
     //---------------------------------------------calc_line_point_sq_distance
-    AGG_INLINE double calc_segment_point_sq_distance(double x1, double y1, 
-                                                     double x2, double y2, 
+    AGG_INLINE double calc_segment_point_sq_distance(double x1, double y1,
+                                                     double x2, double y2,
                                                      double x,  double y)
     {
-        return 
+        return
             calc_segment_point_sq_distance(
                 x1, y1, x2, y2, x, y,
                 calc_segment_point_u(x1, y1, x2, y2, x, y));
@@ -159,18 +159,18 @@ namespace agg
     AGG_INLINE bool intersection_exists(double x1, double y1, double x2, double y2,
                                         double x3, double y3, double x4, double y4)
     {
-        // It's less expensive but you can't control the 
+        // It's less expensive but you can't control the
         // boundary conditions: Less or LessEqual
         double dx1 = x2 - x1;
         double dy1 = y2 - y1;
         double dx2 = x4 - x3;
         double dy2 = y4 - y3;
-        return ((x3 - x2) * dy1 - (y3 - y2) * dx1 < 0.0) != 
+        return ((x3 - x2) * dy1 - (y3 - y2) * dx1 < 0.0) !=
                ((x4 - x2) * dy1 - (y4 - y2) * dx1 < 0.0) &&
                ((x1 - x4) * dy2 - (y1 - y4) * dx2 < 0.0) !=
                ((x2 - x4) * dy2 - (y2 - y4) * dx2 < 0.0);
 
-        // It's is more expensive but more flexible 
+        // It's is more expensive but more flexible
         // in terms of boundary conditions.
         //--------------------
         //double den  = (x2-x1) * (y4-y3) - (y2-y1) * (x4-x3);
@@ -190,7 +190,7 @@ namespace agg
     {
         double dx = x2 - x1;
         double dy = y2 - y1;
-        double d = sqrt(dx*dx + dy*dy); 
+        double d = sqrt(dx*dx + dy*dy);
         *x =  thickness * dy / d;
         *y = -thickness * dx / d;
     }
@@ -203,15 +203,15 @@ namespace agg
                                     double d)
     {
         double dx1=0.0;
-        double dy1=0.0; 
+        double dy1=0.0;
         double dx2=0.0;
-        double dy2=0.0; 
+        double dy2=0.0;
         double dx3=0.0;
-        double dy3=0.0; 
+        double dy3=0.0;
         double loc = cross_product(x1, y1, x2, y2, x3, y3);
         if(fabs(loc) > intersection_epsilon)
         {
-            if(cross_product(x1, y1, x2, y2, x3, y3) > 0.0) 
+            if(cross_product(x1, y1, x2, y2, x3, y3) > 0.0)
             {
                 d = -d;
             }
@@ -270,8 +270,8 @@ namespace agg
     AGG_INLINE unsigned fast_sqrt(unsigned val)
     {
     #if defined(_M_IX86) && defined(_MSC_VER) && !defined(AGG_NO_ASM)
-        //For Ix86 family processors this assembler code is used. 
-        //The key command here is bsr - determination the number of the most 
+        //For Ix86 family processors this assembler code is used.
+        //The key command here is bsr - determination the number of the most
         //significant bit of the value. For other processors
         //(and maybe compilers) the pure C "#else" section is used.
         __asm
@@ -294,15 +294,15 @@ namespace agg
         }
     #else
 
-        //This code is actually pure C and portable to most 
-        //arcitectures including 64bit ones. 
+        //This code is actually pure C and portable to most
+        //arcitectures including 64bit ones.
         unsigned t = val;
         int bit=0;
         unsigned shift = 11;
 
         //The following piece of code is just an emulation of the
         //Ix86 assembler command "bsr" (see above). However on old
-        //Intels (like Intel MMX 233MHz) this code is about twice 
+        //Intels (like Intel MMX 233MHz) this code is about twice
         //faster (sic!) then just one "bsr". On PIII and PIV the
         //bsr is optimized quite well.
         bit = t >> 24;
@@ -379,7 +379,7 @@ namespace agg
         }
         double d = 1E-6;
         double b = 0;
-        if(fabs(x) <= d) 
+        if(fabs(x) <= d)
         {
             if(n != 0) return 0;
             return 1;
@@ -387,29 +387,29 @@ namespace agg
         double b1 = 0; // b1 is the value from the previous iteration
         // Set up a starting order for recurrence
         int m1 = (int)fabs(x) + 6;
-        if(fabs(x) > 5) 
+        if(fabs(x) > 5)
         {
             m1 = (int)(fabs(1.4 * x + 60 / x));
         }
         int m2 = (int)(n + 2 + fabs(x) / 4);
-        if (m1 > m2) 
+        if (m1 > m2)
         {
             m2 = m1;
         }
-    
+
         // Apply recurrence down from curent max order
-        for(;;) 
+        for(;;)
         {
             double c3 = 0;
             double c2 = 1E-30;
             double c4 = 0;
             int m8 = 1;
-            if (m2 / 2 * 2 == m2) 
+            if (m2 / 2 * 2 == m2)
             {
                 m8 = -1;
             }
             int imax = m2 - 2;
-            for (int i = 1; i <= imax; i++) 
+            for (int i = 1; i <= imax; i++)
             {
                 double c6 = 2 * (m2 - i) * c2 / x - c3;
                 c3 = c2;

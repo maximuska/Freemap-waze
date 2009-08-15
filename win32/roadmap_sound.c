@@ -140,7 +140,7 @@ DWORD WINAPI SoundThread (LPVOID lpParam) {
       }
 
    }
-   
+
    return 0;
 }
 
@@ -297,9 +297,9 @@ int roadmap_sound_play_list (const RoadMapSoundList list) {
       int next = (current_list + 1) % MAX_LISTS;
 
       if (sound_lists[next] != NULL) {
-		  if (!(sound_lists[next]->flags & SOUND_LIST_NO_FREE)) {
-			  roadmap_sound_list_free (sound_lists[next]);
-		  }
+          if (!(sound_lists[next]->flags & SOUND_LIST_NO_FREE)) {
+              roadmap_sound_list_free (sound_lists[next]);
+          }
       }
 
       sound_lists[next] = list;
@@ -313,11 +313,11 @@ int roadmap_sound_play_list (const RoadMapSoundList list) {
 
 void roadmap_sound_initialize (void) {
 
-	// Initialize the volume labels for GUI
-	SND_VOLUME_LVLS_LABELS[0] = roadmap_lang_get( "Silent" );
-	SND_VOLUME_LVLS_LABELS[1] = roadmap_lang_get( "Low" );
-	SND_VOLUME_LVLS_LABELS[2] = roadmap_lang_get( "Medium" );
-	SND_VOLUME_LVLS_LABELS[3] = roadmap_lang_get( "High" );
+    // Initialize the volume labels for GUI
+    SND_VOLUME_LVLS_LABELS[0] = roadmap_lang_get( "Silent" );
+    SND_VOLUME_LVLS_LABELS[1] = roadmap_lang_get( "Low" );
+    SND_VOLUME_LVLS_LABELS[2] = roadmap_lang_get( "Medium" );
+    SND_VOLUME_LVLS_LABELS[3] = roadmap_lang_get( "High" );
 
    SoundEvent    = CreateEvent (NULL, FALSE, FALSE, NULL);
    SoundRecEvent = CreateEvent (NULL, FALSE, FALSE, NULL);
@@ -344,7 +344,7 @@ void roadmap_sound_shutdown (void) {
    sound_shutting_down = 1;
    CloseHandle (SoundEvent);
    if (SoundRecEvent) CloseHandle (SoundRecEvent);
- 
+
    /* Wait for sound thread shutdown */
    SetEvent(SoundEvent);
    WaitForSingleObject(sound_thread, 2000);
@@ -362,7 +362,7 @@ void roadmap_sound_shutdown (void) {
 
 /* Recording */
 static int allocate_rec_buffer(int seconds) {
-   
+
    int length = PCMfmt.nSamplesPerSec*PCMfmt.nChannels*
                 PCMfmt.wBitsPerSample*seconds/8;
 
@@ -427,14 +427,14 @@ int roadmap_sound_record (const char *file_name, int seconds) {
    if (sound_rec_thread == NULL) {
       sound_rec_thread = CreateThread(NULL, 0, SoundRecThread, NULL, 0, NULL);
    }
-   
+
    if (RoadMapSoundRecName != NULL) {
       free(RoadMapSoundRecName);
    }
    RoadMapSoundRecName = strdup(file_name);
 
    res = waveInOpen(&hWaveIn, (UINT) WAVE_MAPPER, &PCMfmt,
-         (DWORD) SoundRecEvent, (DWORD) 0, CALLBACK_EVENT);   
+         (DWORD) SoundRecEvent, (DWORD) 0, CALLBACK_EVENT);
 
    res = allocate_rec_buffer (seconds);
 
@@ -450,10 +450,10 @@ int roadmap_sound_record (const char *file_name, int seconds) {
 }
 
 /***********************************************************/
-/*	Name 		: roadmap_sound_set_volume
-/*	Purpose 	: Sets the user volume setting to the native sound object 
- * 					with configuration update			 
+/*  Name        : roadmap_sound_set_volume
+/*  Purpose     : Sets the user volume setting to the native sound object
+ *                  with configuration update
  */
-void roadmap_sound_set_volume ( int volLvl ) 
+void roadmap_sound_set_volume ( int volLvl )
 {
 }

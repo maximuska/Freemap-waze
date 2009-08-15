@@ -62,14 +62,14 @@ static int  clipper     (
                         dglSPClipOutput_s * pOut ,
                         void *          pvarg       /* caller's pointer */
                         )
-{       
+{
    NavigateClip *info = (NavigateClip *)pvarg;
    int to_line = dglEdgeGet_Id(pgraph, pIn->pnEdge);
    int from_line;
    int new_cost;
 
    if (pIn->pnPrevEdge != NULL) {
-      
+
       from_line = dglEdgeGet_Id(pgraph, pIn->pnPrevEdge);
    } else {
       from_line = roadmap_plugin_get_line_id (&info->from_line);
@@ -78,7 +78,7 @@ static int  clipper     (
 
    /* no U turns */
    if (from_line == -to_line) return 1;
-   
+
    new_cost = navigate_traffic_get_cross_time (abs(to_line), (to_line < 0));
    if (new_cost) pOut->nEdgeCost = new_cost;
 
@@ -101,16 +101,16 @@ static int  clipper     (
 
 
 int navigate_reload_data (void) {
-   
+
    if (fips_data_loaded == 0) return 0;
-      
+
    fips_data_loaded = 0;
    dglRelease (& graph);
 
    return navigate_load_data ();
 }
 
-   
+
 int navigate_load_data (void) {
    FILE *fd;
    int nret;
@@ -131,7 +131,7 @@ int navigate_load_data (void) {
 
    do {
       snprintf (path, sizeof(path), "%s/usc%05d.dgl", sequence, fips);
-      
+
       fd = fopen( path, "rb" );
       if ( fd != NULL ) break;
 
@@ -139,7 +139,7 @@ int navigate_load_data (void) {
 
    } while (sequence != NULL);
 
-   if ( fd == NULL ) {  
+   if ( fd == NULL ) {
       roadmap_main_set_cursor (ROADMAP_CURSOR_NORMAL);
       roadmap_messagebox ("Error", "Can't find route data.");
       return -1;
@@ -155,7 +155,7 @@ int navigate_load_data (void) {
       roadmap_messagebox ("Error", "Can't load route data.");
       return -1;
    }
-   
+
    map_unix_time = atoi
                      (roadmap_metadata_get_attribute ("Version", "UnixTime"));
 
@@ -178,7 +178,7 @@ int navigate_get_route_segments (PluginLine *from_line,
                                  NavigateSegment *segments,
                                  int *size,
                                  int *result) {
-   
+
    int i;
    int nret;
    int total_cost;
@@ -220,7 +220,7 @@ int navigate_get_route_segments (PluginLine *from_line,
    }
 
    if (pReport->cArc > *size) return -1;
-   
+
    total_cost = pReport->nDistance;
    *size = pReport->cArc;
 
@@ -230,7 +230,7 @@ int navigate_get_route_segments (PluginLine *from_line,
 
       int tmp_from;
       int tmp_to;
-      
+
       /* FIXME no plugin support */
       roadmap_line_points (from_line->line_id, &tmp_from, &tmp_to);
 
@@ -282,9 +282,9 @@ int navigate_get_route_segments (PluginLine *from_line,
       int to_point;
       segments[i].line = *to_line;
       roadmap_line_points (to_line->line_id, &from_point, &to_point);
-      
+
       if (from_point == dglNodeGet_Id(&graph, &pReport->nDestinationNode)) {
-         
+
          segments[i].line_direction = ROUTE_DIRECTION_WITH_LINE;
       } else {
 

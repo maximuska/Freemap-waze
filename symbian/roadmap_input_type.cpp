@@ -35,33 +35,33 @@ extern "C"{
 
 void roadmap_input_type_set_mode( roadmap_input_type mode )
 {
-	TUint newCapabilities;
-	CFreeMapAppUi* pAppUi;
-	switch( mode )
-	{
-		case inputtype_alphabetic : 
-		case inputtype_alpha_spaces :
-		{
-			newCapabilities = TCoeInputCapabilities::EWesternAlphabetic;
-			break;
-		}
-		case inputtype_numeric :
-		{
-			newCapabilities = TCoeInputCapabilities::EWesternNumericIntegerPositive;
-			break;
-		}
-		case inputtype_alphanumeric :
-		case inputtype_none :
-		default:
-		{
-			newCapabilities = TCoeInputCapabilities::ENone;
-			break;
-		}
-	} // switch
-	// Update the UI object
-	pAppUi = static_cast<CFreeMapAppUi*>( CEikonEnv::Static()->EikAppUi() );
-	pAppUi->SetInputCapabilities( newCapabilities );
-	
-	// Log the operation
-	roadmap_log( ROADMAP_DEBUG, "roadmap_text_set_input_mode() - Current capabilities : %d", newCapabilities );
+    TUint newCapabilities;
+    CFreeMapAppUi* pAppUi;
+    switch( mode )
+    {
+        case inputtype_alphabetic :
+        case inputtype_alpha_spaces :
+        {
+            newCapabilities = TCoeInputCapabilities::EWesternAlphabetic;
+            break;
+        }
+        case inputtype_numeric :
+        {
+            newCapabilities = TCoeInputCapabilities::EWesternNumericIntegerPositive;
+            break;
+        }
+        case inputtype_alphanumeric :
+        case inputtype_none :
+        default:
+        {
+            newCapabilities = TCoeInputCapabilities::ENone;
+            break;
+        }
+    } // switch
+    // Update the UI object
+    pAppUi = static_cast<CFreeMapAppUi*>( CEikonEnv::Static()->EikAppUi() );
+    pAppUi->SetInputCapabilities( newCapabilities );
+
+    // Log the operation
+    roadmap_log( ROADMAP_DEBUG, "roadmap_text_set_input_mode() - Current capabilities : %d", newCapabilities );
 }

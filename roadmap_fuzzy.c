@@ -88,7 +88,7 @@ RoadMapFuzzy roadmap_fuzzy_direction
     int delta = (direction - reference);
 
     if (symetric) {
-       
+
        delta = delta % 180;
 
        /* The membership function is symetrical around the zero point,
@@ -152,8 +152,8 @@ RoadMapFuzzy roadmap_fuzzy_connected
     if (roadmap_plugin_same_db_line (&street->line, &reference->line))
        return (FUZZY_TRUTH_MAX * 3) / 4;
 
-	 roadmap_street_extend_line_ends (&street->line,&(line_point[0]), &(line_point[1]), FLAG_EXTEND_BOTH, NULL, NULL); 
-	 roadmap_street_extend_line_ends (&reference->line,&(reference_point[0]), &(reference_point[1]), FLAG_EXTEND_BOTH, NULL, NULL); 
+     roadmap_street_extend_line_ends (&street->line,&(line_point[0]), &(line_point[1]), FLAG_EXTEND_BOTH, NULL, NULL);
+     roadmap_street_extend_line_ends (&reference->line,&(reference_point[0]), &(reference_point[1]), FLAG_EXTEND_BOTH, NULL, NULL);
 
     if (direction == ROUTE_DIRECTION_AGAINST_LINE) {
        i = 1;

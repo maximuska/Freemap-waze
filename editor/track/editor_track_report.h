@@ -47,32 +47,32 @@ typedef struct tagNodeInTime
 {
    int      node;
    time_t   GPS_time;
-   
+
 }  NodeInTime, *LPNodeInTime;
 
 // path information
 typedef struct
 {
-	int					max_nodes;
-	int					num_nodes;
-	LPNodeInTime		nodes;
-	int					max_points;
-	int					num_points;
-	LPGPSPointInTime	points;
-	int					max_toggles;
-	int					num_update_toggles;
-	time_t				*update_toggle_times;
-	int					first_update_toggle_state;
-}	RTPathInfo;
+    int                 max_nodes;
+    int                 num_nodes;
+    LPNodeInTime        nodes;
+    int                 max_points;
+    int                 num_points;
+    LPGPSPointInTime    points;
+    int                 max_toggles;
+    int                 num_update_toggles;
+    time_t              *update_toggle_times;
+    int                 first_update_toggle_state;
+}   RTPathInfo;
 
 
 void editor_track_report_init (void);
 RTPathInfo *editor_track_report_begin_export (int offline);
 void editor_track_report_conclude_export (int success);
-int editor_track_report_get_current_position (RoadMapGpsPosition*  GPS_position, 
-                               			 		 int*                 from_node,
-                               			 		 int*                 to_node,
-                               			 		 int*                 direction);
+int editor_track_report_get_current_position (RoadMapGpsPosition*  GPS_position,
+                                                 int*                 from_node,
+                                                 int*                 to_node,
+                                                 int*                 direction);
 
 #endif // INCLUDE__EDITOR_TRACK_REPORT__H
 

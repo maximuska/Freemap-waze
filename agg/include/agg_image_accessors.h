@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -41,8 +41,8 @@ namespace agg
         enum pix_width_e { pix_width = pixfmt_type::pix_width };
 
         image_accessor_clip() {}
-        explicit image_accessor_clip(const pixfmt_type& pixf, 
-                                     const color_type& bk) : 
+        explicit image_accessor_clip(const pixfmt_type& pixf,
+                                     const color_type& bk) :
             m_pixf(&pixf)
         {
             pixfmt_type::make_pix(m_bk_buf, bk);
@@ -94,7 +94,7 @@ namespace agg
         {
             ++m_y;
             m_x = m_x0;
-            if(m_pix_ptr && 
+            if(m_pix_ptr &&
                m_y >= 0 && m_y < (int)m_pixf->height())
             {
                 return m_pix_ptr = m_pixf->pix_ptr(m_x, m_y);
@@ -124,8 +124,8 @@ namespace agg
         enum pix_width_e { pix_width = pixfmt_type::pix_width };
 
         image_accessor_no_clip() {}
-        explicit image_accessor_no_clip(const pixfmt_type& pixf) : 
-            m_pixf(&pixf) 
+        explicit image_accessor_no_clip(const pixfmt_type& pixf) :
+            m_pixf(&pixf)
         {}
 
         void attach(const pixfmt_type& pixf)
@@ -171,8 +171,8 @@ namespace agg
         enum pix_width_e { pix_width = pixfmt_type::pix_width };
 
         image_accessor_clone() {}
-        explicit image_accessor_clone(const pixfmt_type& pixf) : 
-            m_pixf(&pixf) 
+        explicit image_accessor_clone(const pixfmt_type& pixf) :
+            m_pixf(&pixf)
         {}
 
         void attach(const pixfmt_type& pixf)
@@ -217,7 +217,7 @@ namespace agg
         {
             ++m_y;
             m_x = m_x0;
-            if(m_pix_ptr && 
+            if(m_pix_ptr &&
                m_y >= 0 && m_y < (int)m_pixf->height())
             {
                 return m_pix_ptr = m_pixf->pix_ptr(m_x, m_y);
@@ -247,9 +247,9 @@ namespace agg
         enum pix_width_e { pix_width = pixfmt_type::pix_width };
 
         image_accessor_wrap() {}
-        explicit image_accessor_wrap(const pixfmt_type& pixf) : 
-            m_pixf(&pixf), 
-            m_wrap_x(pixf.width()), 
+        explicit image_accessor_wrap(const pixfmt_type& pixf) :
+            m_pixf(&pixf),
+            m_wrap_x(pixf.width()),
             m_wrap_y(pixf.height())
         {}
 
@@ -293,15 +293,15 @@ namespace agg
     {
     public:
         wrap_mode_repeat() {}
-        wrap_mode_repeat(unsigned size) : 
-            m_size(size), 
+        wrap_mode_repeat(unsigned size) :
+            m_size(size),
             m_add(size * (0x3FFFFFFF / size)),
             m_value(0)
         {}
 
         AGG_INLINE unsigned operator() (int v)
-        { 
-            return m_value = (unsigned(v) + m_add) % m_size; 
+        {
+            return m_value = (unsigned(v) + m_add) % m_size;
         }
 
         AGG_INLINE unsigned operator++ ()
@@ -329,7 +329,7 @@ namespace agg
             m_mask >>= 1;
         }
         AGG_INLINE unsigned operator() (int v)
-        { 
+        {
             return m_value = unsigned(v) & m_mask;
         }
         AGG_INLINE unsigned operator++ ()
@@ -356,8 +356,8 @@ namespace agg
             m_value(0)
         {}
 
-        AGG_INLINE unsigned operator() (int v) 
-        { 
+        AGG_INLINE unsigned operator() (int v)
+        {
             if(m_mask) return m_value = unsigned(v) & m_mask;
             return m_value = (unsigned(v) + m_add) % m_size;
         }
@@ -381,15 +381,15 @@ namespace agg
     {
     public:
         wrap_mode_reflect() {}
-        wrap_mode_reflect(unsigned size) : 
-            m_size(size), 
+        wrap_mode_reflect(unsigned size) :
+            m_size(size),
             m_size2(size * 2),
             m_add(m_size2 * (0x3FFFFFFF / m_size2)),
             m_value(0)
         {}
 
         AGG_INLINE unsigned operator() (int v)
-        { 
+        {
             m_value = (unsigned(v) + m_add) % m_size2;
             if(m_value >= m_size) return m_size2 - m_value - 1;
             return m_value;
@@ -420,14 +420,14 @@ namespace agg
         {
             m_mask = 1;
             m_size = 1;
-            while(m_mask < size) 
+            while(m_mask < size)
             {
                 m_mask = (m_mask << 1) | 1;
                 m_size <<= 1;
             }
         }
         AGG_INLINE unsigned operator() (int v)
-        { 
+        {
             m_value = unsigned(v) & m_mask;
             if(m_value >= m_size) return m_mask - m_value;
             return m_value;
@@ -460,12 +460,12 @@ namespace agg
             m_value(0)
         {}
 
-        AGG_INLINE unsigned operator() (int v) 
-        { 
-            m_value = m_mask ? unsigned(v) & m_mask : 
+        AGG_INLINE unsigned operator() (int v)
+        {
+            m_value = m_mask ? unsigned(v) & m_mask :
                               (unsigned(v) + m_add) % m_size2;
             if(m_value >= m_size) return m_size2 - m_value - 1;
-            return m_value;            
+            return m_value;
         }
         AGG_INLINE unsigned operator++ ()
         {

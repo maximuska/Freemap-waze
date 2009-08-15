@@ -617,7 +617,7 @@ FT_BEGIN_HEADER
   *             you want to access the whole font file.  Otherwise, you can
   *             use one of the definitions found in the @FT_TRUETYPE_TAGS_H
   *             file, or forge a new one with @FT_MAKE_TAG.
-  *              
+  *
   *   offset :: The starting offset in the table (or file if tag == 0).
   *
   * <Output>

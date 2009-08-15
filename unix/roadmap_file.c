@@ -176,21 +176,21 @@ const char *roadmap_file_unique (const char *base) {
     static int   UniqueNameBufferLength = 0;
 
     int length;
-    
+
     length = strlen(base + 16);
-    
+
     if (length > UniqueNameBufferLength) {
 
         if (UniqueNameBuffer != NULL) {
             free(UniqueNameBuffer);
         }
         UniqueNameBuffer = malloc (length);
-        
+
         roadmap_check_allocated(UniqueNameBuffer);
-        
+
         UniqueNameBufferLength = length;
     }
-    
+
     sprintf (UniqueNameBuffer,
              "%s%d_%d", base, getpid(), UniqueNameCounter);
 
@@ -391,26 +391,26 @@ int roadmap_file_write (RoadMapFile file, const void *data, int length) {
 
 int roadmap_file_seek (RoadMapFile file, int offset, RoadMapSeekWhence whence) {
 
-	int unix_whence;
-	
-	switch (whence) {
-		case ROADMAP_SEEK_START:
-			unix_whence = SEEK_SET;
-			break;
-		case ROADMAP_SEEK_CURR:
-			unix_whence = SEEK_CUR;
-			break;
-		case ROADMAP_SEEK_END:
-			unix_whence = SEEK_END;
-			break;
-		default:
-	      roadmap_log (ROADMAP_ERROR,
-	                   "invalid file seek whence %d", (int)whence);
-	      return -1;
-	}
-	
-	return lseek ((int)file, offset, unix_whence);
-} 
+    int unix_whence;
+
+    switch (whence) {
+        case ROADMAP_SEEK_START:
+            unix_whence = SEEK_SET;
+            break;
+        case ROADMAP_SEEK_CURR:
+            unix_whence = SEEK_CUR;
+            break;
+        case ROADMAP_SEEK_END:
+            unix_whence = SEEK_END;
+            break;
+        default:
+          roadmap_log (ROADMAP_ERROR,
+                       "invalid file seek whence %d", (int)whence);
+          return -1;
+    }
+
+    return lseek ((int)file, offset, unix_whence);
+}
 
 void  roadmap_file_close (RoadMapFile file) {
    close ((int)file);

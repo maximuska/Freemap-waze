@@ -25,7 +25,7 @@
 #ifndef INCLUDE__EDITOR_MAIN__H
 #define INCLUDE__EDITOR_MAIN__H
 
-#define EDITOR_ALLOW_LINE_DELETION	0
+#define EDITOR_ALLOW_LINE_DELETION  0
 
 extern int EditorPluginID;
 

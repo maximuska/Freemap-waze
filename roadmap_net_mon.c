@@ -61,7 +61,7 @@ static void periodic_callack (void) {
 
 static void update_activity (void) {
    if (!LastActivityTime) roadmap_main_set_periodic (1000, periodic_callack);
-   LastActivityTime = time(NULL); //mk:  potential race condition. checkme later   
+   LastActivityTime = time(NULL); //mk:  potential race condition. checkme later
    roadmap_start_redraw ();
 }
 
@@ -168,7 +168,7 @@ size_t roadmap_net_mon_get_count (void) {
    return RecvBytesCount + SendBytesCount;
 }
 
-/* Called when user chose not to connect 
+/* Called when user chose not to connect
  */
 void roadmap_net_mon_offline (void) {
    CurrentState = NET_MON_OFFLINE;

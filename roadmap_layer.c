@@ -82,11 +82,11 @@ static char *RoadMapDefaultCategoryTable[] = {
 static struct roadmap_canvas_category {
 
     const char *name;
-    
+
     int class_index;
     int visible;
     int pen_count;
-    
+
     RoadMapConfigDescriptor declutter;
     RoadMapConfigDescriptor thickness;
 
@@ -126,7 +126,7 @@ static RoadMapClass *RoadMapRoadClass = &(RoadMapClasses[1]);
 
 
 static void roadmap_layer_reload (void) {
-    
+
     int i;
     int j;
     int k;
@@ -238,7 +238,7 @@ int roadmap_layer_max_pen(void) {
 }
 
 int roadmap_layer_is_visible (int layer, int area) {
-    
+
     struct roadmap_canvas_category *category = RoadMapCategory + layer;
 
     if (! category->visible) {
@@ -250,30 +250,30 @@ int roadmap_layer_is_visible (int layer, int area) {
 
 
 int roadmap_layer_all_roads (int *layers, int size) {
-    
+
     int i;
     int count = -1;
-    
+
     --size; /* To match our boundary check. */
-    
+
     for (i = RoadMapRoadClass->count - 1; i >= 0; --i) {
 
         int category = RoadMapRoadClass->category[i];
         if (count >= size) break;
         layers[++count] = category;
     }
-    
+
     return count + 1;
 }
 
 
 int roadmap_layer_visible_roads (int *layers, int size) {
-    
+
     int i;
     int count = -1;
-    
+
     --size; /* To match our boundary check. */
-    
+
     for (i = RoadMapRoadClass->count - 1; i >= 0; --i) {
 
         int category = RoadMapRoadClass->category[i];
@@ -283,7 +283,7 @@ int roadmap_layer_visible_roads (int *layers, int size) {
             layers[++count] = category;
         }
     }
-    
+
     return count + 1;
 }
 
@@ -293,9 +293,9 @@ int roadmap_layer_visible_lines (int *layers, int size, int pen_type) {
     int i;
     int j;
     int count = -1;
-    
+
     --size; /* To match our boundary check. */
-    
+
     for (i = 0; RoadMapLineClass[i].name != NULL; ++i) {
 
         RoadMapClass *this_class = RoadMapLineClass + i;
@@ -313,7 +313,7 @@ int roadmap_layer_visible_lines (int *layers, int size, int pen_type) {
             }
         }
     }
-    
+
 done:
     return count + 1;
 }
@@ -322,7 +322,7 @@ done:
 RoadMapPen roadmap_layer_get_pen (int layer, int pen_type, int area) {
 
    if (!roadmap_layer_is_visible (layer, area)) return NULL;
-   
+
    if (pen_type == -1) {
 
       int i;
@@ -332,17 +332,17 @@ RoadMapPen roadmap_layer_get_pen (int layer, int pen_type, int area) {
             return RoadMapCategory[layer].pen[area][i];
       }
 
-      return NULL;   
+      return NULL;
    }
 
    if (!RoadMapCategory[layer].in_use[area][pen_type]) return NULL;
-   
+
    return RoadMapCategory[layer].pen[area][pen_type];
 }
 
 
 void roadmap_layer_adjust (void) {
-    
+
    int i;
    int j;
    int k;
@@ -438,7 +438,7 @@ void roadmap_layer_adjust (void) {
 
 
 void roadmap_layer_initialize (void) {
-    
+
     int i;
     int j;
     int k;
@@ -446,7 +446,7 @@ void roadmap_layer_initialize (void) {
 
 
     if (RoadMapCategory != NULL) return;
-    
+
 
     RoadMapCategoryCount =
        sizeof(RoadMapDefaultCategoryTable) / sizeof(char *);
@@ -596,7 +596,7 @@ void roadmap_layer_initialize (void) {
 void roadmap_layer_get_categories_names (char **names[], int *count) {
 
    *names = RoadMapDefaultCategoryTable;
-   *count = 
+   *count =
        sizeof(RoadMapDefaultCategoryTable) / sizeof(char *);
 }
 

@@ -1,8 +1,8 @@
-/*	$NetBSD: zopen.c,v 1.8 2003/08/07 11:13:29 agc Exp $	*/
+/*  $NetBSD: zopen.c,v 1.8 2003/08/07 11:13:29 agc Exp $    */
 
 /*-
  * Copyright (c) 1985, 1986, 1992, 1993
- *	The Regents of the University of California.  All rights reserved.
+ *  The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Diomidis Spinellis and James A. Woods, derived from original
@@ -36,7 +36,7 @@
 /*-
  *
  * Copyright (c) 2004
- *	Albert Chin-A-Young.
+ *  Albert Chin-A-Young.
  *
  * Modified to work with FreeType's PCF driver.
  *
@@ -44,7 +44,7 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 #if 0
-static char sccsid[] = "@(#)zopen.c	8.1 (Berkeley) 6/27/93";
+static char sccsid[] = "@(#)zopen.c 8.1 (Berkeley) 6/27/93";
 #else
 static char rcsid[] = "$NetBSD: zopen.c,v 1.8 2003/08/07 11:13:29 agc Exp $";
 #endif
@@ -52,8 +52,8 @@ static char rcsid[] = "$NetBSD: zopen.c,v 1.8 2003/08/07 11:13:29 agc Exp $";
 
 #include <stdio.h>
 
-#define	BITS		16		/* Default bits. */
-#define	HSIZE		69001		/* 95% occupancy */
+#define BITS        16      /* Default bits. */
+#define HSIZE       69001       /* 95% occupancy */
 
 /* A code_int must be able to hold 2**BITS values of type int, and also -1. */
 typedef long code_int;
@@ -62,48 +62,48 @@ typedef long count_int;
 typedef unsigned char char_type;
 
 typedef enum {
-	S_START, S_MIDDLE, S_EOF
+    S_START, S_MIDDLE, S_EOF
 } zs_enum;
 
 typedef struct {
-	unsigned char *next_in;
-	unsigned int avail_in;
-	unsigned long total_in;
+    unsigned char *next_in;
+    unsigned int avail_in;
+    unsigned long total_in;
 
-	unsigned char *next_out;
-	unsigned int avail_out;
-	unsigned long total_out;
+    unsigned char *next_out;
+    unsigned int avail_out;
+    unsigned long total_out;
 
-	zs_enum zs_state;		/* State of computation */
-	int zs_n_bits;			/* Number of bits/code. */
-	int zs_maxbits;			/* User settable max # bits/code. */
-	code_int zs_maxcode;		/* Maximum code, given n_bits. */
-	code_int zs_maxmaxcode;		/* Should NEVER generate this code. */
-	count_int zs_htab [HSIZE];
-	unsigned short zs_codetab [HSIZE];
-	code_int zs_hsize;		/* For dynamic table sizing. */
-	code_int zs_free_ent;		/* First unused entry. */
-	/*
-	 * Block compression parameters -- after all codes are used up,
-	 * and compression rate changes, start over.
-	 */
-	int zs_block_compress;
-	int zs_clear_flg;
-	int zs_offset;
-	long zs_in_count;		/* Remaining uncompressed bytes. */
-	char_type zs_buf_len;
-	char_type zs_buf[BITS];		/* Temporary buffer if we need
-					   to read more to accumulate
-					   n_bits. */
-	union {
-		struct {
-			char_type *zs_stackp;
-			int zs_finchar;
-			code_int zs_code, zs_oldcode, zs_incode;
-			int zs_roffset, zs_size;
-			char_type zs_gbuf[BITS];
-		} r;			/* Read parameters */
-	} u;
+    zs_enum zs_state;       /* State of computation */
+    int zs_n_bits;          /* Number of bits/code. */
+    int zs_maxbits;         /* User settable max # bits/code. */
+    code_int zs_maxcode;        /* Maximum code, given n_bits. */
+    code_int zs_maxmaxcode;     /* Should NEVER generate this code. */
+    count_int zs_htab [HSIZE];
+    unsigned short zs_codetab [HSIZE];
+    code_int zs_hsize;      /* For dynamic table sizing. */
+    code_int zs_free_ent;       /* First unused entry. */
+    /*
+     * Block compression parameters -- after all codes are used up,
+     * and compression rate changes, start over.
+     */
+    int zs_block_compress;
+    int zs_clear_flg;
+    int zs_offset;
+    long zs_in_count;       /* Remaining uncompressed bytes. */
+    char_type zs_buf_len;
+    char_type zs_buf[BITS];     /* Temporary buffer if we need
+                       to read more to accumulate
+                       n_bits. */
+    union {
+        struct {
+            char_type *zs_stackp;
+            int zs_finchar;
+            code_int zs_code, zs_oldcode, zs_incode;
+            int zs_roffset, zs_size;
+            char_type zs_gbuf[BITS];
+        } r;            /* Read parameters */
+    } u;
 } s_zstate_t;
 
 static code_int getcode(s_zstate_t *);

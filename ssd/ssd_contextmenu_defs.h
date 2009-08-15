@@ -48,17 +48,17 @@ typedef struct tag_RoadMapAction
 // Forward declaration
 //    Popup-menu descriptor
 struct tag_ssd_cm_popup_info;
-typedef struct tag_ssd_cm_popup_info* ssd_cm_popup_info_ptr;   
+typedef struct tag_ssd_cm_popup_info* ssd_cm_popup_info_ptr;
 
 // ITEM:
 typedef struct tag_ssd_cm_item
 {
    const char*          label;
-   const char* 			icon;
+   const char*          icon;
    unsigned char        flags;   // CONTEXT_MENU_FLAG_...
    SsdWidget            row;     // Internal use
    const RoadMapAction* action;
-   
+
    union
    {
       int                     id;
@@ -76,19 +76,19 @@ typedef struct tag_ssd_contextmenu
    ssd_cm_item_ptr   item;             // Array of items
    int               item_count;
    int               item_selected;    // Internal use
-   
+
 }     ssd_contextmenu, *ssd_contextmenu_ptr;
-ssd_contextmenu_ptr  
+ssd_contextmenu_ptr
       ssd_contextmenu_clone(     ssd_contextmenu_ptr  _this,
                                  BOOL                 alloc_labels);
-void  ssd_contextmenu_delete(    ssd_contextmenu_ptr  _this, 
+void  ssd_contextmenu_delete(    ssd_contextmenu_ptr  _this,
                                  BOOL                 delete_labels);
-void  ssd_contextmenu_show_item( ssd_contextmenu_ptr  _this, 
+void  ssd_contextmenu_show_item( ssd_contextmenu_ptr  _this,
                                  int                  item_id,
                                  BOOL                 show,       // Or hide
                                  BOOL                 recursive); // Into nested popups
-void  ssd_contextmenu_show_item__by_action_name( 
-                                 ssd_contextmenu_ptr  _this, 
+void  ssd_contextmenu_show_item__by_action_name(
+                                 ssd_contextmenu_ptr  _this,
                                  const char*          name,       // NOTE: this is not the label, it is the name from the x.menu file
                                  BOOL                 show,       // Or hide
                                  BOOL                 recursive); // Into nested popups
@@ -101,17 +101,17 @@ typedef struct tag_ssd_cm_popup_info
    SsdWidget            container;  // Internal use
 
 }  ssd_cm_popup_info;
-   
+
 
 #define  SSD_CM_INIT_POPUP_INFO(_menu_)               \
             {&_menu_,NULL}
-            
+
 #define  SSD_CM_INIT_ITEM(_label_,_id_)               \
             {_label_,NULL, CONTEXT_MENU_FLAG_NORMAL,NULL,NULL,{_id_}}
-            
+
 #define  SSD_CM_INIT_POPUP(_label_,_popup_)           \
             {_label_, NULL,CONTEXT_MENU_FLAG_POPUP,NULL,NULL,(int)&_popup_}
-            
+
 #define  SSD_CM_INIT_MENU(_items_)                    \
             {_items_,sizeof(_items_)/sizeof(ssd_cm_item),0}
 

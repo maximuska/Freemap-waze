@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -30,7 +30,7 @@
 namespace agg
 {
     //=============================================================conv_concat
-    // Concatenation of two paths. Usually used to combine lines or curves 
+    // Concatenation of two paths. Usually used to combine lines or curves
     // with markers such as arrowheads
     template<class VS1, class VS2> class conv_concat
     {
@@ -42,7 +42,7 @@ namespace agg
 
 
         void rewind(unsigned path_id)
-        { 
+        {
             m_source1->rewind(path_id);
             m_source2->rewind(0);
             m_status = 0;
@@ -68,7 +68,7 @@ namespace agg
 
     private:
         conv_concat(const conv_concat<VS1, VS2>&);
-        const conv_concat<VS1, VS2>& 
+        const conv_concat<VS1, VS2>&
             operator = (const conv_concat<VS1, VS2>&);
 
         VS1* m_source1;

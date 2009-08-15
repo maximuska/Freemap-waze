@@ -29,7 +29,7 @@
 #include "roadmap_dbread.h"
 #include "roadmap_alerter.h"
 
-#define ALERT_CATEGORY_SPEED_CAM       	2
+#define ALERT_CATEGORY_SPEED_CAM        2
 #define ALERT_CATEGORY_DUMMY_SPEED_CAM  3
 
 int roadmap_alert_count(void);
@@ -38,7 +38,7 @@ unsigned int roadmap_alert_get_speed(int alert);
 int roadmap_alert_get_id(int alert);
 void roadmap_alert_get_position(int alert, RoadMapPosition *position, int *steering);
 int roadmap_alert_alertable(int alert);
-const char * 	roadmap_alert_get_map_icon(int alert);
+const char *    roadmap_alert_get_map_icon(int alert);
 const char *  roadmap_alert_get_warning_icon(int alert);
 const char *  roadmap_alert_get_alert_icon(int alert);
 int roadmap_alert_get_distance(int record);

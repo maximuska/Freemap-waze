@@ -6,20 +6,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -56,7 +56,7 @@ namespace agg
         SDL_Surface*  m_surf_img[platform_support::max_images];
         int           m_cur_x;
         int           m_cur_y;
-	int          m_sw_start;
+    int          m_sw_start;
     };
 
 
@@ -68,7 +68,7 @@ namespace agg
         m_flip_y(flip_y),
         m_bpp(0),
         m_sys_bpp(0),
-        m_update_flag(true), 
+        m_update_flag(true),
         m_resize_flag(true),
         m_initialized(false),
         m_surf_screen(0),
@@ -80,7 +80,7 @@ namespace agg
 
         switch(m_format)
         {
-			case pix_format_gray8:
+            case pix_format_gray8:
             m_bpp = 8;
             break;
 
@@ -99,10 +99,10 @@ namespace agg
             m_amask = 0;
             m_bpp = 16;
             break;
-			
+
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
         case pix_format_rgb24:
-			m_rmask = 0xFF;
+            m_rmask = 0xFF;
             m_gmask = 0xFF00;
             m_bmask = 0xFF0000;
             m_amask = 0;
@@ -150,7 +150,7 @@ namespace agg
             break;
 #else //SDL_BIG_ENDIAN (PPC)
         case pix_format_rgb24:
-			m_rmask = 0xFF0000;
+            m_rmask = 0xFF0000;
             m_gmask = 0xFF00;
             m_bmask = 0xFF;
             m_amask = 0;
@@ -245,7 +245,7 @@ namespace agg
             SDL_WM_SetCaption(cap, 0);
         }
     }
-    
+
 
 
 
@@ -269,13 +269,13 @@ namespace agg
         if(m_specific->m_surf_screen) SDL_FreeSurface(m_specific->m_surf_screen);
 
         m_specific->m_surf_screen = SDL_SetVideoMode(width, height, m_bpp, wflags);
-        if(m_specific->m_surf_screen == 0) 
+        if(m_specific->m_surf_screen == 0)
         {
-            fprintf(stderr, 
-                    "Unable to set %dx%d %d bpp video: %s\n", 
-                    width, 
-                    height, 
-                    m_bpp, 
+            fprintf(stderr,
+                    "Unable to set %dx%d %d bpp video: %s\n",
+                    width,
+                    height,
+                    m_bpp,
                     ::SDL_GetError());
             return false;
         }
@@ -284,31 +284,31 @@ namespace agg
 
         if(m_specific->m_surf_window) SDL_FreeSurface(m_specific->m_surf_window);
 
-        m_specific->m_surf_window = 
-            SDL_CreateRGBSurface(SDL_HWSURFACE, 
-                                 m_specific->m_surf_screen->w, 
+        m_specific->m_surf_window =
+            SDL_CreateRGBSurface(SDL_HWSURFACE,
+                                 m_specific->m_surf_screen->w,
                                  m_specific->m_surf_screen->h,
                                  m_specific->m_surf_screen->format->BitsPerPixel,
-                                 m_specific->m_rmask, 
-                                 m_specific->m_gmask, 
-                                 m_specific->m_bmask, 
+                                 m_specific->m_rmask,
+                                 m_specific->m_gmask,
+                                 m_specific->m_bmask,
                                  m_specific->m_amask);
 
-        if(m_specific->m_surf_window == 0) 
+        if(m_specific->m_surf_window == 0)
         {
-            fprintf(stderr, 
-                    "Unable to create image buffer %dx%d %d bpp: %s\n", 
-                    width, 
-                    height, 
-                    m_bpp, 
+            fprintf(stderr,
+                    "Unable to create image buffer %dx%d %d bpp: %s\n",
+                    width,
+                    height,
+                    m_bpp,
                     SDL_GetError());
             return false;
         }
 
-        m_rbuf_window.attach((unsigned char*)m_specific->m_surf_window->pixels, 
-                             m_specific->m_surf_window->w, 
-                             m_specific->m_surf_window->h, 
-                             m_flip_y ? -m_specific->m_surf_window->pitch : 
+        m_rbuf_window.attach((unsigned char*)m_specific->m_surf_window->pixels,
+                             m_specific->m_surf_window->w,
+                             m_specific->m_surf_window->h,
+                             m_flip_y ? -m_specific->m_surf_window->pitch :
                                          m_specific->m_surf_window->pitch);
 
         if(!m_specific->m_initialized)
@@ -376,7 +376,7 @@ namespace agg
                 int y;
                 unsigned flags = 0;
 
-                switch (event.type) 
+                switch (event.type)
                 {
                 case SDL_VIDEORESIZE:
                     if(!init(event.resize.w, event.resize.h, m_window_flags)) return false;
@@ -431,8 +431,8 @@ namespace agg
                     break;
 
                 case SDL_MOUSEMOTION:
-                    y = m_flip_y ? 
-                        m_rbuf_window.height() - event.motion.y : 
+                    y = m_flip_y ?
+                        m_rbuf_window.height() - event.motion.y :
                         event.motion.y;
 
                     m_specific->m_cur_x = event.motion.x;
@@ -441,7 +441,7 @@ namespace agg
                     if(event.motion.state & SDL_BUTTON_LMASK) flags |= mouse_left;
                     if(event.motion.state & SDL_BUTTON_RMASK) flags |= mouse_right;
 
-                    if(m_ctrls.on_mouse_move(m_specific->m_cur_x, 
+                    if(m_ctrls.on_mouse_move(m_specific->m_cur_x,
                                              m_specific->m_cur_y,
                                              (flags & mouse_left) != 0))
                     {
@@ -450,15 +450,15 @@ namespace agg
                     }
                     else
                     {
-                        on_mouse_move(m_specific->m_cur_x, 
-                                      m_specific->m_cur_y, 
+                        on_mouse_move(m_specific->m_cur_x,
+                                      m_specific->m_cur_y,
                                       flags);
                     }
-		    SDL_Event eventtrash;
-		    while (SDL_PeepEvents(&eventtrash, 1, SDL_GETEVENT, SDL_EVENTMASK(SDL_MOUSEMOTION))!=0){;}
+            SDL_Event eventtrash;
+            while (SDL_PeepEvents(&eventtrash, 1, SDL_GETEVENT, SDL_EVENTMASK(SDL_MOUSEMOTION))!=0){;}
                     break;
 
-		case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONDOWN:
                     y = m_flip_y
                         ? m_rbuf_window.height() - event.button.y
                         : event.button.y;
@@ -475,17 +475,17 @@ namespace agg
 if(m_ctrls.on_mouse_button_down(m_specific->m_cur_x,
                                 m_specific->m_cur_y))
                             {
-                                m_ctrls.set_cur(m_specific->m_cur_x, 
+                                m_ctrls.set_cur(m_specific->m_cur_x,
                                     m_specific->m_cur_y);
                                 on_ctrl_change();
                                 force_redraw();
                             }
                             else
                             {
-                                if(m_ctrls.in_rect(m_specific->m_cur_x, 
+                                if(m_ctrls.in_rect(m_specific->m_cur_x,
                                     m_specific->m_cur_y))
                                 {
-                                    if(m_ctrls.set_cur(m_specific->m_cur_x, 
+                                    if(m_ctrls.set_cur(m_specific->m_cur_x,
                                         m_specific->m_cur_y))
                                     {
                                         on_ctrl_change();
@@ -494,8 +494,8 @@ if(m_ctrls.on_mouse_button_down(m_specific->m_cur_x,
                                 }
                                 else
                                 {
-                                    on_mouse_button_down(m_specific->m_cur_x, 
-                                        m_specific->m_cur_y, 
+                                    on_mouse_button_down(m_specific->m_cur_x,
+                                        m_specific->m_cur_y,
                                         flags);
                                 }
                             }
@@ -503,13 +503,13 @@ if(m_ctrls.on_mouse_button_down(m_specific->m_cur_x,
                         break;
                     case SDL_BUTTON_RIGHT:
                         flags = mouse_right;
-                        on_mouse_button_down(m_specific->m_cur_x, 
-                            m_specific->m_cur_y, 
+                        on_mouse_button_down(m_specific->m_cur_x,
+                            m_specific->m_cur_y,
                             flags);
                         break;
                     } //switch(event.button.button)
                     break;
-		    
+
                 case SDL_MOUSEBUTTONUP:
                     y = m_flip_y
                         ? m_rbuf_window.height() - event.button.y
@@ -518,14 +518,14 @@ if(m_ctrls.on_mouse_button_down(m_specific->m_cur_x,
                     m_specific->m_cur_x = event.button.x;
                     m_specific->m_cur_y = y;
                     flags = 0;
-                    if(m_ctrls.on_mouse_button_up(m_specific->m_cur_x, 
+                    if(m_ctrls.on_mouse_button_up(m_specific->m_cur_x,
                                                   m_specific->m_cur_y))
                     {
                         on_ctrl_change();
                         force_redraw();
                     }
-                    on_mouse_button_up(m_specific->m_cur_x, 
-                                       m_specific->m_cur_y, 
+                    on_mouse_button_up(m_specific->m_cur_x,
+                                       m_specific->m_cur_y,
                                        flags);
                     break;
                 }
@@ -561,7 +561,7 @@ if(m_ctrls.on_mouse_button_down(m_specific->m_cur_x,
             }
 
             SDL_Surface* tmp_surf = SDL_LoadBMP(fn);
-            if (tmp_surf == 0) 
+            if (tmp_surf == 0)
             {
                 fprintf(stderr, "Couldn't load %s: %s\n", fn, SDL_GetError());
                 return false;
@@ -586,19 +586,19 @@ if(m_ctrls.on_mouse_button_down(m_specific->m_cur_x,
             format.colorkey = 0;
             format.alpha = 0;
 
-            m_specific->m_surf_img[idx] = 
-                SDL_ConvertSurface(tmp_surf, 
-                                   &format, 
+            m_specific->m_surf_img[idx] =
+                SDL_ConvertSurface(tmp_surf,
+                                   &format,
                                    SDL_SWSURFACE);
 
             SDL_FreeSurface(tmp_surf);
-            
+
             if(m_specific->m_surf_img[idx] == 0) return false;
 
-            m_rbuf_img[idx].attach((unsigned char*)m_specific->m_surf_img[idx]->pixels, 
-                                   m_specific->m_surf_img[idx]->w, 
-                                   m_specific->m_surf_img[idx]->h, 
-                                   m_flip_y ? -m_specific->m_surf_img[idx]->pitch : 
+            m_rbuf_img[idx].attach((unsigned char*)m_specific->m_surf_img[idx]->pixels,
+                                   m_specific->m_surf_img[idx]->w,
+                                   m_specific->m_surf_img[idx]->h,
+                                   m_flip_y ? -m_specific->m_surf_img[idx]->pitch :
                                                m_specific->m_surf_img[idx]->pitch);
             return true;
 
@@ -636,25 +636,25 @@ if(m_ctrls.on_mouse_button_down(m_specific->m_cur_x,
 
             if(m_specific->m_surf_img[idx]) SDL_FreeSurface(m_specific->m_surf_img[idx]);
 
-             m_specific->m_surf_img[idx] = 
-                 SDL_CreateRGBSurface(SDL_SWSURFACE, 
-                                      width, 
+             m_specific->m_surf_img[idx] =
+                 SDL_CreateRGBSurface(SDL_SWSURFACE,
+                                      width,
                                       height,
                                       m_specific->m_surf_screen->format->BitsPerPixel,
-                                      m_specific->m_rmask, 
-                                      m_specific->m_gmask, 
-                                      m_specific->m_bmask, 
+                                      m_specific->m_rmask,
+                                      m_specific->m_gmask,
+                                      m_specific->m_bmask,
                                       m_specific->m_amask);
-            if(m_specific->m_surf_img[idx] == 0) 
+            if(m_specific->m_surf_img[idx] == 0)
             {
                 fprintf(stderr, "Couldn't create image: %s\n", SDL_GetError());
                 return false;
             }
 
-            m_rbuf_img[idx].attach((unsigned char*)m_specific->m_surf_img[idx]->pixels, 
-                                   m_specific->m_surf_img[idx]->w, 
-                                   m_specific->m_surf_img[idx]->h, 
-                                   m_flip_y ? -m_specific->m_surf_img[idx]->pitch : 
+            m_rbuf_img[idx].attach((unsigned char*)m_specific->m_surf_img[idx]->pixels,
+                                   m_specific->m_surf_img[idx]->w,
+                                   m_specific->m_surf_img[idx]->h,
+                                   m_flip_y ? -m_specific->m_surf_img[idx]->pitch :
                                                m_specific->m_surf_img[idx]->pitch);
 
             return true;
@@ -662,7 +662,7 @@ if(m_ctrls.on_mouse_button_down(m_specific->m_cur_x,
 
         return false;
     }
-    
+
     //------------------------------------------------------------------------
     void platform_support::start_timer()
     {

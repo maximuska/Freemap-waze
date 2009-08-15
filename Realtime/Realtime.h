@@ -67,7 +67,7 @@ BOOL  Realtime_Editor_ExportSegments(PFN_LOGINTESTRES editor_cb);
 
 void OnSettingsChanged_VisabilityGroup(void);
 
-void	RealTime_Auth (void);
+void    RealTime_Auth (void);
 void RecommentToFriend(void);
 
 int         RealTimeLoginState(void);

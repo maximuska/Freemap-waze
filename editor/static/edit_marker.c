@@ -66,7 +66,7 @@ static int fill_dialog (int marker) {
    roadmap_dialog_set_data ("Marker", "Note", editor_marker_note (marker));
 
    editor_marker_position (marker, &pos, NULL);
-   
+
    /* Set zoom to 1:1 */
    roadmap_math_zoom_reset ();
    roadmap_layer_adjust ();
@@ -92,7 +92,7 @@ static int edit_marker_update (const char *name, void *context) {
    const char   *new_note  = roadmap_dialog_get_data ("Marker", "Note");
 
    unsigned char new_flags = editor_marker_flags (*marker);
-   
+
    if (!strcmp(update_server, yesno[0])) {
       new_flags |= ED_MARKER_UPLOAD;
    } else {

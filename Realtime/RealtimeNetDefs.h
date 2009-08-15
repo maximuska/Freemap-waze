@@ -56,7 +56,7 @@
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-// BUFFER SIZES   // 
+// BUFFER SIZES   //
 ////////////////////
 
 // RTNet_HttpAsyncTransaction:
@@ -96,13 +96,13 @@
 #define  MESSAGE_MAX_SIZE__MapDisplyed       (100)
 #define  MESSAGE_MAX_SIZE__SeeMe             (20)
 #define  MESSAGE_MAX_SIZE__CreateNewRoads    (14 + 1 + 10 + 1 + 1 + 1)
-#define	MESSAGE_MAX_SIZE__Auth					(4 + 1 + \
-															 10 + 1 + \
-															 RTNET_SERVERCOOKIE_MAXSIZE + 1 + \
-															 RT_USERNM_MAXSIZE * 2 + 1 + \
-															 10 + 1 + \
-															 64)
-															  
+#define MESSAGE_MAX_SIZE__Auth                  (4 + 1 + \
+                                                             10 + 1 + \
+                                                             RTNET_SERVERCOOKIE_MAXSIZE + 1 + \
+                                                             RT_USERNM_MAXSIZE * 2 + 1 + \
+                                                             10 + 1 + \
+                                                             64)
+
 
 #define  MESSAGE_MAX_SIZE__AllTogether             \
          (  HTTP_HEADER_MAX_SIZE                +  \
@@ -131,7 +131,7 @@
 //    Time offset:                  <32>,                == 33 chars
 //    First row (row count)         <10>,                == 11 chars
 //    A single row:                 <32>,<32>,<10>,      == 74 chars
-//		Optional GPSDisconnect directive		<15>
+//      Optional GPSDisconnect directive        <15>
 #define  RTNET_GPSPATH_BUFFERSIZE_command_name           ( 7)
 #define  RTNET_GPSPATH_BUFFERSIZE_time_offset            (33)
 #define  RTNET_GPSPATH_BUFFERSIZE_row_count              (11)
@@ -140,13 +140,13 @@
                            (RTNET_GPSPATH_BUFFERSIZE_single_row * RTTRK_GPSPATH_MAX_POINTS)
 #define  RTNET_GPSPATH_BUFFERSIZE_rows__dynamic(_n_)                    \
                            (RTNET_GPSPATH_BUFFERSIZE_single_row * _n_)
-                           
+
 #define  RTNET_GPSPATH_BUFFERSIZE                                       \
                            (RTNET_GPSPATH_BUFFERSIZE_command_name    +  \
                             RTNET_GPSPATH_BUFFERSIZE_time_offset     +  \
                             RTNET_GPSPATH_BUFFERSIZE_row_count       +  \
                             RTNET_GPSPATH_BUFFERSIZE_rows)
-                            
+
 #define  RTNET_GPSPATH_BUFFERSIZE__dynamic(_n_)                         \
                            (RTNET_GPSPATH_BUFFERSIZE_command_name    +  \
                             RTNET_GPSPATH_BUFFERSIZE_time_offset     +  \
@@ -155,10 +155,10 @@
 
 #define   RTNET_CREATENEWROADS_BUFFERSIZE                                  \
                            (MESSAGE_MAX_SIZE__CreateNewRoads * RTTRK_CREATENEWROADS_MAX_TOGGLES)
-                           
+
 #define   RTNET_CREATENEWROADS_BUFFERSIZE__dynamic(_n_)                    \
                            (MESSAGE_MAX_SIZE__CreateNewRoads * (_n_))
-                           
+
 
 // Buffer sizes for Node path string
 // ---------------------------------
@@ -175,13 +175,13 @@
                            (RTNET_NODEPATH_BUFFERSIZE_single_row * RTTRK_NODEPATH_MAX_POINTS)
 #define  RTNET_NODEPATH_BUFFERSIZE_rows__dynamic(_n_)                    \
                            (RTNET_NODEPATH_BUFFERSIZE_single_row * _n_)
-                           
+
 #define  RTNET_NODEPATH_BUFFERSIZE                                      \
                            (RTNET_NODEPATH_BUFFERSIZE_command_name    + \
                             RTNET_NODEPATH_BUFFERSIZE_time_offset     + \
                             RTNET_NODEPATH_BUFFERSIZE_row_count       + \
                             RTNET_NODEPATH_BUFFERSIZE_rows)
-                            
+
 #define  RTNET_NODEPATH_BUFFERSIZE__dynamic(_n_)                        \
                            (RTNET_NODEPATH_BUFFERSIZE_command_name    + \
                             RTNET_NODEPATH_BUFFERSIZE_time_offset     + \
@@ -203,7 +203,7 @@ typedef enum tagERTPacketRequest
    REQ_SeeMe,
    REQ_StartFollowUsers,
    REQ_StopFollowUsers,
-   
+
    REQ__count,
    REQ__invalid
 
@@ -235,7 +235,7 @@ typedef enum tagERTPacketResponse
    /* Must be last! */
    RES__count,
    RES__invalid
- 
+
 }  ERTPacketResponse;
 
 const char*         ERTPacketResponse_to_string( ERTPacketResponse e);
@@ -256,7 +256,7 @@ typedef enum tagEParserState
 typedef enum tagERealtimeErrors
 {
    ERR_Success,
-   
+
    ERR_NoDataToSend,
    ERR_GeneralError,
    ERR_NetworkError,
@@ -323,13 +323,13 @@ void RTConnectionInfo_ResetParser      ( LPRTConnectionInfo this);
 //      Structure used to follow the parser state
 typedef struct tagResponseBuffer
 {
-                                       //   The data. 
+                                       //   The data.
    BYTE  Data[RESPONSE_BUFFER_SIZE+1]; //      Data is a NULL-terminated string
-                                 
+
                                        //   For each 'read' iteration:
    int   iDataSize;                    //   o   Size of the data read into the buffer 'Data'
    int   iProcessed;                   //   o   Out of 'iDataSize', how much was processed
-   
+
                                        //   For the overall transaction:
    int   iCustomDataSize;              //   o   Overall size of all custom data
    int   iCustomDataProcessed;         //   o   Out of 'iCustomDataSize', how much was processed
@@ -337,7 +337,7 @@ typedef struct tagResponseBuffer
    //   Internal usage:
    BYTE* pNextRead;
    int   iFreeSize;
-   
+
 }   ResponseBuffer, *LPResponseBuffer;
 
 void ResponseBuffer_Init      ( LPResponseBuffer this);
@@ -378,7 +378,7 @@ ETransactionResult   OnGeneralResponse ( LPResponseBuffer pRI, void* pContext);
 #define   RTNET_FORMAT_NETPACKET_OUR_HEADER(_command_)                  \
          "UID,%d,%s\r\n%s",                                             \
          pCI->iServerID, pCI->ServerCookie,_command_
-         
+
 #define   RTNET_CALC_BYTES_PROCESSED(_CurrentOffset_)                   \
          (int)((size_t)_CurrentOffset_ - (size_t)pRI->Data);
 
@@ -424,8 +424,8 @@ ETransactionResult   OnGeneralResponse ( LPResponseBuffer pRI, void* pContext);
 #define  RTNET_FORMAT_NETPACKET_1ReportSegmentNoAttr  (",%d\n")
 #define  RTNET_FORMAT_NETPACKET_2CreateNewRoads       ("CreateNewRoads,%u,%s\n")
 #define  RTNET_FORMAT_NETPACKET_4NavigateTo           ("NavigateTo,%s,,%s,%s,%s\n")
-#define  RTNET_FORMAT_NETPACKET_5Auth		          ("Auth,%d,%s,%s,%d,%s\n")
-#define  RTNET_FORMAT_NETPACKET_1SendSMS	          ("BridgeTo,DOWNLOADSMS,send_download,2,phone_number,%s\n")
+#define  RTNET_FORMAT_NETPACKET_5Auth                 ("Auth,%d,%s,%s,%d,%s\n")
+#define  RTNET_FORMAT_NETPACKET_1SendSMS              ("BridgeTo,DOWNLOADSMS,send_download,2,phone_number,%s\n")
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -467,7 +467,7 @@ typedef enum tag_transaction_type
 
 }  transaction_type;
 
-BOOL RTNet_HttpAsyncTransaction(   
+BOOL RTNet_HttpAsyncTransaction(
                LPRTConnectionInfo   pCI,                 // Connection Info
                transaction_type     type,                // Login | Command | Static | ...
                PFN_ONDATARECEIVED   pfnOnDataReceived,   // Callback to handle data received
@@ -476,7 +476,7 @@ BOOL RTNet_HttpAsyncTransaction(
                ...);                                     // Parameters
 
 // Same function, but buffer is ready formatted:
-BOOL RTNet_HttpAsyncTransaction_FormattedBuffer(   
+BOOL RTNet_HttpAsyncTransaction_FormattedBuffer(
                LPRTConnectionInfo   pCI,                 // Connection Info
                transaction_type     type,                // Login | Command | Static | ...
                PFN_ONDATARECEIVED   pfnOnDataReceived,   // Callback to handle data received

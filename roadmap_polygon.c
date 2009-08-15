@@ -72,18 +72,18 @@ static void *roadmap_polygon_map (const roadmap_db_data_file *file) {
    context->type = RoadMapPolygonType;
 
    if (!roadmap_db_get_data (file,
-   								  model__tile_polygon_head,
-   								  sizeof (RoadMapPolygon),
-   								  (void**)&(context->Polygon),
-   								  &(context->PolygonCount))) {
+                                  model__tile_polygon_head,
+                                  sizeof (RoadMapPolygon),
+                                  (void**)&(context->Polygon),
+                                  &(context->PolygonCount))) {
       roadmap_log (ROADMAP_FATAL, "invalid polygon/head structure");
    }
 
    if (!roadmap_db_get_data (file,
-   								  model__tile_polygon_point,
-   								  sizeof (RoadMapPolygonPoint),
-   								  (void**)&(context->PolygonPoint),
-   								  &(context->PolygonPointCount))) {
+                                  model__tile_polygon_point,
+                                  sizeof (RoadMapPolygonPoint),
+                                  (void**)&(context->PolygonPoint),
+                                  &(context->PolygonPointCount))) {
       roadmap_log (ROADMAP_FATAL, "invalid polygon/point structure");
    }
 
@@ -102,7 +102,7 @@ static void roadmap_polygon_activate (void *context) {
    }
 
    if (polygon_context != NULL &&
-   	 polygon_context->DictionaryLandmark == NULL) {
+     polygon_context->DictionaryLandmark == NULL) {
       polygon_context->DictionaryLandmark = roadmap_dictionary_open ("landmark");
    }
 
@@ -147,7 +147,7 @@ int  roadmap_polygon_category (int polygon) {
 const char *roadmap_polygon_name (int polygon) {
 
    return roadmap_dictionary_get (RoadMapPolygonActive->DictionaryLandmark,
-   				   RoadMapPolygonActive->Polygon[polygon].name);
+                   RoadMapPolygonActive->Polygon[polygon].name);
 }
 
 
@@ -156,7 +156,7 @@ void roadmap_polygon_edges (int polygon, RoadMapArea *edges) {
    RoadMapPolygon *this_polygon = RoadMapPolygonActive->Polygon + polygon;
    RoadMapPosition pos_square;
    int scale_factor;
-   
+
    roadmap_square_min (roadmap_square_active (), &pos_square);
    scale_factor = roadmap_square_current_scale_factor ();
 

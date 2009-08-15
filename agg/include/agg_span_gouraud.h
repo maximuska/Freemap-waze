@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -45,7 +45,7 @@ namespace agg
         };
 
         //--------------------------------------------------------------------
-        span_gouraud() : 
+        span_gouraud() :
             m_vertex(0)
         {
             m_cmd[0] = path_cmd_stop;
@@ -58,7 +58,7 @@ namespace agg
                      double x1, double y1,
                      double x2, double y2,
                      double x3, double y3,
-                     double d) : 
+                     double d) :
             m_vertex(0)
         {
             colors(c1, c2, c3);
@@ -75,21 +75,21 @@ namespace agg
 
         //--------------------------------------------------------------------
         // Sets the triangle and dilates it if needed.
-        // The trick here is to calculate beveled joins in the vertices of the 
-        // triangle and render it as a 6-vertex polygon. 
-        // It's necessary to achieve numerical stability. 
+        // The trick here is to calculate beveled joins in the vertices of the
+        // triangle and render it as a 6-vertex polygon.
+        // It's necessary to achieve numerical stability.
         // However, the coordinates to interpolate colors are calculated
         // as miter joins (calc_intersection).
-        void triangle(double x1, double y1, 
+        void triangle(double x1, double y1,
                       double x2, double y2,
                       double x3, double y3,
                       double d)
         {
-            m_coord[0].x = m_x[0] = x1; 
+            m_coord[0].x = m_x[0] = x1;
             m_coord[0].y = m_y[0] = y1;
-            m_coord[1].x = m_x[1] = x2; 
+            m_coord[1].x = m_x[1] = x2;
             m_coord[1].y = m_y[1] = y2;
-            m_coord[2].x = m_x[2] = x3; 
+            m_coord[2].x = m_x[2] = x3;
             m_coord[2].y = m_y[2] = y3;
             m_cmd[0] = path_cmd_move_to;
             m_cmd[1] = path_cmd_line_to;
@@ -97,7 +97,7 @@ namespace agg
             m_cmd[3] = path_cmd_stop;
 
             if(d != 0.0)
-            {   
+            {
                 dilate_triangle(m_coord[0].x, m_coord[0].y,
                                 m_coord[1].x, m_coord[1].y,
                                 m_coord[2].x, m_coord[2].y,
@@ -146,7 +146,7 @@ namespace agg
 
             if(m_coord[0].y > m_coord[2].y)
             {
-                coord[0] = m_coord[2]; 
+                coord[0] = m_coord[2];
                 coord[2] = m_coord[0];
             }
 

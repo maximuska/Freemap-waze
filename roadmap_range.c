@@ -53,11 +53,11 @@ static void *roadmap_range_map (const roadmap_db_data_file *file) {
    context->type = RoadMapRangeType;
    context->RoadMapRanges = NULL;
 
-	if (!roadmap_db_get_data (file,
-									  model__tile_range_addr,
-									  sizeof(RoadMapRange),
-									  (void **)&(context->RoadMapRanges),
-									  &(context->RoadMapRangesCount))) {
+    if (!roadmap_db_get_data (file,
+                                      model__tile_range_addr,
+                                      sizeof(RoadMapRange),
+                                      (void **)&(context->RoadMapRanges),
+                                      &(context->RoadMapRangesCount))) {
       roadmap_log (ROADMAP_FATAL,
                    "invalid range structure");
    }
@@ -96,110 +96,110 @@ roadmap_db_handler RoadMapRangeHandler = {
 };
 
 
-static void roadmap_range_extract_compact_range 
-		(const RoadMapRange *rec,
-		 RoadMapStreetRange *left,
-		 RoadMapStreetRange *right) {
+static void roadmap_range_extract_compact_range
+        (const RoadMapRange *rec,
+         RoadMapStreetRange *left,
+         RoadMapStreetRange *right) {
 
-	left->fradd = (rec->fradd & 0xFF00) >> 8;
-	if (left->fradd == 255) left->fradd = -1;
-	left->toadd = (rec->toadd & 0xFF00) >> 8;
-	if (left->toadd == 255) left->toadd = -1;
-	right->fradd = (rec->fradd & 0x00FF);
-	if (right->fradd == 255) right->fradd = -1;
-	right->toadd = (rec->toadd & 0x00FF);			 	
-	if (right->toadd == 255) right->toadd = -1;
+    left->fradd = (rec->fradd & 0xFF00) >> 8;
+    if (left->fradd == 255) left->fradd = -1;
+    left->toadd = (rec->toadd & 0xFF00) >> 8;
+    if (left->toadd == 255) left->toadd = -1;
+    right->fradd = (rec->fradd & 0x00FF);
+    if (right->fradd == 255) right->fradd = -1;
+    right->toadd = (rec->toadd & 0x00FF);
+    if (right->toadd == 255) right->toadd = -1;
 }
-	 
+
 
 static void roadmap_range_extract_side
-		(const RoadMapRange **rec,
-		 RoadMapStreetRange *range) {
+        (const RoadMapRange **rec,
+         RoadMapStreetRange *range) {
 
-	if ((*rec)->fradd == (unsigned short)-1 &&
-		 (*rec)->toadd == (unsigned short)-1) {
-		
-		(*rec)++;
-		range->fradd = (((*rec)->street & 0xFF00) << 8) + (*rec)->fradd;
-		range->toadd = (((*rec)->street & 0x00FF) << 16) + (*rec)->toadd;
-	} else {
-	
-		range->fradd = (*rec)->fradd;
-		range->toadd = (*rec)->toadd;	
-	}
-	
-	(*rec)++;	 	
+    if ((*rec)->fradd == (unsigned short)-1 &&
+         (*rec)->toadd == (unsigned short)-1) {
+
+        (*rec)++;
+        range->fradd = (((*rec)->street & 0xFF00) << 8) + (*rec)->fradd;
+        range->toadd = (((*rec)->street & 0x00FF) << 16) + (*rec)->toadd;
+    } else {
+
+        range->fradd = (*rec)->fradd;
+        range->toadd = (*rec)->toadd;
+    }
+
+    (*rec)++;
 }
 
 
 int roadmap_range_get_street
        (int range) {
 
-	if (range == -1) return -1;
-	
-	if (range & RANGE_FLAG_STREET_ONLY) return range & ~RANGE_FLAG_STREET_ONLY;
-	
-	if (!RoadMapRangeActive) return -1;
-	
-	if (range < 0 ||
-		 range >= RoadMapRangeActive->RoadMapRangesCount) {
-		
-		return -1;
-	}
-	
-	return RoadMapRangeActive->RoadMapRanges[range].street & ~RANGE_FLAG_MASK;      	
+    if (range == -1) return -1;
+
+    if (range & RANGE_FLAG_STREET_ONLY) return range & ~RANGE_FLAG_STREET_ONLY;
+
+    if (!RoadMapRangeActive) return -1;
+
+    if (range < 0 ||
+         range >= RoadMapRangeActive->RoadMapRangesCount) {
+
+        return -1;
+    }
+
+    return RoadMapRangeActive->RoadMapRanges[range].street & ~RANGE_FLAG_MASK;
 }
 
 
 void roadmap_range_get_address
-		(int range,
-		 RoadMapStreetRange *left,
-		 RoadMapStreetRange *right) {
+        (int range,
+         RoadMapStreetRange *left,
+         RoadMapStreetRange *right) {
 
-	const RoadMapRange *rec;
-	
-	if ((!RoadMapRangeActive) ||
-		 (range & RANGE_FLAG_STREET_ONLY) ||
-		 range < 0 ||
-		 range >= RoadMapRangeActive->RoadMapRangesCount) {
-		
-		left->fradd = -1;
-		left->toadd = -1;
-		right->fradd = -1;
-		right->toadd = -1;
-		return;
-	}
+    const RoadMapRange *rec;
 
-	rec = RoadMapRangeActive->RoadMapRanges + range;
-	
-	switch (rec->street & RANGE_FLAG_MASK) {
-		
-		case RANGE_FLAG_COMPACT:
-		
-			roadmap_range_extract_compact_range (rec, left, right);
-			break;
+    if ((!RoadMapRangeActive) ||
+         (range & RANGE_FLAG_STREET_ONLY) ||
+         range < 0 ||
+         range >= RoadMapRangeActive->RoadMapRangesCount) {
 
-		case RANGE_FLAG_LEFT_ONLY:
-		
-			roadmap_range_extract_side (&rec, left);
-			right->fradd = -1;
-			right->toadd = -1;
-			break;
-			
-		case RANGE_FLAG_RIGHT_ONLY:
-		
-			roadmap_range_extract_side (&rec, right);
-			left->fradd = -1;
-			left->toadd = -1;
-			break;
-			
-		case RANGE_FLAG_BOTH:
-			roadmap_range_extract_side (&rec, left);
-			roadmap_range_extract_side (&rec, right);
-			break;
+        left->fradd = -1;
+        left->toadd = -1;
+        right->fradd = -1;
+        right->toadd = -1;
+        return;
+    }
 
-		default:
-			roadmap_log (ROADMAP_FATAL, "inconsistency in range flags");
-	}
+    rec = RoadMapRangeActive->RoadMapRanges + range;
+
+    switch (rec->street & RANGE_FLAG_MASK) {
+
+        case RANGE_FLAG_COMPACT:
+
+            roadmap_range_extract_compact_range (rec, left, right);
+            break;
+
+        case RANGE_FLAG_LEFT_ONLY:
+
+            roadmap_range_extract_side (&rec, left);
+            right->fradd = -1;
+            right->toadd = -1;
+            break;
+
+        case RANGE_FLAG_RIGHT_ONLY:
+
+            roadmap_range_extract_side (&rec, right);
+            left->fradd = -1;
+            left->toadd = -1;
+            break;
+
+        case RANGE_FLAG_BOTH:
+            roadmap_range_extract_side (&rec, left);
+            roadmap_range_extract_side (&rec, right);
+            break;
+
+        default:
+            roadmap_log (ROADMAP_FATAL, "inconsistency in range flags");
+    }
 }
 

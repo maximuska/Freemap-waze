@@ -27,9 +27,9 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Init: memset + basic settings
-void RTConnectionInfo_Init(LPRTConnectionInfo   this, 
-                           PFN_ONUSER           pfnOnAddUser, 
-                           PFN_ONUSER           pfnOnMoveUser, 
+void RTConnectionInfo_Init(LPRTConnectionInfo   this,
+                           PFN_ONUSER           pfnOnAddUser,
+                           PFN_ONUSER           pfnOnMoveUser,
                            PFN_ONUSER           pfnOnRemoveUser)
 {
    memset( this, 0, sizeof(RTConnectionInfo));
@@ -60,7 +60,7 @@ void RTConnectionInfo_ResetLogin( LPRTConnectionInfo this)
 /* 7*/memset( &(this->LastMapPosSent), 0, sizeof(RoadMapArea));
 /* 8*/RTUsers_Reset( &(this->Users));
 /* 9*/RTTrafficInfo_Reset();
- 
+
       RTConnectionInfo_ResetTransaction( this);
 }
 
@@ -74,7 +74,7 @@ void RTConnectionInfo_ResetTransaction( LPRTConnectionInfo this)
 // Reset between packet parsings:
 
 void RTConnectionInfo_ResetParser( LPRTConnectionInfo this)
-{ 
+{
 /*10*/this->eParserState = PS_Initialized;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ ERTPacketRequest ERTPacketRequest_from_string( const char* szE)
 {
    if( !szE || !(*szE))
       return REQ__invalid;
-   
+
         if( 0==strcmp( szE, "Login"))           return REQ_Login;
    else if( 0==strcmp( szE, "GuestLogin"))      return REQ_GuestLogin;
    else if( 0==strcmp( szE, "LogOut"))          return REQ_LogOut;
@@ -131,18 +131,18 @@ const char* ERTPacketResponse_to_string( ERTPacketResponse e)
       case RES_RemoveAlert:         return "RmAlert";
       case RES_SystemMessage:       return "SystemMessage";
       case RES_VersionUpgrade:      return "UpgradeClient";
-		case RES_AddRoadInfo:         return "AddRoadInfo";
-		case RES_RmRoadInfo:         return "RmRoadInfo";
+        case RES_AddRoadInfo:         return "AddRoadInfo";
+        case RES_RmRoadInfo:         return "RmRoadInfo";
       default: return "<unknown>";
    }
-   
+
 }
 
 ERTPacketResponse ERTPacketResponse_from_string( const char* szE)
 {
    if( !szE || !(*szE))
       return RES__invalid;
-   
+
         if( 0==strcmp( szE, "LoginSuccessful"))    return RES_LoginSuccessful;
    else if( 0==strcmp( szE, "LoginError"))         return RES_LoginError;
    else if( 0==strcmp( szE, "LogoutSuccessful"))   return RES_LogoutSuccessful;
@@ -156,9 +156,9 @@ ERTPacketResponse ERTPacketResponse_from_string( const char* szE)
    else if (0==strcmp( szE, "RmAlert"))            return RES_RemoveAlert;
    else if (0==strcmp( szE, "SystemMessage"))      return RES_SystemMessage;
    else if (0==strcmp( szE, "UpgradeClient"))      return RES_VersionUpgrade;
-   else if (0==strcmp( szE, "AddAlertComment"))    return RES_AddAlertComment;        
+   else if (0==strcmp( szE, "AddAlertComment"))    return RES_AddAlertComment;
    else if (0==strcmp( szE, "AddRoadInfo"))        return RES_AddRoadInfo;
-   else if (0==strcmp( szE, "RmRoadInfo"))         return RES_RmRoadInfo; 
+   else if (0==strcmp( szE, "RmRoadInfo"))         return RES_RmRoadInfo;
    return RES__invalid;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -173,19 +173,19 @@ void HttpAsyncParserInfo_Init( LPHttpAsyncParserInfo this)
 }
 
 void HttpAsyncTransactionInfo_Init( LPHttpAsyncTransactionInfo this)
-{ 
-   memset( this, 0, sizeof(HttpAsyncTransactionInfo)); 
+{
+   memset( this, 0, sizeof(HttpAsyncTransactionInfo));
    this->Socket = ROADMAP_INVALID_SOCKET;
    HttpAsyncParserInfo_Init( &(this->API));
    RTPacket_Init( &(this->Packet));
 }
 
 void HttpAsyncTransactionInfo_Reset( LPHttpAsyncTransactionInfo this)
-{ 
+{
    RoadMapSocket Socket = this->Socket;
-   
+
    RTPacket_Free( &(this->Packet));
-   memset( this, 0, sizeof(HttpAsyncTransactionInfo)); 
+   memset( this, 0, sizeof(HttpAsyncTransactionInfo));
    this->Socket         = Socket;
    this->starting_time  = 0;
    HttpAsyncParserInfo_Init( &(this->API));

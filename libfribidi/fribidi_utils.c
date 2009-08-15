@@ -1,21 +1,21 @@
 /* FriBidi - Library of BiDi algorithm
  * Copyright (C) 1999,2000 Dov Grobgeld
- * 
- * This library is free software; you can redistribute it and/or 
- * modify it under the terms of the GNU Lesser General Public 
- * License as published by the Free Software Foundation; either 
- * version 2.1 of the License, or (at your option) any later version. 
- * 
- * This library is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
- * Lesser General Public License for more details. 
- * 
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library, in a file named COPYING; if not, write to the 
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330, 
- * Boston, MA 02111-1307, USA  
- * 
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library, in a file named COPYING; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA
+ *
  * For licensing issues, contact <dov@imagic.weizmann.ac.il>.
  */
 
@@ -32,7 +32,7 @@
 
 /*======================================================================
  *  The find_visual_ranges() function is used to convert between a
- *  continous span in either logical or visual space to a one, two, 
+ *  continous span in either logical or visual space to a one, two,
  *  three, ..., sixty-three discontinous spans in the other space.
  *  The function outputs the number of ranges needed to display the
  *  mapped range as well as the resolved ranges.
@@ -63,12 +63,12 @@
  *                       &num_vis_ranges, *vis_ranges);
  **----------------------------------------------------------------------*/
 FRIBIDI_API void
-fribidi_map_range (FriBidiStrIndex in_span[2],	/* Start and end span */
-		   FriBidiStrIndex len, fribidi_boolean is_v2l_map,	/* Needed for embedding_level */
-		   FriBidiStrIndex *position_map,
-		   FriBidiLevel *embedding_level_list,
-		   /* output */
-		   int *num_mapped_spans, FriBidiStrIndex mapped_spans[63][2])
+fribidi_map_range (FriBidiStrIndex in_span[2],  /* Start and end span */
+           FriBidiStrIndex len, fribidi_boolean is_v2l_map, /* Needed for embedding_level */
+           FriBidiStrIndex *position_map,
+           FriBidiLevel *embedding_level_list,
+           /* output */
+           int *num_mapped_spans, FriBidiStrIndex mapped_spans[63][2])
 {
   FriBidiStrIndex ch_idx;
   fribidi_boolean in_range = FRIBIDI_FALSE;
@@ -89,21 +89,21 @@ fribidi_map_range (FriBidiStrIndex in_span[2],	/* Start and end span */
       FriBidiStrIndex mapped_pos;
 
       if (ch_idx < len)
-	mapped_pos = position_map[ch_idx];
+    mapped_pos = position_map[ch_idx];
       else
-	mapped_pos = -1;	/* Will cause log_pos < start_idx to trigger below */
+    mapped_pos = -1;    /* Will cause log_pos < start_idx to trigger below */
 
       if (!in_range && mapped_pos >= start_idx && mapped_pos < end_idx)
-	{
-	  in_range = FRIBIDI_TRUE;
-	  (*num_mapped_spans)++;
-	  mapped_spans[(*num_mapped_spans) - 1][0] = ch_idx;
-	}
+    {
+      in_range = FRIBIDI_TRUE;
+      (*num_mapped_spans)++;
+      mapped_spans[(*num_mapped_spans) - 1][0] = ch_idx;
+    }
       else if (in_range && (mapped_pos < start_idx || mapped_pos >= end_idx))
-	{
-	  mapped_spans[(*num_mapped_spans) - 1][1] = ch_idx;
-	  in_range = FRIBIDI_FALSE;
-	}
+    {
+      mapped_spans[(*num_mapped_spans) - 1][1] = ch_idx;
+      in_range = FRIBIDI_FALSE;
+    }
     }
 }
 
@@ -113,13 +113,13 @@ fribidi_map_range (FriBidiStrIndex in_span[2],	/* Start and end span */
  *  length of the section in the new string that needs redrawing.
  *----------------------------------------------------------------------*/
 FRIBIDI_API void
-fribidi_find_string_changes (	/* input */
-			      FriBidiChar *old_str,
-			      FriBidiStrIndex old_len,
-			      FriBidiChar *new_str, FriBidiStrIndex new_len,
-			      /* output */
-			      FriBidiStrIndex *change_start,
-			      FriBidiStrIndex *change_len)
+fribidi_find_string_changes (   /* input */
+                  FriBidiChar *old_str,
+                  FriBidiStrIndex old_len,
+                  FriBidiChar *new_str, FriBidiStrIndex new_len,
+                  /* output */
+                  FriBidiStrIndex *change_start,
+                  FriBidiStrIndex *change_len)
 {
   FriBidiStrIndex i, num_bol, num_eol;
 
@@ -132,8 +132,8 @@ fribidi_find_string_changes (	/* input */
   /* Search backwards */
   i = 0;
   while (i < old_len
-	 && i < new_len
-	 && old_str[old_len - 1 - i] == new_str[new_len - 1 - i])
+     && i < new_len
+     && old_str[old_len - 1 - i] == new_str[new_len - 1 - i])
     i++;
   num_eol = i;
 
@@ -153,7 +153,7 @@ fribidi_find_string_changes (	/* input */
  *  Here are the different possibilities:
  *
  *        Pointer              =>          Log Pos         Vis pos
- *  
+ *
  *     Before first vis char             log_pos(vis=0)L       0
  *     After last vis char               log_pos(vis=n-1)R     n
  *     Within 1/2 width of vis char i    log_pos(vis=i)L       i
@@ -163,7 +163,7 @@ fribidi_find_string_changes (	/* input */
  *  Input:
  *     x_pos        The pixel position to be resolved measured in pixels.
  *     x_offset     The x_offset is the pixel position of the left side
- *                  of the leftmost visual character. 
+ *                  of the leftmost visual character.
  *     len          The length of the embedding level, the vis2log and
  *                  the char width arrays.
  *     base_dir     The resolved base direction of the line.
@@ -192,17 +192,17 @@ fribidi_find_string_changes (	/* input */
  *----------------------------------------------------------------------*/
 FRIBIDI_API void
 fribidi_xpos_resolve (int x_pos,
-		      int x_offset,
-		      FriBidiStrIndex len,
-		      FriBidiLevel *embedding_level_list,
-		      FriBidiCharType base_dir,
-		      FriBidiStrIndex *vis2log, int *char_widths,
-		      /* output */
-		      FriBidiStrIndex *res_log_pos,
-		      FriBidiStrIndex *res_vis_pos,
-		      int *res_cursor_x_pos,
-		      fribidi_boolean *res_cursor_dir_is_rtl,
-		      fribidi_boolean *res_attach_before)
+              int x_offset,
+              FriBidiStrIndex len,
+              FriBidiLevel *embedding_level_list,
+              FriBidiCharType base_dir,
+              FriBidiStrIndex *vis2log, int *char_widths,
+              /* output */
+              FriBidiStrIndex *res_log_pos,
+              FriBidiStrIndex *res_vis_pos,
+              int *res_cursor_x_pos,
+              fribidi_boolean *res_cursor_dir_is_rtl,
+              fribidi_boolean *res_attach_before)
 {
   int char_width_sum = 0;
   FriBidiStrIndex char_idx;
@@ -215,9 +215,9 @@ fribidi_xpos_resolve (int x_pos,
     {
       *res_cursor_dir_is_rtl = (base_dir == FRIBIDI_TYPE_RTL);
       if (*res_cursor_dir_is_rtl)
-	*res_log_pos = len;
+    *res_log_pos = len;
       else
-	*res_log_pos = 0;
+    *res_log_pos = 0;
 
       *res_cursor_x_pos = x_offset;
       *res_vis_pos = 0;
@@ -227,66 +227,66 @@ fribidi_xpos_resolve (int x_pos,
     {
       /* Find the cursor pos by a linear search on the row */
       for (char_idx = 0; char_idx < len; char_idx++)
-	{
-	  FriBidiStrIndex log_pos = vis2log[char_idx];
-	  int char_width = char_widths[log_pos];
+    {
+      FriBidiStrIndex log_pos = vis2log[char_idx];
+      int char_width = char_widths[log_pos];
 
-	  if (x_offset + char_width_sum + char_width > x_pos)
-	    {
-	      /* Found position */
-	      *res_cursor_dir_is_rtl =
-		fribidi_is_char_rtl (embedding_level_list, base_dir, log_pos);
-	      /* Are we in the left hand side of the clicked character? */
-	      if (x_pos - (x_offset + char_width_sum + char_width / 2) < 0)
-		{
-		  /* RTL? */
-		  if (*res_cursor_dir_is_rtl)
-		    {
-		      log_pos++;
-		      *res_attach_before = FRIBIDI_FALSE;
-		    }
-		  /* LTR */
-		  else
-		    *res_attach_before = FRIBIDI_TRUE;
-		  *res_cursor_x_pos = x_offset + char_width_sum;
-		}
-	      /* We are in the right hand side. */
-	      else
-		{
-		  /* LTR? */
-		  if (!*res_cursor_dir_is_rtl)
-		    {
-		      log_pos++;
-		      *res_attach_before = FRIBIDI_FALSE;
-		    }
-		  /* RTL */
-		  else
-		    *res_attach_before = FRIBIDI_TRUE;
+      if (x_offset + char_width_sum + char_width > x_pos)
+        {
+          /* Found position */
+          *res_cursor_dir_is_rtl =
+        fribidi_is_char_rtl (embedding_level_list, base_dir, log_pos);
+          /* Are we in the left hand side of the clicked character? */
+          if (x_pos - (x_offset + char_width_sum + char_width / 2) < 0)
+        {
+          /* RTL? */
+          if (*res_cursor_dir_is_rtl)
+            {
+              log_pos++;
+              *res_attach_before = FRIBIDI_FALSE;
+            }
+          /* LTR */
+          else
+            *res_attach_before = FRIBIDI_TRUE;
+          *res_cursor_x_pos = x_offset + char_width_sum;
+        }
+          /* We are in the right hand side. */
+          else
+        {
+          /* LTR? */
+          if (!*res_cursor_dir_is_rtl)
+            {
+              log_pos++;
+              *res_attach_before = FRIBIDI_FALSE;
+            }
+          /* RTL */
+          else
+            *res_attach_before = FRIBIDI_TRUE;
 
-		  *res_cursor_x_pos = x_offset + char_width_sum + char_width;
-		  (*res_vis_pos)++;
-		}
-	      *res_log_pos = log_pos;
-	      break;
-	    }
-	  char_width_sum += char_width;
-	  (*res_vis_pos)++;
-	}
+          *res_cursor_x_pos = x_offset + char_width_sum + char_width;
+          (*res_vis_pos)++;
+        }
+          *res_log_pos = log_pos;
+          break;
+        }
+      char_width_sum += char_width;
+      (*res_vis_pos)++;
+    }
 
       /* If we still haven't found the position we are to the left of the
          character bounding box */
       if (char_idx == len)
-	{
-	  *res_cursor_dir_is_rtl = (base_dir == FRIBIDI_TYPE_RTL);
+    {
+      *res_cursor_dir_is_rtl = (base_dir == FRIBIDI_TYPE_RTL);
 
-	  if (*res_cursor_dir_is_rtl)
-	    *res_log_pos = 0;
-	  else
-	    *res_log_pos = len;
-	  *res_cursor_x_pos = char_width_sum + x_offset;
-	  *res_vis_pos = len;
-	  *res_attach_before = FRIBIDI_TRUE;
-	}
+      if (*res_cursor_dir_is_rtl)
+        *res_log_pos = 0;
+      else
+        *res_log_pos = len;
+      *res_cursor_x_pos = char_width_sum + x_offset;
+      *res_vis_pos = len;
+      *res_attach_before = FRIBIDI_TRUE;
+    }
     }
 
   /*  printf("x l,v = %d %d,%d\n", *res_cursor_x_pos, *res_log_pos, *res_vis_pos); */
@@ -300,7 +300,7 @@ fribidi_xpos_resolve (int x_pos,
  *----------------------------------------------------------------------*/
 FRIBIDI_API fribidi_boolean
 fribidi_is_char_rtl (FriBidiLevel *embedding_level_list,
-		     FriBidiCharType base_dir, FriBidiStrIndex idx)
+             FriBidiCharType base_dir, FriBidiStrIndex idx)
 {
   if (!embedding_level_list || idx < 0)
     return FRIBIDI_IS_RTL (base_dir);
@@ -315,11 +315,11 @@ fribidi_is_char_rtl (FriBidiLevel *embedding_level_list,
  *  the same attributes.
  *----------------------------------------------------------------------*/
 FRIBIDI_API void
-fribidi_runs_log2vis (		/* input */
-		       FriBidiList *logical_runs,	/* List of FriBidiRunType */
-		       FriBidiStrIndex len, FriBidiStrIndex *log2vis, FriBidiCharType base_dir,	/* TBD: remove it, not needed */
-		       /* output */
-		       FriBidiList **visual_runs)
+fribidi_runs_log2vis (      /* input */
+               FriBidiList *logical_runs,   /* List of FriBidiRunType */
+               FriBidiStrIndex len, FriBidiStrIndex *log2vis, FriBidiCharType base_dir, /* TBD: remove it, not needed */
+               /* output */
+               FriBidiList **visual_runs)
 {
   void **visual_attribs = (void **) malloc (sizeof (void *) * len);
   void *current_attrib;
@@ -340,7 +340,7 @@ fribidi_runs_log2vis (		/* input */
       void *attrib = run->attribute;
 
       for (i = pos; i < pos + length; i++)
-	visual_attribs[log2vis[i]] = attrib;
+    visual_attribs[log2vis[i]] = attrib;
       list = list->next;
     }
 
@@ -351,27 +351,27 @@ fribidi_runs_log2vis (		/* input */
   for (i = 0; i <= len; i++)
     {
       if (i == len || current_attrib != visual_attribs[i])
-	{
-	  FriBidiRunType *run =
-	    (FriBidiRunType *) malloc (sizeof (FriBidiRunType));
-	  run->length = i - current_idx;
-	  run->attribute = current_attrib;
+    {
+      FriBidiRunType *run =
+        (FriBidiRunType *) malloc (sizeof (FriBidiRunType));
+      run->length = i - current_idx;
+      run->attribute = current_attrib;
 
-	  /* Keeping track of the last node is crucial for efficiency
-	     for long lists... */
-	  if (last == NULL)
-	    last = *visual_runs = fribidi_list_append (NULL, run);
-	  else
-	    {
-	      fribidi_list_append (last, run);
-	      last = last->next;
-	    }
-	  if (i == len)
-	    break;
+      /* Keeping track of the last node is crucial for efficiency
+         for long lists... */
+      if (last == NULL)
+        last = *visual_runs = fribidi_list_append (NULL, run);
+      else
+        {
+          fribidi_list_append (last, run);
+          last = last->next;
+        }
+      if (i == len)
+        break;
 
-	  current_attrib = visual_attribs[i];
-	  current_idx = i;
-	}
+      current_attrib = visual_attribs[i];
+      current_idx = i;
+    }
     }
   free (visual_attribs);
 }

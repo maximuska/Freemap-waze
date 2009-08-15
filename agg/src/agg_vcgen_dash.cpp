@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -174,8 +174,8 @@ namespace agg
                 {
                     double dash_rest = m_dashes[m_curr_dash] - m_curr_dash_start;
 
-                    unsigned cmd = (m_curr_dash & 1) ? 
-                                   path_cmd_move_to : 
+                    unsigned cmd = (m_curr_dash & 1) ?
+                                   path_cmd_move_to :
                                    path_cmd_line_to;
 
                     if(m_curr_rest > dash_rest)
@@ -205,7 +205,7 @@ namespace agg
                             {
                                 m_v2 = &m_src_vertices
                                 [
-                                    (m_src_vertex >= m_src_vertices.size()) ? 0 : 
+                                    (m_src_vertex >= m_src_vertices.size()) ? 0 :
                                     m_src_vertex
                                 ];
                             }

@@ -33,22 +33,22 @@
 
 typedef struct {
 
-	int square;
+    int square;
    int line;
    int street;
    RoadMapString city;
-	RoadMapStreetRange range[2];
+    RoadMapStreetRange range[2];
 } RoadMapBlocks;
 
 typedef struct {
-    
+
     RoadMapStreetRange first_range;
     RoadMapStreetRange second_range;
-    
+
     int street;
-    
+
     RoadMapString city;
-    
+
 } RoadMapStreetProperties;
 
 #define ROADMAP_STREET_NOPROPERTY {{0, 0}, 0, 0}
@@ -74,9 +74,9 @@ typedef struct RoadMapNeighbour_t {
 
 } RoadMapNeighbour;
 
-#define	FLAG_EXTEND_FROM	0x0001
-#define	FLAG_EXTEND_TO		0x0002
-#define	FLAG_EXTEND_BOTH	(FLAG_EXTEND_FROM | FLAG_EXTEND_TO)
+#define FLAG_EXTEND_FROM    0x0001
+#define FLAG_EXTEND_TO      0x0002
+#define FLAG_EXTEND_BOTH    (FLAG_EXTEND_FROM | FLAG_EXTEND_TO)
 
 
 typedef int (*RoadMapStreetIterCB) (const PluginLine *line, void *context, int extend_flags);
@@ -115,7 +115,7 @@ int roadmap_street_get_position (RoadMapBlocks *blocks,
 
 int roadmap_street_get_distance
        (const RoadMapPosition *position, int line,
-	int cfcc, RoadMapNeighbour *result);
+    int cfcc, RoadMapNeighbour *result);
 
 int roadmap_street_get_closest
        (const RoadMapPosition *position, int scale, int *categories, int categories_count,
@@ -135,13 +135,13 @@ void roadmap_street_get_street (int line, RoadMapStreetProperties *properties);
 
 const char *roadmap_street_get_street_address
                 (const RoadMapStreetProperties *properties);
-                
+
 const char *roadmap_street_get_street_name
                 (const RoadMapStreetProperties *properties);
 
 const char *roadmap_street_get_city_name
                 (const RoadMapStreetProperties *properties);
-            
+
 const char *roadmap_street_get_full_name
                 (const RoadMapStreetProperties *properties);
 
@@ -179,9 +179,9 @@ int roadmap_street_search_city (const char *str, RoadMapDictionaryCB cb,
 
 void roadmap_street_update_city_index (void);
 
-int roadmap_street_extend_line_ends 
-			(const PluginLine *line, RoadMapPosition *from, RoadMapPosition *to,
-			 int flags, RoadMapStreetIterCB cb, void *context);
+int roadmap_street_extend_line_ends
+            (const PluginLine *line, RoadMapPosition *from, RoadMapPosition *to,
+             int flags, RoadMapStreetIterCB cb, void *context);
 int roadmap_street_line_has_predecessor (PluginLine *line);
 
 extern roadmap_db_handler RoadMapStreetHandler;

@@ -49,7 +49,7 @@ editor_db_handler EditorPointsHandler = {
 };
 
 int editor_point_add (RoadMapPosition *position, int db_id) {
-   
+
    editor_db_point point;
    int id;
 
@@ -73,10 +73,10 @@ void editor_point_position (int point, RoadMapPosition *position) {
 
 
 int editor_point_db_id  (int point) {
-	
+
    editor_db_point *point_st = editor_db_get_item (ActivePointsDB, point, 0, 0);
    assert(point_st != NULL);
-   
+
    return point_st->db_id;
 }
 

@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -47,7 +47,7 @@ namespace agg
             m_inc_y(-ry * m_two_rx2),
             m_cur_f(0)
         {}
-        
+
         int dx() const { return m_dx; }
         int dy() const { return m_dy; }
 
@@ -65,28 +65,28 @@ namespace agg
             mxy = fxy = m_cur_f + m_inc_x + m_ry2 + m_inc_y + m_rx2;
             if(mxy < 0) mxy = -mxy;
 
-            min_m = mx; 
+            min_m = mx;
             bool flag = true;
 
-            if(min_m > my)  
-            { 
-                min_m = my; 
-                flag = false; 
+            if(min_m > my)
+            {
+                min_m = my;
+                flag = false;
             }
 
             m_dx = m_dy = 0;
 
-            if(min_m > mxy) 
-            { 
+            if(min_m > mxy)
+            {
                 m_inc_x += m_two_ry2;
                 m_inc_y += m_two_rx2;
                 m_cur_f = fxy;
-                m_dx = 1; 
+                m_dx = 1;
                 m_dy = 1;
                 return;
             }
 
-            if(flag) 
+            if(flag)
             {
                 m_inc_x += m_two_ry2;
                 m_cur_f = fx;

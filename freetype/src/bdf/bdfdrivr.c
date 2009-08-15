@@ -469,7 +469,7 @@ THE SOFTWARE.
           (face->en_table[n]).enc = cur[n].encoding;
           FT_TRACE4(( "idx %d, val 0x%lX\n", n, cur[n].encoding ));
           (face->en_table[n]).glyph = (FT_Short)n;
-  
+
           if ( cur[n].encoding == font->default_char )
             face->default_glyph = n;
         }

@@ -22,7 +22,7 @@
  *
  *
  */
- 
+
 #ifndef REALTIMEPRIVACY_H_
 #define REALTIMEPRIVACY_H_
 
@@ -32,7 +32,7 @@ typedef enum privacy_context_menu_items
 {
    privacy_cm_save,
    privacy_cm_exit,
-   
+
    privacy_cm__count,
    privacy_cm__invalid
 

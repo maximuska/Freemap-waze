@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -129,9 +129,9 @@ namespace agg
         bool            m_hinting;
         bool            m_flip_y;
         bool            m_library_initialized;
-        FT_Library      m_library;    // handle to library    
+        FT_Library      m_library;    // handle to library
         FT_Face*        m_faces;      // A pool of font faces
-        char**          m_face_names; 
+        char**          m_face_names;
         unsigned        m_num_faces;
         unsigned        m_max_faces;
         FT_Face         m_cur_face;  // handle to the current face object
@@ -160,7 +160,7 @@ namespace agg
 
 
     //------------------------------------------------font_engine_freetype_int16
-    // This class uses values of type int16 (10.6 format) for the vector cache. 
+    // This class uses values of type int16 (10.6 format) for the vector cache.
     // The vector cache is compact, but when rendering glyphs of height
     // more that 200 there integer overflow can occur.
     //
@@ -173,13 +173,13 @@ namespace agg
         typedef font_engine_freetype_base::scanlines_aa_type  scanlines_aa_type;
         typedef font_engine_freetype_base::scanlines_bin_type scanlines_bin_type;
 
-        font_engine_freetype_int16(unsigned max_faces = 32) : 
+        font_engine_freetype_int16(unsigned max_faces = 32) :
             font_engine_freetype_base(false, max_faces) {}
     };
 
     //------------------------------------------------font_engine_freetype_int32
-    // This class uses values of type int32 (26.6 format) for the vector cache. 
-    // The vector cache is twice larger than in font_engine_freetype_int16, 
+    // This class uses values of type int32 (26.6 format) for the vector cache.
+    // The vector cache is twice larger than in font_engine_freetype_int16,
     // but it allows you to render glyphs of very large sizes.
     //
     class font_engine_freetype_int32 : public font_engine_freetype_base
@@ -191,7 +191,7 @@ namespace agg
         typedef font_engine_freetype_base::scanlines_aa_type  scanlines_aa_type;
         typedef font_engine_freetype_base::scanlines_bin_type scanlines_bin_type;
 
-        font_engine_freetype_int32(unsigned max_faces = 32) : 
+        font_engine_freetype_int32(unsigned max_faces = 32) :
             font_engine_freetype_base(true, max_faces) {}
     };
 

@@ -1,4 +1,4 @@
-/* roadmap_device.h - The interface for the client device settings functionality 
+/* roadmap_device.h - The interface for the client device settings functionality
  *
  * LICENSE:
  *

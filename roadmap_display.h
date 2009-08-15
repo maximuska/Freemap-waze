@@ -41,7 +41,7 @@ void roadmap_display_update_points
         (const char *title,
          RoadMapPosition *from,
          RoadMapPosition *to);
-         
+
 int roadmap_display_pop_up
         (const char *title,
          const char *image,
@@ -49,8 +49,8 @@ int roadmap_display_pop_up
          const char *format, ...) ;
 
 int roadmap_activate_image_sign(const char *title,
-         				   		const char *image);
-         				   		
+                                const char *image);
+
 void roadmap_display_text (const char *title, const char *format, ...);
 int  roadmap_display_is_sign_active (const char *title);
 

@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -33,10 +33,10 @@ namespace agg
     template<class Renderer> class rasterizer_outline
     {
     public:
-        explicit rasterizer_outline(Renderer& ren) : 
-            m_ren(&ren), 
-            m_start_x(0), 
-            m_start_y(0), 
+        explicit rasterizer_outline(Renderer& ren) :
+            m_ren(&ren),
+            m_start_x(0),
+            m_start_y(0),
             m_vertices(0)
         {}
         void attach(Renderer& ren) { m_ren = &ren; }
@@ -81,11 +81,11 @@ namespace agg
         //--------------------------------------------------------------------
         void add_vertex(double x, double y, unsigned cmd)
         {
-            if(is_move_to(cmd)) 
+            if(is_move_to(cmd))
             {
                 move_to_d(x, y);
             }
-            else 
+            else
             {
                 if(is_end_poly(cmd))
                 {
@@ -117,8 +117,8 @@ namespace agg
 
         //--------------------------------------------------------------------
         template<class VertexSource, class ColorStorage, class PathId>
-        void render_all_paths(VertexSource& vs, 
-                              const ColorStorage& colors, 
+        void render_all_paths(VertexSource& vs,
+                              const ColorStorage& colors,
                               const PathId& path_id,
                               unsigned num_paths)
         {

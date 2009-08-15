@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -77,14 +77,14 @@ namespace agg
             return 0;
         }
     };
-    
+
 
 
     //===============================================================simul_eq
     template<unsigned Size, unsigned RightCols>
     struct simul_eq
     {
-        static bool solve(const double left[Size][Size], 
+        static bool solve(const double left[Size][Size],
                           const double right[Size][RightCols],
                           double result[Size][RightCols])
         {
@@ -98,7 +98,7 @@ namespace agg
                 for(j = 0; j < Size; j++)
                 {
                     tmp[i][j] = left[i][j];
-                } 
+                }
                 for(j = 0; j < RightCols; j++)
                 {
                     tmp[i][Size + j] = right[i][j];

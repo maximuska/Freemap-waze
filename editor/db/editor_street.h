@@ -1,4 +1,4 @@
-/* editor_street.h - 
+/* editor_street.h -
  *
  * LICENSE:
  *
@@ -56,7 +56,7 @@ int editor_street_get_closest (const RoadMapPosition *position,
                                RoadMapNeighbour *neighbours,
                                int count,
                                int max);
-   
+
 const char *editor_street_get_full_name
                   (int street_id);
 

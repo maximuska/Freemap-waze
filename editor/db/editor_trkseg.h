@@ -55,7 +55,7 @@ typedef struct editor_db_trkseg_s {
 //void editor_trkseg_set_line (int trkseg, int line_id, int plugin_id);
 
 int editor_trkseg_add (int square,
-							  int line_id,
+                              int line_id,
                        int plugin_id,
                        int p_from,
                        int first_shape,

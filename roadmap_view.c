@@ -201,7 +201,7 @@ static void roadmap_view_auto_zoom_restore (void) {
 }
 
 void roadmap_view_auto_zoom_suspend (void) {
-	
+
    if (!RoadMapViewIsGpsFocus) return;
 
    if (navigate_is_auto_zoom()) {

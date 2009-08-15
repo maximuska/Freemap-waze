@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -33,7 +33,7 @@ namespace agg
 {
 
     //================================================span_interpolator_linear
-    template<class Transformer = trans_affine, unsigned SubpixelShift = 8> 
+    template<class Transformer = trans_affine, unsigned SubpixelShift = 8>
     class span_interpolator_linear
     {
     public:
@@ -88,7 +88,7 @@ namespace agg
             m_li_x = dda2_line_interpolator(m_li_x.y(), iround(xe * subpixel_scale), len);
             m_li_y = dda2_line_interpolator(m_li_y.y(), iround(ye * subpixel_scale), len);
         }
-    
+
         //----------------------------------------------------------------
         void operator++()
         {
@@ -115,7 +115,7 @@ namespace agg
 
 
     //=====================================span_interpolator_linear_subdiv
-    template<class Transformer = trans_affine, unsigned SubpixelShift = 8> 
+    template<class Transformer = trans_affine, unsigned SubpixelShift = 8>
     class span_interpolator_linear_subdiv
     {
     public:
@@ -134,8 +134,8 @@ namespace agg
             m_subdiv_size(1 << m_subdiv_shift),
             m_subdiv_mask(m_subdiv_size - 1) {}
 
-        span_interpolator_linear_subdiv(const trans_type& trans, 
-                                        unsigned subdiv_shift = 4) : 
+        span_interpolator_linear_subdiv(const trans_type& trans,
+                                        unsigned subdiv_shift = 4) :
             m_subdiv_shift(subdiv_shift),
             m_subdiv_size(1 << m_subdiv_shift),
             m_subdiv_mask(m_subdiv_size - 1),
@@ -158,7 +158,7 @@ namespace agg
 
         //----------------------------------------------------------------
         unsigned subdiv_shift() const { return m_subdiv_shift; }
-        void subdiv_shift(unsigned shift) 
+        void subdiv_shift(unsigned shift)
         {
             m_subdiv_shift = shift;
             m_subdiv_size = 1 << m_subdiv_shift;

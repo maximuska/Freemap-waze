@@ -277,7 +277,7 @@
     /* for each row */
     for ( y = 0; y < bitmap->rows ; y++ )
     {
-      /* 
+      /*
        * Horizontally:
        *
        * From the last pixel on, make each pixel or'ed with the
@@ -326,7 +326,7 @@
         }
       }
 
-      /* 
+      /*
        * Vertically:
        *
        * Make the above `ystr' rows or'ed with it.

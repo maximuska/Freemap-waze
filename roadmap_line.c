@@ -70,10 +70,10 @@ static DWORD s_dwThreadID = INVALID_THREAD_ID;
                      _method_, s_dwThreadID, dwThisThread);                                  \
       }                                                                                      \
    }
-   
+
 #else
 #define  VERIFY_THREAD(_method_)
-   
+
 #endif   // WIN32_DEBUG
 
 static char *RoadMapLineType = "RoadMapLineContext";
@@ -88,12 +88,12 @@ typedef struct {
    RoadMapLineBySquare *LineBySquare1;
    int                  LineBySquare1Count;
 
-	unsigned short		  *RoundaboutLine;
-	int						RoundaboutLineCount;
-	
-	unsigned short		  *BrokenLine;
-	int						BrokenLineCount;
-	
+    unsigned short        *RoundaboutLine;
+    int                     RoundaboutLineCount;
+
+    unsigned short        *BrokenLine;
+    int                     BrokenLineCount;
+
    int *LineIndex2;
    int  LineIndex2Count;
 
@@ -120,62 +120,62 @@ static void *roadmap_line_map (const roadmap_db_data_file *file) {
    context->type = RoadMapLineType;
 
    if (!roadmap_db_get_data (file,
-   								  model__tile_line_data,
-   								  sizeof (RoadMapLine),
-   								  (void**)&(context->Line),
-   								  &(context->LineCount))) {
+                                  model__tile_line_data,
+                                  sizeof (RoadMapLine),
+                                  (void**)&(context->Line),
+                                  &(context->LineCount))) {
       roadmap_log (ROADMAP_ERROR, "invalid line/data structure");
-	   goto roadmap_line_map_abort;
+       goto roadmap_line_map_abort;
    }
 
    if (!roadmap_db_get_data (file,
-   								  model__tile_line_bysquare1,
-   								  sizeof (RoadMapLineBySquare),
-   								  (void**)&(context->LineBySquare1),
-   								  &(context->LineBySquare1Count))) {
+                                  model__tile_line_bysquare1,
+                                  sizeof (RoadMapLineBySquare),
+                                  (void**)&(context->LineBySquare1),
+                                  &(context->LineBySquare1Count))) {
       roadmap_log (ROADMAP_ERROR, "invalid line/bysquare1 structure");
-	   goto roadmap_line_map_abort;
+       goto roadmap_line_map_abort;
    }
 
-	if (context->LineBySquare1->first_broken[ROADMAP_DIRECTION_COUNT * 2] > 0) {
-	   
-	   if (!roadmap_db_get_data (file,
-	   								  model__tile_line_broken,
-	   								  sizeof (unsigned short),
-	   								  (void**)&(context->BrokenLine),
-	   								  &(context->BrokenLineCount))) {
-	      roadmap_log (ROADMAP_ERROR, "invalid line/broken structure");
-	      goto roadmap_line_map_abort;
-	   }
-	   
-	   if (context->LineBySquare1->first_broken[ROADMAP_DIRECTION_COUNT * 2] != context->BrokenLineCount) {
-	   	roadmap_log (ROADMAP_ERROR, "broken count mismatch");
-	      goto roadmap_line_map_abort;
-	   }
-	} else {
-	   context->BrokenLine = NULL;
-	   context->BrokenLineCount = 0;
-	}
+    if (context->LineBySquare1->first_broken[ROADMAP_DIRECTION_COUNT * 2] > 0) {
 
-	if (context->LineBySquare1->num_roundabout > 0) {
-	   
-	   if (!roadmap_db_get_data (file,
-	   								  model__tile_line_roundabout,
-	   								  sizeof (unsigned short),
-	   								  (void**)&(context->RoundaboutLine),
-	   								  &(context->RoundaboutLineCount))) {
-	      roadmap_log (ROADMAP_ERROR, "invalid line/roundabout structure");
-	      goto roadmap_line_map_abort;
-	   }
-	   
-	   if (context->LineBySquare1->num_roundabout != context->RoundaboutLineCount) {
-	   	roadmap_log (ROADMAP_ERROR, "roundabout count mismatch");
-	      goto roadmap_line_map_abort;
-	   }
-	} else {
-	   context->RoundaboutLine = NULL;
-	   context->RoundaboutLineCount = 0;
-	}
+       if (!roadmap_db_get_data (file,
+                                      model__tile_line_broken,
+                                      sizeof (unsigned short),
+                                      (void**)&(context->BrokenLine),
+                                      &(context->BrokenLineCount))) {
+          roadmap_log (ROADMAP_ERROR, "invalid line/broken structure");
+          goto roadmap_line_map_abort;
+       }
+
+       if (context->LineBySquare1->first_broken[ROADMAP_DIRECTION_COUNT * 2] != context->BrokenLineCount) {
+        roadmap_log (ROADMAP_ERROR, "broken count mismatch");
+          goto roadmap_line_map_abort;
+       }
+    } else {
+       context->BrokenLine = NULL;
+       context->BrokenLineCount = 0;
+    }
+
+    if (context->LineBySquare1->num_roundabout > 0) {
+
+       if (!roadmap_db_get_data (file,
+                                      model__tile_line_roundabout,
+                                      sizeof (unsigned short),
+                                      (void**)&(context->RoundaboutLine),
+                                      &(context->RoundaboutLineCount))) {
+          roadmap_log (ROADMAP_ERROR, "invalid line/roundabout structure");
+          goto roadmap_line_map_abort;
+       }
+
+       if (context->LineBySquare1->num_roundabout != context->RoundaboutLineCount) {
+        roadmap_log (ROADMAP_ERROR, "roundabout count mismatch");
+          goto roadmap_line_map_abort;
+       }
+    } else {
+       context->RoundaboutLine = NULL;
+       context->RoundaboutLineCount = 0;
+    }
 
    context->LineIndex2Count = 0;
    context->LineBySquare2Count = 0;
@@ -192,7 +192,7 @@ roadmap_line_map_abort:
 static void roadmap_line_activate (void *context) {
 
    RoadMapLineContext *line_context = (RoadMapLineContext *) context;
-   
+
    VERIFY_THREAD("roadmap_line_activate")
 
    if ((line_context != NULL) &&
@@ -234,8 +234,8 @@ int roadmap_line_in_square (int square, int cfcc, int *first, int *last) {
 
    if (RoadMapLineActive == NULL) return 0; /* No line. */
 
-	*first = RoadMapLineActive->LineBySquare1->next[cfcc - 1];
-	*last = RoadMapLineActive->LineBySquare1->next[cfcc] - 1;
+    *first = RoadMapLineActive->LineBySquare1->next[cfcc - 1];
+    *last = RoadMapLineActive->LineBySquare1->next[cfcc] - 1;
 
    return (*last) >= (*first);
 }
@@ -281,13 +281,13 @@ void roadmap_line_to   (int line, RoadMapPosition *position) {
 
 int  roadmap_line_from_is_fake (int line) {
 
-	return RoadMapLineActive->Line[line].from & POINT_FAKE_FLAG;
+    return RoadMapLineActive->Line[line].from & POINT_FAKE_FLAG;
 }
 
 
 int  roadmap_line_to_is_fake (int line) {
 
-	return RoadMapLineActive->Line[line].to & POINT_FAKE_FLAG;
+    return RoadMapLineActive->Line[line].to & POINT_FAKE_FLAG;
 }
 
 
@@ -357,11 +357,11 @@ int roadmap_line_shapes (int line, int *first_shape, int *last_shape) {
 
 
 int roadmap_line_get_range (int line) {
-   
+
    int range;
 
-	if (RoadMapLineActive == NULL) return -1; /* No line. */
-	
+    if (RoadMapLineActive == NULL) return -1; /* No line. */
+
    VERIFY_THREAD("roadmap_line_get_range")
 
 #ifdef DEBUG
@@ -370,14 +370,14 @@ int roadmap_line_get_range (int line) {
    }
 #endif
 
-	range = RoadMapLineActive->Line[line].range;
-	if (range == ROADMAP_LINE_NO_RANGE) return -1;
-	return range;
+    range = RoadMapLineActive->Line[line].range;
+    if (range == ROADMAP_LINE_NO_RANGE) return -1;
+    return range;
 }
 
 
 int roadmap_line_get_street (int line) {
-   
+
    return roadmap_range_get_street (roadmap_line_get_range (line));
 }
 
@@ -462,43 +462,43 @@ int roadmap_line_cfcc (int line_id) {
 
    index = RoadMapLineActive->LineBySquare1[0].next;
 
-	if (index[ROADMAP_ROAD_FIRST - 1] > line_id) return 0; // not a road
-	
-	for (cfcc = ROADMAP_ROAD_FIRST; cfcc <= ROADMAP_ROAD_LAST; cfcc++) {
-		if (index[cfcc] > line_id) return cfcc;
-	}
-	
-	return 0;
+    if (index[ROADMAP_ROAD_FIRST - 1] > line_id) return 0; // not a road
+
+    for (cfcc = ROADMAP_ROAD_FIRST; cfcc <= ROADMAP_ROAD_LAST; cfcc++) {
+        if (index[cfcc] > line_id) return cfcc;
+    }
+
+    return 0;
 }
 
 
 int roadmap_line_broken_range (int direction, int broken_to, int *first, int *last) {
-	
-	unsigned short *pos;
+
+    unsigned short *pos;
    if (RoadMapLineActive == NULL) return 0; /* No line. */
-   
-   pos = RoadMapLineActive->LineBySquare1->first_broken + (direction * 2 + broken_to); 
+
+   pos = RoadMapLineActive->LineBySquare1->first_broken + (direction * 2 + broken_to);
    *first = *pos++;
    *last = (*pos) - 1;
-   
+
    return (*last) >= (*first);
 }
 
 
 int roadmap_line_get_broken (int broken_id) {
 
-	return RoadMapLineActive->BrokenLine[broken_id];	
+    return RoadMapLineActive->BrokenLine[broken_id];
 }
 
 
-SegmentContext roadmap_line_context (int line_id) { 
+SegmentContext roadmap_line_context (int line_id) {
 
-	int i;
-	
-	for (i = 0; i < RoadMapLineActive->RoundaboutLineCount; i++) {
-		if (line_id == RoadMapLineActive->RoundaboutLine[i]) return SEG_ROUNDABOUT;
-	}
-	return SEG_ROAD;
+    int i;
+
+    for (i = 0; i < RoadMapLineActive->RoundaboutLineCount; i++) {
+        if (line_id == RoadMapLineActive->RoundaboutLine[i]) return SEG_ROUNDABOUT;
+    }
+    return SEG_ROAD;
 }
 
 

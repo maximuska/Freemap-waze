@@ -32,17 +32,17 @@
 
 RoadMapLibrary roadmap_library_load (const char *pathname)
 {
-	return NULL;
+    return NULL;
 }
 
 
 int roadmap_library_exists (const char *pathname)
 {
-	return 0;
+    return 0;
 }
 
 
 void *roadmap_library_symbol (RoadMapLibrary library, const char *symbol)
 {
-	return NULL;
+    return NULL;
 }

@@ -573,10 +573,10 @@ static int roadmap_download_usdir (RoadMapDownloadCallbacks *callbacks) {
    strncpy_safe (format+1, "usdir.rdm", sizeof(source) - (format - source + 1));
 
 #ifndef _WIN32
-   snprintf (destination, sizeof(destination), "%s/usdir.rdm", 
+   snprintf (destination, sizeof(destination), "%s/usdir.rdm",
          roadmap_config_get (&RoadMapConfigDestination));
 #else
-   snprintf (destination, sizeof(destination), "%s\\usdir.rdm", 
+   snprintf (destination, sizeof(destination), "%s\\usdir.rdm",
          roadmap_config_get (&RoadMapConfigDestination));
 #endif
 
@@ -669,7 +669,7 @@ int roadmap_download_next_county (RoadMapDownloadCallbacks *callbacks) {
 
    RoadMapDownloadFrom = source;
    roadmap_dialog_set_data (".file", "From", source);
-   
+
    dest = roadmap_path_join(roadmap_config_get (&RoadMapConfigDestination), basename + 1);
 
    RoadMapDownloadTo = dest;
@@ -684,7 +684,7 @@ int roadmap_download_next_county (RoadMapDownloadCallbacks *callbacks) {
       res = roadmap_download_start ("Download a Map", callbacks);
    }
 #endif
-   
+
    roadmap_path_free(dest);
    return res;
 }

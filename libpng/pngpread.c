@@ -522,8 +522,8 @@ png_push_crc_finish(png_structp png_ptr)
 
       png_calculate_crc(png_ptr, png_ptr->save_buffer_ptr, save_size);
 
-      png_ptr->skip_length	-= (png_uint_32)save_size;
-      png_ptr->buffer_size	-= save_size;
+      png_ptr->skip_length  -= (png_uint_32)save_size;
+      png_ptr->buffer_size  -= save_size;
       png_ptr->save_buffer_size -= save_size;
       png_ptr->save_buffer_ptr += save_size;
    }

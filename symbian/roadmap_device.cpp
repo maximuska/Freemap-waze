@@ -37,51 +37,51 @@ static RoadMapConfigDescriptor RoadMapConfigBackLight =
 
 
 /***********************************************************/
-/*	Name 		: roadmap_device_initialize
-/*	Purpose 	: Loads the backlight parameter from the configuration
- * 					and updates the application. Returns the loaded value			 
+/*  Name        : roadmap_device_initialize
+/*  Purpose     : Loads the backlight parameter from the configuration
+ *                  and updates the application. Returns the loaded value
  */
 int roadmap_device_initialize( void )
 {
-	CFreeMapAppUi* pAppUi;
-	TBool isAlwaysOn;
-	
-	// Load the configuration
+    CFreeMapAppUi* pAppUi;
+    TBool isAlwaysOn;
+
+    // Load the configuration
     roadmap_config_declare
        ("user", &RoadMapConfigBackLight, "yes", NULL);
     isAlwaysOn = roadmap_config_match( &RoadMapConfigBackLight, "yes" );
-    
-	// Update the UI object
-	pAppUi = static_cast<CFreeMapAppUi*>( CEikonEnv::Static()->EikAppUi() );
-	pAppUi->SetBackLiteOn( ( TBool ) isAlwaysOn );
-	
-	// Log the operation
-	roadmap_log( ROADMAP_DEBUG, "roadmap_backlight_initialize() - Current setting : %s", 
-													roadmap_config_get( &RoadMapConfigBackLight ) );
-	
-	return isAlwaysOn;
-	
+
+    // Update the UI object
+    pAppUi = static_cast<CFreeMapAppUi*>( CEikonEnv::Static()->EikAppUi() );
+    pAppUi->SetBackLiteOn( ( TBool ) isAlwaysOn );
+
+    // Log the operation
+    roadmap_log( ROADMAP_DEBUG, "roadmap_backlight_initialize() - Current setting : %s",
+                                                    roadmap_config_get( &RoadMapConfigBackLight ) );
+
+    return isAlwaysOn;
+
 }
 
 
 /***********************************************************/
-/*	Name 		: roadmap_device_set_backlight
-/*	Purpose 	: Sets the backlight of the display to be always on
- * 					if the parameter is zero the device system defaults are used			 
+/*  Name        : roadmap_device_set_backlight
+/*  Purpose     : Sets the backlight of the display to be always on
+ *                  if the parameter is zero the device system defaults are used
  */
 void roadmap_device_set_backlight( int alwaysOn )
 {
-	CFreeMapAppUi* pAppUi;
-	const char * alwaysOnStr = alwaysOn ? "yes" : "no";
-	// Update the UI object
-	pAppUi = static_cast<CFreeMapAppUi*>( CEikonEnv::Static()->EikAppUi() );
-	pAppUi->SetBackLiteOn( ( TBool ) alwaysOn );
-	
-	// Update the configuration
-	roadmap_config_set( &RoadMapConfigBackLight, alwaysOnStr );	 
-	
-	// Log the operation
-	roadmap_log( ROADMAP_DEBUG, "roadmap_set_backlight() - Current setting : %s", alwaysOnStr );
-	
-	return;
+    CFreeMapAppUi* pAppUi;
+    const char * alwaysOnStr = alwaysOn ? "yes" : "no";
+    // Update the UI object
+    pAppUi = static_cast<CFreeMapAppUi*>( CEikonEnv::Static()->EikAppUi() );
+    pAppUi->SetBackLiteOn( ( TBool ) alwaysOn );
+
+    // Update the configuration
+    roadmap_config_set( &RoadMapConfigBackLight, alwaysOnStr );
+
+    // Log the operation
+    roadmap_log( ROADMAP_DEBUG, "roadmap_set_backlight() - Current setting : %s", alwaysOnStr );
+
+    return;
 }

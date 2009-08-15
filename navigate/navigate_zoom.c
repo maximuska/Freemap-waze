@@ -56,7 +56,7 @@ void navigate_zoom_update (int distance,
    }
 
    if (distance < 100) distance = 100;
-   
+
 #if 0
    if (distance > 500) {
       units = roadmap_screen_height();
@@ -68,18 +68,18 @@ void navigate_zoom_update (int distance,
 #if 0
    if (distance <= 500) {
       distance *= 3;
-      if (distance > 500) 
-      	distance = 500;
+      if (distance > 500)
+        distance = 500;
    }
 #endif
 
-	if (distance <= 500) {
-   	NavigateZoomScale = distance * 3;
-	} else if (distance <= 1000) {
-   	NavigateZoomScale = ((distance - 500) * 2000 + (1000 - distance) * 1500) / 500;
-	} else {
-   	NavigateZoomScale = distance * 2;
-	}
+    if (distance <= 500) {
+    NavigateZoomScale = distance * 3;
+    } else if (distance <= 1000) {
+    NavigateZoomScale = ((distance - 500) * 2000 + (1000 - distance) * 1500) / 500;
+    } else {
+    NavigateZoomScale = distance * 2;
+    }
 }
 
 int navigate_zoom_get_scale (void) {

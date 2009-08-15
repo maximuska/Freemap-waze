@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -50,9 +50,9 @@ namespace agg
         void attach(base_ren_type& ren) { m_ren = &ren; }
 
         //--------------------------------------------------------------------
-        static int coord(double c) 
-        { 
-            return iround(c * line_bresenham_interpolator::subpixel_scale); 
+        static int coord(double c)
+        {
+            return iround(c * line_bresenham_interpolator::subpixel_scale);
         }
 
         //--------------------------------------------------------------------
@@ -77,7 +77,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void outlined_rectangle(int x1, int y1, int x2, int y2) 
+        void outlined_rectangle(int x1, int y1, int x2, int y2)
         {
             rectangle(x1, y1, x2, y2);
             m_ren->blend_bar(x1+1, y1+1, x2-1, y2-1, m_fill_color, cover_full);
@@ -209,8 +209,8 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        const base_ren_type& ren() const { return *m_ren; }        
-        base_ren_type& ren() { return *m_ren; }        
+        const base_ren_type& ren() const { return *m_ren; }
+        base_ren_type& ren() { return *m_ren; }
 
         //--------------------------------------------------------------------
         const rendering_buffer& rbuf() const { return m_ren->rbuf(); }

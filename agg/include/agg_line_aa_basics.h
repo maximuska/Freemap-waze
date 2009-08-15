@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -31,7 +31,7 @@
 namespace agg
 {
 
-    // See Implementation agg_line_aa_basics.cpp 
+    // See Implementation agg_line_aa_basics.cpp
 
     //-------------------------------------------------------------------------
     enum line_subpixel_scale_e
@@ -47,25 +47,25 @@ namespace agg
     enum line_mr_subpixel_scale_e
     {
         line_mr_subpixel_shift = 4,                           //----line_mr_subpixel_shift
-        line_mr_subpixel_scale = 1 << line_mr_subpixel_shift, //----line_mr_subpixel_scale 
-        line_mr_subpixel_mask  = line_mr_subpixel_scale - 1   //----line_mr_subpixel_mask 
+        line_mr_subpixel_scale = 1 << line_mr_subpixel_shift, //----line_mr_subpixel_scale
+        line_mr_subpixel_mask  = line_mr_subpixel_scale - 1   //----line_mr_subpixel_mask
     };
 
     //------------------------------------------------------------------line_mr
-    AGG_INLINE int line_mr(int x) 
-    { 
-        return x >> (line_subpixel_shift - line_mr_subpixel_shift); 
+    AGG_INLINE int line_mr(int x)
+    {
+        return x >> (line_subpixel_shift - line_mr_subpixel_shift);
     }
 
     //-------------------------------------------------------------------line_hr
-    AGG_INLINE int line_hr(int x) 
-    { 
-        return x << (line_subpixel_shift - line_mr_subpixel_shift); 
+    AGG_INLINE int line_hr(int x)
+    {
+        return x << (line_subpixel_shift - line_mr_subpixel_shift);
     }
 
     //---------------------------------------------------------------line_dbl_hr
-    AGG_INLINE int line_dbl_hr(int x) 
-    { 
+    AGG_INLINE int line_dbl_hr(int x)
+    {
         return x << line_subpixel_shift;
     }
 
@@ -93,7 +93,7 @@ namespace agg
         //---------------------------------------------------------------------
         line_parameters() {}
         line_parameters(int x1_, int y1_, int x2_, int y2_, int len_) :
-            x1(x1_), y1(y1_), x2(x2_), y2(y2_), 
+            x1(x1_), y1(y1_), x2(x2_), y2(y2_),
             dx(abs(x2_ - x1_)),
             dy(abs(y2_ - y1_)),
             sx((x2_ > x1_) ? 1 : -1),
@@ -143,7 +143,7 @@ namespace agg
             lp2.dx  = abs(lp2.x2 - lp2.x1);
             lp2.dy  = abs(lp2.y2 - lp2.y1);
         }
-        
+
         //---------------------------------------------------------------------
         int x1, y1, x2, y2, dx, dy, sx, sy;
         bool vertical;
@@ -158,19 +158,19 @@ namespace agg
 
 
 
-    // See Implementation agg_line_aa_basics.cpp 
+    // See Implementation agg_line_aa_basics.cpp
 
     //----------------------------------------------------------------bisectrix
-    void bisectrix(const line_parameters& l1, 
-                   const line_parameters& l2, 
+    void bisectrix(const line_parameters& l1,
+                   const line_parameters& l2,
                    int* x, int* y);
 
 
     //-------------------------------------------fix_degenerate_bisectrix_start
-    void inline fix_degenerate_bisectrix_start(const line_parameters& lp, 
+    void inline fix_degenerate_bisectrix_start(const line_parameters& lp,
                                                int* x, int* y)
     {
-        int d = iround((double(*x - lp.x2) * double(lp.y2 - lp.y1) - 
+        int d = iround((double(*x - lp.x2) * double(lp.y2 - lp.y1) -
                         double(*y - lp.y2) * double(lp.x2 - lp.x1)) / lp.len);
         if(d < line_subpixel_scale/2)
         {
@@ -181,10 +181,10 @@ namespace agg
 
 
     //---------------------------------------------fix_degenerate_bisectrix_end
-    void inline fix_degenerate_bisectrix_end(const line_parameters& lp, 
+    void inline fix_degenerate_bisectrix_end(const line_parameters& lp,
                                              int* x, int* y)
     {
-        int d = iround((double(*x - lp.x2) * double(lp.y2 - lp.y1) - 
+        int d = iround((double(*x - lp.x2) * double(lp.y2 - lp.y1) -
                         double(*y - lp.y2) * double(lp.x2 - lp.x1)) / lp.len);
         if(d < line_subpixel_scale/2)
         {

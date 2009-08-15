@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -32,8 +32,8 @@ namespace agg
 
     //-----------------------------------------------------------bounding_rect
     template<class VertexSource, class GetId, class CoordT>
-    bool bounding_rect(VertexSource& vs, GetId& gi, 
-                       unsigned start, unsigned num, 
+    bool bounding_rect(VertexSource& vs, GetId& gi,
+                       unsigned start, unsigned num,
                        CoordT* x1, CoordT* y1, CoordT* x2, CoordT* y2)
     {
         unsigned i;
@@ -77,7 +77,7 @@ namespace agg
 
 
     //-----------------------------------------------------bounding_rect_single
-    template<class VertexSource, class CoordT> 
+    template<class VertexSource, class CoordT>
     bool bounding_rect_single(VertexSource& vs, unsigned path_id,
                               CoordT* x1, CoordT* y1, CoordT* x2, CoordT* y2)
     {

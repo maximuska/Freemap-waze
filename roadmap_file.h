@@ -69,15 +69,15 @@ typedef int RoadMapFile; /* UNIX style. */
 #endif
 
 typedef enum {
-	ROADMAP_SEEK_START,
-	ROADMAP_SEEK_CURR,
-	ROADMAP_SEEK_END
-} RoadMapSeekWhence; 
+    ROADMAP_SEEK_START,
+    ROADMAP_SEEK_CURR,
+    ROADMAP_SEEK_END
+} RoadMapSeekWhence;
 
 RoadMapFile roadmap_file_open  (const char *name, const char *mode);
 int   roadmap_file_read  (RoadMapFile file, void *data, int size);
 int   roadmap_file_write (RoadMapFile file, const void *data, int length);
-int   roadmap_file_seek  (RoadMapFile file, int offset, RoadMapSeekWhence whence); 
+int   roadmap_file_seek  (RoadMapFile file, int offset, RoadMapSeekWhence whence);
 void  roadmap_file_close (RoadMapFile file);
 
 void  roadmap_file_remove (const char *path, const char *name);

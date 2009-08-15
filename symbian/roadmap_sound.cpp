@@ -36,7 +36,7 @@
 #include "GSConvert.h"
 extern "C" {
 #include "roadmap_path.h"
-#include "roadmap_file.h" 
+#include "roadmap_file.h"
 #include "roadmap_symbian_porting.h"
 #include "roadmap_sound.h"
 #include "roadmap_config.h"
@@ -59,32 +59,32 @@ static RoadMapConfigDescriptor RoadMapConfigVolControl =
 static RoadMapSoundList sound_lists[MAX_LISTS];
 static int              current_list = -1;
 
-void roadmap_sound_initialize () 
+void roadmap_sound_initialize ()
 {
   CRoadMapNativeSound::GetInstance(); //  although not strictly necessary
   int curLvl;
-  
+
   // Initialize the volume labels for GUI
   SND_VOLUME_LVLS_LABELS[0] = roadmap_lang_get( "Silent" );
   SND_VOLUME_LVLS_LABELS[1] = roadmap_lang_get( "Low" );
   SND_VOLUME_LVLS_LABELS[2] = roadmap_lang_get( "Medium" );
   SND_VOLUME_LVLS_LABELS[3] = roadmap_lang_get( "High" );
-  
+
   // Set current volume from the configuration
   roadmap_config_declare("user", &RoadMapConfigVolControl, SND_DEFAULT_VOLUME_LVL, NULL );
   curLvl = roadmap_config_get_integer( &RoadMapConfigVolControl );
-  CRoadMapNativeSound::GetInstance()->SetVolume( curLvl, SND_VOLUME_LVLS[0], SND_VOLUME_LVLS[SND_VOLUME_LVLS_COUNT-1] );  
+  CRoadMapNativeSound::GetInstance()->SetVolume( curLvl, SND_VOLUME_LVLS[0], SND_VOLUME_LVLS[SND_VOLUME_LVLS_COUNT-1] );
 
   // Log the operation
   roadmap_log( ROADMAP_DEBUG, "Current volume initialized to level : %d.", curLvl );
 }
 
-void roadmap_sound_shutdown () 
+void roadmap_sound_shutdown ()
 {
   CRoadMapNativeSound::FreeInstance();
 }
 
-RoadMapSoundList roadmap_sound_list_create (int flags) 
+RoadMapSoundList roadmap_sound_list_create (int flags)
 {
   RoadMapSoundList list =
         (RoadMapSoundList) calloc (1, sizeof(struct roadmap_sound_list_t));
@@ -94,10 +94,10 @@ RoadMapSoundList roadmap_sound_list_create (int flags)
   return list;
 }
 
-int roadmap_sound_list_add (RoadMapSoundList list, const char *name) 
+int roadmap_sound_list_add (RoadMapSoundList list, const char *name)
 {
   if (list->count == MAX_SOUND_LIST) return -1;
-  
+
   strncpy (list->list[list->count], name, sizeof(list->list[0]));
   list->list[list->count][sizeof(list->list[0])-1] = '\0';
   list->count++;
@@ -105,7 +105,7 @@ int roadmap_sound_list_add (RoadMapSoundList list, const char *name)
   return list->count - 1;
 }
 
-int roadmap_sound_play_list (const RoadMapSoundList list) 
+int roadmap_sound_play_list (const RoadMapSoundList list)
 {
   return CRoadMapNativeSound::GetInstance()->PlayList(list);
 }
@@ -118,7 +118,7 @@ RoadMapSound roadmap_sound_load (const char *path, const char *file, int *mem) {
    char sound_filename[MAX_SOUND_NAME];
 
    return NULL;
-   
+
    snprintf(sound_filename, sizeof(sound_filename), "%s.mp3", full_name);
    seq = roadmap_file_map (NULL, sound_filename, NULL, "r", &sound);
 
@@ -167,21 +167,21 @@ int roadmap_sound_record (const char *file_name, int seconds) {
 }
 
 /***********************************************************/
-/*	Name 		: roadmap_sound_set_volume
-/*	Purpose 	: Sets the user volume setting to the native sound object 
- * 					with configuration update			 
+/*  Name        : roadmap_sound_set_volume
+/*  Purpose     : Sets the user volume setting to the native sound object
+ *                  with configuration update
  */
-void roadmap_sound_set_volume ( int volLvl ) 
+void roadmap_sound_set_volume ( int volLvl )
 {
-	CRoadMapNativeSound::GetInstance(); //  although not strictly necessary
-	
-	// Update the device
-	CRoadMapNativeSound::GetInstance()->SetVolume( volLvl, SND_VOLUME_LVLS[0], SND_VOLUME_LVLS[SND_VOLUME_LVLS_COUNT-1] );
-	  
-	// Update the configuration
-	roadmap_config_set_integer( &RoadMapConfigVolControl, volLvl );
-  
-	// Log the operation
-	roadmap_log( ROADMAP_DEBUG, "Current volume is set to level : %d.", volLvl );
-  
+    CRoadMapNativeSound::GetInstance(); //  although not strictly necessary
+
+    // Update the device
+    CRoadMapNativeSound::GetInstance()->SetVolume( volLvl, SND_VOLUME_LVLS[0], SND_VOLUME_LVLS[SND_VOLUME_LVLS_COUNT-1] );
+
+    // Update the configuration
+    roadmap_config_set_integer( &RoadMapConfigVolControl, volLvl );
+
+    // Log the operation
+    roadmap_log( ROADMAP_DEBUG, "Current volume is set to level : %d.", volLvl );
+
 }

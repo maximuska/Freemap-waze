@@ -41,7 +41,7 @@ typedef struct tagGPSPointInTime
    RoadMapPosition   Position;
    time_t            GPS_time;
    BOOL              ToBeSaved;
-   
+
 }  GPSPointInTime, *LPGPSPointInTime;
 
 void GPSPointInTime_Init( LPGPSPointInTime this);
@@ -51,7 +51,7 @@ typedef struct tagNodeInTime
 {
    int      node;
    time_t   GPS_time;
-   
+
 }  NodeInTime, *LPNodeInTime;
 
 void NodeInTime_Init( LPNodeInTime this);
@@ -74,7 +74,7 @@ typedef struct tagRealtimePathTrack
    TrackInfo      points_track_info;
    TrackInfo      nodes_track_info;
    int            last_noded_added;
-   
+
    int            debug_GPS_points_removed_min_distance;
    int            debug_GPS_points_removed_variant_threshold;
 

@@ -225,9 +225,9 @@ void roadmap_hash_reset (void) {
 
       next = hash->next_hash;
 
-		/* temp path for city list creation */
-		if (!strcmp (hash->name, "city_list")) continue;
-		
+        /* temp path for city list creation */
+        if (!strcmp (hash->name, "city_list")) continue;
+
       if (hash->values != NULL) {
          free (hash->values);
       }
@@ -242,7 +242,7 @@ int roadmap_hash_string (const char *str) {
 
    int hash = 0;
    unsigned int i;
-   
+
    for (i=0; i<strlen(str); i++) {
       hash += str[i]*(i+1);
    }

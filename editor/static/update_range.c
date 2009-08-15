@@ -290,7 +290,7 @@ static void update_range (const char *updated_left, const char *updated_right,
 
       roadmap_messagebox ("Error", "Can't save marker.");
    } else {
-		editor_report_markers ();
+        editor_report_markers ();
    }
 
 }

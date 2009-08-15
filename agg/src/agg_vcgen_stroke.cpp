@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -112,8 +112,8 @@ namespace agg
 
             case cap1:
                 m_stroker.calc_cap(m_out_vertices,
-                                   m_src_vertices[0], 
-                                   m_src_vertices[1], 
+                                   m_src_vertices[0],
+                                   m_src_vertices[1],
                                    m_src_vertices[0].dist);
                 m_src_vertex = 1;
                 m_prev_status = outline1;
@@ -123,8 +123,8 @@ namespace agg
 
             case cap2:
                 m_stroker.calc_cap(m_out_vertices,
-                                   m_src_vertices[m_src_vertices.size() - 1], 
-                                   m_src_vertices[m_src_vertices.size() - 2], 
+                                   m_src_vertices[m_src_vertices.size() - 1],
+                                   m_src_vertices[m_src_vertices.size() - 2],
                                    m_src_vertices[m_src_vertices.size() - 2].dist);
                 m_prev_status = outline2;
                 m_status = out_vertices;
@@ -149,10 +149,10 @@ namespace agg
                         break;
                     }
                 }
-                m_stroker.calc_join(m_out_vertices, 
-                                    m_src_vertices.prev(m_src_vertex), 
-                                    m_src_vertices.curr(m_src_vertex), 
-                                    m_src_vertices.next(m_src_vertex), 
+                m_stroker.calc_join(m_out_vertices,
+                                    m_src_vertices.prev(m_src_vertex),
+                                    m_src_vertices.curr(m_src_vertex),
+                                    m_src_vertices.next(m_src_vertex),
                                     m_src_vertices.prev(m_src_vertex).dist,
                                     m_src_vertices.curr(m_src_vertex).dist);
                 ++m_src_vertex;
@@ -175,10 +175,10 @@ namespace agg
 
                 --m_src_vertex;
                 m_stroker.calc_join(m_out_vertices,
-                                    m_src_vertices.next(m_src_vertex), 
-                                    m_src_vertices.curr(m_src_vertex), 
-                                    m_src_vertices.prev(m_src_vertex), 
-                                    m_src_vertices.curr(m_src_vertex).dist, 
+                                    m_src_vertices.next(m_src_vertex),
+                                    m_src_vertices.curr(m_src_vertex),
+                                    m_src_vertices.prev(m_src_vertex),
+                                    m_src_vertices.curr(m_src_vertex).dist,
                                     m_src_vertices.prev(m_src_vertex).dist);
 
                 m_prev_status = m_status;

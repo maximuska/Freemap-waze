@@ -71,8 +71,8 @@ struct RoadMapNeighbour_t;
 int roadmap_plugin_same_line (const PluginLine *line1, const PluginLine *line2);
 
 int roadmap_plugin_same_db_line (const PluginLine *line1,
-                              	const PluginLine *line2);
-                              	
+                                const PluginLine *line2);
+
 int roadmap_plugin_same_street (const PluginStreet *street1,
                                 const PluginStreet *street2);
 

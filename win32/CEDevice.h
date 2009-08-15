@@ -24,15 +24,15 @@
 #define CEDEVICE
 
 class CEDevice {
-	public:
-		static void init();
-		static void end();
-		static void wakeUp();
-		static bool hasPocketPCResolution();
-		static bool hasDesktopResolution();
-		static bool hasWideResolution();
-		static bool hasSmartphoneResolution();
-		static bool isSmartphone();
+    public:
+        static void init();
+        static void end();
+        static void wakeUp();
+        static bool hasPocketPCResolution();
+        static bool hasDesktopResolution();
+        static bool hasWideResolution();
+        static bool hasSmartphoneResolution();
+        static bool isSmartphone();
 };
 
 #endif

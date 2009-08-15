@@ -28,14 +28,14 @@
 #define REVERSED (1 << 15)
 
 struct successor {
-	int square_id;
+    int square_id;
    int line_id;
    unsigned char reversed;
    int to_point;
 };
 
 int get_connected_segments (int square,
-									 int seg_line_id, int is_seg_reversed,
+                                     int seg_line_id, int is_seg_reversed,
                             int node_id, struct successor *successors,
                             int max, int use_restrictions, int use_directions);
 

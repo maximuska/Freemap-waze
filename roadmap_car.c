@@ -68,14 +68,14 @@ static int roadmap_car_call_back (SsdWidget widget, const char *new_value, const
    roadmap_car_list_dialog *list_context = (roadmap_car_list_dialog *)context;
    RoadMapConfigDescriptor CarCfg =
                   ROADMAP_CONFIG_ITEM("Trip", "Car");
-           
+
    roadmap_config_declare
         ("user", &CarCfg, "car_blue", NULL);
-   roadmap_config_set (&CarCfg, value);              
+   roadmap_config_set (&CarCfg, value);
    ssd_generic_list_dialog_hide ();
 
    if (list_context->callback)
-   		(*list_context->callback)();
+        (*list_context->callback)();
 
    return 1;
 }
@@ -88,30 +88,30 @@ void roadmap_car_dialog (RoadMapCallback callback) {
     const char *cursor;
     char **cursor2;
     char *directory;
-    int count = 0; 	
-    
-    static roadmap_car_list_dialog context = {"roadmap_car", NULL};	
-   	static char *labels[MAX_CAR_ENTRIES] ;
-	static void *values[MAX_CAR_ENTRIES] ;
-	static void *icons[MAX_CAR_ENTRIES];
+    int count = 0;
+
+    static roadmap_car_list_dialog context = {"roadmap_car", NULL};
+    static char *labels[MAX_CAR_ENTRIES] ;
+    static void *values[MAX_CAR_ENTRIES] ;
+    static void *icons[MAX_CAR_ENTRIES];
 
 
-	context.callback = callback;
+    context.callback = callback;
     for (cursor = roadmap_path_first ("skin");
             cursor != NULL;
             cursor = roadmap_path_next ("skin", cursor)) {
 
-	    directory = roadmap_path_join (cursor, "cars");
-    	
-    	files = roadmap_path_list (directory, ".png");
+        directory = roadmap_path_join (cursor, "cars");
 
-   		for (cursor2 = files; *cursor2 != NULL; ++cursor2) {
-   	  			labels[count]  =   (char *)roadmap_lang_get(*cursor2);
-   	  			values[count] =   strtok(*cursor2,".");
-   	  			icons[count]   =   roadmap_path_join("cars", *cursor2);
-      			count++;
-   		}
-   }   
+        files = roadmap_path_list (directory, ".png");
+
+        for (cursor2 = files; *cursor2 != NULL; ++cursor2) {
+                labels[count]  =   (char *)roadmap_lang_get(*cursor2);
+                values[count] =   strtok(*cursor2,".");
+                icons[count]   =   roadmap_path_join("cars", *cursor2);
+                count++;
+        }
+   }
 
     ssd_generic_icon_list_dialog_show (roadmap_lang_get ("Select your car"),
                   count,
@@ -127,11 +127,11 @@ void roadmap_car_dialog (RoadMapCallback callback) {
                   70,
                   0,
                   FALSE);
-                  
+
 }
 
 void roadmap_car(void){
 
-	roadmap_car_dialog(NULL);
+    roadmap_car_dialog(NULL);
 }
 

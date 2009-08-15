@@ -52,7 +52,7 @@ int  roadmap_adjust_offset_latitude (void) {
 int  roadmap_adjust_offset_longitude (void) {
    return roadmap_config_get_integer (&RoadMapConfigGPSOffsetLong);
 }
-      
+
 
 static void roadmap_adjust_convert (const RoadMapGpsPosition *gps) {
 

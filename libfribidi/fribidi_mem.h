@@ -1,21 +1,21 @@
 /* FriBidi - Library of BiDi algorithm
  * Copyright (C) 2001,2002 Behdad Esfahbod.
- * 
+ *
  * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser FriBidieneral Public  
+ * modify it under the terms of the GNU Lesser FriBidieneral Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,  
- * but WITHOUT ANY WARRANTY; without even the implied warranty of   
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser FriBidieneral Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser FriBidieneral Public License  
+ *
+ * You should have received a copy of the GNU Lesser FriBidieneral Public License
  * along with this library, in a file named COPYING; if not, write to the
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA
- * 
+ *
  * For licensing issues, contact <fwpg@sharif.edu>.
  */
 
@@ -38,8 +38,8 @@ extern "C"
 #define FRIBIDI_ALLOC_AND_FREE  2
 
   FriBidiMemChunk *fribidi_mem_chunk_new (const char *name,
-					  int atom_size,
-					  unsigned long area_size, int type);
+                      int atom_size,
+                      unsigned long area_size, int type);
   void fribidi_mem_chunk_destroy (FriBidiMemChunk *mem_chunk);
   void *fribidi_mem_chunk_alloc (FriBidiMemChunk *mem_chunk);
   void *fribidi_mem_chunk_alloc0 (FriBidiMemChunk *mem_chunk);
@@ -55,8 +55,8 @@ extern "C"
   (type *) fribidi_mem_chunk_alloc (chunk) \
 )
 
-#ifdef	__cplusplus
+#ifdef  __cplusplus
 }
 #endif
 
-#endif				/* FRIBIDI_MEM_H */
+#endif              /* FRIBIDI_MEM_H */

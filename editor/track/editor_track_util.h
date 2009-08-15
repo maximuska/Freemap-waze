@@ -72,7 +72,7 @@ int editor_track_util_new_road_end (RoadMapNeighbour *line,
 int editor_track_util_length (int first, int last);
 
 int editor_track_util_create_trkseg (int square,
-												 int line_id,
+                                                 int line_id,
                                      int plugin_id,
                                      int first_point,
                                      int last_point,
@@ -80,7 +80,7 @@ int editor_track_util_create_trkseg (int square,
 
 void editor_track_add_trkseg
    (PluginLine *line, int trkseg, int direction, int who);
-   
+
 int editor_track_util_create_db (const RoadMapPosition *pos);
 
 void editor_track_util_set_focus(const RoadMapPosition *position);

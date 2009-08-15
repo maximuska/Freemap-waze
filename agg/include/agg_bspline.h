@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -31,18 +31,18 @@ namespace agg
 {
     //----------------------------------------------------------------bspline
     // A very simple class of Bi-cubic Spline interpolation.
-    // First call init(num, x[], y[]) where num - number of source points, 
-    // x, y - arrays of X and Y values respectively. Here Y must be a function 
+    // First call init(num, x[], y[]) where num - number of source points,
+    // x, y - arrays of X and Y values respectively. Here Y must be a function
     // of X. It means that all the X-coordinates must be arranged in the ascending
-    // order. 
-    // Then call get(x) that calculates a value Y for the respective X. 
+    // order.
+    // Then call get(x) that calculates a value Y for the respective X.
     // The class supports extrapolation, i.e. you can call get(x) where x is
-    // outside the given with init() X-range. Extrapolation is a simple linear 
+    // outside the given with init() X-range. Extrapolation is a simple linear
     // function.
     //
     //  See Implementation agg_bspline.cpp
     //------------------------------------------------------------------------
-    class bspline 
+    class bspline
     {
     public:
         bspline();
@@ -57,7 +57,7 @@ namespace agg
 
         double get(double x) const;
         double get_stateful(double x) const;
-    
+
     private:
         bspline(const bspline&);
         const bspline& operator = (const bspline&);

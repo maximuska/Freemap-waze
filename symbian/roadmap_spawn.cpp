@@ -109,4 +109,4 @@ int roadmap_spawn_read_pipe (RoadMapPipe pipe, void *data, int size)
 }
 
 
-void roadmap_spawn_close_pipe (RoadMapPipe pipe) {} 
+void roadmap_spawn_close_pipe (RoadMapPipe pipe) {}

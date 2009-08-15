@@ -27,7 +27,7 @@
 // A-syncronious receive:
 typedef void(*PFN_ON_DATA_RECEIVED)( void* data, int size, void* context);
 
-BOOL roadmap_net_async_receive(  RoadMapSocket        s, 
+BOOL roadmap_net_async_receive(  RoadMapSocket        s,
                                  void*                data,
                                  int                  size,
                                  PFN_ON_DATA_RECEIVED on_data_received,

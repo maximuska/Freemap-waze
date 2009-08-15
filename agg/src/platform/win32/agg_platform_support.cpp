@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -32,7 +32,7 @@
 
 namespace agg
 {
-    
+
     //------------------------------------------------------------------------
     HINSTANCE g_windows_instance = 0;
     int       g_windows_cmd_show = 0;
@@ -44,14 +44,14 @@ namespace agg
     public:
         platform_specific(pix_format_e format, bool flip_y);
 
-        void create_pmap(unsigned width, unsigned height, 
+        void create_pmap(unsigned width, unsigned height,
                          rendering_buffer* wnd);
 
         void display_pmap(HDC dc, const rendering_buffer* src);
-        bool load_pmap(const char* fn, unsigned idx, 
+        bool load_pmap(const char* fn, unsigned idx,
                        rendering_buffer* dst);
 
-        bool save_pmap(const char* fn, unsigned idx, 
+        bool save_pmap(const char* fn, unsigned idx,
                        const rendering_buffer* src);
 
         unsigned translate(unsigned keycode);
@@ -218,12 +218,12 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    void platform_specific::create_pmap(unsigned width, 
+    void platform_specific::create_pmap(unsigned width,
                                         unsigned height,
                                         rendering_buffer* wnd)
     {
         m_pmap_window.create(width, height, org_e(m_bpp));
-        wnd->attach(m_pmap_window.buf(), 
+        wnd->attach(m_pmap_window.buf(),
                     m_pmap_window.width(),
                     m_pmap_window.height(),
                       m_flip_y ?
@@ -233,8 +233,8 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    static void convert_pmap(rendering_buffer* dst, 
-                             const rendering_buffer* src, 
+    static void convert_pmap(rendering_buffer* dst,
+                             const rendering_buffer* src,
                              pix_format_e format)
     {
         switch(format)
@@ -319,7 +319,7 @@ namespace agg
         else
         {
             pixel_map pmap_tmp;
-            pmap_tmp.create(m_pmap_window.width(), 
+            pmap_tmp.create(m_pmap_window.width(),
                             m_pmap_window.height(),
                             org_e(m_sys_bpp));
 
@@ -339,7 +339,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    bool platform_specific::save_pmap(const char* fn, unsigned idx, 
+    bool platform_specific::save_pmap(const char* fn, unsigned idx,
                                       const rendering_buffer* src)
     {
         if(m_sys_format == m_format)
@@ -348,7 +348,7 @@ namespace agg
         }
 
         pixel_map pmap_tmp;
-        pmap_tmp.create(m_pmap_img[idx].width(), 
+        pmap_tmp.create(m_pmap_img[idx].width(),
                           m_pmap_img[idx].height(),
                           org_e(m_sys_bpp));
 
@@ -367,7 +367,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    bool platform_specific::load_pmap(const char* fn, unsigned idx, 
+    bool platform_specific::load_pmap(const char* fn, unsigned idx,
                                       rendering_buffer* dst)
     {
         pixel_map pmap_tmp;
@@ -381,8 +381,8 @@ namespace agg
                           pmap_tmp.stride() :
                          -pmap_tmp.stride());
 
-        m_pmap_img[idx].create(pmap_tmp.width(), 
-                               pmap_tmp.height(), 
+        m_pmap_img[idx].create(pmap_tmp.width(),
+                               pmap_tmp.height(),
                                org_e(m_bpp),
                                0);
 
@@ -603,8 +603,8 @@ namespace agg
     {
         LARGE_INTEGER stop;
         ::QueryPerformanceCounter(&stop);
-        return double(stop.QuadPart - 
-                      m_specific->m_sw_start.QuadPart) * 1000.0 / 
+        return double(stop.QuadPart -
+                      m_specific->m_sw_start.QuadPart) * 1000.0 /
                       double(m_specific->m_sw_freq.QuadPart);
     }
 
@@ -657,15 +657,15 @@ namespace agg
         app->m_specific->m_current_dc = dc;
         LRESULT ret = 0;
 
-        switch(msg) 
+        switch(msg)
         {
         //--------------------------------------------------------------------
         case WM_CREATE:
             break;
-        
+
         //--------------------------------------------------------------------
         case WM_SIZE:
-            app->m_specific->create_pmap(LOWORD(lParam), 
+            app->m_specific->create_pmap(LOWORD(lParam),
                                          HIWORD(lParam),
                                          &app->rbuf_window());
 
@@ -673,11 +673,11 @@ namespace agg
             app->on_resize(LOWORD(lParam), HIWORD(lParam));
             app->force_redraw();
             break;
-        
+
         //--------------------------------------------------------------------
         case WM_ERASEBKGND:
             break;
-        
+
         //--------------------------------------------------------------------
         case WM_LBUTTONDOWN:
             ::SetCapture(app->m_specific->m_hwnd);
@@ -691,10 +691,10 @@ namespace agg
                 app->m_specific->m_cur_y = int16(HIWORD(lParam));
             }
             app->m_specific->m_input_flags = mouse_left | get_key_flags(wParam);
-            
-            app->m_ctrls.set_cur(app->m_specific->m_cur_x, 
+
+            app->m_ctrls.set_cur(app->m_specific->m_cur_x,
                                  app->m_specific->m_cur_y);
-            if(app->m_ctrls.on_mouse_button_down(app->m_specific->m_cur_x, 
+            if(app->m_ctrls.on_mouse_button_down(app->m_specific->m_cur_x,
                                                  app->m_specific->m_cur_y))
             {
                 app->on_ctrl_change();
@@ -702,10 +702,10 @@ namespace agg
             }
             else
             {
-                if(app->m_ctrls.in_rect(app->m_specific->m_cur_x, 
+                if(app->m_ctrls.in_rect(app->m_specific->m_cur_x,
                                         app->m_specific->m_cur_y))
                 {
-                    if(app->m_ctrls.set_cur(app->m_specific->m_cur_x, 
+                    if(app->m_ctrls.set_cur(app->m_specific->m_cur_x,
                                             app->m_specific->m_cur_y))
                     {
                         app->on_ctrl_change();
@@ -714,8 +714,8 @@ namespace agg
                 }
                 else
                 {
-                    app->on_mouse_button_down(app->m_specific->m_cur_x, 
-                                              app->m_specific->m_cur_y, 
+                    app->on_mouse_button_down(app->m_specific->m_cur_x,
+                                              app->m_specific->m_cur_y,
                                               app->m_specific->m_input_flags);
                 }
             }
@@ -741,14 +741,14 @@ namespace agg
             }
             app->m_specific->m_input_flags = mouse_left | get_key_flags(wParam);
 
-            if(app->m_ctrls.on_mouse_button_up(app->m_specific->m_cur_x, 
+            if(app->m_ctrls.on_mouse_button_up(app->m_specific->m_cur_x,
                                                app->m_specific->m_cur_y))
             {
                 app->on_ctrl_change();
                 app->force_redraw();
             }
-            app->on_mouse_button_up(app->m_specific->m_cur_x, 
-                                    app->m_specific->m_cur_y, 
+            app->on_mouse_button_up(app->m_specific->m_cur_x,
+                                    app->m_specific->m_cur_y,
                                     app->m_specific->m_input_flags);
 /*
             if(!app->wait_mode())
@@ -772,8 +772,8 @@ namespace agg
                 app->m_specific->m_cur_y = int16(HIWORD(lParam));
             }
             app->m_specific->m_input_flags = mouse_right | get_key_flags(wParam);
-            app->on_mouse_button_down(app->m_specific->m_cur_x, 
-                                      app->m_specific->m_cur_y, 
+            app->on_mouse_button_down(app->m_specific->m_cur_x,
+                                      app->m_specific->m_cur_y,
                                       app->m_specific->m_input_flags);
 /*
             if(!app->wait_mode())
@@ -796,8 +796,8 @@ namespace agg
                 app->m_specific->m_cur_y = int16(HIWORD(lParam));
             }
             app->m_specific->m_input_flags = mouse_right | get_key_flags(wParam);
-            app->on_mouse_button_up(app->m_specific->m_cur_x, 
-                                    app->m_specific->m_cur_y, 
+            app->on_mouse_button_up(app->m_specific->m_cur_x,
+                                    app->m_specific->m_cur_y,
                                     app->m_specific->m_input_flags);
 /*
             if(!app->wait_mode())
@@ -822,7 +822,7 @@ namespace agg
 
 
             if(app->m_ctrls.on_mouse_move(
-                app->m_specific->m_cur_x, 
+                app->m_specific->m_cur_x,
                 app->m_specific->m_cur_y,
                 (app->m_specific->m_input_flags & mouse_left) != 0))
             {
@@ -831,11 +831,11 @@ namespace agg
             }
             else
             {
-                if(!app->m_ctrls.in_rect(app->m_specific->m_cur_x, 
+                if(!app->m_ctrls.in_rect(app->m_specific->m_cur_x,
                                          app->m_specific->m_cur_y))
                 {
-                    app->on_mouse_move(app->m_specific->m_cur_x, 
-                                       app->m_specific->m_cur_y, 
+                    app->on_mouse_move(app->m_specific->m_cur_x,
+                                       app->m_specific->m_cur_y,
                                        app->m_specific->m_input_flags);
                 }
             }
@@ -851,7 +851,7 @@ namespace agg
         case WM_SYSKEYDOWN:
         case WM_KEYDOWN:
             app->m_specific->m_last_translated_key = 0;
-            switch(wParam) 
+            switch(wParam)
             {
                 case VK_CONTROL:
                     app->m_specific->m_input_flags |= kbd_ctrl;
@@ -865,7 +865,7 @@ namespace agg
                     app->m_specific->translate(wParam);
                     break;
             }
-        
+
             if(app->m_specific->m_last_translated_key)
             {
                 bool left  = false;
@@ -891,7 +891,7 @@ namespace agg
                     down = true;
                     break;
 
-                case key_f2:                        
+                case key_f2:
                     app->copy_window_to_img(agg::platform_support::max_images - 1);
                     app->save_img(agg::platform_support::max_images - 1, "screenshot");
                     break;
@@ -932,7 +932,7 @@ namespace agg
         case WM_SYSKEYUP:
         case WM_KEYUP:
             app->m_specific->m_last_translated_key = 0;
-            switch(wParam) 
+            switch(wParam)
             {
                 case VK_CONTROL:
                     app->m_specific->m_input_flags &= ~kbd_ctrl;
@@ -955,7 +955,7 @@ namespace agg
                             app->m_specific->m_input_flags);
             }
             break;
-        
+
         //--------------------------------------------------------------------
         case WM_PAINT:
             paintDC = ::BeginPaint(hWnd, &ps);
@@ -970,16 +970,16 @@ namespace agg
             app->m_specific->m_current_dc = 0;
             ::EndPaint(hWnd, &ps);
             break;
-        
+
         //--------------------------------------------------------------------
         case WM_COMMAND:
             break;
-        
+
         //--------------------------------------------------------------------
         case WM_DESTROY:
             ::PostQuitMessage(0);
             break;
-        
+
         //--------------------------------------------------------------------
         default:
             ret = ::DefWindowProc(hWnd, msg, wParam, lParam);
@@ -1057,7 +1057,7 @@ namespace agg
                      width + (width - (rct.right - rct.left)),
                      height + (height - (rct.bottom - rct.top)),
                      FALSE);
-   
+
         ::SetWindowLong(m_specific->m_hwnd, GWL_USERDATA, (LONG)this);
         m_specific->create_pmap(width, height, &m_rbuf_window);
         m_initial_width = width;
@@ -1163,7 +1163,7 @@ namespace agg
             if(width  == 0) width  = m_specific->m_pmap_window.width();
             if(height == 0) height = m_specific->m_pmap_window.height();
             m_specific->m_pmap_img[idx].create(width, height, org_e(m_specific->m_bpp));
-            m_rbuf_img[idx].attach(m_specific->m_pmap_img[idx].buf(), 
+            m_rbuf_img[idx].attach(m_specific->m_pmap_img[idx].buf(),
                                    m_specific->m_pmap_img[idx].width(),
                                    m_specific->m_pmap_img[idx].height(),
                                    m_flip_y ?
@@ -1213,7 +1213,7 @@ namespace agg
 {
     // That's ridiculous. I have to parse the command line by myself
     // because Windows doesn't provide a method of getting the command
-    // line arguments in a form of argc, argv. Of course, there's 
+    // line arguments in a form of argc, argv. Of course, there's
     // CommandLineToArgv() but first, it returns Unicode that I don't
     // need to deal with, but most of all, it's not compatible with Win98.
     //-----------------------------------------------------------------------
@@ -1234,7 +1234,7 @@ namespace agg
         };
 
     public:
-        tokenizer(const char* sep, 
+        tokenizer(const char* sep,
                   const char* trim=0,
                   const char* quote="\"",
                   char mask_chr='\\',
@@ -1260,9 +1260,9 @@ namespace agg
 
 
     //-----------------------------------------------------------------------
-    inline void tokenizer::set_str(const char* str) 
-    { 
-        m_src_string = str; 
+    inline void tokenizer::set_str(const char* str)
+    {
+        m_src_string = str;
         m_start = 0;
     }
 
@@ -1275,7 +1275,7 @@ namespace agg
 
 
     //-----------------------------------------------------------------------
-    tokenizer::tokenizer(const char* sep, 
+    tokenizer::tokenizer(const char* sep,
                          const char* trim,
                          const char* quote,
                          char mask_chr,
@@ -1305,7 +1305,7 @@ namespace agg
 
         register const char *pstr = m_src_string + m_start;
 
-        if(*pstr == 0) 
+        if(*pstr == 0)
         {
             m_start = -1;
             return tok;
@@ -1317,20 +1317,20 @@ namespace agg
         if(m_sep_flag == multiple)
         {
             //Pass all the separator symbols at the begin of the string
-            while(*pstr && check_chr(m_sep, *pstr)) 
+            while(*pstr && check_chr(m_sep, *pstr))
             {
                 ++pstr;
                 ++m_start;
             }
         }
 
-        if(*pstr == 0) 
+        if(*pstr == 0)
         {
             m_start = -1;
             return tok;
         }
 
-        for(count = 0;; ++count) 
+        for(count = 0;; ++count)
         {
             char c = *pstr;
             int found = 0;
@@ -1344,24 +1344,24 @@ namespace agg
                 }
                 else
                 {
-                    found = strncmp(m_sep, pstr, m_sep_len) == 0; 
+                    found = strncmp(m_sep, pstr, m_sep_len) == 0;
                 }
             }
 
             ++pstr;
 
-            if(c == 0 || found) 
+            if(c == 0 || found)
             {
                 if(m_trim)
                 {
-                    while(count && 
+                    while(count &&
                           check_chr(m_trim, m_src_string[m_start]))
                     {
                         ++m_start;
                         --count;
                     }
 
-                    while(count && 
+                    while(count &&
                           check_chr(m_trim, m_src_string[m_start + count - 1]))
                     {
                         --count;
@@ -1374,14 +1374,14 @@ namespace agg
                 //Next time it will be the next separator character
                 //But we must check, whether it is NOT the end of the string.
                 m_start += count;
-                if(c) 
+                if(c)
                 {
                     m_start += sep_len;
                     if(m_sep_flag == multiple)
                     {
-                        //Pass all the separator symbols 
+                        //Pass all the separator symbols
                         //after the end of the string
-                        while(check_chr(m_sep, m_src_string[m_start])) 
+                        while(check_chr(m_sep, m_src_string[m_start]))
                         {
                             ++m_start;
                         }
@@ -1394,7 +1394,7 @@ namespace agg
             //quote symbols. Otherwise quote must be finished with quote_symb
             if(quote_chr == 0)
             {
-                if(check_chr(m_quote, c)) 
+                if(check_chr(m_quote, c))
                 {
                     quote_chr = c;
                     continue;
@@ -1405,14 +1405,14 @@ namespace agg
                 //We are inside quote: pass all the mask symbols
                 if(m_mask_chr && c == m_mask_chr)
                 {
-                    if(*pstr) 
+                    if(*pstr)
                     {
                         ++count;
                         ++pstr;
                     }
-                    continue; 
+                    continue;
                 }
-                if(c == quote_chr) 
+                if(c == quote_chr)
                 {
                     quote_chr = 0;
                     continue;

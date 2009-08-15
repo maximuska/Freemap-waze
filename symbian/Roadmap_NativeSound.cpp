@@ -42,7 +42,7 @@ extern "C" {
 #include <f32file.h>
 
 CRoadMapNativeSound* CRoadMapNativeSound::m_pInstance = NULL;
-CRoadMapNativeSound* CRoadMapNativeSound::GetInstance () 
+CRoadMapNativeSound* CRoadMapNativeSound::GetInstance ()
 {// Assuming threaded application
   if ( m_pInstance == NULL )
   {
@@ -51,7 +51,7 @@ CRoadMapNativeSound* CRoadMapNativeSound::GetInstance ()
   return m_pInstance;
 }
 
-void CRoadMapNativeSound::FreeInstance () 
+void CRoadMapNativeSound::FreeInstance ()
 {// Assuming threaded application
   if ( m_pInstance != NULL )
   {
@@ -59,8 +59,8 @@ void CRoadMapNativeSound::FreeInstance ()
     m_pInstance = NULL;
   }
 }
-  
-CRoadMapNativeSound::CRoadMapNativeSound() 
+
+CRoadMapNativeSound::CRoadMapNativeSound()
 {
   iState = ENotReady;
   m_NextPlaying = 0;
@@ -96,12 +96,12 @@ void CRoadMapNativeSound::MapcInitComplete(TInt aError,const TTimeIntervalMicroS
     //roadmap_log(ROADMAP_ERROR,"Sound file error %d", aError);
 
     //  We do not know which player failed to init,
-    //  so we cannot remove it properly. 
-    
-    //TODO Perhaps use the NumReady to get the failed index list? 
+    //  so we cannot remove it properly.
+
+    //TODO Perhaps use the NumReady to get the failed index list?
   }
 
-  ++m_NumReady;  
+  ++m_NumReady;
   if ( m_ListSize == m_NumReady )
   {// Everyone's on board, we can start playing
     m_NextPlaying = 0;
@@ -120,8 +120,8 @@ void CRoadMapNativeSound::MapcPlayComplete(TInt aError)
 
 void CRoadMapNativeSound::MoscoStateChangeEvent(CBase *aObject, TInt aPreviousState, TInt aCurrentState, TInt aErrorCode)
 {
-  if ((aPreviousState == CMdaAudioClipUtility::ENotReady) && 
-      (aCurrentState == CMdaAudioClipUtility::EOpen)) 
+  if ((aPreviousState == CMdaAudioClipUtility::ENotReady) &&
+      (aCurrentState == CMdaAudioClipUtility::EOpen))
   { //Audio sample is open now
     iState = EReadyToPlay;
     ++m_NumReady;
@@ -132,17 +132,17 @@ void CRoadMapNativeSound::MoscoStateChangeEvent(CBase *aObject, TInt aPreviousSt
     }
   }
 
-  if ((aPreviousState == CMdaAudioClipUtility::EOpen) && 
-      (aCurrentState == CMdaAudioClipUtility::EPlaying)) 
+  if ((aPreviousState == CMdaAudioClipUtility::EOpen) &&
+      (aCurrentState == CMdaAudioClipUtility::EPlaying))
   { //Beginning to play sample
     iState = EPlaying;
   }
 
-  if ((aPreviousState == CMdaAudioClipUtility::EPlaying) && 
-      (aCurrentState == CMdaAudioClipUtility::EOpen)) 
+  if ((aPreviousState == CMdaAudioClipUtility::EPlaying) &&
+      (aCurrentState == CMdaAudioClipUtility::EOpen))
   { //Not playing sample
     iState = EReadyToPlay;
-    //  Stop the current one playing 
+    //  Stop the current one playing
     //  TODO do we need this??
     ((CAudioPlayer*)m_AudioPlayers[m_NextPlaying-1])->Stop();
     //  Go on to the next one
@@ -173,7 +173,7 @@ int CRoadMapNativeSound::PlayFile(const char *file_name)
   TFileName fileName;
   GSConvert::CharPtrToTDes16(file_name, fileName);
   CAudioPlayer* pPlayer = NULL;
-  TRAPD(err, pPlayer = CAudioPlayer::NewL(fileName, this)); 
+  TRAPD(err, pPlayer = CAudioPlayer::NewL(fileName, this));
   if ( err == KErrNone && pPlayer != NULL )
   {
     m_AudioPlayers.Append(pPlayer);
@@ -184,11 +184,11 @@ int CRoadMapNativeSound::PlayFile(const char *file_name)
 int CRoadMapNativeSound::PlaySound(void *mem_sound)
 {
   if ( mem_sound == NULL )  { return -1;  }
-  
-  TPtr8 memPtr((TUint8*)(roadmap_file_base((RoadMapFileContext)mem_sound)), 
+
+  TPtr8 memPtr((TUint8*)(roadmap_file_base((RoadMapFileContext)mem_sound)),
                 roadmap_file_size((RoadMapFileContext)mem_sound));
   CAudioPlayer* pPlayer = NULL;
-  TRAPD(err, pPlayer = CAudioPlayer::NewL(memPtr, this)); 
+  TRAPD(err, pPlayer = CAudioPlayer::NewL(memPtr, this));
   if ( err == KErrNone && pPlayer != NULL )
   {
     m_AudioPlayers.Append(pPlayer);
@@ -201,30 +201,30 @@ int CRoadMapNativeSound::PlayList(const RoadMapSoundList list)
   m_AudioPlayers.ResetAndDestroy(); //  stop playing whatever is playing now
   m_NextPlaying = 0;
   m_NumReady = 0;
-  
+
   int listSize = roadmap_sound_list_count(list);
   m_ListSize = listSize;  //  know how much we need to play
-  for (int i = 0; i < roadmap_sound_list_count(list); i++) 
-  {//TODO load resource 
+  for (int i = 0; i < roadmap_sound_list_count(list); i++)
+  {//TODO load resource
      const char *name = roadmap_sound_list_get (list, i);
      RoadMapSound sound =
                     (RoadMapSound) roadmap_res_get (RES_SOUND, RES_NOCREATE, name);
     if (sound) {
-		PlaySound (sound);
+        PlaySound (sound);
     } else {
-		char sound_filename[MAX_SOUND_NAME];
-		if( roadmap_construct_res_path(
-			sound_filename,
-			sizeof(sound_filename),
-			name,
-			".mp3",
-			"sound\\" ) == KErrNone )
-		{
-			PlayFile( sound_filename );
-		}
+        char sound_filename[MAX_SOUND_NAME];
+        if( roadmap_construct_res_path(
+            sound_filename,
+            sizeof(sound_filename),
+            name,
+            ".mp3",
+            "sound\\" ) == KErrNone )
+        {
+            PlayFile( sound_filename );
+        }
      }
   }
-  
+
   if ( (list->flags & SOUND_LIST_NO_FREE) == false )
   {
     free (list);
@@ -234,7 +234,7 @@ int CRoadMapNativeSound::PlayList(const RoadMapSoundList list)
 
 void CRoadMapNativeSound::Initialize()
 {
-  ConstructL();  
+  ConstructL();
 }
 
 void CRoadMapNativeSound::Shutdown()
@@ -263,25 +263,25 @@ int CRoadMapNativeSound::Record(const char */*file_name*/, int /*seconds*/)
 
 void CRoadMapNativeSound::SetVolume( TInt aUserVolume, TInt aUserVolumeMin, TInt aUserVolumeMax )
 {
-	m_UserVolume.volume = aUserVolume;
-	m_UserVolume.minVolume = aUserVolumeMin;
-	m_UserVolume.maxVolume = aUserVolumeMax;
+    m_UserVolume.volume = aUserVolume;
+    m_UserVolume.minVolume = aUserVolumeMin;
+    m_UserVolume.maxVolume = aUserVolumeMax;
 }
 
 void CRoadMapNativeSound::SetSystemVolume( CAudioPlayer& aPlayer )
 {
-	TInt sysVolume;
-	CMdaAudioRecorderUtility& audioUtility = const_cast<CMdaAudioRecorderUtility&>( aPlayer.GetAudioUtility() );
-	TInt sysMaxVolume = audioUtility.MaxVolume();
-	
-	// Linear map of the user volume level to the system volume level
-	// Pay attention fixed point tangent 
-	sysVolume = ( ( m_UserVolume.volume - m_UserVolume.minVolume ) * sysMaxVolume ) / 
-												( m_UserVolume.maxVolume - m_UserVolume.minVolume ); 
-	// Set the audio device volume
-	aPlayer.SetVolume( sysVolume );
-	
-	// Log the operation
-	roadmap_log( ROADMAP_DEBUG, "Audio volume settings. User :%d. System : %d. System Max : %d", 
-			m_UserVolume.volume, sysVolume, sysMaxVolume );
+    TInt sysVolume;
+    CMdaAudioRecorderUtility& audioUtility = const_cast<CMdaAudioRecorderUtility&>( aPlayer.GetAudioUtility() );
+    TInt sysMaxVolume = audioUtility.MaxVolume();
+
+    // Linear map of the user volume level to the system volume level
+    // Pay attention fixed point tangent
+    sysVolume = ( ( m_UserVolume.volume - m_UserVolume.minVolume ) * sysMaxVolume ) /
+                                                ( m_UserVolume.maxVolume - m_UserVolume.minVolume );
+    // Set the audio device volume
+    aPlayer.SetVolume( sysVolume );
+
+    // Log the operation
+    roadmap_log( ROADMAP_DEBUG, "Audio volume settings. User :%d. System : %d. System Max : %d",
+            m_UserVolume.volume, sysVolume, sysMaxVolume );
 }

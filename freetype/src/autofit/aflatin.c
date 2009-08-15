@@ -846,7 +846,7 @@
     AF_Direction  major_dir     = axis->major_dir;
     AF_Segment    seg1, seg2;
 
-  
+
     /* now compare each segment to the others */
     for ( seg1 = segments; seg1 < segment_limit; seg1++ )
     {

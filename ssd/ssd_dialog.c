@@ -57,7 +57,7 @@ struct ssd_dialog_item {
    struct ssd_dialog_item* activated_prev;
    char*                   name;
    void*                   context;                // References a caller-specific context.
-   PFN_ON_DIALOG_CLOSED    on_dialog_closed;       // Called before hide 
+   PFN_ON_DIALOG_CLOSED    on_dialog_closed;       // Called before hide
    SsdWidget               container;
    SsdWidget               in_focus;               // Widget currently in focus
    SsdWidget               in_focus_default;       // Widget currently in focus
@@ -73,18 +73,18 @@ BOOL ssd_dialog_is_currently_active()
 { return (NULL != RoadMapDialogCurrent);}
 
 void * ssd_dialog_get_current_data(){
-	return RoadMapDialogCurrent->container->data;
+    return RoadMapDialogCurrent->container->data;
 }
 
 
 BOOL ssd_dialog_is_currently_vertical(){
-	
-	if (NULL == RoadMapDialogCurrent)
-		return FALSE;
-	if (RoadMapDialogCurrent->container->flags & SSD_DIALOG_VERTICAL)
-		return TRUE;
-	else
-		return FALSE;
+
+    if (NULL == RoadMapDialogCurrent)
+        return FALSE;
+    if (RoadMapDialogCurrent->container->flags & SSD_DIALOG_VERTICAL)
+        return TRUE;
+    else
+        return FALSE;
 }
 
 static RoadMapGuiPoint LastPointerPoint;
@@ -137,12 +137,12 @@ static int ssd_dialog_pressed (RoadMapGuiPoint *point) {
    }
 
    if (RoadMapDialogCurrent->container->drag_start){
-   	ssd_widget_pointer_down (RoadMapDialogCurrent->container, point);
-   	roadmap_screen_redraw ();
-   	LastPointerPoint = *point;
-   	return 0;
+    ssd_widget_pointer_down (RoadMapDialogCurrent->container, point);
+    roadmap_screen_redraw ();
+    LastPointerPoint = *point;
+    return 0;
    }
-   	
+
    LastPointerPoint = *point;
    ssd_widget_pointer_down (RoadMapDialogCurrent->container, point);
    roadmap_screen_redraw ();
@@ -160,9 +160,9 @@ static int ssd_dialog_short_click (RoadMapGuiPoint *point) {
          return 0;
       }
    }
-   
+
    res = ssd_widget_short_click (RoadMapDialogCurrent->container, &LastPointerPoint);
-   
+
    roadmap_screen_redraw ();
 
    return 1;
@@ -192,18 +192,18 @@ BOOL ssd_dialog_set_dialog_focus( SsdDialog dialog, SsdWidget new_focus)
 {
    SsdWidget last_focus;
    SsdWidget w;
-   
+
    if( new_focus && !new_focus->tab_stop)
    {
       assert( 0 && "ssd_dialog_set_dialog_focus() - Invalid input");
       return FALSE;
    }
-  
-  
-  	w = ssd_widget_get(new_focus,"focus_image");
-	if (w != NULL)
-	   	ssd_widget_show(w->children);   
-  
+
+
+    w = ssd_widget_get(new_focus,"focus_image");
+    if (w != NULL)
+        ssd_widget_show(w->children);
+
    // Setting the same one twice...
    if (dialog->in_focus == new_focus)
       return TRUE;
@@ -220,7 +220,7 @@ BOOL ssd_dialog_set_dialog_focus( SsdDialog dialog, SsdWidget new_focus)
       ssd_widget_loose_focus(dialog->in_focus);
       dialog->in_focus = NULL;
    }
-    
+
    if( !new_focus)
       return TRUE;
 
@@ -231,9 +231,9 @@ BOOL ssd_dialog_set_dialog_focus( SsdDialog dialog, SsdWidget new_focus)
          dialog->in_focus = last_focus;
       return FALSE;
    }
-   
+
    dialog->in_focus = new_focus;
-   
+
    return TRUE;
 }
 
@@ -251,7 +251,7 @@ BOOL ssd_dialog_set_focus( SsdWidget new_focus)
       assert( 0 && "ssd_dialog_set_focus() - Invalid state");
       return FALSE;
    }
-   
+
    return ssd_dialog_set_dialog_focus( RoadMapDialogCurrent, new_focus);
 }
 
@@ -268,7 +268,7 @@ void ssd_dialog_move_focus (int direction) {
 #endif
    RoadMapDialogCurrent->in_focus =
       ssd_widget_move_focus(RoadMapDialogCurrent->in_focus, direction);
-      
+
 }
 
 
@@ -276,7 +276,7 @@ SsdWidget ssd_dialog_new (const char *name, const char *title,
                           PFN_ON_DIALOG_CLOSED on_dialog_closed, int flags)
 {
    SsdDialog   dialog;
-   
+
    int width   = SSD_MAX_SIZE;
    int height  = SSD_MAX_SIZE;
 
@@ -291,10 +291,10 @@ SsdWidget ssd_dialog_new (const char *name, const char *title,
    dialog->use_gui_tab_order     = (SSD_DIALOG_GUI_TAB_ORDER & flags)? TRUE: FALSE;
 
    if (flags & SSD_DIALOG_FLOAT) {
-   	if (flags & SSD_DIALOG_VERTICAL)
-   		width = SSD_MIN_SIZE;
-   	else
-      	width = SSD_MAX_SIZE;
+    if (flags & SSD_DIALOG_VERTICAL)
+        width = SSD_MIN_SIZE;
+    else
+        width = SSD_MAX_SIZE;
       height = SSD_MIN_SIZE;
    }
 
@@ -305,7 +305,7 @@ SsdWidget ssd_dialog_new (const char *name, const char *title,
 
    ssd_widget_set_right_softkey_text(dialog->container, roadmap_lang_get("Back_key"));
    ssd_widget_set_left_softkey_text (dialog->container, roadmap_lang_get("Exit_key"));
-   
+
    return dialog->container;
 
 }
@@ -314,16 +314,16 @@ void ssd_dialog_sort_tab_order_by_gui_position()
 {
    if( !RoadMapDialogCurrent || !RoadMapDialogCurrent->use_gui_tab_order || RoadMapDialogCurrent->gui_tab_order_sorted)
       return;
-   
+
    ssd_widget_sort_gui_tab_order(RoadMapDialogCurrent->in_focus_default);
-   RoadMapDialogCurrent->gui_tab_order_sorted = TRUE; 
+   RoadMapDialogCurrent->gui_tab_order_sorted = TRUE;
 }
 
 void ssd_dialog_redraw_screen_recursive( SsdDialog Dialog)
 {
    RoadMapGuiRect rect;
    SsdWidget      container = Dialog->container;
-   
+
    if( (SSD_DIALOG_FLOAT & container->flags) && Dialog->next)
       ssd_dialog_redraw_screen_recursive( Dialog->next);
 
@@ -331,7 +331,7 @@ void ssd_dialog_redraw_screen_recursive( SsdDialog Dialog)
    rect.miny = 0;
    rect.maxx = roadmap_canvas_width() - 1;
    rect.maxy = roadmap_canvas_height() - 1;
-   
+
    ssd_widget_reset_cache  ( container);
    ssd_widget_draw         ( container, &rect, 0);
 }
@@ -340,7 +340,7 @@ void ssd_dialog_redraw_screen()
 {
    if( !RoadMapDialogCurrent)
       return;
-   
+
    ssd_dialog_redraw_screen_recursive( RoadMapDialogCurrent);
 }
 
@@ -355,10 +355,10 @@ void ssd_dialog_draw (void) {
       rect.miny = 0;
       rect.maxx = roadmap_canvas_width() - 1;
       rect.maxy = roadmap_canvas_height() - 1 - roadmap_bar_bottom_height() ;
-      
+
       ssd_widget_reset_cache (RoadMapDialogCurrent->container);
       ssd_widget_draw (RoadMapDialogCurrent->container, &rect, 0);
-      
+
       roadmap_bar_draw_objects();
       roadmap_canvas_refresh ();
       ssd_dialog_sort_tab_order_by_gui_position();
@@ -388,9 +388,9 @@ SsdWidget ssd_dialog_new_button (const char *name, const char *value,
 }
 
 void ssd_dialog_change_button(const char *name, const char **bitmaps, int num_bitmaps){
-	SsdWidget button = ssd_widget_get(RoadMapDialogCurrent->container, name);
-	if (button)
-		ssd_button_change_icon(button, bitmaps, num_bitmaps);
+    SsdWidget button = ssd_widget_get(RoadMapDialogCurrent->container, name);
+    if (button)
+        ssd_button_change_icon(button, bitmaps, num_bitmaps);
 }
 
 void ssd_dialog_new_line (void) {
@@ -399,14 +399,14 @@ void ssd_dialog_new_line (void) {
 
    while (last->next) last=last->next;
 
-   last->flags |= SSD_END_ROW; 
+   last->flags |= SSD_END_ROW;
 }
 
 static BOOL OnKeyPressed( const char* utf8char, uint32_t flags) {
    BOOL        key_handled = TRUE;
    SsdWidget   in_focus    = NULL;
 
-   if( !RoadMapDialogCurrent) 
+   if( !RoadMapDialogCurrent)
       return FALSE;
 
    // Let the control handle the key:
@@ -415,7 +415,7 @@ static BOOL OnKeyPressed( const char* utf8char, uint32_t flags) {
       roadmap_screen_redraw();
       return TRUE;
    }
-   
+
    // The control did not handle the key...
    //    Supply general handling for virtual keys:
    if( KEYBOARD_VIRTUAL_KEY & flags)
@@ -425,25 +425,25 @@ static BOOL OnKeyPressed( const char* utf8char, uint32_t flags) {
          case VK_Back:
             ssd_dialog_hide_current(dec_cancel);
             break;
-         
+
          case VK_Arrow_left:
             if( SSD_TAB_CONTROL & RoadMapDialogCurrent->container->flags)
                ssd_tabcontrol_move_tab_left( RoadMapDialogCurrent->container);
             else
                ssd_dialog_move_focus(FOCUS_LEFT);
             break;
-         
+
          case VK_Arrow_up:
             ssd_dialog_move_focus(FOCUS_UP);
             break;
-         
+
          case VK_Arrow_right:
             if( SSD_TAB_CONTROL & RoadMapDialogCurrent->container->flags)
                ssd_tabcontrol_move_tab_right( RoadMapDialogCurrent->container);
             else
                ssd_dialog_move_focus( FOCUS_RIGHT);
             break;
-         
+
          case VK_Arrow_down:
             ssd_dialog_move_focus(FOCUS_DOWN);
             break;
@@ -461,8 +461,8 @@ static BOOL OnKeyPressed( const char* utf8char, uint32_t flags) {
             else
                ssd_dialog_hide_all(dec_cancel);
             break;
-        	 
-         default:       
+
+         default:
             key_handled = FALSE;
       }
 
@@ -471,26 +471,26 @@ static BOOL OnKeyPressed( const char* utf8char, uint32_t flags) {
    {
       assert(utf8char);
       assert(*utf8char);
-      
+
       // Other special keys:
       if( KEYBOARD_ASCII & flags)
-      {      
+      {
          switch(*utf8char)
          {
             case ESCAPE_KEY:
                ssd_dialog_hide_current(dec_cancel);
                break;
-            
+
             case TAB_KEY:
                ssd_dialog_move_focus(FOCUS_FORWARD);
                break;
 
-            default:       
+            default:
                key_handled = FALSE;
          }
       }
    }
-   
+
    if( key_handled)
       roadmap_screen_redraw ();
 
@@ -504,7 +504,7 @@ void ssd_dialog_sort_tab_order( SsdDialog dialog)
 {
    if( !dialog || dialog->tab_order_sorted)
       return;
-   
+
    dialog->in_focus_default = ssd_widget_sort_tab_order(dialog, dialog->container);
 #ifndef TOUCH_SCREEN
    dialog->in_focus = dialog->in_focus_default;
@@ -513,75 +513,75 @@ void ssd_dialog_sort_tab_order( SsdDialog dialog)
 }
 
 static void left_softkey_callback(void){
-	SsdDialog   current  = RoadMapDialogCurrent;
-	
-	if (current == NULL)
-		return;
-	
-	if (current->container->left_softkey_callback)
-		(*current->container->left_softkey_callback)(current->container, "", current->context);
+    SsdDialog   current  = RoadMapDialogCurrent;
+
+    if (current == NULL)
+        return;
+
+    if (current->container->left_softkey_callback)
+        (*current->container->left_softkey_callback)(current->container, "", current->context);
     else
          ssd_dialog_hide_all(dec_cancel);
 
 }
 
 static void right_softkey_callback(void){
-	SsdDialog   current  = RoadMapDialogCurrent;
-	
-	if (current == NULL)
-		return;
+    SsdDialog   current  = RoadMapDialogCurrent;
 
-	if (current->container->right_softkey_callback)
-		(*current->container->right_softkey_callback)(current->container, "", current->context);
+    if (current == NULL)
+        return;
+
+    if (current->container->right_softkey_callback)
+        (*current->container->right_softkey_callback)(current->container, "", current->context);
     else
          ssd_dialog_hide_current(dec_cancel);
 }
 
 static void set_softkeys(SsdDialog d){
-	static Softkey right,left;
-	
+    static Softkey right,left;
 
-	if (d->container->right_softkey)
-		strcpy(right.text, d->container->right_softkey);
-	else
-		strcpy(right.text, "Back_key");
-	
-	right.callback = right_softkey_callback;
-	roadmap_softkeys_set_right_soft_key(d->name, &right);
-	
-	if (d->container->left_softkey)
-		strcpy(left.text, d->container->left_softkey);
-	else
-		strcpy(left.text, "Exit_key");
-	left.callback = left_softkey_callback;
-	roadmap_softkeys_set_left_soft_key(d->name, &left);
+
+    if (d->container->right_softkey)
+        strcpy(right.text, d->container->right_softkey);
+    else
+        strcpy(right.text, "Back_key");
+
+    right.callback = right_softkey_callback;
+    roadmap_softkeys_set_right_soft_key(d->name, &right);
+
+    if (d->container->left_softkey)
+        strcpy(left.text, d->container->left_softkey);
+    else
+        strcpy(left.text, "Exit_key");
+    left.callback = left_softkey_callback;
+    roadmap_softkeys_set_left_soft_key(d->name, &left);
 }
 
 static void hide_softkeys(SsdDialog d){
-	roadmap_softkeys_remove_right_soft_key(d->name);
-	roadmap_softkeys_remove_left_soft_key(d->name);
+    roadmap_softkeys_remove_right_soft_key(d->name);
+    roadmap_softkeys_remove_left_soft_key(d->name);
 }
 
 int ssd_dialog_drag_start (RoadMapGuiPoint *point) {
    SsdDialog dialog = RoadMapDialogCurrent;
    if (dialog == NULL){
-   	return 0;
+    return 0;
    }
-   
+
    if (dialog->container->drag_start)
-   		return (*dialog->container->drag_start)(dialog->container, point);
+        return (*dialog->container->drag_start)(dialog->container, point);
 
    return 0;
 }
 
 int ssd_dialog_drag_end (RoadMapGuiPoint *point) {
-   
+
    SsdDialog dialog = RoadMapDialogCurrent;
    if (dialog == NULL)
-   	return 0;
-   
+    return 0;
+
    if (dialog->container->drag_end)
-   	return (*dialog->container->drag_end)(dialog->container, point);
+    return (*dialog->container->drag_end)(dialog->container, point);
 
    return 0;
 }
@@ -590,30 +590,30 @@ int ssd_dialog_drag_motion (RoadMapGuiPoint *point) {
    SsdDialog dialog = RoadMapDialogCurrent;
 
    if (dialog == NULL)
-   	return 0;
-   
+    return 0;
+
    if (dialog->container->drag_motion)
-   	return (*dialog->container->drag_motion)(dialog->container, point);
+    return (*dialog->container->drag_motion)(dialog->container, point);
 
    return 0;
 }
 
 void ssd_dialog_set_drag(SsdWidget dialog, SsdWidget l){
 
-#ifdef IPHONE	  
-	  dialog->drag_start = l->drag_start;
-	  dialog->drag_end = l->drag_end;
-	  dialog->drag_motion = l->drag_motion;
-	  
-	  roadmap_pointer_register_drag_start
-      			(&ssd_dialog_drag_start,POINTER_HIGHEST );
-      			
+#ifdef IPHONE
+      dialog->drag_start = l->drag_start;
+      dialog->drag_end = l->drag_end;
+      dialog->drag_motion = l->drag_motion;
+
+      roadmap_pointer_register_drag_start
+                (&ssd_dialog_drag_start,POINTER_HIGHEST );
+
       roadmap_pointer_register_drag_end
-      			(&ssd_dialog_drag_end,POINTER_HIGHEST);
-      			
+                (&ssd_dialog_drag_end,POINTER_HIGHEST);
+
       roadmap_pointer_register_drag_motion
-      			(&ssd_dialog_drag_motion,POINTER_HIGHEST);
-#endif	
+                (&ssd_dialog_drag_motion,POINTER_HIGHEST);
+#endif
 }
 
 SsdWidget ssd_dialog_activate (const char *name, void *context) {
@@ -644,7 +644,7 @@ SsdWidget ssd_dialog_activate (const char *name, void *context) {
 
    dialog->activated_prev = RoadMapDialogCurrent;
 
-   if (!RoadMapDialogCurrent) {  
+   if (!RoadMapDialogCurrent) {
       roadmap_keyboard_register_to_event__key_pressed( OnKeyPressed);
       /* Grab pointer hooks */
       roadmap_pointer_register_pressed
@@ -653,12 +653,12 @@ SsdWidget ssd_dialog_activate (const char *name, void *context) {
          (ssd_dialog_short_click, POINTER_HIGHEST);
       roadmap_pointer_register_long_click
          (ssd_dialog_long_click, POINTER_HIGHEST);
-         
+
    }
 
    RoadMapDialogCurrent = dialog;
    set_softkeys(dialog);
-   
+
    // Sort tab-order:
    ssd_dialog_sort_tab_order( dialog);
 
@@ -694,7 +694,7 @@ void ssd_dialog_hide (const char *name, int exit_code) {
       return;
    }
 
-  
+
    if (prev == NULL) {
       RoadMapDialogCurrent = RoadMapDialogCurrent->activated_prev;
    } else {
@@ -708,18 +708,18 @@ void ssd_dialog_hide (const char *name, int exit_code) {
       roadmap_pointer_unregister_short_click (ssd_dialog_short_click);
       roadmap_pointer_unregister_long_click  (ssd_dialog_long_click);
       roadmap_keyboard_unregister_from_event__key_pressed(OnKeyPressed);
-     
+
    }
 
       if (dialog->container->drag_start)
          roadmap_pointer_unregister_drag_start
-      			(&ssd_dialog_drag_start);
+                (&ssd_dialog_drag_start);
       if (dialog->container->drag_end)
-   		roadmap_pointer_unregister_drag_end
-      			(&ssd_dialog_drag_end);
+        roadmap_pointer_unregister_drag_end
+                (&ssd_dialog_drag_end);
        if (dialog->container->drag_motion)
-   		roadmap_pointer_unregister_drag_motion
-      			(&ssd_dialog_drag_motion);
+        roadmap_pointer_unregister_drag_motion
+                (&ssd_dialog_drag_motion);
 
    hide_softkeys(dialog);
    if (dialog->on_dialog_closed) {
@@ -738,7 +738,7 @@ void ssd_dialog_hide (const char *name, int exit_code) {
       }
    }
 
-	roadmap_input_type_set_mode( inputtype_numeric );
+    roadmap_input_type_set_mode( inputtype_numeric );
     RoadMapScreenFrozen = 0;
    roadmap_start_screen_refresh (1);
 }
@@ -816,7 +816,7 @@ void ssd_dialog_resort_tab_order()
    // Undo the 'was already sorted' flags:
    dialog->tab_order_sorted      = FALSE;
    dialog->gui_tab_order_sorted  = FALSE;
-   
+
    // Sort:
    ssd_dialog_sort_tab_order( dialog);
    ssd_dialog_sort_tab_order_by_gui_position();

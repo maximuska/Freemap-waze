@@ -41,47 +41,47 @@ static DWORD _lastTime = 0;
 
 // Power management code borrowed from MoDaCo & Betaplayer. Thanks !
 void CEDevice::init() {
-	HINSTANCE dll = LoadLibrary(TEXT("aygshell.dll"));
-	if (dll) {
-		*(FARPROC*)&_SHIdleTimerReset = GetProcAddress(dll, MAKEINTRESOURCE(2006));
-	}
-	dll = LoadLibrary(TEXT("coredll.dll"));
-	if (dll) {
-		*(FARPROC*)&_SetPowerRequirement = GetProcAddress(dll, TEXT("SetPowerRequirement"));
-		*(FARPROC*)&_ReleasePowerRequirement = GetProcAddress(dll, TEXT("ReleasePowerRequirement"));
+    HINSTANCE dll = LoadLibrary(TEXT("aygshell.dll"));
+    if (dll) {
+        *(FARPROC*)&_SHIdleTimerReset = GetProcAddress(dll, MAKEINTRESOURCE(2006));
+    }
+    dll = LoadLibrary(TEXT("coredll.dll"));
+    if (dll) {
+        *(FARPROC*)&_SetPowerRequirement = GetProcAddress(dll, TEXT("SetPowerRequirement"));
+        *(FARPROC*)&_ReleasePowerRequirement = GetProcAddress(dll, TEXT("ReleasePowerRequirement"));
 
-	}
-	if (_SetPowerRequirement)
-		_hPowerManagement = _SetPowerRequirement(TEXT("BKL1:"), 0, 1, NULL, 0);
-	_lastTime = GetTickCount();
+    }
+    if (_SetPowerRequirement)
+        _hPowerManagement = _SetPowerRequirement(TEXT("BKL1:"), 0, 1, NULL, 0);
+    _lastTime = GetTickCount();
 }
 
 void CEDevice::end() {
-	if (_ReleasePowerRequirement && _hPowerManagement) {
-		_ReleasePowerRequirement(_hPowerManagement);
-	}
+    if (_ReleasePowerRequirement && _hPowerManagement) {
+        _ReleasePowerRequirement(_hPowerManagement);
+    }
 }
 
 void CEDevice::wakeUp() {
-	DWORD currentTime = GetTickCount();
-	if (currentTime > _lastTime + TIMER_TRIGGER) {
-		_lastTime = currentTime;
-		SystemIdleTimerReset();
-		if (_SHIdleTimerReset)
-			_SHIdleTimerReset();
-	}
+    DWORD currentTime = GetTickCount();
+    if (currentTime > _lastTime + TIMER_TRIGGER) {
+        _lastTime = currentTime;
+        SystemIdleTimerReset();
+        if (_SHIdleTimerReset)
+            _SHIdleTimerReset();
+    }
 }
 
 
 bool CEDevice::isSmartphone() {
 #ifdef SIMU_SMARTPHONE
-	return true;
+    return true;
 #else
-	TCHAR platformType[100];
-	BOOL result = SystemParametersInfo(SPI_GETPLATFORMTYPE, sizeof(platformType), platformType, 0);
-	if (!result && GetLastError() == ERROR_ACCESS_DENIED)
-		return true;
-	return (wcsnicmp(platformType, TEXT("SmartPhone"), 10) == 0);
+    TCHAR platformType[100];
+    BOOL result = SystemParametersInfo(SPI_GETPLATFORMTYPE, sizeof(platformType), platformType, 0);
+    if (!result && GetLastError() == ERROR_ACCESS_DENIED)
+        return true;
+    return (wcsnicmp(platformType, TEXT("SmartPhone"), 10) == 0);
 #endif
 }
 

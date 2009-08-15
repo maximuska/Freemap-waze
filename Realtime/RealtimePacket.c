@@ -39,21 +39,21 @@ char* RTPacket_Alloc( LPRTPacket this, int iSize)
    RTPacket_Free( this);
 
    iSize++; // For the string terminating-NULL char
-   
+
    if( iSize <= RTPACKET_STATIC_SIZE)
    {
       Statistics_StaticAllocationsCount++;
       this->Size = iSize;
       return this->StaticBuffer;
    }
-   
+
    // Else
    Statistics_DynamicAllocationsCount++;
    this->DynamicBuffer = malloc( iSize);
-   
+
    if( this->DynamicBuffer)
       this->Size = iSize;
-   
+
    return this->DynamicBuffer;
 }
 
@@ -69,7 +69,7 @@ void RTPacket_Free( LPRTPacket this)
    }
    else
       RTPacket_Init( this);
-   
+
    this->Size = 0;
 }
 
@@ -77,20 +77,20 @@ char* RTPacket_GetBuffer( LPRTPacket this)
 {
    if( !this->Size)
       return NULL;
-      
+
    if( this->DynamicBuffer)
       return this->DynamicBuffer;
-   
+
    return this->StaticBuffer;
 }
 
 int RTPacket_GetStringSize( LPRTPacket this)
 {
    char* p = RTPacket_GetBuffer( this);
-   
+
    if( !p || !(*p))
       return 0;
-   
+
    return strlen( p);
 }
 

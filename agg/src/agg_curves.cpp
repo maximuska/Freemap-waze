@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -38,20 +38,20 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    void curve3_inc::approximation_scale(double s) 
-    { 
+    void curve3_inc::approximation_scale(double s)
+    {
         m_scale = s;
     }
 
     //------------------------------------------------------------------------
-    double curve3_inc::approximation_scale() const 
-    { 
+    double curve3_inc::approximation_scale() const
+    {
         return m_scale;
     }
 
     //------------------------------------------------------------------------
-    void curve3_inc::init(double x1, double y1, 
-                          double x2, double y2, 
+    void curve3_inc::init(double x1, double y1,
+                          double x2, double y2,
                           double x3, double y3)
     {
         m_start_x = x1;
@@ -64,13 +64,13 @@ namespace agg
         double dx2 = x3 - x2;
         double dy2 = y3 - y2;
 
-        double len = sqrt(dx1 * dx1 + dy1 * dy1) + sqrt(dx2 * dx2 + dy2 * dy2); 
+        double len = sqrt(dx1 * dx1 + dy1 * dy1) + sqrt(dx2 * dx2 + dy2 * dy2);
 
         m_num_steps = uround(len * 0.25 * m_scale);
 
         if(m_num_steps < 4)
         {
-            m_num_steps = 4;   
+            m_num_steps = 4;
         }
 
         double subdivide_step  = 1.0 / m_num_steps;
@@ -81,7 +81,7 @@ namespace agg
 
         m_saved_fx = m_fx = x1;
         m_saved_fy = m_fy = y1;
-        
+
         m_saved_dfx = m_dfx = tmpx + (x2 - x1) * (2.0 * subdivide_step);
         m_saved_dfy = m_dfy = tmpy + (y2 - y1) * (2.0 * subdivide_step);
 
@@ -124,10 +124,10 @@ namespace agg
             --m_step;
             return path_cmd_line_to;
         }
-        m_fx  += m_dfx; 
+        m_fx  += m_dfx;
         m_fy  += m_dfy;
-        m_dfx += m_ddfx; 
-        m_dfy += m_ddfy; 
+        m_dfx += m_ddfx;
+        m_dfy += m_ddfy;
         *x = m_fx;
         *y = m_fy;
         --m_step;
@@ -135,8 +135,8 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
-    void curve3_div::init(double x1, double y1, 
-                          double x2, double y2, 
+    void curve3_div::init(double x1, double y1,
+                          double x2, double y2,
                           double x3, double y3)
     {
         m_points.remove_all();
@@ -147,19 +147,19 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
-    void curve3_div::recursive_bezier(double x1, double y1, 
-                                      double x2, double y2, 
+    void curve3_div::recursive_bezier(double x1, double y1,
+                                      double x2, double y2,
                                       double x3, double y3,
                                       unsigned level)
     {
-        if(level > curve_recursion_limit) 
+        if(level > curve_recursion_limit)
         {
             return;
         }
 
         // Calculate all the mid-points of the line segments
         //----------------------
-        double x12   = (x1 + x2) / 2;                
+        double x12   = (x1 + x2) / 2;
         double y12   = (y1 + y2) / 2;
         double x23   = (x2 + x3) / 2;
         double y23   = (y2 + y3) / 2;
@@ -172,7 +172,7 @@ namespace agg
         double da;
 
         if(d > curve_collinearity_epsilon)
-        { 
+        {
             // Regular case
             //-----------------
             if(d * d <= m_distance_tolerance_square * (dx*dx + dy*dy))
@@ -196,7 +196,7 @@ namespace agg
                     // Finally we can stop the recursion
                     //----------------------
                     m_points.add(point_d(x123, y123));
-                    return;                 
+                    return;
                 }
             }
         }
@@ -231,13 +231,13 @@ namespace agg
 
         // Continue subdivision
         //----------------------
-        recursive_bezier(x1, y1, x12, y12, x123, y123, level + 1); 
-        recursive_bezier(x123, y123, x23, y23, x3, y3, level + 1); 
+        recursive_bezier(x1, y1, x12, y12, x123, y123, level + 1);
+        recursive_bezier(x123, y123, x23, y23, x3, y3, level + 1);
     }
 
     //------------------------------------------------------------------------
-    void curve3_div::bezier(double x1, double y1, 
-                            double x2, double y2, 
+    void curve3_div::bezier(double x1, double y1,
+                            double x2, double y2,
                             double x3, double y3)
     {
         m_points.add(point_d(x1, y1));
@@ -250,14 +250,14 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    void curve4_inc::approximation_scale(double s) 
-    { 
+    void curve4_inc::approximation_scale(double s)
+    {
         m_scale = s;
     }
 
     //------------------------------------------------------------------------
-    double curve4_inc::approximation_scale() const 
-    { 
+    double curve4_inc::approximation_scale() const
+    {
         return m_scale;
     }
 
@@ -265,8 +265,8 @@ namespace agg
     static double MSC60_fix_ICE(double v) { return v; }
 
     //------------------------------------------------------------------------
-    void curve4_inc::init(double x1, double y1, 
-                          double x2, double y2, 
+    void curve4_inc::init(double x1, double y1,
+                          double x2, double y2,
                           double x3, double y3,
                           double x4, double y4)
     {
@@ -282,8 +282,8 @@ namespace agg
         double dx3 = x4 - x3;
         double dy3 = y4 - y3;
 
-        double len = (sqrt(dx1 * dx1 + dy1 * dy1) + 
-                      sqrt(dx2 * dx2 + dy2 * dy2) + 
+        double len = (sqrt(dx1 * dx1 + dy1 * dy1) +
+                      sqrt(dx2 * dx2 + dy2 * dy2) +
                       sqrt(dx3 * dx3 + dy3 * dy3)) * 0.25 * m_scale;
 
 #if defined(_MSC_VER) && _MSC_VER <= 1200
@@ -294,7 +294,7 @@ namespace agg
 
         if(m_num_steps < 4)
         {
-            m_num_steps = 4;   
+            m_num_steps = 4;
         }
 
         double subdivide_step  = 1.0 / m_num_steps;
@@ -305,7 +305,7 @@ namespace agg
         double pre2 = 3.0 * subdivide_step2;
         double pre4 = 6.0 * subdivide_step2;
         double pre5 = 6.0 * subdivide_step3;
-	
+
         double tmp1x = x1 - x2 * 2.0 + x3;
         double tmp1y = y1 - y2 * 2.0 + y3;
 
@@ -366,10 +366,10 @@ namespace agg
 
         m_fx   += m_dfx;
         m_fy   += m_dfy;
-        m_dfx  += m_ddfx; 
-        m_dfy  += m_ddfy; 
-        m_ddfx += m_dddfx; 
-        m_ddfy += m_dddfy; 
+        m_dfx  += m_ddfx;
+        m_dfy  += m_ddfy;
+        m_ddfx += m_dddfx;
+        m_ddfy += m_dddfy;
 
         *x = m_fx;
         *y = m_fy;
@@ -381,8 +381,8 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    void curve4_div::init(double x1, double y1, 
-                          double x2, double y2, 
+    void curve4_div::init(double x1, double y1,
+                          double x2, double y2,
                           double x3, double y3,
                           double x4, double y4)
     {
@@ -394,13 +394,13 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
-    void curve4_div::recursive_bezier(double x1, double y1, 
-                                      double x2, double y2, 
-                                      double x3, double y3, 
+    void curve4_div::recursive_bezier(double x1, double y1,
+                                      double x2, double y2,
+                                      double x3, double y3,
                                       double x4, double y4,
                                       unsigned level)
     {
-        if(level > curve_recursion_limit) 
+        if(level > curve_recursion_limit)
         {
             return;
         }
@@ -551,7 +551,7 @@ namespace agg
             }
             break;
 
-        case 3: 
+        case 3:
             // Regular case
             //-----------------
             if((d2 + d3)*(d2 + d3) <= m_distance_tolerance_square * (dx*dx + dy*dy))
@@ -601,14 +601,14 @@ namespace agg
 
         // Continue subdivision
         //----------------------
-        recursive_bezier(x1, y1, x12, y12, x123, y123, x1234, y1234, level + 1); 
-        recursive_bezier(x1234, y1234, x234, y234, x34, y34, x4, y4, level + 1); 
+        recursive_bezier(x1, y1, x12, y12, x123, y123, x1234, y1234, level + 1);
+        recursive_bezier(x1234, y1234, x234, y234, x34, y34, x4, y4, level + 1);
     }
 
     //------------------------------------------------------------------------
-    void curve4_div::bezier(double x1, double y1, 
-                            double x2, double y2, 
-                            double x3, double y3, 
+    void curve4_div::bezier(double x1, double y1,
+                            double x2, double y2,
+                            double x3, double y3,
                             double x4, double y4)
     {
         m_points.add(point_d(x1, y1));

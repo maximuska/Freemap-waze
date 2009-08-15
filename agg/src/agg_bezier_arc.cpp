@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -29,16 +29,16 @@
 namespace agg
 {
 
-    // This epsilon is used to prevent us from adding degenerate curves 
+    // This epsilon is used to prevent us from adding degenerate curves
     // (converging to a single point).
-    // The value isn't very critical. Function arc_to_bezier() has a limit 
-    // of the sweep_angle. If fabs(sweep_angle) exceeds pi/2 the curve 
+    // The value isn't very critical. Function arc_to_bezier() has a limit
+    // of the sweep_angle. If fabs(sweep_angle) exceeds pi/2 the curve
     // becomes inaccurate. But slight exceeding is quite appropriate.
     //-------------------------------------------------bezier_arc_angle_epsilon
     const double bezier_arc_angle_epsilon = 0.01;
 
     //------------------------------------------------------------arc_to_bezier
-    void arc_to_bezier(double cx, double cy, double rx, double ry, 
+    void arc_to_bezier(double cx, double cy, double rx, double ry,
                        double start_angle, double sweep_angle,
                        double* curve)
     {
@@ -71,9 +71,9 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    void bezier_arc::init(double x,  double y, 
-                          double rx, double ry, 
-                          double start_angle, 
+    void bezier_arc::init(double x,  double y,
+                          double rx, double ry,
+                          double start_angle,
                           double sweep_angle)
     {
         start_angle = fmod(start_angle, 2.0 * pi);
@@ -122,9 +122,9 @@ namespace agg
                 }
             }
 
-            arc_to_bezier(x, y, rx, ry, 
-                          start_angle, 
-                          local_sweep, 
+            arc_to_bezier(x, y, rx, ry,
+                          start_angle,
+                          local_sweep,
                           m_vertices + m_num_vertices - 2);
 
             m_num_vertices += 6;
@@ -137,8 +137,8 @@ namespace agg
 
 
     //--------------------------------------------------------------------
-    void bezier_arc_svg::init(double x0, double y0, 
-                              double rx, double ry, 
+    void bezier_arc_svg::init(double x0, double y0,
+                              double rx, double ry,
                               double angle,
                               bool large_arc_flag,
                               bool sweep_flag,
@@ -149,7 +149,7 @@ namespace agg
         if(rx < 0.0) rx = -rx;
         if(ry < 0.0) ry = -rx;
 
-        // Calculate the middle point between 
+        // Calculate the middle point between
         // the current and the final points
         //------------------------
         double dx2 = (x0 - x2) / 2.0;
@@ -173,7 +173,7 @@ namespace agg
         // Check that radii are large enough
         //------------------------
         double radii_check = px1/prx + py1/pry;
-        if(radii_check > 1.0) 
+        if(radii_check > 1.0)
         {
             rx = sqrt(radii_check) * rx;
             ry = sqrt(radii_check) * ry;
@@ -225,12 +225,12 @@ namespace agg
         if(v < -1.0) v = -1.0;
         if(v >  1.0) v =  1.0;
         double sweep_angle = sign * acos(v);
-        if(!sweep_flag && sweep_angle > 0) 
+        if(!sweep_flag && sweep_angle > 0)
         {
             sweep_angle -= pi * 2.0;
-        } 
-        else 
-        if (sweep_flag && sweep_angle < 0) 
+        }
+        else
+        if (sweep_flag && sweep_angle < 0)
         {
             sweep_angle += pi * 2.0;
         }
@@ -240,7 +240,7 @@ namespace agg
         m_arc.init(0.0, 0.0, rx, ry, start_angle, sweep_angle);
         trans_affine mtx = trans_affine_rotation(angle);
         mtx *= trans_affine_translation(cx, cy);
-        
+
         for(unsigned i = 2; i < m_arc.num_vertices()-2; i += 2)
         {
             mtx.transform(m_arc.vertices() + i, m_arc.vertices() + i + 1);

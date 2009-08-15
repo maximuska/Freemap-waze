@@ -31,11 +31,11 @@
 // -----------------------------------------------------------------------------
 //
 CFreeMapDocument* CFreeMapDocument::NewL( CEikApplication& aApp )
-	{
-	CFreeMapDocument* self = NewLC( aApp );
-	CleanupStack::Pop( self );
-	return self;
-	}
+    {
+    CFreeMapDocument* self = NewLC( aApp );
+    CleanupStack::Pop( self );
+    return self;
+    }
 
 // -----------------------------------------------------------------------------
 // CFreeMapDocument::NewLC()
@@ -43,14 +43,14 @@ CFreeMapDocument* CFreeMapDocument::NewL( CEikApplication& aApp )
 // -----------------------------------------------------------------------------
 //
 CFreeMapDocument* CFreeMapDocument::NewLC( CEikApplication& aApp )
-	{
-	CFreeMapDocument* self =
-		new ( ELeave ) CFreeMapDocument( aApp );
+    {
+    CFreeMapDocument* self =
+        new ( ELeave ) CFreeMapDocument( aApp );
 
-	CleanupStack::PushL( self );
-	self->ConstructL();
-	return self;
-	}
+    CleanupStack::PushL( self );
+    self->ConstructL();
+    return self;
+    }
 
 // -----------------------------------------------------------------------------
 // CFreeMapDocument::ConstructL()
@@ -58,9 +58,9 @@ CFreeMapDocument* CFreeMapDocument::NewLC( CEikApplication& aApp )
 // -----------------------------------------------------------------------------
 //
 void CFreeMapDocument::ConstructL()
-	{
-	// No implementation required
-	}
+    {
+    // No implementation required
+    }
 
 // -----------------------------------------------------------------------------
 // CFreeMapDocument::CFreeMapDocument()
@@ -68,10 +68,10 @@ void CFreeMapDocument::ConstructL()
 // -----------------------------------------------------------------------------
 //
 CFreeMapDocument::CFreeMapDocument( CEikApplication& aApp )
-	: CAknDocument( aApp )
-	{
-	// No implementation required
-	}
+    : CAknDocument( aApp )
+    {
+    // No implementation required
+    }
 
 // ---------------------------------------------------------------------------
 // CFreeMapDocument::~CFreeMapDocument()
@@ -79,9 +79,9 @@ CFreeMapDocument::CFreeMapDocument( CEikApplication& aApp )
 // ---------------------------------------------------------------------------
 //
 CFreeMapDocument::~CFreeMapDocument()
-	{
-	// No implementation required
-	}
+    {
+    // No implementation required
+    }
 
 // ---------------------------------------------------------------------------
 // CFreeMapDocument::CreateAppUiL()
@@ -89,11 +89,11 @@ CFreeMapDocument::~CFreeMapDocument()
 // ---------------------------------------------------------------------------
 //
 CEikAppUi* CFreeMapDocument::CreateAppUiL()
-	{
-	// Create the application user interface, and return a pointer to it;
-	// the framework takes ownership of this object
-	return ( static_cast <CEikAppUi*> ( new ( ELeave )
-										CFreeMapAppUi ) );
-	}
+    {
+    // Create the application user interface, and return a pointer to it;
+    // the framework takes ownership of this object
+    return ( static_cast <CEikAppUi*> ( new ( ELeave )
+                                        CFreeMapAppUi ) );
+    }
 
 // End of File

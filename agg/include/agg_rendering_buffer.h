@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -61,14 +61,14 @@ namespace agg
         //--------------------------------------------------------------------
         void attach(T* buf, unsigned width, unsigned height, int stride)
         {
-			m_buf = m_start = buf;
-			m_width = width;
-			m_height = height;
-			m_stride = stride;
-			if(stride < 0) 
-            { 
-				m_start = m_buf - int(height - 1) * stride;
-			}
+            m_buf = m_start = buf;
+            m_width = width;
+            m_height = height;
+            m_stride = stride;
+            if(stride < 0)
+            {
+                m_start = m_buf - int(height - 1) * stride;
+            }
         }
 
         //--------------------------------------------------------------------
@@ -77,21 +77,21 @@ namespace agg
         AGG_INLINE unsigned width()  const { return m_width;  }
         AGG_INLINE unsigned height() const { return m_height; }
         AGG_INLINE int      stride() const { return m_stride; }
-        AGG_INLINE unsigned stride_abs() const 
+        AGG_INLINE unsigned stride_abs() const
         {
-            return (m_stride < 0) ? unsigned(-m_stride) : unsigned(m_stride); 
+            return (m_stride < 0) ? unsigned(-m_stride) : unsigned(m_stride);
         }
 
         //--------------------------------------------------------------------
-		AGG_INLINE       T* row_ptr(int, int y, unsigned) 
-        { 
-            return m_start + y * m_stride; 
+        AGG_INLINE       T* row_ptr(int, int y, unsigned)
+        {
+            return m_start + y * m_stride;
         }
-		AGG_INLINE       T* row_ptr(int y)       { return m_start + y * m_stride; }
-		AGG_INLINE const T* row_ptr(int y) const { return m_start + y * m_stride; }
-		AGG_INLINE row_data row    (int y) const 
-        { 
-            return row_data(0, m_width-1, row_ptr(y)); 
+        AGG_INLINE       T* row_ptr(int y)       { return m_start + y * m_stride; }
+        AGG_INLINE const T* row_ptr(int y) const { return m_start + y * m_stride; }
+        AGG_INLINE row_data row    (int y) const
+        {
+            return row_data(0, m_width-1, row_ptr(y));
         }
 
         //--------------------------------------------------------------------
@@ -100,10 +100,10 @@ namespace agg
         {
             unsigned h = height();
             if(src.height() < h) h = src.height();
-        
+
             unsigned l = stride_abs();
             if(src.stride_abs() < l) l = src.stride_abs();
-        
+
             l *= sizeof(T);
 
             unsigned y;
@@ -134,7 +134,7 @@ namespace agg
     private:
         //--------------------------------------------------------------------
         T*            m_buf;    // Pointer to renrdering buffer
-        T*            m_start;  // Pointer to first pixel depending on stride 
+        T*            m_start;  // Pointer to first pixel depending on stride
         unsigned      m_width;  // Width in pixels
         unsigned      m_height; // Height in pixels
         int           m_stride; // Number of bytes per row. Can be < 0
@@ -204,21 +204,21 @@ namespace agg
         AGG_INLINE unsigned width()  const { return m_width;  }
         AGG_INLINE unsigned height() const { return m_height; }
         AGG_INLINE int      stride() const { return m_stride; }
-        AGG_INLINE unsigned stride_abs() const 
+        AGG_INLINE unsigned stride_abs() const
         {
-            return (m_stride < 0) ? unsigned(-m_stride) : unsigned(m_stride); 
+            return (m_stride < 0) ? unsigned(-m_stride) : unsigned(m_stride);
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE       T* row_ptr(int, int y, unsigned) 
-        { 
-            return m_rows[y]; 
+        AGG_INLINE       T* row_ptr(int, int y, unsigned)
+        {
+            return m_rows[y];
         }
         AGG_INLINE       T* row_ptr(int y)       { return m_rows[y]; }
         AGG_INLINE const T* row_ptr(int y) const { return m_rows[y]; }
-        AGG_INLINE row_data row    (int y) const 
-        { 
-            return row_data(0, m_width-1, m_rows[y]); 
+        AGG_INLINE row_data row    (int y) const
+        {
+            return row_data(0, m_width-1, m_rows[y]);
         }
 
         //--------------------------------------------------------------------
@@ -230,10 +230,10 @@ namespace agg
         {
             unsigned h = height();
             if(src.height() < h) h = src.height();
-        
+
             unsigned l = stride_abs();
             if(src.stride_abs() < l) l = src.stride_abs();
-        
+
             l *= sizeof(T);
 
             unsigned y;
@@ -274,21 +274,21 @@ namespace agg
 
 
     //========================================================rendering_buffer
-    // 
-    // The definition of the main type for accessing the rows in the frame 
-    // buffer. It provides functionality to navigate to the rows in a 
-    // rectangular matrix, from top to bottom or from bottom to top depending 
+    //
+    // The definition of the main type for accessing the rows in the frame
+    // buffer. It provides functionality to navigate to the rows in a
+    // rectangular matrix, from top to bottom or from bottom to top depending
     // on stride.
     //
     // row_accessor is cheap to create/destroy, but performs one multiplication
     // when calling row_ptr().
-    // 
-    // row_ptr_cache creates an array of pointers to rows, so, the access 
-    // via row_ptr() may be faster. But it requires memory allocation 
-    // when creating. For example, on typical Intel Pentium hardware 
+    //
+    // row_ptr_cache creates an array of pointers to rows, so, the access
+    // via row_ptr() may be faster. But it requires memory allocation
+    // when creating. For example, on typical Intel Pentium hardware
     // row_ptr_cache speeds span_image_filter_rgb_nn up to 10%
     //
-    // It's used only in short hand typedefs like pixfmt_rgba32 and can be 
+    // It's used only in short hand typedefs like pixfmt_rgba32 and can be
     // redefined in agg_config.h
     // In real applications you can use both, depending on your needs
     //------------------------------------------------------------------------

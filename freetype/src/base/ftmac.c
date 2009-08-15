@@ -930,7 +930,7 @@
       file_type = get_file_type( spec );
       if ( file_type == 'LWFN' )
         return FT_New_Face_From_LWFN( library, spec, face_index, aface );
-    
+
       /* Otherwise the file type doesn't matter (there are more than  */
       /* `FFIL' and `tfil').  Just try opening it as a font suitcase; */
       /* if it works, fine.                                           */

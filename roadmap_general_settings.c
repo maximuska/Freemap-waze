@@ -48,13 +48,13 @@ static RoadMapConfigDescriptor RoadMapConfigBackLight =
                         ROADMAP_CONFIG_ITEM("Display", "BackLight");
 static RoadMapConfigDescriptor RoadMapConfigVolControl =
                         ROADMAP_CONFIG_ITEM( "Voice", "Volume Control" );
-                
+
 extern RoadMapConfigDescriptor NavigateConfigAutoZoom;
 extern RoadMapConfigDescriptor NavigateConfigNavigationGuidance;
-                        
+
 static int on_ok( SsdWidget this, const char *new_value) {
 
-  
+
 #ifdef __SYMBIAN32__
    roadmap_config_set(&RoadMapConfigConnectionAuto, ( const char* ) ssd_dialog_get_data("AutoConnect"));
 
@@ -76,7 +76,7 @@ static int on_ok( SsdWidget this, const char *new_value) {
 
 #ifndef TOUCH_SCREEN
 static int on_ok_softkey(SsdWidget this, const char *new_value, void *context){
-	return on_ok(this, new_value);
+    return on_ok(this, new_value);
 }
 #endif
 
@@ -85,7 +85,7 @@ void roadmap_general_settings_show(void) {
 
    static int initialized = 0;
    const char *pVal;
-   
+
    if (!initialized) {
       initialized = 1;
 
@@ -95,19 +95,19 @@ void roadmap_general_settings_show(void) {
          ("user", &RoadMapConfigBackLight, "yes", NULL);
       roadmap_config_declare
          ("user", &RoadMapConfigVolControl, SND_DEFAULT_VOLUME_LVL, NULL);
-      
+
       // Define the labels and values
-	 yesno_label[0] = roadmap_lang_get ("Yes");
-	 yesno_label[1] = roadmap_lang_get ("No");
-	 yesno[0] = "Yes";
-	 yesno[1] = "No";
+     yesno_label[0] = roadmap_lang_get ("Yes");
+     yesno_label[1] = roadmap_lang_get ("No");
+     yesno[0] = "Yes";
+     yesno[1] = "No";
    }
 
    if (!ssd_dialog_activate (title, NULL)) {
 
       SsdWidget dialog;
       SsdWidget box;
-      
+
       dialog = ssd_dialog_new (title, roadmap_lang_get(title), NULL,
                                SSD_CONTAINER_BORDER|SSD_CONTAINER_TITLE|SSD_ROUNDED_CORNERS);
 
@@ -124,13 +124,13 @@ void roadmap_general_settings_show(void) {
                         roadmap_lang_get ("Automatic Connection"),
                         -1, SSD_TEXT_LABEL|SSD_ALIGN_VCENTER|SSD_WIDGET_SPACE ) );
 
-		
+
        ssd_widget_add (box,
             ssd_checkbox_new ("AutoConnect", TRUE, SSD_ALIGN_RIGHT, NULL,CHECKBOX_STYLE_DEFAULT));
 
       ssd_widget_add (dialog, box);
       //////////////////////////////////////////////////////////
-      
+
       ////////////  Backlight control  /////////////
       // TODO :: Move to another settings directory
       box = ssd_container_new ("BackLight Group", NULL, SSD_MAX_SIZE, SSD_MIN_SIZE,
@@ -141,14 +141,14 @@ void roadmap_general_settings_show(void) {
          ssd_text_new ( "BackLightLabel",
                         roadmap_lang_get ("Back Light On"),
                         -1, SSD_TEXT_LABEL|SSD_ALIGN_VCENTER|SSD_WIDGET_SPACE ) );
-		
+
       ssd_widget_add (box,
             ssd_checkbox_new ( "BackLight", TRUE, SSD_ALIGN_RIGHT, NULL,CHECKBOX_STYLE_DEFAULT ) );
 
       ssd_widget_add (dialog, box);
 
       //////////////////////////////////////////////////////////
-      
+
       ////////////  Volume control  /////////////
       // TODO :: Move to another settings directory
       box = ssd_container_new ("Volume Control Group", NULL, SSD_MAX_SIZE, SSD_MIN_SIZE,
@@ -160,22 +160,22 @@ void roadmap_general_settings_show(void) {
          ssd_text_new ( "VolumeCtrlLabel",
                         roadmap_lang_get ("Volume Control"),
                         -1, SSD_TEXT_LABEL|SSD_ALIGN_VCENTER|SSD_WIDGET_SPACE ) );
-      
+
       ssd_widget_add (box,
          ssd_choice_new ( "Volume Control", SND_VOLUME_LVLS_COUNT,
                                  SND_VOLUME_LVLS_LABELS,
                                  ( const void** ) SND_VOLUME_LVLS,
                                  SSD_ALIGN_RIGHT|SSD_ALIGN_VCENTER, NULL) );
-      
+
       ssd_widget_add (dialog, box);
-      
+
       /////////////////////////////////////////////////////////
 #endif
 
    box = ssd_container_new ("autozoom group", NULL, SSD_MAX_SIZE, SSD_MIN_SIZE,
                             SSD_WIDGET_SPACE|SSD_END_ROW);
    ssd_widget_set_color (box, "#000000", "#ffffff");
-   
+
    ssd_widget_add (box,
       ssd_text_new ("autozoom_label",
                      roadmap_lang_get ("Auto zoom"),
@@ -183,24 +183,24 @@ void roadmap_general_settings_show(void) {
 
    ssd_widget_add (box,
          ssd_checkbox_new ("autozoom", TRUE,  SSD_ALIGN_RIGHT, NULL,CHECKBOX_STYLE_DEFAULT));
-                         
+
    ssd_widget_add (dialog, box);
-   
+
    box = ssd_container_new ("navigationguidance group", NULL, SSD_MAX_SIZE, SSD_MIN_SIZE,
                             SSD_WIDGET_SPACE|SSD_END_ROW);
    ssd_widget_set_color (box, "#000000", "#ffffff");
-   
+
    ssd_widget_add (box,
       ssd_text_new ("navigationguidance_label",
                      roadmap_lang_get ("Navigation Guidance"),
                     -1, SSD_TEXT_LABEL|SSD_ALIGN_VCENTER|SSD_WIDGET_SPACE));
 
     ssd_widget_add (box,
-         ssd_checkbox_new ("navigationguidance", TRUE,  SSD_ALIGN_RIGHT, NULL,CHECKBOX_STYLE_DEFAULT));                         
-        
+         ssd_checkbox_new ("navigationguidance", TRUE,  SSD_ALIGN_RIGHT, NULL,CHECKBOX_STYLE_DEFAULT));
+
    ssd_widget_add (dialog, box);
 
-#ifdef TOUCH_SCREEN      
+#ifdef TOUCH_SCREEN
       ssd_widget_add (dialog,
          ssd_button_label ("confirm", roadmap_lang_get ("Ok"),
                         SSD_ALIGN_CENTER|SSD_START_NEW_ROW|SSD_WS_TABSTOP|SSD_ALIGN_BOTTOM,
@@ -213,22 +213,22 @@ void roadmap_general_settings_show(void) {
    }
 
    if (!DialogShowsShown) {
-   	  // Case insensitive comparison
+      // Case insensitive comparison
 #ifdef __SYMBIAN32__
-   	  pVal = roadmap_config_match( &RoadMapConfigConnectionAuto, yesno[0] ) ? yesno[0] : yesno[1];
-   	  ssd_dialog_set_data("AutoConnect", pVal );
-   	  pVal = roadmap_config_match( &RoadMapConfigBackLight, yesno[0] ) ? yesno[0] : yesno[1];
+      pVal = roadmap_config_match( &RoadMapConfigConnectionAuto, yesno[0] ) ? yesno[0] : yesno[1];
+      ssd_dialog_set_data("AutoConnect", pVal );
+      pVal = roadmap_config_match( &RoadMapConfigBackLight, yesno[0] ) ? yesno[0] : yesno[1];
       ssd_dialog_set_data("BackLight", pVal );
       ssd_dialog_set_data("Volume Control", ( void* ) roadmap_config_get_integer( &RoadMapConfigVolControl ) );
 #endif
 
-	  if (roadmap_config_match(&NavigateConfigAutoZoom, "yes")) pVal = yesno[0];
-   	  else pVal = yesno[1];
-   	  ssd_dialog_set_data ("autozoom", (void *) pVal);
+      if (roadmap_config_match(&NavigateConfigAutoZoom, "yes")) pVal = yesno[0];
+      else pVal = yesno[1];
+      ssd_dialog_set_data ("autozoom", (void *) pVal);
 
-   	  if (roadmap_config_match(&NavigateConfigNavigationGuidance, "yes")) pVal = yesno[0];
-   	  else pVal = yesno[1];
-   	  ssd_dialog_set_data ("navigationguidance", (void *) pVal);
+      if (roadmap_config_match(&NavigateConfigNavigationGuidance, "yes")) pVal = yesno[0];
+      else pVal = yesno[1];
+      ssd_dialog_set_data ("navigationguidance", (void *) pVal);
 
    }
 

@@ -27,14 +27,14 @@
 typedef struct tag_multiple_key_info
 {
    char**   values;  // Array of (utf8) values for a single phone key
-   int      count;   // Array size 
+   int      count;   // Array size
 
 }     multiple_key_info, *multiple_key_info_ptr;
 void  multiple_key_info_init  (  multiple_key_info_ptr this);
 void  multiple_key_info_free  (  multiple_key_info_ptr this);
 int   multiple_key_info_get_next_valid_key
-                              (  multiple_key_info_ptr this, 
-                                 int                   start_from, 
+                              (  multiple_key_info_ptr this,
+                                 int                   start_from,
                                  uint16_t              input_type,
                                  BOOL*                 single_option);
 
@@ -53,10 +53,10 @@ typedef enum tag_phone_keys
    phonekey_9,
    phonekey_star,
    phonekey_ladder,
-   
+
    phonekey__count,
    phonekey__invalid
-   
+
 }           phone_keys;
 phone_keys  phone_keys_from_string  ( const char*  key);
 const char* phone_keys_tag_name     ( phone_keys   key);

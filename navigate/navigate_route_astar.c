@@ -82,27 +82,27 @@ static int LastRouteGoal = -1;
 static int LastRouteNumSegments = 0;
 
 typedef struct {
-	int					line_square;
-	int					prev_square;
-	unsigned short		line_id;
-	unsigned short		prev_id;
+    int                 line_square;
+    int                 prev_square;
+    unsigned short      line_id;
+    unsigned short      prev_id;
 } NavItem;
 static NavItem *NavNode[HASH_MAX_BLOCKS];
 
 typedef struct {
-	int square;
-	int last_line;
-	int node;
-	RoadMapPosition position;
-	int goal_square;
-	int goal_node;
+    int square;
+    int last_line;
+    int node;
+    RoadMapPosition position;
+    int goal_square;
+    int goal_node;
 } DestNode;
 
 #define MAX_REPLACE_DISTANCE 300
-#define MAX_DEAD_END_SEGMENTS	10
+#define MAX_DEAD_END_SEGMENTS   10
 
 int navigate_route_reload_data (void) {
-   
+
    return 0;
 }
 
@@ -113,86 +113,86 @@ int navigate_route_load_data (void) {
 
 static int hash_key (int square, int line, int reversed) {
 
-	return (square << 16) + line * 2 + (reversed != 0);
+    return (square << 16) + line * 2 + (reversed != 0);
 }
 
 
-static NavItem *make_path (int square_id, int line_id, int line_reversed, 
-							  		int prev_square, int prev_line, int prev_reversed) {
-   
+static NavItem *make_path (int square_id, int line_id, int line_reversed,
+                                    int prev_square, int prev_line, int prev_reversed) {
+
    NavItem *item;
 
-	if (RouteNumNodes >= MAX_ASTAR_LINES) {
-		roadmap_log (ROADMAP_ERROR, "Too many nodes in route calculation");			
-		return NULL;
-	}
-	
-	if (RouteNumNodes % HASH_BLOCK_SIZE == 0) {
-		if (RouteNumNodes) roadmap_hash_resize (RouteGraph, RouteNumNodes + HASH_BLOCK_SIZE);
-		NavNode[RouteNumNodes / HASH_BLOCK_SIZE] = (NavItem *)malloc (HASH_BLOCK_SIZE * sizeof (NavItem));
-	}
-	
-	item = NavNode[RouteNumNodes / HASH_BLOCK_SIZE] + (RouteNumNodes % HASH_BLOCK_SIZE);
-	item->prev_square = prev_square | (prev_reversed ? REVERSED : 0);
-	item->prev_id = prev_line;
-	item->line_square = square_id | (line_reversed ? REVERSED : 0);
-	item->line_id = line_id;
+    if (RouteNumNodes >= MAX_ASTAR_LINES) {
+        roadmap_log (ROADMAP_ERROR, "Too many nodes in route calculation");
+        return NULL;
+    }
 
-	//printf ("Adding path (%d/%d)%s -> (%d/%d)%s\n", 
-	//			item->prev_square & ~REVERSED, item->prev_id, item->prev_square & REVERSED ? "'" : "", 
-	//			item->line_square & ~REVERSED, item->line_id, item->line_square & REVERSED ? "'" : "");
-				
-	roadmap_hash_add (RouteGraph, hash_key (square_id, line_id, line_reversed), RouteNumNodes);
-	RouteNumNodes++;
-	
-	return item;
+    if (RouteNumNodes % HASH_BLOCK_SIZE == 0) {
+        if (RouteNumNodes) roadmap_hash_resize (RouteGraph, RouteNumNodes + HASH_BLOCK_SIZE);
+        NavNode[RouteNumNodes / HASH_BLOCK_SIZE] = (NavItem *)malloc (HASH_BLOCK_SIZE * sizeof (NavItem));
+    }
+
+    item = NavNode[RouteNumNodes / HASH_BLOCK_SIZE] + (RouteNumNodes % HASH_BLOCK_SIZE);
+    item->prev_square = prev_square | (prev_reversed ? REVERSED : 0);
+    item->prev_id = prev_line;
+    item->line_square = square_id | (line_reversed ? REVERSED : 0);
+    item->line_id = line_id;
+
+    //printf ("Adding path (%d/%d)%s -> (%d/%d)%s\n",
+    //          item->prev_square & ~REVERSED, item->prev_id, item->prev_square & REVERSED ? "'" : "",
+    //          item->line_square & ~REVERSED, item->line_id, item->line_square & REVERSED ? "'" : "");
+
+    roadmap_hash_add (RouteGraph, hash_key (square_id, line_id, line_reversed), RouteNumNodes);
+    RouteNumNodes++;
+
+    return item;
 }
 
 
 static NavItem *find_prev (int square_id, int line_id, int line_reversed) {
-	
-	int key = hash_key (square_id, line_id, line_reversed);
-	int index = roadmap_hash_get_first (RouteGraph, key);
-	
-	if (line_reversed) {
-		square_id = square_id | REVERSED;
-	}
-	
-	while (index >= 0) {
-		NavItem *item = NavNode[index / HASH_BLOCK_SIZE] + (index % HASH_BLOCK_SIZE);
-		if (item->line_square == square_id &&
-			 item->line_id == line_id) {
-			 	
-			return item;
-		}
-		index = roadmap_hash_get_next (RouteGraph, index);
-	}
-	
-	return NULL;
+
+    int key = hash_key (square_id, line_id, line_reversed);
+    int index = roadmap_hash_get_first (RouteGraph, key);
+
+    if (line_reversed) {
+        square_id = square_id | REVERSED;
+    }
+
+    while (index >= 0) {
+        NavItem *item = NavNode[index / HASH_BLOCK_SIZE] + (index % HASH_BLOCK_SIZE);
+        if (item->line_square == square_id &&
+             item->line_id == line_id) {
+
+            return item;
+        }
+        index = roadmap_hash_get_next (RouteGraph, index);
+    }
+
+    return NULL;
 }
 
 
 static void get_to_node (int square, int line_id, int reversed, int *node, RoadMapPosition *position) {
 
-	roadmap_square_set_current (square);
-	if (reversed) {
-		roadmap_line_from_point (line_id, node);
-	} else {
-		roadmap_line_to_point (line_id, node);
-	}
-	roadmap_point_position (*node, position);
+    roadmap_square_set_current (square);
+    if (reversed) {
+        roadmap_line_from_point (line_id, node);
+    } else {
+        roadmap_line_to_point (line_id, node);
+    }
+    roadmap_point_position (*node, position);
 }
 
 
 
 struct fibheap * make_queue (int square, int line_id, int reversed) {
-	
+
    struct fibheap *fh;
    NavItem *item = make_path (square, line_id, reversed, square, line_id, reversed);
-   fh = fh_makekeyheap();    
-   
+   fh = fh_makekeyheap();
+
    fh_insertkey (fh, 0, item);
-   
+
    return fh;
 }
 
@@ -217,7 +217,7 @@ static void update_progress (int progress) {
 
 static int prepare_prev_list (int use_prev_route,
                               NavigateSegment *segments) {
-                              	
+
    RouteGraph = roadmap_hash_new ("astar", HASH_BLOCK_SIZE);
    RouteNumNodes = 0;
    return 0;
@@ -226,16 +226,16 @@ static int prepare_prev_list (int use_prev_route,
 static void free_prev_list(void) {
 
    int i;
-   
+
    if (RouteGraph) {
-	   roadmap_hash_free (RouteGraph);
-	   RouteGraph = NULL;
+       roadmap_hash_free (RouteGraph);
+       RouteGraph = NULL;
    }
    if (RouteNumNodes) {
-   	for (i = (RouteNumNodes - 1) / HASH_BLOCK_SIZE; i >= 0; i--) {
-   		free (NavNode[i]);
-   	}
-   	RouteNumNodes = 0;
+    for (i = (RouteNumNodes - 1) / HASH_BLOCK_SIZE; i >= 0; i--) {
+        free (NavNode[i]);
+    }
+    RouteNumNodes = 0;
    }
 }
 
@@ -249,7 +249,7 @@ static int astar(int *start_square, int start_node, int *start_segment, int *sta
    int node;
    int no_successors;
    int i;
-   struct successor successors[MAX_SUCCESSORS]; 
+   struct successor successors[MAX_SUCCESSORS];
    NavItem *item;
    int cur_cost;
    int prev_cost;
@@ -281,8 +281,8 @@ static int astar(int *start_square, int start_node, int *start_segment, int *sta
    struct fibheap *q;
    NavigateCostFn cost_fn = navigate_cost_get ();
    int navigate_type = navigate_cost_type ();
-	
-	roadmap_square_set_current (goal_square);
+
+    roadmap_square_set_current (goal_square);
    roadmap_point_position (*goal_node, &GoalPos);
    roadmap_square_set_current (*start_square);
    roadmap_point_position (start_node, &position);
@@ -290,203 +290,203 @@ static int astar(int *start_square, int start_node, int *start_segment, int *sta
    start_position = position;
    cur_max_progress = 0;
 
-	for (attempt = 0; attempt <= max_dead_end_attempts; attempt++) {
-		
-		if (attempt > 0) {
-			int reversed;
-			
-			if (dead_end_count >= MAX_DEAD_END_SEGMENTS) break;
-			
-			count = roadmap_navigate_get_neighbours
-              (&start_position, 0, MAX_REPLACE_DISTANCE,
-               departure_alternatives, 
-               dead_end_count + 1, 
-               LAYER_ALL_ROADS);
-               
-         for (i = 0; i < count; i++) {
-         
-         	if (departure_alternatives[i].line.plugin_id == ROADMAP_PLUGIN_ID) {
-         	
-         		int j;
-         		int match = 0;
-         		
-         		for (j = 0; j < dead_end_count; j++) {
-         			if (departure_alternatives[i].line.square == dead_squares[j] &&
-         				 departure_alternatives[i].line.line_id == dead_lines[j]) {
-         				match++;
-         				if (match == 2) break;
-         				reversed = !dead_reversed[j];
-         			}
-         		}
-         		if (j == dead_end_count) {
-         			break;
-         		}	
-         	}	
-         }
-         
-         if (i < count) {
-         
-         	*start_square = departure_alternatives[i].line.square;
-         	*start_segment = departure_alternatives[i].line.line_id;
-         	*start_reversed = reversed ? REVERSED : 0;	
-         	*flags |= CHANGED_DEPARTURE;
-         }
-			
-		}
-		
-	   last_square = *start_square;
-	   last_line = *start_segment;
-	   last_line_reversed = *start_reversed;
+    for (attempt = 0; attempt <= max_dead_end_attempts; attempt++) {
 
-	   q = make_queue (last_square, last_line, last_line_reversed);
-	
-		out_of_memory = 0;
-	   while (fh_min(q) != NULL && !out_of_memory) {
-	      //int lock_route;
-	
-	      num_heap_gets++;
-	
-	      cur_cost = fh_minkey(q);
-	      item = (NavItem *)fh_extractmin(q);
-	      last_square = item->line_square & ~REVERSED;
-	      last_line = item->line_id;
-	      last_line_reversed = item->line_square & REVERSED;
-	
-	      //lock_route = (((*prev) != UNREACHED) && ((*prev) & LOCKED_ROUTE)) || ((*prev) == IN_LAST_ROUTE);
-	
-	      get_to_node (last_square, last_line, last_line_reversed, &node, &position);
-	
-	      prev_cost = cur_cost;
-	      if (cur_cost) {
-	         int dis = roadmap_math_distance (&position, &GoalPos);
-	         if (navigate_type == COST_FASTEST) dis = (dis / HU_SPEED);
-	         cur_cost -= dis;
-	      }
-	
-	      if (last_square == goal_square && 
-	      	 last_line == goal_line) {
-	         *route_total_cost = cur_cost;
-	         fh_deleteheap(q);
-	         //printf("Total no. of heap gets in this search: %d\n", num_heap_gets);
-	         //printf ("Final cost for track is %d\n", cur_cost);
-	         return last_line_reversed;
-	      }
-	
-			if (dead_end_count < MAX_DEAD_END_SEGMENTS) {
-				for (i = 0; i < dead_end_count; i++) {
-					if (dead_squares[i] == last_square &&
-						 dead_lines[i] == last_line &&
-						 dead_reversed[i] == last_line_reversed) break;
-				}
-				if (i == dead_end_count) {
-					dead_squares[dead_end_count] = last_square;
-					dead_lines[dead_end_count] = last_line;
-					dead_reversed[dead_end_count] = last_line_reversed;
-					dead_end_count++;
-				}
-			}
-			
-	      no_successors = get_connected_segments (last_square, last_line, last_line_reversed, node,
-	                                    			 successors, MAX_SUCCESSORS, 1, 1);
-	      if (!no_successors) {
-	         continue;
-	      }
-	
-	      for(i = 0; i < no_successors; i++) {
-	         int path_cost;
-	         int square;
-	         int segment;
-	         int segment_cost;
-	         int distance_to_goal;
-	         int cost_to_goal;
-	         int total_cost;
-	         int is_reversed;
-	         NavItem* prev_ptr;
-	         RoadMapPosition to_pos;
-	         int in_prev_route = 0;
-	
-				square = successors[i].square_id;
-	         segment = successors[i].line_id;
-	         is_reversed = successors[i].reversed;
-	
-				if (find_prev (square, segment, is_reversed) != NULL) continue;
-	
-				roadmap_square_set_current (square);
-	         segment_cost = cost_fn (segment, is_reversed, cur_cost, 
-	         								last_line, last_line_reversed, 
-	         								square == last_square ? node : -1);
-	
-	         if (segment_cost < 0) continue;
-	
-	         if (in_prev_route) {
-	            segment_cost = (int)(segment_cost * cost_factor);
-	            cost_factor *= (float)COST_FACTOR_UPDATE;
-	            if (cost_factor < MIN_COST_FACTOR) {
-	               cost_factor = MIN_COST_FACTOR;
-	            }
-	         }
-	
-	         path_cost = segment_cost + cur_cost;
-	         roadmap_point_position (successors[i].to_point, &to_pos);
-	         distance_to_goal = roadmap_math_distance (&to_pos, &GoalPos);
-	         
-	         if (distance_to_goal < best_distance) {
-	         
-	         	best_square = square;
-	         	best_line = segment;
-	         	best_reversed = is_reversed;
-	         	best_distance = distance_to_goal;
-	         	best_node = successors[i].to_point;	
-	         }
-	         
-	         //printf ("Sq %d seg %d node %d\n"
-	         //		  " pt %d.%d dist %d\n", 
-	         //		  square, segment, successors[i].to_point, 
-	         //		  to_pos.longitude, to_pos.latitude, distance_to_goal);
-	
-	         if (navigate_type == COST_FASTEST) {
-	            cost_to_goal = (distance_to_goal / HU_SPEED);
-	         } else {
-	            cost_to_goal = distance_to_goal;
-	         }
-	
-	         total_cost = path_cost + cost_to_goal + 1;
-	         if (total_cost < prev_cost) {
-	            total_cost = prev_cost;
-	         }
-	
-	         prev_ptr = make_path (square, segment, is_reversed, 
-	         				  	   	 last_square, last_line, last_line_reversed);
-	
-				if (!prev_ptr) {
-				
-					out_of_memory = 1;
-					break;	
-				}
-				
-	         fh_insertkey(q, total_cost, prev_ptr);
-	
-				progress = (int)(100 * (1 - sqrt ((float)distance_to_goal / goal_distance)));
-	         if ((progress >> 2 ) > (cur_max_progress >> 2)) {
-	            cur_max_progress = progress;
-	            if (!recalc) update_progress (cur_max_progress);
-	         }
-	
-	      }
-	   }
-	   fh_deleteheap(q);
-	}
-	
-	if (((*flags) & ALLOW_DESTINATION_CHANGE) &&
-		 best_distance <= MAX_REPLACE_DISTANCE) {
-	
-		goal->square = best_square;
-		goal->line_id = best_line;
-		*flags |= CHANGED_DESTINATION;
-		*goal_node = best_node;
-		return best_reversed;	 	
-	}
-	
+        if (attempt > 0) {
+            int reversed;
+
+            if (dead_end_count >= MAX_DEAD_END_SEGMENTS) break;
+
+            count = roadmap_navigate_get_neighbours
+              (&start_position, 0, MAX_REPLACE_DISTANCE,
+               departure_alternatives,
+               dead_end_count + 1,
+               LAYER_ALL_ROADS);
+
+         for (i = 0; i < count; i++) {
+
+            if (departure_alternatives[i].line.plugin_id == ROADMAP_PLUGIN_ID) {
+
+                int j;
+                int match = 0;
+
+                for (j = 0; j < dead_end_count; j++) {
+                    if (departure_alternatives[i].line.square == dead_squares[j] &&
+                         departure_alternatives[i].line.line_id == dead_lines[j]) {
+                        match++;
+                        if (match == 2) break;
+                        reversed = !dead_reversed[j];
+                    }
+                }
+                if (j == dead_end_count) {
+                    break;
+                }
+            }
+         }
+
+         if (i < count) {
+
+            *start_square = departure_alternatives[i].line.square;
+            *start_segment = departure_alternatives[i].line.line_id;
+            *start_reversed = reversed ? REVERSED : 0;
+            *flags |= CHANGED_DEPARTURE;
+         }
+
+        }
+
+       last_square = *start_square;
+       last_line = *start_segment;
+       last_line_reversed = *start_reversed;
+
+       q = make_queue (last_square, last_line, last_line_reversed);
+
+        out_of_memory = 0;
+       while (fh_min(q) != NULL && !out_of_memory) {
+          //int lock_route;
+
+          num_heap_gets++;
+
+          cur_cost = fh_minkey(q);
+          item = (NavItem *)fh_extractmin(q);
+          last_square = item->line_square & ~REVERSED;
+          last_line = item->line_id;
+          last_line_reversed = item->line_square & REVERSED;
+
+          //lock_route = (((*prev) != UNREACHED) && ((*prev) & LOCKED_ROUTE)) || ((*prev) == IN_LAST_ROUTE);
+
+          get_to_node (last_square, last_line, last_line_reversed, &node, &position);
+
+          prev_cost = cur_cost;
+          if (cur_cost) {
+             int dis = roadmap_math_distance (&position, &GoalPos);
+             if (navigate_type == COST_FASTEST) dis = (dis / HU_SPEED);
+             cur_cost -= dis;
+          }
+
+          if (last_square == goal_square &&
+             last_line == goal_line) {
+             *route_total_cost = cur_cost;
+             fh_deleteheap(q);
+             //printf("Total no. of heap gets in this search: %d\n", num_heap_gets);
+             //printf ("Final cost for track is %d\n", cur_cost);
+             return last_line_reversed;
+          }
+
+            if (dead_end_count < MAX_DEAD_END_SEGMENTS) {
+                for (i = 0; i < dead_end_count; i++) {
+                    if (dead_squares[i] == last_square &&
+                         dead_lines[i] == last_line &&
+                         dead_reversed[i] == last_line_reversed) break;
+                }
+                if (i == dead_end_count) {
+                    dead_squares[dead_end_count] = last_square;
+                    dead_lines[dead_end_count] = last_line;
+                    dead_reversed[dead_end_count] = last_line_reversed;
+                    dead_end_count++;
+                }
+            }
+
+          no_successors = get_connected_segments (last_square, last_line, last_line_reversed, node,
+                                                     successors, MAX_SUCCESSORS, 1, 1);
+          if (!no_successors) {
+             continue;
+          }
+
+          for(i = 0; i < no_successors; i++) {
+             int path_cost;
+             int square;
+             int segment;
+             int segment_cost;
+             int distance_to_goal;
+             int cost_to_goal;
+             int total_cost;
+             int is_reversed;
+             NavItem* prev_ptr;
+             RoadMapPosition to_pos;
+             int in_prev_route = 0;
+
+                square = successors[i].square_id;
+             segment = successors[i].line_id;
+             is_reversed = successors[i].reversed;
+
+                if (find_prev (square, segment, is_reversed) != NULL) continue;
+
+                roadmap_square_set_current (square);
+             segment_cost = cost_fn (segment, is_reversed, cur_cost,
+                                            last_line, last_line_reversed,
+                                            square == last_square ? node : -1);
+
+             if (segment_cost < 0) continue;
+
+             if (in_prev_route) {
+                segment_cost = (int)(segment_cost * cost_factor);
+                cost_factor *= (float)COST_FACTOR_UPDATE;
+                if (cost_factor < MIN_COST_FACTOR) {
+                   cost_factor = MIN_COST_FACTOR;
+                }
+             }
+
+             path_cost = segment_cost + cur_cost;
+             roadmap_point_position (successors[i].to_point, &to_pos);
+             distance_to_goal = roadmap_math_distance (&to_pos, &GoalPos);
+
+             if (distance_to_goal < best_distance) {
+
+                best_square = square;
+                best_line = segment;
+                best_reversed = is_reversed;
+                best_distance = distance_to_goal;
+                best_node = successors[i].to_point;
+             }
+
+             //printf ("Sq %d seg %d node %d\n"
+             //       " pt %d.%d dist %d\n",
+             //       square, segment, successors[i].to_point,
+             //       to_pos.longitude, to_pos.latitude, distance_to_goal);
+
+             if (navigate_type == COST_FASTEST) {
+                cost_to_goal = (distance_to_goal / HU_SPEED);
+             } else {
+                cost_to_goal = distance_to_goal;
+             }
+
+             total_cost = path_cost + cost_to_goal + 1;
+             if (total_cost < prev_cost) {
+                total_cost = prev_cost;
+             }
+
+             prev_ptr = make_path (square, segment, is_reversed,
+                                     last_square, last_line, last_line_reversed);
+
+                if (!prev_ptr) {
+
+                    out_of_memory = 1;
+                    break;
+                }
+
+             fh_insertkey(q, total_cost, prev_ptr);
+
+                progress = (int)(100 * (1 - sqrt ((float)distance_to_goal / goal_distance)));
+             if ((progress >> 2 ) > (cur_max_progress >> 2)) {
+                cur_max_progress = progress;
+                if (!recalc) update_progress (cur_max_progress);
+             }
+
+          }
+       }
+       fh_deleteheap(q);
+    }
+
+    if (((*flags) & ALLOW_DESTINATION_CHANGE) &&
+         best_distance <= MAX_REPLACE_DISTANCE) {
+
+        goal->square = best_square;
+        goal->line_id = best_line;
+        *flags |= CHANGED_DESTINATION;
+        *goal_node = best_node;
+        return best_reversed;
+    }
+
    return -1;
 }
 
@@ -498,7 +498,7 @@ static int navigate_route_calc_segments (PluginLine *from_line,
                                          NavigateSegment *segments,
                                          int *size,
                                          int *flags) {
-   
+
    int i;
    int total_cost;
    int line_from_point;
@@ -517,13 +517,13 @@ static int navigate_route_calc_segments (PluginLine *from_line,
    else if (from_point == line_from_point) start_line_reversed = REVERSED;
    else start_line_reversed = 0;
 
-   line_reversed = astar (&start_square, from_point, &start_line, &start_line_reversed, 
-   				  to_line, to_point, &total_cost, flags);
+   line_reversed = astar (&start_square, from_point, &start_line, &start_line_reversed,
+                  to_line, to_point, &total_cost, flags);
 
    if (line_reversed == -1) {
       return -1;
    }
-   
+
    i=0;
 
 
@@ -535,12 +535,12 @@ static int navigate_route_calc_segments (PluginLine *from_line,
       NavItem *prev_item;
 
       if (i >= *size) {
-      	if ((*flags) & CHANGED_DEPARTURE) break;
+        if ((*flags) & CHANGED_DEPARTURE) break;
          return -1;
       }
       i++;
 
-		roadmap_square_set_current (square);
+        roadmap_square_set_current (square);
       segments[*size-i].line.plugin_id = ROADMAP_PLUGIN_ID;
       segments[*size-i].line.square = square;
       segments[*size-i].line.line_id = line;
@@ -553,10 +553,10 @@ static int navigate_route_calc_segments (PluginLine *from_line,
       } else {
          segments[*size-i].line_direction = ROUTE_DIRECTION_WITH_LINE;
       }
-      //printf ("Segment %d: (%d/%d)%s\n", i, 
-      //			segments[*size - i].line.square,
-      //			segments[*size - i].line.line_id,
-      //			segments[*size - i].line_direction == ROUTE_DIRECTION_AGAINST_LINE ? "'" : "");
+      //printf ("Segment %d: (%d/%d)%s\n", i,
+      //            segments[*size - i].line.square,
+      //            segments[*size - i].line.line_id,
+      //            segments[*size - i].line_direction == ROUTE_DIRECTION_AGAINST_LINE ? "'" : "");
 
       if (line_reversed) {
          roadmap_line_to_point (line, &prev_node);
@@ -566,30 +566,30 @@ static int navigate_route_calc_segments (PluginLine *from_line,
 
       /* Check if we got to the first line */
       if ((line == start_line) &&
-      	 (square == start_square) &&
+         (square == start_square) &&
           (line_reversed == start_line_reversed)) break;
 
-		prev_item = find_prev (square, line, line_reversed);
-		if (!prev_item) {
-			roadmap_log (ROADMAP_ERROR, "Inconsistency in route calculation");			
-			return -1;
-		}
-		
-		square = prev_item->prev_square & ~REVERSED;
-		line = prev_item->prev_id;
-		line_reversed = prev_item->prev_square & REVERSED;
+        prev_item = find_prev (square, line, line_reversed);
+        if (!prev_item) {
+            roadmap_log (ROADMAP_ERROR, "Inconsistency in route calculation");
+            return -1;
+        }
+
+        square = prev_item->prev_square & ~REVERSED;
+        line = prev_item->prev_id;
+        line_reversed = prev_item->prev_square & REVERSED;
    }
    //printf("\n");
 
    /* add starting line */
    if (((*flags) & CHANGED_DEPARTURE) == 0 &&
-   	 (segments[*size-i].line.line_id != start_line ||
-   	  segments[*size-i].line.square != start_square)) {
+     (segments[*size-i].line.line_id != start_line ||
+      segments[*size-i].line.square != start_square)) {
 
       int tmp_from;
       int tmp_to;
       i++;
-      
+
       if (i > *size) {
          return -1;
       }
@@ -627,7 +627,7 @@ int navigate_route_get_segments (PluginLine *from_line,
                                  NavigateSegment *segments,
                                  int *size,
                                  int *flags) {
-   
+
    static int inside_route = 0;
    int reuse = (*flags & USE_LAST_RESULTS) && (*to_point == LastRouteGoal);
    int rc;
@@ -644,7 +644,7 @@ int navigate_route_get_segments (PluginLine *from_line,
       return -1;
    }
 
-	roadmap_square_set_screen_scale (0);
+    roadmap_square_set_screen_scale (0);
    rc = navigate_route_calc_segments(from_line, from_point, to_line, to_point, segments, size, flags);
    roadmap_square_set_screen_scale (prev_scale);
 

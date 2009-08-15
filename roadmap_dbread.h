@@ -27,12 +27,12 @@
 #include "roadmap_data_format.h"
 
 typedef struct {
-	roadmap_data_header		*header;
-	roadmap_data_entry		*index;
-	unsigned char				*data;
-	
-	unsigned int 				byte_alignment_add;
-	unsigned int 				byte_alignment_mask;
+    roadmap_data_header     *header;
+    roadmap_data_entry      *index;
+    unsigned char               *data;
+
+    unsigned int                byte_alignment_add;
+    unsigned int                byte_alignment_mask;
 } roadmap_db_data_file;
 
 
@@ -51,15 +51,15 @@ typedef struct {
 } roadmap_db_handler;
 
 typedef struct {
-	int	first;
-	int	last;
+    int first;
+    int last;
 } roadmap_db_sector;
 
 
 typedef struct roadmap_db_model_s {
 
-   roadmap_db_handler	*handler;
-   roadmap_db_sector		sector;
+   roadmap_db_handler   *handler;
+   roadmap_db_sector        sector;
 
    struct roadmap_db_model_s *next;
 } roadmap_db_model;
@@ -68,17 +68,17 @@ roadmap_db_model *roadmap_db_register
      (roadmap_db_model *model, const roadmap_db_sector *sector, roadmap_db_handler *handler);
 
 
-int	roadmap_db_open (const char *name, const char *section, roadmap_db_model *model, const char* mode);
+int roadmap_db_open (const char *name, const char *section, roadmap_db_model *model, const char* mode);
 
-void	roadmap_db_activate (const char *name, const char *section);
+void    roadmap_db_activate (const char *name, const char *section);
 
-int	roadmap_db_exists (const roadmap_db_data_file *file, const roadmap_db_sector *sector);
+int roadmap_db_exists (const roadmap_db_data_file *file, const roadmap_db_sector *sector);
 
-int	roadmap_db_get_data (const roadmap_db_data_file *file, 
-									unsigned int data_id,
-									unsigned int item_size, 
-									void 			 **data, 
-									int 			 *num_items);
+int roadmap_db_get_data (const roadmap_db_data_file *file,
+                                    unsigned int data_id,
+                                    unsigned int item_size,
+                                    void             **data,
+                                    int              *num_items);
 
 void roadmap_db_sync (char *name);
 void roadmap_db_close (const char *name, const char *section);

@@ -405,7 +405,7 @@ static void roadmap_gps_gsa
    roadmap_message_set ('p', "%.2f", RoadMapGpsQuality.dilution_position);
    roadmap_message_set ('h', "%.2f", RoadMapGpsQuality.dilution_horizontal);
    roadmap_message_set ('v', "%.2f", RoadMapGpsQuality.dilution_vertical);
-   
+
    roadmap_gps_update_reception ();
 }
 
@@ -416,7 +416,7 @@ static void roadmap_gps_gsv
    int i;
    int id;
    int index;
-   
+
    if( fields->gsv.index < 1)
    {
       roadmap_log( ROADMAP_ERROR,"roadmap_gps_gsv() - (fields->gsv.index == %d)", fields->gsv.index);
@@ -535,7 +535,7 @@ static void roadmap_gps_navigation (char status,
       }
 
       if ((speed >= roadmap_gps_speed_accuracy()) &&
-      		(steering != ROADMAP_NO_VALID_DATA)) {
+            (steering != ROADMAP_NO_VALID_DATA)) {
 
          RoadMapGpsReceivedPosition.steering  = steering;
       }
@@ -642,7 +642,7 @@ static void roadmap_gps_object_monitor (RoadMapDynamicString id) {
 void roadmap_gps_initialize (void) {
 
    static int RoadMapGpsInitialized = 0;
-   
+
 #if defined (_WIN32) && !defined (__SYMBIAN32__)
    const int *serial_ports;
    static const char **speeds;
@@ -674,14 +674,14 @@ void roadmap_gps_initialize (void) {
             continue;
          }
 
-/*         
+/*
          if (!source_item) {
             source_item = roadmap_config_declare_enumeration
                      ("preferences", &RoadMapConfigGPSSource, name, NULL);
          } else {
             roadmap_config_add_enumeration_value (source_item, name);
          }
-*/         
+*/
       }
 
       if (!source_item) {
@@ -708,7 +708,7 @@ void roadmap_gps_initialize (void) {
 #else
       roadmap_config_declare
          ("preferences", &RoadMapConfigGPSSource, "gpsd://localhost", NULL);
-      
+
 #endif
       roadmap_config_declare
          ("preferences", &RoadMapConfigGPSTimeout, "3", NULL);
@@ -729,7 +729,7 @@ void roadmap_gps_shutdown (void) {
    (*RoadMapGpsLinkRemove) (&RoadMapGpsLink);
 
    roadmap_io_close (&RoadMapGpsLink);
-   
+
 #ifdef __SYMBIAN32__
    roadmap_gpssymbian_shutdown();
 #endif
@@ -797,8 +797,8 @@ void roadmap_gps_open (void) {
       roadmap_gpssymbian_open();
       RoadMapGpsProtocol = ROADMAP_GPS_SYMBIAN;
       RoadMapGpsLink.subsystem = ROADMAP_IO_NULL;
-#else   
-      
+#else
+
    /* We do have a gps interface: */
 
    RoadMapGpsLink.subsystem = ROADMAP_IO_INVALID;
@@ -862,7 +862,7 @@ void roadmap_gps_open (void) {
       const char *speed = roadmap_config_get (&RoadMapConfigGPSBaudRate);
 
 #endif
-      
+
       RoadMapGpsLink.os.serial =
          roadmap_serial_open (device, "r", atoi(speed));
 
@@ -941,7 +941,7 @@ void roadmap_gps_open (void) {
 
 #endif
 #endif // __SYMBIAN32__
-   
+
    if (RoadMapGpsLink.subsystem == ROADMAP_IO_INVALID) {
       if (! RoadMapGpsRetryPending) {
          roadmap_log (ROADMAP_WARNING, "cannot access GPS source %s", url);
@@ -1004,7 +1004,7 @@ void roadmap_gps_open (void) {
 
          break;
 #endif
-         
+
       case ROADMAP_GPS_OBJECT:
          break;
 
@@ -1012,7 +1012,7 @@ void roadmap_gps_open (void) {
 
          roadmap_log (ROADMAP_FATAL, "internal error (unsupported protocol)");
    }
-   
+
 #ifdef IPHONE
    if (roadmap_main_get_platform() == ROADMAP_MAIN_PLATFORM_IPHONE3G) {
 
@@ -1097,7 +1097,7 @@ void roadmap_gps_input (RoadMapIO *io) {
          decode.decoder_context = NULL;
          decode.is_binary = 1;
          break;
-#endif	 
+#endif
 #endif
       case ROADMAP_GPS_OBJECT:
 
@@ -1127,12 +1127,12 @@ void roadmap_gps_input (RoadMapIO *io) {
 }
 
 BOOL roadmap_gps_have_reception(void){
-	int gps_state;
+    int gps_state;
     BOOL gps_active;
-	
-	gps_state = roadmap_gps_reception_state();
+
+    gps_state = roadmap_gps_reception_state();
     gps_active = (gps_state != GPS_RECEPTION_NA) && (gps_state != GPS_RECEPTION_NONE);
-      
+
    return gps_active;
 }
 

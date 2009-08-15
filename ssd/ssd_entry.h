@@ -24,7 +24,7 @@
 
 #ifndef __SSD_WIDGET_ENTRY_H_
 #define __SSD_WIDGET_ENTRY_H_
-  
+
 #include "ssd_widget.h"
 
 SsdWidget ssd_entry_new (const char *name, const char *value, int entry_flags,

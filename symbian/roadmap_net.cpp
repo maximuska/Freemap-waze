@@ -65,17 +65,17 @@ static RoadMapConfigDescriptor RoadMapConfigConnectionAuto =
 
 
 static RoadMapSocket roadmap_net_connect_async_internal (const char *protocol,
-                                         const char *name, 
+                                         const char *name,
                                          int default_port,
                                          RoadMapNetConnectCallback callback,
-                                         void *context, 
+                                         void *context,
                                          int& retVal)
 {
   //  Create a CRoadMapNativeNet object
   CRoadMapNativeNet* s = NULL;
   ENativeSockType protocolType = ESockTypeInvalid;
-  int err = 0; 
-   
+  int err = 0;
+
   if (strncmp (protocol, "http", 4) == 0)
   {
     protocolType = ESockTypeHttp;
@@ -83,28 +83,28 @@ static RoadMapSocket roadmap_net_connect_async_internal (const char *protocol,
   else if (strcmp (protocol, "udp") == 0)
   {
     protocolType = ESockTypeUdp;
-  } 
-  else if (strcmp (protocol, "tcp") == 0) 
+  }
+  else if (strcmp (protocol, "tcp") == 0)
   {
     protocolType = ESockTypeTcp;
-  } 
-  else 
+  }
+  else
   {
     roadmap_log (ROADMAP_ERROR, "unknown protocol %s", protocol);
     retVal = KErrGeneral;
   }
-  
+
   if ( protocolType == ESockTypeHttp )
   {
     const char *http_type = "POST";
     if (!strcmp(protocol, "http_get")) http_type = "GET";
-    TRAPD(err1, s = CRoadMapNativeHTTP::NewL( http_type, name, default_port, 
+    TRAPD(err1, s = CRoadMapNativeHTTP::NewL( http_type, name, default_port,
                                               callback, context));
     if ( s == NULL || err1 != KErrNone) { err = err1; }
   }
   else
   {
-    TRAPD(err1, s = CRoadMapNativeSocket::NewL( name, default_port, 
+    TRAPD(err1, s = CRoadMapNativeSocket::NewL( name, default_port,
                                                 callback, context));
     if ( s == NULL || err1 != KErrNone) { err = err1; }
   }
@@ -119,21 +119,21 @@ RoadMapSocket roadmap_net_connect (const char *protocol,
 {
   int retVal = KErrNone;
   RoadMapSocket s;
-  
+
   if (err != NULL)
- 	(*err) = neterr_success;
- 	   
+    (*err) = neterr_success;
+
   s = roadmap_net_connect_async_internal(protocol, name, default_port, NULL, NULL, retVal);
-  
+
   if ((s == NULL) && (err != NULL))
-   	(*err) = neterr_general_error;                                                   
- 
+    (*err) = neterr_general_error;
+
   return s;
-  
+
 }
 
 int roadmap_net_connect_async (const char *protocol,
-                               const char *name, 
+                               const char *name,
                                int default_port,
                                RoadMapNetConnectCallback callback,
                                void *context)
@@ -142,35 +142,35 @@ int roadmap_net_connect_async (const char *protocol,
   RoadMapSocket s = roadmap_net_connect_async_internal(protocol, name,
                                                       default_port, callback, context,
                                                       retVal);
-	if ( s == NULL) 
-	{
-	  if ( retVal == KErrNotReady )
-	  {
-	    roadmap_net_mon_offline();
-	  }
-	  else
-	  {
-			roadmap_net_mon_error("Error in connect.");
-	  }
-	  return -1;
-	}
-	
-	/*
-	if ( strcmp(protocol, "http") == 0 )
-	{
-	  (*callback)(s, context);
-	}
-	*/
-	return 0;
+    if ( s == NULL)
+    {
+      if ( retVal == KErrNotReady )
+      {
+        roadmap_net_mon_offline();
+      }
+      else
+      {
+            roadmap_net_mon_error("Error in connect.");
+      }
+      return -1;
+    }
+
+    /*
+    if ( strcmp(protocol, "http") == 0 )
+    {
+      (*callback)(s, context);
+    }
+    */
+    return 0;
 }
 
 int roadmap_net_send_socket (RoadMapSocket s, const void *data, int length, int ) {
 
    int total = length;
    CRoadMapNativeNet* net = (CRoadMapNativeNet*)s;
-   
+
    roadmap_net_mon_send(length); //TBD: move to the native code
-   
+
    while (length > 0) {
       int res = net->Write(data, length);
       if (res < 0) {
@@ -186,12 +186,12 @@ int roadmap_net_send_socket (RoadMapSocket s, const void *data, int length, int 
    return total;
 }
 
-int roadmap_net_send_http (RoadMapSocket s, const void *ptr, int in_size, int ) 
+int roadmap_net_send_http (RoadMapSocket s, const void *ptr, int in_size, int )
 {
   int data_size = in_size;
   CRoadMapNativeNet *n = (CRoadMapNativeNet *)s;
   CRoadMapNativeHTTP* net = dynamic_cast<CRoadMapNativeHTTP*>(n);
-    
+
   if ( net->ReadyToSendData() == false )
   {
     char *start = NULL;
@@ -202,11 +202,11 @@ int roadmap_net_send_http (RoadMapSocket s, const void *ptr, int in_size, int )
 
     start = strdup((const char *)ptr);
     cur = start;
-    while ((eol = strstr(cur, "\r\n"))) 
+    while ((eol = strstr(cur, "\r\n")))
     {
       *eol = '\0';
       eol += 2;
-      if (*cur == 0) 
+      if (*cur == 0)
       {
         net->SetRequestProperty("User-Agent", roadmap_start_version());
         net->SetRequestProperty("Accept-Encoding", "gzip, deflate");
@@ -240,15 +240,15 @@ int roadmap_net_send_http (RoadMapSocket s, const void *ptr, int in_size, int )
   return in_size;
 }
 
-int roadmap_net_send (RoadMapSocket s, const void *ptr, int in_size, int wait) 
+int roadmap_net_send (RoadMapSocket s, const void *ptr, int in_size, int wait)
 {
-  if (((CRoadMapNativeNet*)s)->IsHttp() == true) 
+  if (((CRoadMapNativeNet*)s)->IsHttp() == true)
   {
     return roadmap_net_send_http(s, ptr, in_size, wait);
   }
   return roadmap_net_send_socket(s, ptr, in_size, wait);
 }
-  
+
 int roadmap_net_receive (RoadMapSocket s, void *data, int size) {
 
   CRoadMapNativeNet* net = (CRoadMapNativeNet*)s;
@@ -275,11 +275,11 @@ RoadMapSocket roadmap_net_accept(RoadMapSocket) {
 }
 
 
-void roadmap_net_close (RoadMapSocket s) 
+void roadmap_net_close (RoadMapSocket s)
 {
   CRoadMapNativeNet* net = (CRoadMapNativeNet*)s;
-  net->Close();  // Schedules object self-destruction 
-  
+  net->Close();  // Schedules object self-destruction
+
   roadmap_net_mon_disconnect();
 }
 
@@ -288,8 +288,8 @@ void roadmap_net_shutdown ()
   CRoadMapNativeNet::Shutdown();
   roadmap_net_mon_destroy();
   // Save the chosen value
-  roadmap_config_set_integer( &RoadMapConfigConnectionIAPId, 
-		  							CRoadMapNativeNet::GetChosenAP() );
+  roadmap_config_set_integer( &RoadMapConfigConnectionIAPId,
+                                    CRoadMapNativeNet::GetChosenAP() );
 }
 
 int roadmap_net_unique_id (unsigned char *buffer, unsigned int size) {
@@ -302,21 +302,21 @@ int roadmap_net_unique_id (unsigned char *buffer, unsigned int size) {
 
 void roadmap_net_initialize()
 {
-	TUint32 configAP = 0;
-	TBool isAutoConnect;  
-	// Declaration and loading of the autoconnection parameter
-	roadmap_config_declare( "user", &RoadMapConfigConnectionAuto, "no", NULL );
-	isAutoConnect = roadmap_config_match( &RoadMapConfigConnectionAuto, "yes" );
-	
-	// Declaration of the last network id parameter
-	roadmap_config_declare( "user", &RoadMapConfigConnectionIAPId, "0", NULL );
-	
-	// Only if autoconnect flag is positive, the last AP id is relevant
-	if ( isAutoConnect )
-	{
-		configAP = roadmap_config_get_integer( &RoadMapConfigConnectionIAPId );
-	}
-	
-	// Setting up
-	CRoadMapNativeNet::SetChosenAP( configAP );	
+    TUint32 configAP = 0;
+    TBool isAutoConnect;
+    // Declaration and loading of the autoconnection parameter
+    roadmap_config_declare( "user", &RoadMapConfigConnectionAuto, "no", NULL );
+    isAutoConnect = roadmap_config_match( &RoadMapConfigConnectionAuto, "yes" );
+
+    // Declaration of the last network id parameter
+    roadmap_config_declare( "user", &RoadMapConfigConnectionIAPId, "0", NULL );
+
+    // Only if autoconnect flag is positive, the last AP id is relevant
+    if ( isAutoConnect )
+    {
+        configAP = roadmap_config_get_integer( &RoadMapConfigConnectionIAPId );
+    }
+
+    // Setting up
+    CRoadMapNativeNet::SetChosenAP( configAP );
 }

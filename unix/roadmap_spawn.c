@@ -64,7 +64,7 @@ static void roadmap_spawn_set_arguments
     if (command_line == NULL || command_line[0] == 0) {
         goto end_of_string;
     }
-    
+
     p = strdup (command_line);
 
     while ((i < argc) && (*p)) {
@@ -86,7 +86,7 @@ static void roadmap_spawn_set_arguments
                     quoted = 0;
                 }
                 break;
-                
+
             case 0: goto end_of_string;
             }
             ++p;
@@ -289,10 +289,10 @@ int  roadmap_spawn_with_feedback
          (const char *name,
           const char *command_line,
           RoadMapFeedback *feedback) {
-    
+
     roadmap_list_append (&RoadMapSpawnActive, &feedback->link);
     feedback->child = roadmap_spawn_child (name, command_line, NULL);
-              
+
     return feedback->child;
 }
 
@@ -302,10 +302,10 @@ int  roadmap_spawn_with_pipe
           const char *command_line,
           int pipes[2],
           RoadMapFeedback *feedback) {
-    
+
     roadmap_list_append (&RoadMapSpawnActive, &feedback->link);
     feedback->child = roadmap_spawn_child (name, command_line, pipes);
-              
+
     return feedback->child;
 }
 

@@ -30,7 +30,7 @@
 
 
 typedef struct editor_db_shape_s {
-	int ordinal;
+    int ordinal;
    short delta_longitude;
    short delta_latitude;
    short delta_time;
@@ -39,7 +39,7 @@ typedef struct editor_db_shape_s {
 
 
 int editor_shape_add (int ordinal,
-							 short delta_longitude,
+                             short delta_longitude,
                       short delta_latitude,
                       short delta_time);
 

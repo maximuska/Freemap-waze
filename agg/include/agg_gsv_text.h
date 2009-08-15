@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ namespace agg
 
     //---------------------------------------------------------------gsv_text
     //
-    // See Implementation agg_gsv_text.cpp 
+    // See Implementation agg_gsv_text.cpp
     //
     class gsv_text
     {
@@ -58,7 +58,7 @@ namespace agg
         void line_space(double line_space);
         void start_point(double x, double y);
         void text(const char* text);
-        
+
         double text_width();
 
         void rewind(unsigned path_id);
@@ -123,19 +123,19 @@ namespace agg
         {
         }
 
-        void width(double w) 
-        { 
-            m_polyline.width(w); 
+        void width(double w)
+        {
+            m_polyline.width(w);
         }
 
-        void transformer(const Transformer* trans) 
+        void transformer(const Transformer* trans)
         {
             m_trans->transformer(trans);
         }
 
-        void rewind(unsigned path_id) 
-        { 
-            m_trans.rewind(path_id); 
+        void rewind(unsigned path_id)
+        {
+            m_trans.rewind(path_id);
             m_polyline.line_join(round_join);
             m_polyline.line_cap(round_cap);
         }

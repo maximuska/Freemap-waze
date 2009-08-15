@@ -39,7 +39,7 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #define  RT_CFG_TYPE                   ("preferences")
-#define  RT_USER_TYPE				   ("user")
+#define  RT_USER_TYPE                  ("user")
 #define  RT_CFG_TAB                    ("Realtime")
 
 //   User name

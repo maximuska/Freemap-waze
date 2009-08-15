@@ -31,7 +31,7 @@ int roadmap_gzm_open (const char *name);
 void roadmap_gzm_close (int gzm_id);
 
 int roadmap_gzm_get_section (int gzm_id, const char *name,
-									  void **section, int *length);
+                                      void **section, int *length);
 void roadmap_gzm_free_section (int gzm_id, void *section);
- 
+
 #endif // _ROADMAP_GZM__H_

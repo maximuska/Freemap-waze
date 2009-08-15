@@ -45,14 +45,14 @@ public:
   //  getInstance for bridging
   static CRoadMapNativeSound* GetInstance();
   static void FreeInstance();
-  
-  //  audio system callbacks 
+
+  //  audio system callbacks
   /*
   void MapcInitComplete(TInt aError, const TTimeIntervalMicroSeconds &aDuration);
   void MapcPlayComplete(TInt aError);
   */
   void MoscoStateChangeEvent(CBase *aObject, TInt aPreviousState, TInt aCurrentState, TInt aErrorCode);
-  
+
   //  sound methods
   int PlayFile(const char *file_name);
   int PlaySound(void *mem_sound); //  play a sound that was preloaded to memory
@@ -62,14 +62,14 @@ public:
   int Record(const char *file_name, int seconds);
   void SetVolume( TInt aUserVolume, TInt aUserVolumeMin, TInt aUserVolumeMax );
   void SetSystemVolume( CAudioPlayer& aPlayer );
-  
-  typedef struct 
+
+  typedef struct
   {
-  	TInt volume;
-  	TInt minVolume;
-  	TInt maxVolume;
+    TInt volume;
+    TInt minVolume;
+    TInt maxVolume;
   } UserVolumeData;
-  
+
 private:
   //  ctor/dtor
   CRoadMapNativeSound();
@@ -81,9 +81,9 @@ private:
   void StopPlayingAll();
   //  Search for the next available player and call it to Play() its file
   void PlayNextAvailable();
-  
+
   //  members
-  
+
   enum TState
   {
       ENotReady,
@@ -91,15 +91,15 @@ private:
       EPlaying,
   };
 
-  // The current state of the audio player    
+  // The current state of the audio player
   TState iState;
   RPointerArray<CAudioPlayer> m_AudioPlayers;
   UserVolumeData m_UserVolume;
-  
+
   int m_NextPlaying;  //  next item to be played; initialized to 0
-  int m_NumReady;     //  number of audio items ready to play; initialized to -1   
+  int m_NumReady;     //  number of audio items ready to play; initialized to -1
   int m_ListSize;     //  how many do we need to be ready to play (AT LEAST)
-  static CRoadMapNativeSound* m_pInstance;  
+  static CRoadMapNativeSound* m_pInstance;
 };
 
 #endif  //  #ifndef _ROADMAP_NATIVE_SOUND__H_

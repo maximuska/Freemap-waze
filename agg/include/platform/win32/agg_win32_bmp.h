@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -50,13 +50,13 @@ namespace agg
 
     public:
         void        destroy();
-        void        create(unsigned width, 
-                           unsigned height, 
+        void        create(unsigned width,
+                           unsigned height,
                            org_e    org,
                            unsigned clear_val=256);
         HBITMAP     create_dib_section(HDC h_dc,
-                                       unsigned width, 
-                                       unsigned height, 
+                                       unsigned width,
+                                       unsigned height,
                                        org_e    org,
                                        unsigned clear_val=256);
 
@@ -68,13 +68,13 @@ namespace agg
         bool        load_from_bmp(const char* filename);
         bool        save_as_bmp(const char* filename) const;
 
-        void        draw(HDC h_dc, 
-                         const RECT* device_rect=0, 
+        void        draw(HDC h_dc,
+                         const RECT* device_rect=0,
                          const RECT* bmp_rect=0) const;
         void        draw(HDC h_dc, int x, int y, double scale=1.0) const;
 
-        void        blend(HDC h_dc, 
-                          const RECT* device_rect=0, 
+        void        blend(HDC h_dc,
+                          const RECT* device_rect=0,
                           const RECT* bmp_rect=0) const;
         void        blend(HDC h_dc, int x, int y, double scale=1.0) const;
 
@@ -88,21 +88,21 @@ namespace agg
         //Auxiliary static functions
         static unsigned calc_full_size(BITMAPINFO *bmp);
         static unsigned calc_header_size(BITMAPINFO *bmp);
-        static unsigned calc_palette_size(unsigned clr_used, 
+        static unsigned calc_palette_size(unsigned clr_used,
                                           unsigned bits_per_pixel);
         static unsigned calc_palette_size(BITMAPINFO *bmp);
         static unsigned char* calc_img_ptr(BITMAPINFO *bmp);
-        static BITMAPINFO* create_bitmap_info(unsigned width, 
-                                              unsigned height, 
+        static BITMAPINFO* create_bitmap_info(unsigned width,
+                                              unsigned height,
                                               unsigned bits_per_pixel);
         static void     create_gray_scale_palette(BITMAPINFO *bmp);
         static unsigned calc_row_len(unsigned width, unsigned bits_per_pixel);
-        
+
     private:
         pixel_map(const pixel_map&);
         const pixel_map& operator = (const pixel_map&);
         void create_from_bmp(BITMAPINFO *bmp);
-        
+
         HBITMAP create_dib_section_from_args(HDC h_dc,
                                              unsigned width,
                                              unsigned height,

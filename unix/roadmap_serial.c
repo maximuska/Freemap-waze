@@ -167,7 +167,7 @@ int setup_tty(int tty, int speed) {
     { char buf[10];
       int n;
       while ((n = read(tty, buf, 10)) > 0)
-	fprintf(stderr, "got %d\n", n);
+    fprintf(stderr, "got %d\n", n);
     }
     return 0;
 }

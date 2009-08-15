@@ -23,7 +23,7 @@
  * NOTE:
  * This file implements all the "dynamic" editor functionality.
  * The code here is experimental and needs to be reorganized.
- * 
+ *
  * SYNOPSYS:
  *
  *   See editor_gps_data.h
@@ -99,7 +99,7 @@ static void gps_data_status (void) {
    } else {
       char *file_name = get_active_file_name ();
       gps_data_dir_check ();
-      
+
       GpsDataFile = roadmap_file_open (file_name, "a");
 
       if (ROADMAP_FILE_IS_VALID(GpsDataFile)) {

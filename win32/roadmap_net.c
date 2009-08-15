@@ -66,7 +66,7 @@ static connection_status get_connection_status( BOOL* try_to_re_create_object, n
 {
    DWORD    dwStatus = 0;
    HRESULT  hr       = S_OK;
-   
+
    (*try_to_re_create_object) = FALSE;
 
    if( err)
@@ -86,11 +86,11 @@ static connection_status get_connection_status( BOOL* try_to_re_create_object, n
       roadmap_log( ROADMAP_ERROR, "WIN32::roadmap_net::get_connection_status() - 'WIN32::ConnMgrConnectionStatus()' had failed: 0x%08X", hr);
       if( err)
          (*err) = neterr_general_error;
-      
+
       (*try_to_re_create_object) = TRUE;
       return constt_failed;
    }
-   
+
    switch( dwStatus)
    {
       case CONNMGR_STATUS_UNKNOWN:
@@ -122,10 +122,10 @@ static connection_status get_connection_status( BOOL* try_to_re_create_object, n
          roadmap_log( ROADMAP_ERROR, "WIN32::roadmap_net::get_connection_status() - Status %s (0x%02X)", ConnMgr_GetStatusString( dwStatus), dwStatus);
          if( err)
             (*err) = neterr_general_error;
-         
+
          if( (CONNMGR_STATUS_NOPATHTODESTINATION == dwStatus) && err)
             (*err) = neterr_no_path_to_destination;
-            
+
          return constt_failed;
       }
 
@@ -156,7 +156,7 @@ static BOOL is_connected__internal( network_error* err)
    BOOL                    try_to_re_create_object;
    HRESULT                 hr       = 0;
    int                     nIndex   = 0;
-   
+
    if( err)
       (*err) = neterr_success;
 
@@ -205,11 +205,11 @@ static BOOL is_connected__internal( network_error* err)
 static BOOL is_connected( network_error* err)
 {
    BOOL res;
-   
+
    EnterCriticalSection( &s_cs);
    res = is_connected__internal( err);
    LeaveCriticalSection( &s_cs);
-   
+
    return res;
 }
 
@@ -220,7 +220,7 @@ const char* GetProxyAddress__internal()
    static char          proxy_address_buffer[CMPROXY_PROXYSERVER_MAXSIZE+1];
    PROXY_CONFIG         ProxyInfo;
    HRESULT              hr = S_OK;
-   
+
    if( already_done)
       return proxy_address;
 
@@ -233,12 +233,12 @@ const char* GetProxyAddress__internal()
    }
 
    ZeroMemory(&ProxyInfo, sizeof(ProxyInfo));
-   
+
    ProxyInfo.dwType = CONNMGR_FLAG_PROXY_HTTP | CONNMGR_FLAG_PROXY_SOCKS4 | CONNMGR_FLAG_PROXY_SOCKS5;
-   hr = ConnMgrProviderMessage(  RoadMapConnection, 
-                                 &IID_ConnPrv_IProxyExtension, 
-                                 NULL, 0, 0, 
-                                 (PBYTE)&ProxyInfo, 
+   hr = ConnMgrProviderMessage(  RoadMapConnection,
+                                 &IID_ConnPrv_IProxyExtension,
+                                 NULL, 0, 0,
+                                 (PBYTE)&ProxyInfo,
                                  sizeof(ProxyInfo));
    if( FAILED(hr))
    {
@@ -249,17 +249,17 @@ const char* GetProxyAddress__internal()
       }
       else
          roadmap_log( ROADMAP_ERROR, "roadmap_net::GetProxyAddress() - '::ConnMgrProviderMessage()' failed with error: 0x%08X", hr);
-      
+
       return NULL;
    }
-   
+
    if( !ProxyInfo.szProxyServer[0])
    {
       roadmap_log( ROADMAP_ERROR, "roadmap_net::GetProxyAddress() - Although 'ConnMgrProviderMessage()' succeeded the returned proxy-name is an empty-string!");
       already_done = TRUE;
       return NULL;
    }
-   
+
    proxy_address_buffer[CMPROXY_PROXYSERVER_MAXSIZE] = '\0';
    if( wcstombs( proxy_address_buffer, ProxyInfo.szProxyServer, CMPROXY_PROXYSERVER_MAXSIZE) < 1)
    {
@@ -269,7 +269,7 @@ const char* GetProxyAddress__internal()
 
    proxy_address  = proxy_address_buffer;
    already_done   = TRUE;
-   
+
    roadmap_log( ROADMAP_DEBUG, "roadmap_net::GetProxyAddress() - Found proxy '%s'", proxy_address);
    return proxy_address;
 }
@@ -326,18 +326,18 @@ const char* GetProxyAddress__internal()
 const char* GetProxyAddress()
 {
    const char* proxy = NULL;
-   
+
    EnterCriticalSection( &s_cs);
    proxy = GetProxyAddress__internal();
    LeaveCriticalSection( &s_cs);
-   
+
    return proxy;
 }
 
 
 static RoadMapSocket roadmap_net_connect__internal(
          const char*    protocol,
-         const char*    name, 
+         const char*    name,
          int            default_port,
          network_error* err)
 {
@@ -351,7 +351,7 @@ static RoadMapSocket roadmap_net_connect__internal(
    if( err)
       (*err) = neterr_success;
 
-   ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue 
+   ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue
    ///roadmap_net_mon_connect();
 
    addr.sin_family = AF_INET;
@@ -471,15 +471,15 @@ static RoadMapSocket roadmap_net_connect__internal(
 connection_failure:
 
    free(hostname);
-   
-   ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue 
+
+   ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue
    ///roadmap_net_mon_disconnect();
-   
+
    return -1;
 }
 
 RoadMapSocket roadmap_net_connect(  const char*    protocol,
-                                    const char*    name, 
+                                    const char*    name,
                                     int            default_port,
                                     network_error* err)
 {
@@ -491,16 +491,16 @@ RoadMapSocket roadmap_net_connect(  const char*    protocol,
    char           packet[256];
    RoadMapSocket  res_socket;
    const char *   req_type = "GET";
-   
+
    if( err)
       (*err) = neterr_success;
 
    if( strncmp( protocol, "http", 4) != 0)
       return roadmap_net_connect__internal( protocol, name, default_port, err);
 
-   if( !strcmp(protocol, "http_post")) 
+   if( !strcmp(protocol, "http_post"))
       req_type = "POST";
-   
+
    // HTTP Connection, using system configuration for Proxy
    if( !WSA_ExtractParams( name,          //   IN        -   Web service full address (http://...)
                            server_url,    //   OUT,OPT   -   Server URL[:Port]
@@ -527,7 +527,7 @@ RoadMapSocket roadmap_net_connect(  const char*    protocol,
       if( -1 == res_socket)
          return -1;
 
-      sprintf( packet, 
+      sprintf( packet,
                "%s %s HTTP/1.0\r\n"
                "Host: %s\r\n"
                "User-Agent: FreeMap/%s\r\n",
@@ -538,8 +538,8 @@ RoadMapSocket roadmap_net_connect(  const char*    protocol,
       res_socket = roadmap_net_connect__internal( "tcp", server_url, server_port, err);
       if( -1 == res_socket)
          return -1;
-      
-      sprintf( packet, 
+
+      sprintf( packet,
                "%s %s HTTP/1.0\r\n"
                "Host: %s\r\n"
                "User-Agent: FreeMap/%s\r\n",
@@ -549,9 +549,9 @@ RoadMapSocket roadmap_net_connect(  const char*    protocol,
 
    if( -1 == roadmap_net_send( res_socket, packet, (int)strlen(packet), 1))
    {
-      ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue 
+      ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue
       ///roadmap_net_mon_error("Error in send.");
-      
+
       roadmap_log( ROADMAP_ERROR, "roadmap_net_connect(HTTP) - Failed to send the 'POST' packet");
       roadmap_net_close( res_socket);
       if( err)
@@ -559,9 +559,9 @@ RoadMapSocket roadmap_net_connect(  const char*    protocol,
       return -1;
    }
 
-   ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue 
+   ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue
    ///roadmap_net_mon_send(strlen(packet));
-   
+
    return res_socket;
 }
 
@@ -595,9 +595,9 @@ int roadmap_net_send( RoadMapSocket socket, const void *data, int length, int wa
                "Error waiting on select in roadmap_net_send, LastError = %d",
                       WSAGetLastError());
 
-         ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue 
+         ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue
          ///roadmap_net_mon_error("Error in send - timeout.");
-         
+
          return -1;
       }
 
@@ -607,16 +607,16 @@ int roadmap_net_send( RoadMapSocket socket, const void *data, int length, int wa
          roadmap_log (ROADMAP_ERROR, "Error sending data, LastError = %d",
                       WSAGetLastError());
 
-         ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue 
+         ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue
          ///roadmap_net_mon_error("Error in send - data.");
-         
+
          return -1;
       }
 
       length -= res;
       data = (char *)data + res;
 
-      ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue 
+      ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue
       ///roadmap_net_mon_send(res);
    }
 
@@ -668,8 +668,8 @@ int roadmap_net_receive (RoadMapSocket socket, void *data, int size)
 void roadmap_net_close (RoadMapSocket socket)
 {
    closesocket(socket);
-   
-   ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue 
+
+   ///[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Multitasking issue
    ///roadmap_net_mon_disconnect();
 }
 
@@ -843,7 +843,7 @@ void roadmap_net_shutdown (void) {
 }
 
 void roadmap_net_initialize()
-{ 
+{
    InitializeCriticalSection( &s_cs);
    roadmap_net_mon_start();
 }
@@ -873,6 +873,6 @@ const char* ConnMgr_GetStatusString( DWORD dwStatus)
       CASE_STATUS_RETURN_STRING(WAITINGDISCONNECTION)
       CASE_STATUS_RETURN_STRING(WAITINGCONNECTIONABORT)
    }
-   
+
    return "<unknown>";
 }

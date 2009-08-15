@@ -5,29 +5,29 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 //
-// Adaptation for 32-bit screen coordinates (scanline32_bin) has been sponsored by 
+// Adaptation for 32-bit screen coordinates (scanline32_bin) has been sponsored by
 // Liberty Technology Systems, Inc., visit http://lib-sys.com
 //
 // Liberty Technology Systems, Inc. is the provider of
 // PostScript and PDF technology for software developers.
-// 
+//
 //----------------------------------------------------------------------------
 
 #ifndef AGG_SCANLINE_BIN_INCLUDED
@@ -39,11 +39,11 @@ namespace agg
 {
 
     //=============================================================scanline_bin
-    // 
-    // This is binary scaline container which supports the interface 
-    // used in the rasterizer::render(). See description of agg_scanline_u8 
+    //
+    // This is binary scaline container which supports the interface
+    // used in the rasterizer::render(). See description of agg_scanline_u8
     // for details.
-    // 
+    //
     //------------------------------------------------------------------------
     class scanline_bin
     {
@@ -117,9 +117,9 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void finalize(int y) 
-        { 
-            m_y = y; 
+        void finalize(int y)
+        {
+            m_y = y;
         }
 
         //--------------------------------------------------------------------
@@ -232,9 +232,9 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void finalize(int y) 
-        { 
-            m_y = y; 
+        void finalize(int y)
+        {
+            m_y = y;
         }
 
         //--------------------------------------------------------------------

@@ -140,14 +140,14 @@ static void roadmap_screen_obj_decode_arg (char *output, int o_size,
    int size;
 
    o_size -= 1;
-      
+
    size = i_size < o_size ? i_size : o_size;
 
    strncpy (output, input, size);
    output[size] = '\0';
 }
 
-      
+
 static void roadmap_screen_obj_decode_icon
                         (RoadMapScreenObj object,
                          int argc, const char **argv, int *argl) {
@@ -466,11 +466,11 @@ static RoadMapScreenObj roadmap_screen_obj_search (const char *name) {
 }
 
 static void road_screen_objects_delete(){
-	RoadMapScreenObj cursor;
-	for (cursor = RoadMapObjectList; cursor != NULL; cursor = cursor->next) {
-		free(cursor);
-	
-	RoadMapObjectList=NULL;
+    RoadMapScreenObj cursor;
+    for (cursor = RoadMapObjectList; cursor != NULL; cursor = cursor->next) {
+        free(cursor);
+
+    RoadMapObjectList=NULL;
 }
 
 }
@@ -545,7 +545,7 @@ static int roadmap_screen_obj_pressed (RoadMapGuiPoint *point) {
       roadmap_canvas_draw_image (RoadMapScreenObjSelected->images[state], &pos,
                            RoadMapScreenObjSelected->opacity, IMAGE_SELECTED);
    }
-   
+
    roadmap_canvas_refresh ();
 
    if (RoadMapScreenObjSelected->flags & OBJ_FLAG_REPEAT) {
@@ -588,12 +588,12 @@ static int roadmap_screen_obj_short_click (RoadMapGuiPoint *point) {
    if (object->flags & OBJ_FLAG_REPEAT) return 1;
 
    RoadMapScreenObjSelected = NULL;
-   
+
    if (object->state_fn && (*object->state_fn)() < 0 ) return 0;
 
    if (object->action) {
       static RoadMapSoundList list;
-   
+
       if (!list) {
          list = roadmap_sound_list_create (SOUND_LIST_NO_FREE);
          roadmap_sound_list_add (list, "click");
@@ -619,7 +619,7 @@ static int roadmap_screen_obj_long_click (RoadMapGuiPoint *point) {
    }
 
    if (RoadMapScreenObjSelected->flags & OBJ_FLAG_REPEAT) return 1;
-   
+
    if (object->state_fn && (*object->state_fn)() < 0 ) return 0;
 
    RoadMapScreenObjSelected = NULL;
@@ -651,7 +651,7 @@ static void roadmap_screen_obj_reload (void) {
    int height = roadmap_canvas_height ();
    int width = roadmap_canvas_width();
    const char *object_name = NULL;
-   
+
    RoadMapObjectList = NULL;
 
    screen_height = height;
@@ -660,9 +660,9 @@ static void roadmap_screen_obj_reload (void) {
 
       if (height >= RoadMapObjFiles[i].min_screen_height) {
          if (!strcmp(RoadMapObjFiles[i].name,"objects_wide") && (roadmap_softkeys_orientation() == SOFT_KEYS_ON_BOTTOM) )
-        	 object_name = "objects_wide_softkeys_buttom";
+             object_name = "objects_wide_softkeys_buttom";
          else
-        	 object_name = RoadMapObjFiles[i].name;
+             object_name = RoadMapObjFiles[i].name;
          break;
       }
    }
@@ -675,12 +675,12 @@ static void roadmap_screen_obj_reload (void) {
    }
 
    if (current_object_name){
-   		if (!strcmp(current_object_name, object_name))
-   			road_screen_objects_delete();
-   		else
-   			return;
+        if (!strcmp(current_object_name, object_name))
+            road_screen_objects_delete();
+        else
+            return;
    }
-   
+
    for (cursor = roadmap_file_map ("skin", object_name, NULL, "r", &file);
         cursor != NULL;
         cursor = roadmap_file_map ("skin", object_name, cursor, "r", &file)) {
@@ -748,9 +748,9 @@ void roadmap_screen_obj_draw (void) {
    RoadMapScreenObj cursor;
    int height = roadmap_canvas_height ();
    int width = roadmap_canvas_width();
-   
+
    if ((height != screen_height) && (width != screen_width)){
-	   roadmap_screen_obj_reload();
+       roadmap_screen_obj_reload();
    }
 
    for (cursor = RoadMapObjectList; cursor != NULL; cursor = cursor->next) {
@@ -776,7 +776,7 @@ void roadmap_screen_obj_draw (void) {
       }
 
       if (cursor->sprites[state]) {
-         
+
          if (cursor->flags & OBJ_FLAG_NO_ROTATE) {
             roadmap_sprite_draw (cursor->sprites[state], &pos,
                                  -roadmap_math_get_orientation());

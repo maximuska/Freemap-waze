@@ -34,7 +34,7 @@ typedef struct tag_address_info
    const char* city;
    const char* street;
    const char* house;
-   
+
 }  address_info, *address_info_ptr;
 
 typedef void (*RoadMapAddressSearchCB) (const char *result, void *context);

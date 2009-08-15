@@ -43,13 +43,13 @@ typedef enum tag_tabid
    tab_city,
    tab_street,
    tab_house,
-   
+
    tab__count,
    tab__invalid
-   
+
 }  tabid;
 
-// Cached data of the ssd_list content   
+// Cached data of the ssd_list content
 //    (ssd_list does not cache its content...)
 typedef struct tag_list_items
 {
@@ -82,7 +82,7 @@ typedef struct tag_atcctx
    tabid             active_tab;
    SsdTcCtx          tabcontrol;
    RoadMapCallback   on_tabcontrol_closed;
-   
+
 }     atcctx, *atcctx_ptr;
 void  atcctx_init( atcctx_ptr this);
 void  atcctx_free( atcctx_ptr this);
@@ -90,7 +90,7 @@ void  atcctx_free( atcctx_ptr this);
 static void       insert_history_into_city_list(BOOL force_reload);
 static void       insert_city_history_into_street_list();
 static atcctx_ptr get_atcctx();
-   
+
 // Definitions for 'roadmap_history.h' API
 typedef enum tag_address_history_item
 {
@@ -112,17 +112,17 @@ typedef enum tag_context_menu_items
    cmi_add_to_favorites,
    cmi_erase_history_entry,
    cmi_exit,
-   
+
    cmi__count,
    cmi__invalid
 
 }  context_menu_items;
-   
+
 typedef struct tag_on_text_changed_ctx
 {
    void* context;
    char* new_text;
-   
+
 }     on_text_changed_ctx, *on_text_changed_ctx_ptr;
 void  on_text_changed_ctx_init( on_text_changed_ctx_ptr  this);
 void  on_text_changed_ctx_free( on_text_changed_ctx_ptr  this);

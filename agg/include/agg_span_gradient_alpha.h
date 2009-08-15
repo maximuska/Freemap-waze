@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -30,9 +30,9 @@
 namespace agg
 {
     //======================================================span_gradient_alpha
-    template<class ColorT, 
+    template<class ColorT,
              class Interpolator,
-             class GradientF, 
+             class GradientF,
              class AlphaF>
     class span_gradient_alpha
     {
@@ -54,7 +54,7 @@ namespace agg
         span_gradient_alpha(interpolator_type& inter,
                             const GradientF& gradient_function,
                             const AlphaF& alpha_function,
-                            double d1, double d2) : 
+                            double d1, double d2) :
             m_interpolator(&inter),
             m_gradient_function(&gradient_function),
             m_alpha_function(&alpha_function),
@@ -81,14 +81,14 @@ namespace agg
 
         //--------------------------------------------------------------------
         void generate(color_type* span, int x, int y, unsigned len)
-        {   
+        {
             int dd = m_d2 - m_d1;
             if(dd < 1) dd = 1;
             m_interpolator->begin(x+0.5, y+0.5, len);
             do
             {
                 m_interpolator->coordinates(&x, &y);
-                int d = m_gradient_function->calculate(x >> downscale_shift, 
+                int d = m_gradient_function->calculate(x >> downscale_shift,
                                                        y >> downscale_shift, m_d2);
                 d = ((d - m_d1) * (int)m_alpha_function->size()) / dd;
                 if(d < 0) d = 0;

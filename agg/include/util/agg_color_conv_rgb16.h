@@ -5,29 +5,29 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 //
-// This part of the library has been sponsored by 
+// This part of the library has been sponsored by
 // Liberty Technology Systems, Inc., visit http://lib-sys.com
 //
 // Liberty Technology Systems, Inc. is the provider of
 // PostScript and PDF technology for software developers.
-// 
+//
 //----------------------------------------------------------------------------
 //
 // A set of functors used with color_conv(). See file agg_color_conv.h
@@ -50,7 +50,7 @@ namespace agg
     class color_conv_gray16_to_gray8
     {
     public:
-        void operator () (int8u* dst, 
+        void operator () (int8u* dst,
                           const int8u* src,
                           unsigned width) const
         {
@@ -68,7 +68,7 @@ namespace agg
     template<int I1, int I3> class color_conv_rgb24_rgb48
     {
     public:
-        void operator () (int8u* dst, 
+        void operator () (int8u* dst,
                           const int8u* src,
                           unsigned width) const
         {
@@ -94,7 +94,7 @@ namespace agg
     template<int I1, int I3> class color_conv_rgb48_rgb24
     {
     public:
-        void operator () (int8u* dst, 
+        void operator () (int8u* dst,
                           const int8u* src,
                           unsigned width) const
         {
@@ -120,7 +120,7 @@ namespace agg
     template<int R, int B> class color_conv_rgbAAA_rgb24
     {
     public:
-        void operator () (int8u* dst, 
+        void operator () (int8u* dst,
                           const int8u* src,
                           unsigned width) const
         {
@@ -147,7 +147,7 @@ namespace agg
     template<int R, int B> class color_conv_rgbBBA_rgb24
     {
     public:
-        void operator () (int8u* dst, 
+        void operator () (int8u* dst,
                           const int8u* src,
                           unsigned width) const
         {
@@ -172,7 +172,7 @@ namespace agg
     template<int B, int R> class color_conv_bgrABB_rgb24
     {
     public:
-        void operator () (int8u* dst, 
+        void operator () (int8u* dst,
                           const int8u* src,
                           unsigned width) const
         {
@@ -197,7 +197,7 @@ namespace agg
     template<int I1, int I2, int I3, int I4> class color_conv_rgba64_rgba32
     {
     public:
-        void operator () (int8u* dst, 
+        void operator () (int8u* dst,
                           const int8u* src,
                           unsigned width) const
         {
@@ -206,7 +206,7 @@ namespace agg
                 *dst++ = int8u(((int16u*)src)[I1] >> 8);
                 *dst++ = int8u(((int16u*)src)[I2] >> 8);
                 *dst++ = int8u(((int16u*)src)[I3] >> 8);
-                *dst++ = int8u(((int16u*)src)[I4] >> 8); 
+                *dst++ = int8u(((int16u*)src)[I4] >> 8);
                 src += 8;
             }
             while(--width);
@@ -237,7 +237,7 @@ namespace agg
     template<int I1, int I2, int I3, int A> class color_conv_rgb24_rgba64
     {
     public:
-        void operator () (int8u* dst, 
+        void operator () (int8u* dst,
                           const int8u* src,
                           unsigned width) const
         {
@@ -247,7 +247,7 @@ namespace agg
                 d[I1] = (src[0] << 8) | src[0];
                 d[I2] = (src[1] << 8) | src[1];
                 d[I3] = (src[2] << 8) | src[2];
-                d[A]  = 65535; 
+                d[A]  = 65535;
                 d   += 4;
                 src += 3;
             }
@@ -270,7 +270,7 @@ namespace agg
     template<int R, int B> class color_conv_rgb24_gray16
     {
     public:
-        void operator () (int8u* dst, 
+        void operator () (int8u* dst,
                           const int8u* src,
                           unsigned width) const
         {

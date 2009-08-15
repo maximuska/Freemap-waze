@@ -27,21 +27,21 @@
 const char* ERTVisabilityGroup_to_string( ERTVisabilityGroup e)
 {
    switch(e)
-   {  
-      case VisGrp_NickName:    		  return RT_CFG_PRM_VISGRP_Nickname;
-      case VisGrp_Anonymous: 		  return RT_CFG_PRM_VISGRP_Anonymous;
-      case VisGrp_Invisible:     	  return RT_CFG_PRM_VISGRP_Invisible;
-      default:             		      return RT_CFG_PRM_VISGRP_Anonymous;
-      
+   {
+      case VisGrp_NickName:           return RT_CFG_PRM_VISGRP_Nickname;
+      case VisGrp_Anonymous:          return RT_CFG_PRM_VISGRP_Anonymous;
+      case VisGrp_Invisible:          return RT_CFG_PRM_VISGRP_Invisible;
+      default:                        return RT_CFG_PRM_VISGRP_Anonymous;
+
    }
-} 
+}
 
 ERTVisabilityGroup ERTVisabilityGroup_from_string( const char* szE)
 {
    if( !strcmp( szE, RT_CFG_PRM_VISGRP_Nickname))return VisGrp_NickName;
    if( !strcmp( szE, RT_CFG_PRM_VISGRP_Anonymous))return VisGrp_Anonymous;
    if( !strcmp( szE, RT_CFG_PRM_VISGRP_Invisible)) return VisGrp_Invisible;
-   
+
    return VisGrp_Anonymous;
 }
 
@@ -49,20 +49,20 @@ ERTVisabilityGroup ERTVisabilityGroup_from_string( const char* szE)
 const char* ERTVisabilityReport_to_string( ERTVisabilityReport e)
 {
    switch(e)
-   {  
-      case VisRep_NickName:    		  return RT_CFG_PRM_VISREP_Nickname;
-      case VisRep_Anonymous: 		  return RT_CFG_PRM_VISREP_Anonymous;
-      default:             		      return RT_CFG_PRM_VISREP_Anonymous;
-      
+   {
+      case VisRep_NickName:           return RT_CFG_PRM_VISREP_Nickname;
+      case VisRep_Anonymous:          return RT_CFG_PRM_VISREP_Anonymous;
+      default:                        return RT_CFG_PRM_VISREP_Anonymous;
+
    }
-} 
+}
 
 ERTVisabilityReport ERTVisabilityReport_from_string( const char* szE)
 {
    if( !strcmp( szE, RT_CFG_PRM_VISREP_Nickname))return VisRep_NickName;
    if( !strcmp( szE, RT_CFG_PRM_VISREP_Anonymous))return VisRep_Anonymous;
 
-  
+
    return VisRep_Anonymous;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////

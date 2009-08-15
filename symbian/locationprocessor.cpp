@@ -1,19 +1,19 @@
 /* LocationProcessor.cpp - Symbian GPS implementation for Roadmap
- * 
+ *
  * LICENSE:
  * Copyright 2008 Giant Steps Ltd
  * Copyright 2008 Ehud Shabtai
  * Based on WhereAmI code Copyright (C) 2006-2007 Adam Boardman
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License V2 as published by
  * the Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>./
  */
@@ -68,7 +68,7 @@ CLocationProcessor* CLocationProcessor::NewL()
 int CLocationProcessor::GetAssistedModule(TPositionModuleInfo& aModuleInfo)
 {
   TUint numModules = 0;
-  TInt assistedModule = -1; 
+  TInt assistedModule = -1;
   iPositionServer.GetNumModules(numModules);
   for ( TUint i = 0; i < numModules ; i++ )
   {
@@ -222,7 +222,7 @@ TBool CLocationProcessor::ConnectToDeviceL()
     iValidPort = EFalse;
     SetActive();
     return ETrue;
-#endif		
+#endif
   }
 #else
   if ((iLocationProcessorState == ELocationProcessorStateNone) && !IsActive())
@@ -246,27 +246,27 @@ void CLocationProcessor::RequestLocation()
 #ifndef GPS_BLUETOOTH
   if (iPosInfoBase)
   {
-    TPositionModuleInfo moduleInfo; 
+    TPositionModuleInfo moduleInfo;
     TPositionModuleId usedPsy = iPosInfoBase->ModuleId();
     iPositionServer.GetModuleInfoById(usedPsy,moduleInfo);
-      
+
     TInt32 moduleInfoFamily = moduleInfo.ClassesSupported(EPositionInfoFamily);
     if (moduleInfoFamily&EPositionSatelliteInfoClass)
     {
-      iPosInfoBase = &iSatelliteInfo;	
+      iPosInfoBase = &iSatelliteInfo;
     }
     else if (moduleInfoFamily&EPositionCourseInfoClass)
     {
-      iPosInfoBase = &iCourseInfo;	
+      iPosInfoBase = &iCourseInfo;
     }
     else
     {
-      iPosInfoBase = &iPosInfo;	
+      iPosInfoBase = &iPosInfo;
     }
   }
   else
   {
-    iPosInfoBase = &iPosInfo;	
+    iPosInfoBase = &iPosInfo;
   }
   iPositioner.NotifyPositionUpdate(*iPosInfoBase, iStatus);
   iLocationProcessorState = ELocationProcessorStateRequestedUpdate;
@@ -280,7 +280,7 @@ void CLocationProcessor::DisconnectL(TBool /*aRemoteDisconnection*/)
   Cancel();
   iLocationProcessorState = ELocationProcessorStateNone;
   CallNavigationCallback(false);
-  //@@	iLocationReciever.DisconnectedL(aRemoteDisconnection);
+  //@@  iLocationReciever.DisconnectedL(aRemoteDisconnection);
 }
 
 void CLocationProcessor::RunL()
@@ -364,7 +364,7 @@ void CLocationProcessor::RunL()
 
       iSdpSearchPattern = CSdpSearchPattern::NewL();
       TUUID serviceClass(KUuidSerialPort);
-      iSdpSearchPattern->AddL(serviceClass); 
+      iSdpSearchPattern->AddL(serviceClass);
       iSdpAgent = CSdpAgent::NewL(*this, iDeviceFoundPckg().BDAddr());
       iSdpAgent->SetRecordFilterL(*iSdpSearchPattern);
       iSdpAgent->NextRecordRequestL();
@@ -414,7 +414,7 @@ void CLocationProcessor::RunL()
   }
   break;
   case ELocationProcessorStateQualityLoss:
-    CallNavigationCallback(false);  //  update on faulty status 
+    CallNavigationCallback(false);  //  update on faulty status
     RequestLocation();
     break;
 #endif
@@ -456,7 +456,7 @@ void CLocationProcessor::NextRecordRequestComplete(TInt aError, TSdpServRecordHa
   {
     delete iMatchList;
     iMatchList = NULL;
-    TRAPD(error, 
+    TRAPD(error,
         iMatchList = CSdpAttrIdMatchList::NewL();
     iMatchList->AddL(KSdpAttrIdProtocolDescriptorList);
     iSdpAgent->AttributeRequestL(aHandle, *iMatchList);
@@ -533,20 +533,20 @@ void CLocationProcessor::AttributeRequestComplete(TSdpServRecordHandle /*aHandle
 void CLocationProcessor::StoreSatelliteAndCourseAndPositionL(TPositionSatelliteInfo aPosInfo)
 {
   LOG("CLocationProcessor::StoreSatelliteAndCourseAndPositionL");
-	for (TUint satCount=0; satCount<KPositionMaxSatellitesInView; satCount++)
-	{
-		TSatelliteData lbsSatelliteData;
-		aPosInfo.GetSatelliteData(satCount, lbsSatelliteData);
+    for (TUint satCount=0; satCount<KPositionMaxSatellitesInView; satCount++)
+    {
+        TSatelliteData lbsSatelliteData;
+        aPosInfo.GetSatelliteData(satCount, lbsSatelliteData);
 
-		RoadMapGpsSatellite satelliteData;
+        RoadMapGpsSatellite satelliteData;
 
-		satelliteData.id = satCount;
-// we do not need to set		  satelliteData.status here...;
-		satelliteData.azimuth = STATIC_CAST(TInt,lbsSatelliteData.Azimuth());
-		satelliteData.elevation = STATIC_CAST(TInt,lbsSatelliteData.Elevation());
-		satelliteData.strength = lbsSatelliteData.SignalStrength();
-//TODO	call callback for satellite data	iLocationReciever.Satellite(satelliteData);
-	}
+        satelliteData.id = satCount;
+// we do not need to set          satelliteData.status here...;
+        satelliteData.azimuth = STATIC_CAST(TInt,lbsSatelliteData.Azimuth());
+        satelliteData.elevation = STATIC_CAST(TInt,lbsSatelliteData.Elevation());
+        satelliteData.strength = lbsSatelliteData.SignalStrength();
+//TODO  call callback for satellite data    iLocationReciever.Satellite(satelliteData);
+    }
 
   StoreCourseAndPositionL(aPosInfo,ETrue);
 }
@@ -572,12 +572,12 @@ void CLocationProcessor::StorePositionL(TPositionInfo aPosInfo, TBool /*aFixAtSe
   iPosData.latitude = (int)(position.Latitude()*FLOAT_MULTIPLIER);
   iPosData.longitude = (int)(position.Longitude()*FLOAT_MULTIPLIER);
   iPosData.altitude = (int)(position.Altitude());
-  
+
   TTime utcTime = position.Time();
-  
+
   TDateTime baseTime;
   baseTime.Set(1970,EJanuary,0,0,0,0,0);
-  
+
   TTimeIntervalSeconds intervalSeconds;
   if ( utcTime.SecondsFrom(baseTime, intervalSeconds) != KErrNone )
   {
@@ -592,7 +592,7 @@ void CLocationProcessor::StorePositionL(TPositionInfo aPosInfo, TBool /*aFixAtSe
   // Use the status
   //TPositionModuleStatus::TDeviceStatus deviceStatus = modStatus.DeviceStatus();
   TPositionModuleStatus::TDataQualityStatus qualityStatus = modStatus.DataQualityStatus();
-  
+
   //status is ok, since we got here, so call with 'true'
   CallNavigationCallback(qualityStatus == TPositionModuleStatus::EDataQualityNormal);
 }
@@ -619,12 +619,12 @@ void CLocationProcessor::CallNavigationCallback(bool aStatus)
   {
     status = 'V';
   }
-  
+
   roadmap_gps_raw(m_LastUpdatedTime, iPosData.longitude, iPosData.latitude,
         iPosData.steering, iPosData.speed);
-  
+
   if (global_FreeMapLock() != 0) return;
-  (*m_pNavCallback)(status, 
+  (*m_pNavCallback)(status,
                     m_LastUpdatedTime,
                     iPosData.latitude,
                     iPosData.longitude,

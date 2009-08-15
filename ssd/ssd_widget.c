@@ -118,7 +118,7 @@ static void calc_pack_size (SsdWidget w_cur, RoadMapGuiRect *rect,
 
          if (cur_width > max_width) max_width = cur_width;
 
-         if (w_last_drawn && 
+         if (w_last_drawn &&
             (w_last_drawn->flags & SSD_WIDGET_SPACE)) {
 
             rect->miny += SSD_WIDGET_SEP;
@@ -157,7 +157,7 @@ static void calc_pack_size (SsdWidget w_cur, RoadMapGuiRect *rect,
          index_in_row = 0;
          cur_width = 0;
          rect->miny += max_height;
-         if (w_last_drawn && 
+         if (w_last_drawn &&
             (w_last_drawn->flags & SSD_WIDGET_SPACE)) {
 
             rect->miny += SSD_WIDGET_SEP;
@@ -177,7 +177,7 @@ static void calc_pack_size (SsdWidget w_cur, RoadMapGuiRect *rect,
       index_in_row = 0;
       cur_width = 0;
       rect->miny += max_height;
-      if (w_last_drawn && 
+      if (w_last_drawn &&
             (w_last_drawn->flags & SSD_WIDGET_SPACE)) {
 
          rect->miny += SSD_WIDGET_SEP;
@@ -400,7 +400,7 @@ static void ssd_widget_draw_grid (SsdWidget w, const RoadMapGuiRect *rect) {
    SsdWidget widgets[MAX_WIDGETS_PER_ROW];
    int width  = rect->maxx - rect->minx + 1;
    int height = rect->maxy - rect->miny + 1;
-   SsdSize max_size; 
+   SsdSize max_size;
    int cur_y = rect->miny;
    int max_height = 0;
    int avg_width = 0;
@@ -414,7 +414,7 @@ static void ssd_widget_draw_grid (SsdWidget w, const RoadMapGuiRect *rect) {
 
    max_size.width = width;
    max_size.height = height;
-   
+
    while (w != NULL) {
       SsdSize size;
       ssd_widget_get_size (w, &size, &max_size);
@@ -511,13 +511,13 @@ static void ssd_widget_draw_pack (SsdWidget w, const RoadMapGuiRect *rect) {
          max_size.height = height;
          ssd_widget_get_size (w, &size, &max_size);
       }
-      
+
       if ((count == MAX_WIDGETS_PER_ROW) ||
          ((count > 0) &&
                      (((cur_width + size.width) > width) ||
                      (w->flags & SSD_START_NEW_ROW)))) {
 
-         if (w_last_drawn && 
+         if (w_last_drawn &&
             (w_last_drawn->flags & SSD_WIDGET_SPACE)) {
 
             cur_y += SSD_WIDGET_SEP;
@@ -555,7 +555,7 @@ static void ssd_widget_draw_pack (SsdWidget w, const RoadMapGuiRect *rect) {
 
       if (w->flags & SSD_END_ROW) {
 
-         if (w_last_drawn && 
+         if (w_last_drawn &&
             (w_last_drawn->flags & SSD_WIDGET_SPACE)) {
 
             cur_y += SSD_WIDGET_SEP;
@@ -574,7 +574,7 @@ static void ssd_widget_draw_pack (SsdWidget w, const RoadMapGuiRect *rect) {
    }
 
    if (count) {
-      if (w_last_drawn && 
+      if (w_last_drawn &&
             (w_last_drawn->flags & SSD_WIDGET_SPACE)) {
 
          cur_y += SSD_WIDGET_SEP;
@@ -610,14 +610,14 @@ roadmap_input_type ssd_widget_get_input_type( SsdWidget this)
          next  = next->next;
       }
    }
-   
+
    return t;
 }
 
 SsdWidget ssd_widget_new (const char *name,
                           PFN_WIDGET_ONKEYPRESSED pfn_on_key_pressed,
                           int flags) {
-                          
+
    static int tab_order_sequence = 0;
 
    SsdWidget w;
@@ -735,16 +735,16 @@ BOOL ssd_widget_set_focus( SsdWidget w)
    if( w->tab_stop)
    {
       roadmap_input_type input_type;
-      
+
       w->in_focus = TRUE;
-      
+
       input_type = ssd_widget_get_input_type( w );
-      
+
       roadmap_input_type_set_mode( input_type );
    }
-   
+
    w->background_focus = FALSE;
-      
+
    return w->in_focus;
 }
 
@@ -766,7 +766,7 @@ static SsdWidget ssd_widget_focus_forward(SsdWidget w)
 {
    if(!w->next_tabstop || (w->next_tabstop == w))
       return w;   // Only one tab-stop in w dialog. Nothing changed.
-      
+
    return w->next_tabstop;
 }
 
@@ -803,7 +803,7 @@ static void ssd_widget_sort_children (SsdWidget widget) {
 
    /* No support for first widget as ORDER_LAST */
    assert (! (widget->flags & SSD_ORDER_LAST));
-   
+
    assert( widget != widget->next);
 
    while (widget) {
@@ -846,10 +846,10 @@ SsdWidget ssd_widget_move_focus (SsdWidget w, SSD_FOCUS_DIRECTION direction) {
    }
 
    if(w == next_w) return w;   // Only one tab-stop in w dialog. Nothing changed.
-      
+
    ssd_widget_loose_focus  (w);
    ssd_widget_set_focus    (next_w);
-   
+
    return next_w;
 }
 
@@ -933,10 +933,10 @@ SsdWidget ssd_widget_remove(SsdWidget parent, SsdWidget child)
 {
    SsdWidget cur_child     = parent->children;
    SsdWidget child_behind  = NULL;
-   
+
    assert(parent);
    assert(child);
-   
+
    while( cur_child)
    {
       if( cur_child == child)
@@ -945,15 +945,15 @@ SsdWidget ssd_widget_remove(SsdWidget parent, SsdWidget child)
             child_behind->next= child->next;
          else
             parent->children  = child->next;
-         
+
          //assert(0 && "need to re-sort tab order!");
          return child;
       }
-      
+
       child_behind= cur_child;
       cur_child   = cur_child->next;
    }
-   
+
    return NULL;
 }
 
@@ -961,11 +961,11 @@ SsdWidget ssd_widget_replace(SsdWidget parent, SsdWidget old_child, SsdWidget ne
 {
    SsdWidget cur_child     = parent->children;
    SsdWidget child_behind  = NULL;
-   
+
    assert(parent);
    assert(old_child);
    assert(new_child);
-   
+
    while( cur_child)
    {
       if( cur_child == old_child)
@@ -974,17 +974,17 @@ SsdWidget ssd_widget_replace(SsdWidget parent, SsdWidget old_child, SsdWidget ne
             child_behind->next= new_child;
          else
             parent->children  = new_child;
-         
+
          new_child->next   = old_child->next;
          new_child->parent = old_child->parent;
 
          return old_child;
       }
-      
+
       child_behind= cur_child;
       cur_child   = cur_child->next;
    }
-   
+
    return NULL;
 }
 
@@ -1011,7 +1011,7 @@ void ssd_widget_set_context (SsdWidget widget, void *context) {
 void ssd_widget_get_size (SsdWidget w, SsdSize *size, const SsdSize *max) {
 
    SsdSize pack_size = {0, 0};
-                        
+
    RoadMapGuiRect max_size = {0, 0, 0, 0};
    int total_height_below = 0;
 
@@ -1023,18 +1023,18 @@ void ssd_widget_get_size (SsdWidget w, SsdSize *size, const SsdSize *max) {
 
    if (!max && (w->cached_size.width < 0)) {
        static SsdSize canvas_size;
-       
+
        canvas_size.width   = roadmap_canvas_width();
        canvas_size.height  = roadmap_canvas_height() - roadmap_bar_bottom_height();
-       
+
        max = &canvas_size;
    }
    else{
-   	if (!max)
-   		max = &w->cached_size;
+    if (!max)
+        max = &w->cached_size;
    }
-   
-	   
+
+
 
    if ((w->cached_size.width >= 0) && (w->cached_size.height >= 0)) {
       *size = w->cached_size;
@@ -1042,9 +1042,9 @@ void ssd_widget_get_size (SsdWidget w, SsdSize *size, const SsdSize *max) {
    }
 
    ///[BOOKMARK]:[NOTE]:[PAZ] - Special case solution:
-   ///   Line(n) asked for MAX-HEIGHT, but it needs to accomodate 
+   ///   Line(n) asked for MAX-HEIGHT, but it needs to accomodate
    ///   for the height of line(n+1).
-   ///   This solution is for such case, where there is only 
+   ///   This solution is for such case, where there is only
    ///   a sinlge container with this flag (SSD_ORDER_LAST).
    ///   E.g. - List box (n) and softkeys buttons (n+1)
    if (size->height == SSD_MAX_SIZE) {
@@ -1064,7 +1064,7 @@ void ssd_widget_get_size (SsdWidget w, SsdSize *size, const SsdSize *max) {
    }
 
    if (w->flags & SSD_DIALOG_FLOAT) {
-   	   
+
       if (size->width == SSD_MAX_SIZE) size->width = max->width -10;
       if (size->height== SSD_MAX_SIZE) size->height= max->height - total_height_below;
 
@@ -1078,7 +1078,7 @@ void ssd_widget_get_size (SsdWidget w, SsdSize *size, const SsdSize *max) {
       w->cached_size = *size;
       return;
    }
-   
+
    if (size->width >= 0)  {
       max_size.maxx = size->width - 1;
    } else {
@@ -1243,7 +1243,7 @@ void ssd_widget_set_flags (SsdWidget widget, int flags) {
 typedef SsdWidget*   (*PFN_GET_WIDGET_PTR)   (SsdWidget);
 
 // Helper for 'ssd_widget_sort_gui_tab_order__fix_orphan_pointers()' below
-void ssd_widget_sort_gui_tab_order__fix_corners(SsdWidget   w, 
+void ssd_widget_sort_gui_tab_order__fix_corners(SsdWidget   w,
       PFN_GET_WIDGET_PTR      pfn_back_ptr,
       PFN_GET_WIDGET_PTR      pfn_next_ptr)
 {
@@ -1300,7 +1300,7 @@ void ssd_widget_sort_gui_tab_order__fix_corners(SsdWidget   w,
       *(pfn_back_ptr(p)) = w;
 }
 
-SsdWidget ssd_widget_select_nearest_neighbour(  
+SsdWidget ssd_widget_select_nearest_neighbour(
       SsdWidget   w,       // Me
       SsdWidget   option_a,   // Option a (current?)
       SsdWidget   option_b)   // Option b (new?)
@@ -1353,7 +1353,7 @@ SsdWidget*  get_back_above_ptr(SsdWidget w){ return &(w->tabstop_below);}
 SsdWidget*  get_next_above_ptr(SsdWidget w){ return &(w->tabstop_above);}
 SsdWidget*  get_back_below_ptr(SsdWidget w){ return &(w->tabstop_above);}
 SsdWidget*  get_next_below_ptr(SsdWidget w){ return &(w->tabstop_below);}
-// After left/right/above/below pointers were set, some corner widgets will not 
+// After left/right/above/below pointers were set, some corner widgets will not
 // have anything to point at.
 // Why?  For example - the top-left cornered widget does not have anything above it
 //       or to the left of it.
@@ -1434,7 +1434,7 @@ void ssd_widget_reset_tab_order( SsdWidget head)
       ssd_widget_reset_tab_order_recursive( head);
 }
 
-void ssd_widget_sort_tab_order_recursive( 
+void ssd_widget_sort_tab_order_recursive(
       void*       parent_dialog,
       SsdWidget   current_position,
       SsdWidget*  previous_tabstop,
@@ -1475,7 +1475,7 @@ void ssd_widget_sort_tab_order_recursive(
    {
       ssd_widget_sort_tab_order_recursive(
             parent_dialog,
-            next, 
+            next,
             previous_tabstop,
             default_widget,
             first_tabstop,
@@ -1489,7 +1489,7 @@ void ssd_widget_sort_tab_order_recursive(
    if( (NULL == current_position->parent) && current_position->next)
       ssd_widget_sort_tab_order_recursive(
             parent_dialog,
-            current_position->next, 
+            current_position->next,
             previous_tabstop,
             default_widget,
             first_tabstop,
@@ -1548,7 +1548,7 @@ void fix_tab_order_sequence( SsdWidget widget)
    SsdWidget w = widget->next_tabstop;
 
    while( w != widget)
-   {  
+   {
       fix_widget_tab_order_sequence( w);
       w = w->next_tabstop;
    };
@@ -1566,7 +1566,7 @@ SsdWidget ssd_widget_sort_tab_order(void* parent_dialog, SsdWidget head)
 
    // Sort internal items:
    ssd_widget_sort_tab_order_recursive(parent_dialog,
-         head, 
+         head,
          &previous_tabstop,
          &default_widget,
          &first_tabstop,
@@ -1579,11 +1579,11 @@ SsdWidget ssd_widget_sort_tab_order(void* parent_dialog, SsdWidget head)
       assert( 0);
       return NULL;
    }
-#endif   // _DEBUG   
+#endif   // _DEBUG
 
    // Found any?
    if(!last_tabstop)
-      return NULL;   // No tab-stops found 
+      return NULL;   // No tab-stops found
 
    if( first_tabstop != last_tabstop)
    {
@@ -1594,8 +1594,8 @@ SsdWidget ssd_widget_sort_tab_order(void* parent_dialog, SsdWidget head)
       ///[BOOKMARK]:[VERIFY]:[PAZ] - See if next code is needed:
       fix_tab_order_sequence( first_tabstop);
    }
-if (!default_widget)   
-	default_widget = first_tabstop;
+if (!default_widget)
+    default_widget = first_tabstop;
 #ifndef TOUCH_SCREEN
    // Set first widget with focus:
    if(default_widget)
@@ -1603,7 +1603,7 @@ if (!default_widget)
    else
    {
       ssd_widget_set_focus(first_tabstop);
-      
+
    }
 #endif
    return default_widget;
@@ -1632,7 +1632,7 @@ BOOL ssd_widget_on_key_pressed( SsdWidget w, const char* utf8char, uint32_t flag
 int ssd_widget_set_right_softkey_text(SsdWidget widget, const char *value) {
 
    widget->right_softkey = value;
-   
+
    switch (roadmap_softkeys_orientation ()) {
 
          case SOFT_KEYS_ON_BOTTOM:
@@ -1649,9 +1649,9 @@ int ssd_widget_set_right_softkey_text(SsdWidget widget, const char *value) {
       default:
               return -1;
     }
-    
+
     return 0;
-     
+
 }
 
 int ssd_widget_set_left_softkey_text(SsdWidget widget, const char *value) {
@@ -1677,7 +1677,7 @@ int ssd_widget_set_left_softkey_text(SsdWidget widget, const char *value) {
       default:
               return -1;
      }
-    
+
     return 0;
 }
 

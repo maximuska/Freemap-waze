@@ -24,7 +24,7 @@
 
 #ifndef __SSD_WIDGET_ICON_H__
 #define __SSD_WIDGET_ICON_H__
-  
+
 #include "ssd_widget.h"
 
 
@@ -41,21 +41,21 @@ typedef struct tag_ssd_icon_wimage
    const char* left;
    const char* middle;
    const char* right;
-   
+
 }  ssd_icon_wimage;
 
 typedef struct tag_ssd_icon_wimage_set
 {
    ssd_icon_wimage*  normal;
    ssd_icon_wimage*  in_focus;   // [OPTIONAL]  Can be NULL
-   
+
 }  ssd_icon_wimage_set;
 
 typedef struct tag_ssd_icon_image_set
 {
    const char*       normal;
    const char*       in_focus;   // [OPTIONAL]  Can be NULL
-   
+
 }  ssd_icon_image_set;
 
 // Set simple image(s)

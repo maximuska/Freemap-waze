@@ -38,7 +38,7 @@ phone_keys phone_keys_from_string( const char* key)
 {
    if( !key || !key[0] || key[1])
       return phonekey__invalid;
-   
+
    switch(*key)
    {
       case '0': return phonekey_0;
@@ -55,7 +55,7 @@ phone_keys phone_keys_from_string( const char* key)
       case '#': return phonekey_ladder;
       default:  return phonekey__invalid;
    }
-   
+
    return phonekey__invalid;
 }
 
@@ -75,7 +75,7 @@ const char* phone_keys_tag_name( phone_keys key)
       case phonekey_9:     return "CombinationKeyboardKey_9";
       case phonekey_star:  return "CombinationKeyboardKey_*";
       case phonekey_ladder:return "CombinationKeyboardKey_#";
-      
+
       default:             return NULL;
    }
 }
@@ -83,53 +83,53 @@ const char* phone_keys_tag_name( phone_keys key)
 void phone_keyboard_init( phone_keyboard_ptr this)
 {
    int i;
-   
+
    for( i=0; i<phonekey__count; i++)
       multiple_key_info_init( this->keys + i);
-   
+
    this->state.key= phonekey__invalid;
    this->state.seq= 0;
    this->state.ms = 0;
 }
-      
+
 void phone_keyboard_free( phone_keyboard_ptr this)
 {
    int i;
    for( i=0; i<phonekey__count; i++)
       multiple_key_info_free( this->keys + i);
-   
+
    this->state.key= phonekey__invalid;
    this->state.seq= 0;
    this->state.ms = 0;
 }
 
 int multiple_key_info_get_next_valid_key(
-                                 multiple_key_info_ptr   this, 
+                                 multiple_key_info_ptr   this,
                                  int                     start_from,
                                  uint16_t                input_type,
                                  BOOL*                   single_option)
 {
    int   found = -1;
    int   i     = start_from;
-   
+
    (*single_option) = FALSE;
-   
+
    do
    {
       if( -1 != found)
          return found;
-   
+
       if( is_valid_key( this->values[i], input_type))
          found = i;
-   
+
       i++;
       if(i == this->count)
-         i =  0;                                    
-      
+         i =  0;
+
    }  while( i != start_from);
-   
+
    (*single_option) = TRUE;
-   
+
    return found;
 }
 
@@ -166,31 +166,31 @@ const char* roadmap_lang_get( const char* tag_name)
       return "*=/+-";
    else if( !strcmp( tag_name, "CombinationKeyboardKey_#"))
       return "#";
- 
+
    assert(0);
-   return NULL;     
+   return NULL;
 }
 #endif   // (0)
 
 void phone_keyboard_load( phone_keyboard_ptr this)
 {
    int i;
-   
+
    for( i=0; i<phonekey__count; i++)
    {
       multiple_key_info_ptr   mki      = this->keys + i;
       const char*             tag_name = phone_keys_tag_name( i);
       const char*             value    = roadmap_lang_get( tag_name);
-      
+
       mki->values = utf8_to_char_array( value, &mki->count);
-      
+
       assert(mki->values);
       assert(mki->count);
    }
 }
 
 void phone_keyboard_state_init( phone_keyboard_state_ptr this)
-{ 
+{
    memset( this, 0, sizeof(phone_keyboard_state));
    this->key = phonekey__invalid;
 }
@@ -198,7 +198,7 @@ void phone_keyboard_state_init( phone_keyboard_state_ptr this)
 static phone_keyboard ctx;
 
 void roadmap_phone_keyboard_init()
-{ 
+{
    phone_keyboard_init( &ctx);
    phone_keyboard_load( &ctx);
 }
@@ -206,7 +206,7 @@ void roadmap_phone_keyboard_init()
 void roadmap_phone_keyboard_term()
 {  phone_keyboard_free( &ctx);}
 
-const char* roadmap_phone_keyboard_get_multiple_key_value( 
+const char* roadmap_phone_keyboard_get_multiple_key_value(
                void*       caller,
                const char* key_str,
                uint16_t      input_type,
@@ -218,16 +218,16 @@ const char* roadmap_phone_keyboard_get_multiple_key_value(
    multiple_key_info_ptr   pi;
    int                     valid_index;
    BOOL                    single_option;
-   
+
    // If this is not the same caller - restart counting
    if(ctx.caller != caller)
    {
       ctx.caller  = caller;
       phone_keyboard_state_init( &(ctx.state));
-   }      
-   
+   }
+
    (*value_was_replaced) = FALSE;
-   
+
    // This should not happen (unless this is not a phone keyboard)
    if( phonekey__invalid == key)
    {
@@ -239,17 +239,17 @@ const char* roadmap_phone_keyboard_get_multiple_key_value(
    pi          = ctx.keys + key; // Pointer to key-info structure
    last_ms     = ctx.state.ms;
    ctx.state.ms= now;            // Reset 'last ms'
-   
+
    // Different key?
    if(ctx.state.key != key)
    {
-      ctx.state.key = key; 
+      ctx.state.key = key;
       ctx.state.seq = 0;   // Reset counter
    }
    else
    {
       // Same key
-      
+
       // Multiple presses?
       uint32_t ms_passsed = now - last_ms;
       if( TIME_BETWEEN_MULTIPLE_KEYBOARD_PRESSES < ms_passsed)
@@ -263,26 +263,26 @@ const char* roadmap_phone_keyboard_get_multiple_key_value(
          ctx.state.seq++;
          if( pi->count <= ctx.state.seq)
             ctx.state.seq  = 0;
-            
+
          (*value_was_replaced) = TRUE;
       }
    }
-   
+
    // Now we have index ('seq') to the appropriate key from the array ('values')
-   // However, still need to verify that the selected value 'values[seq]' is a 
+   // However, still need to verify that the selected value 'values[seq]' is a
    // valid choice considering the requested 'input_type'
    //
    //    [For more info on 'input_type' see file roadmap_input_type.h]
-   
-   valid_index = multiple_key_info_get_next_valid_key( 
+
+   valid_index = multiple_key_info_get_next_valid_key(
                   pi, ctx.state.seq, input_type, &single_option);
-   
+
    if( -1 == valid_index)
       return NULL;
-   
+
    if( single_option)
       (*value_was_replaced) = FALSE;
-   
-   ctx.state.seq = valid_index;   
+
+   ctx.state.seq = valid_index;
    return pi->values[valid_index];
 }

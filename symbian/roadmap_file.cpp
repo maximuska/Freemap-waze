@@ -40,7 +40,7 @@ extern "C" {
 #include "GSConvert.h"
 #include "Roadmap_NativeFile.h"
 
-struct RoadMapFileContextStructure 
+struct RoadMapFileContextStructure
 {
   CRoadMapNativeFile *fptr;
   TPtr8              *map;
@@ -77,7 +77,7 @@ RoadMapFile roadmap_file_open  (const char *name, const char *mode)
 {
   TFileName fileName;
   CRoadMapNativeFile::EFileOp file_op;
-   
+
   if (strcmp(mode, "r") == 0) {
      file_op = CRoadMapNativeFile::EFileOpRead;
   } else if (strcmp (mode, "rw") == 0) {
@@ -91,9 +91,9 @@ RoadMapFile roadmap_file_open  (const char *name, const char *mode)
           "%s: invalid file access mode %s", name, mode);
      return ROADMAP_INVALID_FILE;
   }
-  
+
   GSConvert::CharPtrToTDes16(name, fileName);
-  
+
   // Create the file
   TInt err = KErrNone;
   CRoadMapNativeFile* pFile = CRoadMapNativeFile::NewL( fileName, file_op, err ); //TODO TRAPD
@@ -131,11 +131,11 @@ void  roadmap_file_remove (const char *path, const char *name)
 {
   const char *full_name = roadmap_path_join (path, name);
   if ( full_name == NULL ) {return;}
-  
+
   TFileName fileName;
   GSConvert::CharPtrToTDes16(full_name, fileName);
   roadmap_path_free (full_name);
-  
+
   TInt res = EikFileUtils::DeleteFile(fileName);
 }
 
@@ -143,11 +143,11 @@ int   roadmap_file_exists (const char *path, const char *name)
 {
   const char *full_name = roadmap_path_join (path, name);
   if ( full_name == NULL ) {return 0;}
-  
+
   TFileName fileName;
   GSConvert::CharPtrToTDes16(full_name, fileName);
   roadmap_path_free (full_name);
-  
+
   TBool res = ConeUtils::FileExists(fileName);
   return ( res == TRUE );
 }
@@ -160,7 +160,7 @@ int roadmap_file_length (const char *path, const char *name)
   TFileName fileName;
   GSConvert::CharPtrToTDes16(full_name, fileName);
   roadmap_path_free (full_name);
-  
+
   TEntry entry;
   TInt res = CEikonEnv::Static()->FsSession().Entry(fileName, entry);
   return entry.iSize;
@@ -170,11 +170,11 @@ void  roadmap_file_save (const char *path, const char *name, void *data, int len
 {
   const char *full_name = roadmap_path_join (path, name);
   if ( full_name == NULL ){ return; }
-  
+
   RoadMapFile file = roadmap_file_open(full_name, "w");
   roadmap_path_free (full_name);
 
-  if (file != ROADMAP_INVALID_FILE) 
+  if (file != ROADMAP_INVALID_FILE)
   {
     roadmap_file_write(file, data, length);
     roadmap_file_close(file);
@@ -185,11 +185,11 @@ void roadmap_file_append (const char *path, const char *name, void *data, int le
 {
   const char *full_name = roadmap_path_join (path, name);
   if ( full_name == NULL ){ return; }
-  
+
   RoadMapFile file = roadmap_file_open(full_name, "a");
   roadmap_path_free (full_name);
 
-  if (file != ROADMAP_INVALID_FILE) 
+  if (file != ROADMAP_INVALID_FILE)
   {
     roadmap_file_write(file, data, length);
     roadmap_file_close(file);
@@ -201,7 +201,7 @@ int roadmap_file_rename (const char *old_name, const char *new_name)
   TFileName oldName, newName;
   GSConvert::CharPtrToTDes16(old_name, oldName);
   GSConvert::CharPtrToTDes16(new_name, newName);
-  
+
   TInt res = EikFileUtils::RenameFile(oldName, newName);
 
   return ( res != KErrNone );
@@ -211,16 +211,16 @@ int roadmap_file_truncate (const char *path, const char *name, int length)
 {
   const char *full_name = roadmap_path_join (path, name);
   if ( full_name == NULL ){ return 0; }
-  
+
   RoadMapFile file = roadmap_file_open(full_name, "a");
   roadmap_path_free (full_name);
 
   TInt err = KErrNone;
-  if (file != ROADMAP_INVALID_FILE) 
+  if (file != ROADMAP_INVALID_FILE)
   {
     err = ((CRoadMapNativeFile*)(file))->SetSize(length);
     roadmap_file_close(file);
-  }  
+  }
   return (err != KErrNone);
 }
 
@@ -259,7 +259,7 @@ const char *roadmap_file_map (const char *set,
   CRoadMapNativeFile::EFileOp open_mode;
   RoadMapFileContext context = new RoadMapFileContextStructure();
   if ( context == NULL ){ return NULL;  }
-  
+
   context->fptr = ROADMAP_INVALID_FILE;
   context->map = NULL;
 
@@ -274,12 +274,12 @@ const char *roadmap_file_map (const char *set,
      return NULL;
   }
 
-  if (name[0] == '\\' || (name[1] == ':')) 
+  if (name[0] == '\\' || (name[1] == ':'))
   {//TODO use TParse
      context->fptr = (CRoadMapNativeFile*)roadmap_file_open(name, mode);
      sequence = ""; // Whatever, but NULL.
-  } 
-  else 
+  }
+  else
   {
      int size;
 
@@ -297,9 +297,9 @@ const char *roadmap_file_map (const char *set,
      full_name.Create(KMaxFileName);
      full_name = (const unsigned char*)sequence;
      int name_len = User::StringLength((const unsigned char*)name);
-     
+
      // Find the first file
-     do 
+     do
      {
         size =  User::StringLength((const unsigned char*)sequence)
               + name_len
@@ -321,13 +321,13 @@ const char *roadmap_file_map (const char *set,
         if (context->fptr != ROADMAP_INVALID_FILE) {  break;  }
 
         sequence = roadmap_path_next(set, sequence);
-        
+
      } while (sequence != NULL);
-     
+
      full_name.Close(); //  although we don't strictly need this
   }
 
-  if (context->fptr == ROADMAP_INVALID_FILE) 
+  if (context->fptr == ROADMAP_INVALID_FILE)
   {
      if (sequence == NULL) {
         roadmap_log (ROADMAP_INFO, "cannot open file %s", name);
@@ -348,7 +348,7 @@ const char *roadmap_file_map (const char *set,
     roadmap_file_unmap(&context);
     return NULL;
   }
-  
+
   TUint8* mapBuf = new TUint8[fileSize];
   context->map = new TPtr8(mapBuf, fileSize);
   int numRead = context->fptr->Read(mapBuf, fileSize);
@@ -359,7 +359,7 @@ const char *roadmap_file_map (const char *set,
     delete[] mapBuf;
     delete context->map;
   }
-  
+
   if (mapBuf == NULL) {
      roadmap_log (ROADMAP_ERROR, "cannot map file %s", name);
      roadmap_file_unmap (&context);
@@ -370,7 +370,7 @@ const char *roadmap_file_map (const char *set,
 
   *file = (RoadMapFileContext)context;
 
-  return sequence; // Indicate the next directory in the path. 
+  return sequence; // Indicate the next directory in the path.
 }
 
 void *roadmap_file_base (RoadMapFileContext file)
@@ -394,11 +394,11 @@ int  roadmap_file_sync (RoadMapFileContext file)
   int written;
   if ((file->fptr != NULL) && (file->map != NULL) && (file->map->Length() != 0))
   {
-    written = roadmap_file_write((CRoadMapNativeFile*)(file->fptr) , 
-                                  file->map->Ptr(), 
+    written = roadmap_file_write((CRoadMapNativeFile*)(file->fptr) ,
+                                  file->map->Ptr(),
                                   file->map->Length());
   }
-  
+
   return ( written == 0 ? -1 : 0 );
 }
 
@@ -406,26 +406,26 @@ void roadmap_file_unmap (RoadMapFileContext *file)
 {
   RoadMapFileContext context = *file;
 
-  if (context->map != NULL) 
+  if (context->map != NULL)
   {// free all memory allocated in the mapping function
     delete[] context->map->Ptr();
-    delete context->map;  
+    delete context->map;
   }
 
   if (context->fptr != NULL) {
      delete (CRoadMapNativeFile*)(context->fptr);
   }
-  
+
   delete context;
   *file = NULL;
 }
 
 const char *roadmap_file_unique (const char *base)
-{//TODO what do we need this for exactly? 
+{//TODO what do we need this for exactly?
   TFileName fileName;
   TFileName basePath;
   GSConvert::CharPtrToTDes16(base, basePath);
-  
+
   RFile file;
   TInt err = file.Temp(CEikonEnv::Static()->FsSession(), basePath, fileName, EFileShareAny);
 
@@ -435,12 +435,12 @@ const char *roadmap_file_unique (const char *base)
 int roadmap_file_free_space (const char *path)
 {
   if ( path == NULL ){  return 0; }
-  
+
   int freeSpace = 0;
   TInt driveNum;
   TFileName pathDesc;
   GSConvert::CharPtrToTDes16(path, pathDesc);
-  
+
   TInt err;
   TParse pathParse;
   pathParse.Set(pathDesc, NULL, NULL);
@@ -454,8 +454,8 @@ int roadmap_file_free_space (const char *path)
     err = CEikonEnv::Static()->FsSession().CharToDrive((TChar)drivePath[0], driveNum);
     if (err != KErrNone) return freeSpace;
   }
-  
-  TVolumeInfo volumeInfo; 
+
+  TVolumeInfo volumeInfo;
   err = CEikonEnv::Static()->FsSession().Volume(volumeInfo, driveNum);
   if (err == KErrNone)
   {
@@ -467,22 +467,22 @@ int roadmap_file_free_space (const char *path)
 
 int roadmap_file_seek(RoadMapFile file, int offset, RoadMapSeekWhence whence)
 {
-	TSeek method;
+    TSeek method;
 
-	switch (whence) {
-		case ROADMAP_SEEK_START:
-			method = ESeekStart;
-			break;
-		case ROADMAP_SEEK_CURR:
-			method = ESeekCurrent;
-			break;
-		case ROADMAP_SEEK_END:
-			method = ESeekEnd;
-			break;
-		default:
-			roadmap_log (ROADMAP_ERROR, "illegal whence param %d", (int)whence);
-			return -1;
-	}
+    switch (whence) {
+        case ROADMAP_SEEK_START:
+            method = ESeekStart;
+            break;
+        case ROADMAP_SEEK_CURR:
+            method = ESeekCurrent;
+            break;
+        case ROADMAP_SEEK_END:
+            method = ESeekEnd;
+            break;
+        default:
+            roadmap_log (ROADMAP_ERROR, "illegal whence param %d", (int)whence);
+            return -1;
+    }
 
   CRoadMapNativeFile* pFile = (CRoadMapNativeFile*)file;
   return (int)pFile->Seek(method, offset );

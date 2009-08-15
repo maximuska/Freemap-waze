@@ -280,24 +280,24 @@ roadmap_dictionary_search
 
 static struct dictionary_volume *
          roadmap_dictionary_initialize_one (const roadmap_db_data_file *file,
-         											  unsigned int id,
-         											  const char *name,
-         											  struct dictionary_volume *first) {
+                                                      unsigned int id,
+                                                      const char *name,
+                                                      struct dictionary_volume *first) {
 
    struct dictionary_volume *dictionary;
    char *data;
    int size;
-   
+
    if (!roadmap_db_get_data (file,
-   								  id,
-   								  sizeof (char),
-   								  (void **)&data,
-   								  &size)) {
-   
-   	roadmap_log (ROADMAP_ERROR, "invalid dictionary structure");
-   	return first;								  	
+                                  id,
+                                  sizeof (char),
+                                  (void **)&data,
+                                  &size)) {
+
+    roadmap_log (ROADMAP_ERROR, "invalid dictionary structure");
+    return first;
    }
-   
+
    if (!data) return first;
 
 
@@ -324,8 +324,8 @@ static struct dictionary_volume *
    dictionary->subtrees = NULL;
    dictionary->subtrees_count = 0;
 
-	dictionary->next = first;
-	
+    dictionary->next = first;
+
    return dictionary;
 }
 
@@ -335,14 +335,14 @@ static void *roadmap_dictionary_map (const roadmap_db_data_file *file) {
    struct dictionary_volume *first = NULL;
 
 
-	first = roadmap_dictionary_initialize_one (file, model__tile_string_prefix, "prefix", first);
-	first = roadmap_dictionary_initialize_one (file, model__tile_string_street, "street", first);
-	first = roadmap_dictionary_initialize_one (file, model__tile_string_text2speech, "text2speech", first);
-	first = roadmap_dictionary_initialize_one (file, model__tile_string_type, "type", first);
-	first = roadmap_dictionary_initialize_one (file, model__tile_string_suffix, "suffix", first);
-	first = roadmap_dictionary_initialize_one (file, model__tile_string_city, "city", first);
-	first = roadmap_dictionary_initialize_one (file, model__tile_string_landmark, "landmark", first);
-	first = roadmap_dictionary_initialize_one (file, model__tile_string_attributes, "attributes", first);
+    first = roadmap_dictionary_initialize_one (file, model__tile_string_prefix, "prefix", first);
+    first = roadmap_dictionary_initialize_one (file, model__tile_string_street, "street", first);
+    first = roadmap_dictionary_initialize_one (file, model__tile_string_text2speech, "text2speech", first);
+    first = roadmap_dictionary_initialize_one (file, model__tile_string_type, "type", first);
+    first = roadmap_dictionary_initialize_one (file, model__tile_string_suffix, "suffix", first);
+    first = roadmap_dictionary_initialize_one (file, model__tile_string_city, "city", first);
+    first = roadmap_dictionary_initialize_one (file, model__tile_string_landmark, "landmark", first);
+    first = roadmap_dictionary_initialize_one (file, model__tile_string_attributes, "attributes", first);
 
    return first;
 }
@@ -866,7 +866,7 @@ RoadMapDictionaryMask roadmap_dictionary_mask_new (RoadMapDictionary dictionary)
    return mask;
 }
 
-   
+
 void roadmap_dictionary_mask_free (RoadMapDictionaryMask mask) {
 
    free (mask);

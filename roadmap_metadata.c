@@ -69,10 +69,10 @@ static void *roadmap_metadata_map (const roadmap_db_data_file *file) {
    context->RoadMapAttributeStrings = NULL;
 
    if (!roadmap_db_get_data (file,
-   								  model__tile_metadata_attributes,
-   								  sizeof (RoadMapAttribute),
-   								  (void**)&(context->Attributes),
-   								  &(context->AttributesCount))) {
+                                  model__tile_metadata_attributes,
+                                  sizeof (RoadMapAttribute),
+                                  (void**)&(context->Attributes),
+                                  &(context->AttributesCount))) {
       roadmap_log (ROADMAP_ERROR, "invalid metadata/attributes structure");
       goto roadmap_metadata_map_abort;
    }
@@ -138,10 +138,10 @@ const char *roadmap_metadata_get_attribute (const char *category,
 
    for (i = RoadMapMetadataActive->AttributesCount - 1; i >= 0; --i) {
 
-	   const char *attr_category = 
-	   	roadmap_dictionary_get (RoadMapMetadataActive->RoadMapAttributeStrings, RoadMapMetadataActive->Attributes[i].category);
-	   const char *attr_name = 
-	   	roadmap_dictionary_get (RoadMapMetadataActive->RoadMapAttributeStrings, RoadMapMetadataActive->Attributes[i].name);
+       const char *attr_category =
+        roadmap_dictionary_get (RoadMapMetadataActive->RoadMapAttributeStrings, RoadMapMetadataActive->Attributes[i].category);
+       const char *attr_name =
+        roadmap_dictionary_get (RoadMapMetadataActive->RoadMapAttributeStrings, RoadMapMetadataActive->Attributes[i].name);
 
       if (strcmp (name, attr_name) == 0 &&
           strcmp (category, attr_category) == 0) {

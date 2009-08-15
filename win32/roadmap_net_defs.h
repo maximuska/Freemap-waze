@@ -104,6 +104,6 @@
 #define  CASE_STATUS_RETURN_STRING(_name_)            \
             case CONNMGR_STATUS_##_name_: return CONNMGR_STATUS_##_name_##_str;
 
-const char* ConnMgr_GetStatusString( DWORD dwStatus);            
+const char* ConnMgr_GetStatusString( DWORD dwStatus);
 
 #endif   // __ROADMAP_NET_DEFS_H__

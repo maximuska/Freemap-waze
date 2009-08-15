@@ -5,29 +5,29 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 //
-// Adaptation for high precision colors has been sponsored by 
+// Adaptation for high precision colors has been sponsored by
 // Liberty Technology Systems, Inc., visit http://lib-sys.com
 //
 // Liberty Technology Systems, Inc. is the provider of
 // PostScript and PDF technology for software developers.
-// 
+//
 //----------------------------------------------------------------------------
 
 #ifndef AGG_SPAN_GOURAUD_RGBA_INCLUDED
@@ -50,8 +50,8 @@ namespace agg
         typedef span_gouraud<color_type> base_type;
         typedef typename base_type::coord_type coord_type;
         enum subpixel_scale_e
-        { 
-            subpixel_shift = 4, 
+        {
+            subpixel_shift = 4,
             subpixel_scale = 1 << subpixel_shift
         };
 
@@ -61,7 +61,7 @@ namespace agg
         {
             void init(const coord_type& c1, const coord_type& c2)
             {
-                m_x1  = c1.x - 0.5; 
+                m_x1  = c1.x - 0.5;
                 m_y1  = c1.y - 0.5;
                 m_dx  = c2.x - c1.x;
                 double dy = c2.y - c1.y;
@@ -111,13 +111,13 @@ namespace agg
 
         //--------------------------------------------------------------------
         span_gouraud_rgba() {}
-        span_gouraud_rgba(const color_type& c1, 
-                          const color_type& c2, 
+        span_gouraud_rgba(const color_type& c1,
+                          const color_type& c2,
                           const color_type& c3,
-                          double x1, double y1, 
+                          double x1, double y1,
                           double x2, double y2,
-                          double x3, double y3, 
-                          double d = 0) : 
+                          double x3, double y3,
+                          double d = 0) :
             base_type(c1, c2, c3, x1, y1, x2, y2, x3, y3, d)
         {}
 
@@ -129,7 +129,7 @@ namespace agg
 
             m_y2 = int(coord[1].y);
 
-            m_swap = cross_product(coord[0].x, coord[0].y, 
+            m_swap = cross_product(coord[0].x, coord[0].y,
                                    coord[2].x, coord[2].y,
                                    coord[1].x, coord[1].y) < 0.0;
 
@@ -146,7 +146,7 @@ namespace agg
             const rgba_calc* pc2 = &m_rgba2;
 
             if(y <= m_y2)
-            {          
+            {
                 // Bottom part of the triangle (first subtriangle)
                 //-------------------------
                 m_rgba2.calc(y + m_rgba2.m_1dy);
@@ -161,7 +161,7 @@ namespace agg
 
             if(m_swap)
             {
-                // It means that the triangle is oriented clockwise, 
+                // It means that the triangle is oriented clockwise,
                 // so that we need to swap the controlling structures
                 //-------------------------
                 const rgba_calc* t = pc2;
@@ -180,24 +180,24 @@ namespace agg
             dda_line_interpolator<14> b(pc1->m_b, pc2->m_b, nlen);
             dda_line_interpolator<14> a(pc1->m_a, pc2->m_a, nlen);
 
-            // Calculate the starting point of the gradient with subpixel 
+            // Calculate the starting point of the gradient with subpixel
             // accuracy and correct (roll back) the interpolators.
             // This operation will also clip the beginning of the span
             // if necessary.
             //-------------------------
             int start = pc1->m_x - (x << subpixel_shift);
-            r    -= start; 
-            g    -= start; 
-            b    -= start; 
+            r    -= start;
+            g    -= start;
+            b    -= start;
             a    -= start;
             nlen += start;
 
             int vr, vg, vb, va;
             enum lim_e { lim = color_type::base_mask };
 
-            // Beginning part of the span. Since we rolled back the 
+            // Beginning part of the span. Since we rolled back the
             // interpolators, the color values may have overflow.
-            // So that, we render the beginning part with checking 
+            // So that, we render the beginning part with checking
             // for overflow. It lasts until "start" is positive;
             // typically it's 1-2 pixels, but may be more in some cases.
             //-------------------------
@@ -215,9 +215,9 @@ namespace agg
                 span->g = (value_type)vg;
                 span->b = (value_type)vb;
                 span->a = (value_type)va;
-                r     += subpixel_scale; 
-                g     += subpixel_scale; 
-                b     += subpixel_scale; 
+                r     += subpixel_scale;
+                g     += subpixel_scale;
+                b     += subpixel_scale;
                 a     += subpixel_scale;
                 nlen  -= subpixel_scale;
                 start -= subpixel_scale;
@@ -227,7 +227,7 @@ namespace agg
 
             // Middle part, no checking for overflow.
             // Actual spans can be longer than the calculated length
-            // because of anti-aliasing, thus, the interpolators can 
+            // because of anti-aliasing, thus, the interpolators can
             // overflow. But while "nlen" is positive we are safe.
             //-------------------------
             while(len && nlen > 0)
@@ -236,9 +236,9 @@ namespace agg
                 span->g = (value_type)g.y();
                 span->b = (value_type)b.y();
                 span->a = (value_type)a.y();
-                r    += subpixel_scale; 
-                g    += subpixel_scale; 
-                b    += subpixel_scale; 
+                r    += subpixel_scale;
+                g    += subpixel_scale;
+                b    += subpixel_scale;
                 a    += subpixel_scale;
                 nlen -= subpixel_scale;
                 ++span;
@@ -262,9 +262,9 @@ namespace agg
                 span->g = (value_type)vg;
                 span->b = (value_type)vb;
                 span->a = (value_type)va;
-                r += subpixel_scale; 
-                g += subpixel_scale; 
-                b += subpixel_scale; 
+                r += subpixel_scale;
+                g += subpixel_scale;
+                b += subpixel_scale;
                 a += subpixel_scale;
                 ++span;
                 --len;

@@ -35,7 +35,7 @@ typedef enum tag_roadmap_net_mon_state{
    NET_MON_CONNECT,
    NET_MON_DATA,
    NET_MON_ERROR
-	
+
 } ROADMAP_NET_MON_STATE;
 
 void roadmap_net_mon_start (void);

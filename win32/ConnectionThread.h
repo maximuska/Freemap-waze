@@ -18,8 +18,8 @@
  */
 
 
-#ifndef	__CONNECTIONTHREAD_H__
-#define	__CONNECTIONTHREAD_H__
+#ifndef __CONNECTIONTHREAD_H__
+#define __CONNECTIONTHREAD_H__
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -62,13 +62,13 @@ class CConnectionThreadMgr :
 public:
    virtual  void  InitializeData( ConnectionInfo& r)
    { ConnectionInfo_Init( &r);}
-   
+
    virtual  BOOL  DataIsValid( const ConnectionInfo& r)
    { return ConnectionInfo_IsValid( &r);}
-   
+
    virtual  BOOL  CellIsOccupied( const ConnectionInfo& r)
    { return DataIsValid(r);}
-   
+
    virtual  void  HandleTask( ConnectionInfo& r);
 
 public:
@@ -83,4 +83,4 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#endif	//	__CONNECTIONTHREAD_H__
+#endif  //  __CONNECTIONTHREAD_H__

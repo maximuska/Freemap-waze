@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -45,7 +45,7 @@ namespace agg
 
     private:
         conv_adaptor_vpgen(const conv_adaptor_vpgen<VertexSource, VPGen>&);
-        const conv_adaptor_vpgen<VertexSource, VPGen>& 
+        const conv_adaptor_vpgen<VertexSource, VPGen>&
             operator = (const conv_adaptor_vpgen<VertexSource, VPGen>&);
 
         VertexSource* m_source;
@@ -60,8 +60,8 @@ namespace agg
 
     //------------------------------------------------------------------------
     template<class VertexSource, class VPGen>
-    void conv_adaptor_vpgen<VertexSource, VPGen>::rewind(unsigned path_id) 
-    { 
+    void conv_adaptor_vpgen<VertexSource, VPGen>::rewind(unsigned path_id)
+    {
         m_source->rewind(path_id);
         m_vpgen.reset();
         m_start_x    = 0;
@@ -92,7 +92,7 @@ namespace agg
 
             if(m_vertices < 0)
             {
-                if(m_vertices < -1) 
+                if(m_vertices < -1)
                 {
                     m_vertices = 0;
                     return path_cmd_stop;
@@ -106,7 +106,7 @@ namespace agg
             cmd = m_source->vertex(&tx, &ty);
             if(is_vertex(cmd))
             {
-                if(is_move_to(cmd)) 
+                if(is_move_to(cmd))
                 {
                     if(m_vpgen.auto_close() && m_vertices > 2)
                     {
@@ -122,7 +122,7 @@ namespace agg
                     m_start_y  = ty;
                     m_vertices = 1;
                 }
-                else 
+                else
                 {
                     m_vpgen.line_to(tx, ty);
                     ++m_vertices;

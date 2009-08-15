@@ -37,13 +37,13 @@ public:
   TInt Play();
   void Stop();
   void SetVolume( TInt aVolume );
-  const CMdaAudioRecorderUtility& GetAudioUtility( void ) const; 
+  const CMdaAudioRecorderUtility& GetAudioUtility( void ) const;
 private:
   CAudioPlayer();
   void ConstructL( const TDes& aFileName, MMdaObjectStateChangeObserver* apObserver );
   void ConstructL( const TDes8& aDesc, MMdaObjectStateChangeObserver* apObserver );
 
-  // The audio player utility object. owned by CAudioPlayer object. 
+  // The audio player utility object. owned by CAudioPlayer object.
   CMdaAudioRecorderUtility* iMdaAudioPlayerUtility;
 };
 

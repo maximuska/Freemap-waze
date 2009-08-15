@@ -42,18 +42,18 @@
 
 #include "roadmap_types.h"
 
-#define RANGE_FLAG_MASK   		(3 << 14)
-#define RANGE_FLAG_COMPACT		(0 << 14) /* left+right 4 byte-size numbers */
-#define RANGE_FLAG_LEFT_ONLY	(1 << 14) /* 2 short values, left address only */
-#define RANGE_FLAG_RIGHT_ONLY	(2 << 14) /* 2 short values, right address only */
-#define RANGE_FLAG_BOTH			(3 << 14) /* 2 short values, left address, right to follow */
+#define RANGE_FLAG_MASK         (3 << 14)
+#define RANGE_FLAG_COMPACT      (0 << 14) /* left+right 4 byte-size numbers */
+#define RANGE_FLAG_LEFT_ONLY    (1 << 14) /* 2 short values, left address only */
+#define RANGE_FLAG_RIGHT_ONLY   (2 << 14) /* 2 short values, right address only */
+#define RANGE_FLAG_BOTH         (3 << 14) /* 2 short values, left address, right to follow */
 
-#define RANGE_FLAG_STREET_ONLY	0x8000
-#define RANGE_ADDR_MAX_VALUE	0xffffff
+#define RANGE_FLAG_STREET_ONLY  0x8000
+#define RANGE_ADDR_MAX_VALUE    0xffffff
 
 typedef struct {   /* table range.addr */
 
-	unsigned short street;
+    unsigned short street;
    unsigned short fradd;
    unsigned short toadd;
 

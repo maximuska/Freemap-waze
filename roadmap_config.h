@@ -40,13 +40,13 @@ struct RoadMapConfigItemRecord;
 typedef struct RoadMapConfigItemRecord RoadMapConfigItem;
 
 typedef struct {
-    
+
     const char *category;
     const char *name;
     int         age;
-    
+
     RoadMapConfigItem *reference;
-    
+
 } RoadMapConfigDescriptor;
 
 
@@ -77,7 +77,7 @@ void roadmap_config_declare_color
         (const char *file,
          RoadMapConfigDescriptor *descriptor, const char *default_value);
 
- 
+
 char *roadmap_config_skip_until (char *p, char c);
 
 char *roadmap_config_skip_spaces (char *p);
@@ -87,7 +87,7 @@ char *roadmap_config_extract_data (char *line, int size);
 
 int roadmap_config_first (const char *config,
                           RoadMapConfigDescriptor *descriptor);
- 
+
 int roadmap_config_next (RoadMapConfigDescriptor *descriptor);
 
 

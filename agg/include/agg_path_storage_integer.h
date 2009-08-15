@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -53,7 +53,7 @@ namespace agg
             x(((x_ << 1) & ~1) | (flag &  1)),
             y(((y_ << 1) & ~1) | (flag >> 1)) {}
 
-        unsigned vertex(double* x_, double* y_, 
+        unsigned vertex(double* x_, double* y_,
                         double dx=0, double dy=0,
                         double scale=1.0) const
         {
@@ -97,7 +97,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void curve3(T x_ctrl,  T y_ctrl, 
+        void curve3(T x_ctrl,  T y_ctrl,
                     T x_to,    T y_to)
         {
             m_storage.add(vertex_integer_type(x_ctrl, y_ctrl, vertex_integer_type::cmd_curve3));
@@ -105,8 +105,8 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void curve4(T x_ctrl1, T y_ctrl1, 
-                    T x_ctrl2, T y_ctrl2, 
+        void curve4(T x_ctrl1, T y_ctrl1,
+                    T x_ctrl2, T y_ctrl2,
                     T x_to,    T y_to)
         {
             m_storage.add(vertex_integer_type(x_ctrl1, y_ctrl1, vertex_integer_type::cmd_curve4));
@@ -137,16 +137,16 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void rewind(unsigned) 
-        { 
-            m_vertex_idx = 0; 
+        void rewind(unsigned)
+        {
+            m_vertex_idx = 0;
             m_closed = true;
         }
 
         //--------------------------------------------------------------------
         unsigned vertex(double* x, double* y)
         {
-            if(m_storage.size() < 2 || m_vertex_idx > m_storage.size()) 
+            if(m_storage.size() < 2 || m_vertex_idx > m_storage.size())
             {
                 *x = 0;
                 *y = 0;
@@ -234,7 +234,7 @@ namespace agg
         {}
 
         //--------------------------------------------------------------------
-        void init(const int8u* data, unsigned size, 
+        void init(const int8u* data, unsigned size,
                   double dx, double dy, double scale=1.0)
         {
             m_data     = data;
@@ -248,16 +248,16 @@ namespace agg
 
 
         //--------------------------------------------------------------------
-        void rewind(unsigned) 
-        { 
-            m_ptr      = m_data; 
+        void rewind(unsigned)
+        {
+            m_ptr      = m_data;
             m_vertices = 0;
         }
 
         //--------------------------------------------------------------------
         unsigned vertex(double* x, double* y)
         {
-            if(m_data == 0 || m_ptr > m_end) 
+            if(m_data == 0 || m_ptr > m_end)
             {
                 *x = 0;
                 *y = 0;

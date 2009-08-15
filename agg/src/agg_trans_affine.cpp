@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -30,7 +30,7 @@ namespace agg
 {
 
     //------------------------------------------------------------------------
-    const trans_affine& trans_affine::parl_to_parl(const double* src, 
+    const trans_affine& trans_affine::parl_to_parl(const double* src,
                                                    const double* dst)
     {
         sx  = src[2] - src[0];
@@ -40,15 +40,15 @@ namespace agg
         tx  = src[0];
         ty  = src[1];
         invert();
-        multiply(trans_affine(dst[2] - dst[0], dst[3] - dst[1], 
+        multiply(trans_affine(dst[2] - dst[0], dst[3] - dst[1],
                               dst[4] - dst[0], dst[5] - dst[1],
                               dst[0], dst[1]));
         return *this;
     }
 
     //------------------------------------------------------------------------
-    const trans_affine& trans_affine::rect_to_parl(double x1, double y1, 
-                                                   double x2, double y2, 
+    const trans_affine& trans_affine::rect_to_parl(double x1, double y1,
+                                                   double x2, double y2,
                                                    const double* parl)
     {
         double src[6];
@@ -60,8 +60,8 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
-    const trans_affine& trans_affine::parl_to_rect(const double* parl, 
-                                                   double x1, double y1, 
+    const trans_affine& trans_affine::parl_to_rect(const double* parl,
+                                                   double x1, double y1,
                                                    double x2, double y2)
     {
         double dst[6];
@@ -128,7 +128,7 @@ namespace agg
     //------------------------------------------------------------------------
     const trans_affine& trans_affine::reset()
     {
-        sx  = sy  = 1.0; 
+        sx  = sy  = 1.0;
         shy = shx = tx = ty = 0.0;
         return *this;
     }
@@ -138,7 +138,7 @@ namespace agg
     {
         return is_equal_eps(sx,  1.0, epsilon) &&
                is_equal_eps(shy, 0.0, epsilon) &&
-               is_equal_eps(shx, 0.0, epsilon) && 
+               is_equal_eps(shx, 0.0, epsilon) &&
                is_equal_eps(sy,  1.0, epsilon) &&
                is_equal_eps(tx,  0.0, epsilon) &&
                is_equal_eps(ty,  0.0, epsilon);
@@ -155,7 +155,7 @@ namespace agg
     {
         return is_equal_eps(sx,  m.sx,  epsilon) &&
                is_equal_eps(shy, m.shy, epsilon) &&
-               is_equal_eps(shx, m.shx, epsilon) && 
+               is_equal_eps(shx, m.shx, epsilon) &&
                is_equal_eps(sy,  m.sy,  epsilon) &&
                is_equal_eps(tx,  m.tx,  epsilon) &&
                is_equal_eps(ty,  m.ty,  epsilon);

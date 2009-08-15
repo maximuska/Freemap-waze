@@ -313,8 +313,8 @@
   /*
    * TT CMAP INFO
    *
-   * If the charmap is a synthetic Unicode encoding cmap or 
-   * a Type 1 standard (or expert) encoding cmap, hide TT CMAP INFO 
+   * If the charmap is a synthetic Unicode encoding cmap or
+   * a Type 1 standard (or expert) encoding cmap, hide TT CMAP INFO
    * service defined in SFNT module.
    *
    * Otherwise call the service function in the sfnt module.
@@ -330,7 +330,7 @@
 
     cmap_info->language = 0;
 
-    if ( cmap->clazz != &cff_cmap_encoding_class_rec && 
+    if ( cmap->clazz != &cff_cmap_encoding_class_rec &&
          cmap->clazz != &cff_cmap_unicode_class_rec  )
     {
       FT_Face             face    = FT_CMAP_FACE( cmap );

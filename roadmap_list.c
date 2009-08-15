@@ -9,7 +9,7 @@
  *   queue.c, which is:
  *       Copyright (C) 2002 Robert Lipe, robertlipe@usa.net
  *
- *   Previous implementation, and API spec, 
+ *   Previous implementation, and API spec,
  *       Copyright 2002 Pascal F. Martin
  *
  *   Merge done by Paul Fox, 2006

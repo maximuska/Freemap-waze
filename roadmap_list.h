@@ -29,11 +29,11 @@
 #ifndef INCLUDE__ROADMAP_LIST__H
 #define INCLUDE__ROADMAP_LIST__H
 
-/* Linked lists are fully circular -- no pointer is ever NULL. 
+/* Linked lists are fully circular -- no pointer is ever NULL.
  * When empty, a list head's "list_first" and "list_last"
  * pointers point at the list head itself.
- * 
- * The head of a list is identical to any element in the list. 
+ *
+ * The head of a list is identical to any element in the list.
  * To aid in debugging, the head is given a different type --
  * this helps reduce confusion when calling the insert/remove
  * routines, by letting the compiler enforce type safety.
@@ -79,7 +79,7 @@ typedef struct roadmap_list_link RoadMapList;
 
 /* List heads must be initialized before first use.  This
  * initialization could be done with a declaration like:
- *  RoadMapList MyListHead = 
+ *  RoadMapList MyListHead =
  *      { (RoadMapListItem *)&MyListHead, (RoadMapListItem *)&MyListHead };
  * but the runtime macro seems cleaner:
  */
@@ -173,10 +173,10 @@ typedef struct roadmap_list_link queue_head;
 #endif
 
 #define QUEUE_INIT(head)        ROADMAP_LIST_INIT(head)
-#define QUEUE_FIRST(head)       ROADMAP_LIST_FIRST(head) 
-#define QUEUE_LAST(head)        ROADMAP_LIST_LAST(head)  
-#define QUEUE_EMPTY(head)       ROADMAP_LIST_EMPTY(head)  
-#define QUEUE_NEXT(element)     ROADMAP_LIST_NEXT(element) 
+#define QUEUE_FIRST(head)       ROADMAP_LIST_FIRST(head)
+#define QUEUE_LAST(head)        ROADMAP_LIST_LAST(head)
+#define QUEUE_EMPTY(head)       ROADMAP_LIST_EMPTY(head)
+#define QUEUE_NEXT(element)     ROADMAP_LIST_NEXT(element)
 #define QUEUE_PREV(element)     ROADMAP_LIST_PREV(element)
 
 #define ENQUEUE_TAIL(listhead, newelement) \
@@ -188,7 +188,7 @@ typedef struct roadmap_list_link queue_head;
 #define ENQUEUE_BEFORE(element, newelement) \
                 roadmap_list_put_before(element, newelement)
 
-#define QUEUE_MOVE(newhead,oldhead) ROADMAP_LIST_MOVE(newhead,oldhead) 
+#define QUEUE_MOVE(newhead,oldhead) ROADMAP_LIST_MOVE(newhead,oldhead)
 #define QUEUE_SPLICE(tohead,fromhead) ROADMAP_LIST_SPLICE(tohead,fromhead)
 
 #define QUEUE_FOR_EACH(listhead, element, tmp) \

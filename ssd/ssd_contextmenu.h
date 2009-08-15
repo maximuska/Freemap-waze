@@ -28,13 +28,13 @@ typedef enum tag_menu_open_direction
    dir_right,
    dir_left,
    dir_default
-   
+
 }  menu_open_direction;
 
 typedef void(*SsdOnContextMenu)( BOOL              made_selection,
                                  ssd_cm_item_ptr   item,
                                  void*             context);
-   
+
 void ssd_context_menu_show(int                  x,
                            int                  y,
                            ssd_contextmenu_ptr  menu,

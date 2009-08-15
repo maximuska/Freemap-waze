@@ -4,10 +4,10 @@
  *
  *   Copyright 2008 Giant Steps Ltd.
  *   Copyright 2008 Ehud Shabtai
- *    Based off Nokia wiki example code at 
+ *    Based off Nokia wiki example code at
  *    http://wiki.forum.nokia.com/index.php/How_to_draw_image_to_screen_directly
  *    http://wiki.forum.nokia.com/index.php/Anti-tearing_with_CDirectScreenBitmap
- * 
+ *
  *   This file is part of RoadMap.
  *
  *   RoadMap is free software; you can redistribute it and/or modify
@@ -38,7 +38,7 @@ CRoadmapNativeCanvas* CRoadmapNativeCanvas::NewL(RWsSession& aWsSession, CWsScre
   CleanupStack::Pop(self);
   return self;
 }
- 
+
 CRoadmapNativeCanvas* CRoadmapNativeCanvas::NewLC(RWsSession& aWsSession, CWsScreenDevice& aScreenDevice, RWindow& aWindow)
 {
   CRoadmapNativeCanvas* self = new(ELeave)CRoadmapNativeCanvas(aWsSession, aScreenDevice, aWindow);
@@ -46,8 +46,8 @@ CRoadmapNativeCanvas* CRoadmapNativeCanvas::NewLC(RWsSession& aWsSession, CWsScr
   self->ConstructL();
   return self;
 }
- 
-CRoadmapNativeCanvas::CRoadmapNativeCanvas(RWsSession& aWsSession, CWsScreenDevice& aScreenDevice, RWindow& aWindow) 
+
+CRoadmapNativeCanvas::CRoadmapNativeCanvas(RWsSession& aWsSession, CWsScreenDevice& aScreenDevice, RWindow& aWindow)
 : m_ScreenDevice(aScreenDevice),
   m_WsSession(aWsSession),
   m_Window(aWindow)
@@ -58,17 +58,17 @@ CRoadmapNativeCanvas::CRoadmapNativeCanvas(RWsSession& aWsSession, CWsScreenDevi
   m_pRegion = NULL;
   m_pGc = NULL;
   m_bDrawing = EFalse;
-  
+
   m_pBuffer = NULL;
 }
- 
+
 CRoadmapNativeCanvas::~CRoadmapNativeCanvas()
 {
   delete m_pDirectScreenAccess;
   delete m_pBitmap;
 //  delete m_pDSBitmap;
 }
- 
+
 void CRoadmapNativeCanvas::ConstructL()
 {
 //  m_pDSBitmap = CDirectScreenBitmap::NewL();
@@ -77,7 +77,7 @@ void CRoadmapNativeCanvas::ConstructL()
   m_pDirectScreenAccess = CDirectScreenAccess::NewL(m_WsSession, m_ScreenDevice, m_Window, *this);
   m_WsSession.Flush();
 }
- 
+
 int CRoadmapNativeCanvas::Start()
 {
   if( !m_bDrawing )
@@ -97,7 +97,7 @@ int CRoadmapNativeCanvas::Start()
     */
     m_pGc->SetClippingRegion(m_pRegion);
     m_bDrawing = ETrue;
-/*    
+/*
     // It may happen that a device does not support double buffering.
     TRect theRect(0, 0, m_pRegion->BoundingRect().Width(), m_pRegion->BoundingRect().Height());
     TRAPD(err2, m_pDSBitmap->Create(theRect, CDirectScreenBitmap::EDoubleBuffer));
@@ -108,10 +108,10 @@ int CRoadmapNativeCanvas::Start()
     }
 */
   }
-  
+
   return KErrNone;
 }
- 
+
 void CRoadmapNativeCanvas::Stop()
 {
   if(m_bDrawing)
@@ -129,7 +129,7 @@ void CRoadmapNativeCanvas::Restart(RDirectScreenAccess::TTerminationReasons /*aR
 {
   Start();
 }
- 
+
 void CRoadmapNativeCanvas::AbortNow(RDirectScreenAccess::TTerminationReasons /*aReason*/)
 {
   m_pDirectScreenAccess->Cancel();
@@ -139,10 +139,10 @@ void CRoadmapNativeCanvas::AbortNow(RDirectScreenAccess::TTerminationReasons /*a
 /*
 void CRoadmapNativeCanvas::BeginUpdate()
 {
-  // Obtain the screen address every time before drawing the frame, 
+  // Obtain the screen address every time before drawing the frame,
   // since the address always changes
   TAcceleratedBitmapInfo bitmapInfo;
-  m_pDSBitmap->BeginUpdate(bitmapInfo);        
+  m_pDSBitmap->BeginUpdate(bitmapInfo);
   m_pScreenAddress = bitmapInfo.iAddress;
 }
 
@@ -163,7 +163,7 @@ void CRoadmapNativeCanvas::UpdateScreen()
 }
 */
 
-void CRoadmapNativeCanvas::UpdateScreen() 
+void CRoadmapNativeCanvas::UpdateScreen()
 {
   //  We use the static char* buf from the agg implementation
 #ifndef _USING_USERSVR
@@ -185,13 +185,13 @@ void CRoadmapNativeCanvas::UpdateScreen()
       break;
     case EColor16MU:
     case EColor16MA:
-      memcpy(bmpAddr, m_pBuffer, m_BufSize); 
+      memcpy(bmpAddr, m_pBuffer, m_BufSize);
       break;
     default:
       break;
   }
   m_pBitmap->UnlockHeap();
-  
+
   m_pGc->BitBlt(TPoint(0,0), m_pBitmap);
   m_pDirectScreenAccess->ScreenDevice()->Update();
 #else
@@ -201,11 +201,11 @@ void CRoadmapNativeCanvas::UpdateScreen()
 
   TUint8* screenMemory = screenInfo.iScreenAddressValid ? (TUint8*) screenInfo.iScreenAddress + 32 : 0;
   User::LeaveIfNull(screenMemory);
-  
-  memcpy((void*)screenMemory, (const void*)m_pBuffer, m_BufSize);  //  32 to 8... say... huh?! what about alignment??? 
+
+  memcpy((void*)screenMemory, (const void*)m_pBuffer, m_BufSize);  //  32 to 8... say... huh?! what about alignment???
 
   CFbsScreenDevice* pMyScreenDev = NULL;
-  TRAPD( err, pMyScreenDev = CFbsScreenDevice::NewL(0 ,m_ScreenDevice.DisplayMode())); 
+  TRAPD( err, pMyScreenDev = CFbsScreenDevice::NewL(0 ,m_ScreenDevice.DisplayMode()));
   if ( err != KErrNone )
   {
     roadmap_log(ROADMAP_FATAL,"Could not create screen device!");

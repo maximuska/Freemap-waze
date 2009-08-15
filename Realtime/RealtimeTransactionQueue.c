@@ -35,7 +35,7 @@ void TransactionQueueItem_Release( LPTransactionQueueItem this)
       free( this->Packet);
       this->Packet = NULL;
    }
-   
+
    TransactionQueueItem_Init( this);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,7 +52,7 @@ BOOL TransactionQueue_IsEmpty( LPTransactionQueue this)
 { return (0 == this->size);}
 
 // Loose all items
-void  TransactionQueue_Clear( LPTransactionQueue this) 
+void  TransactionQueue_Clear( LPTransactionQueue this)
 {
    int i;
    for( i=0; i<this->size; i++)
@@ -65,11 +65,11 @@ void  TransactionQueue_Clear( LPTransactionQueue this)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL  TransactionQueue_Enqueue( LPTransactionQueue this, LPTransactionQueueItem pItem)
 {
-   if(!this                      || 
-      !pItem                     || 
-      !pItem->Packet             || 
+   if(!this                      ||
+      !pItem                     ||
+      !pItem->Packet             ||
       !pItem->Packet[0]          ||
-      !pItem->pCI                || 
+      !pItem->pCI                ||
       !pItem->pfnOnCompleted     ||
       !pItem->pfnOnDataReceived)
    {
@@ -82,9 +82,9 @@ BOOL  TransactionQueue_Enqueue( LPTransactionQueue this, LPTransactionQueueItem 
       roadmap_log( ROADMAP_ERROR, "TransactionQueue_Enqueue() - Queue is full");
       return FALSE;  // Queue is full
    }
-   
+
    this->Queue[this->size++] = *pItem;
-	return TRUE;
+    return TRUE;
 }
 
 BOOL  TransactionQueue_Dequeue( LPTransactionQueue this, LPTransactionQueueItem pItem)
@@ -97,7 +97,7 @@ BOOL  TransactionQueue_Dequeue( LPTransactionQueue this, LPTransactionQueueItem 
       roadmap_log( ROADMAP_ERROR, "TransactionQueue_Enqueue() - Invalid argument");
       return FALSE;  // Invalid argument
    }
-   
+
    TransactionQueueItem_Init( pItem);
 
    if( !this->size)
@@ -105,10 +105,10 @@ BOOL  TransactionQueue_Dequeue( LPTransactionQueue this, LPTransactionQueueItem 
       roadmap_log( ROADMAP_DEBUG, "TransactionQueue_Enqueue() - Queue is empty");
       return FALSE;
    }
-   
+
    (*pItem) = this->Queue[0];
    this->size--;
-   
+
    if( 0 == this->size)
       TransactionQueueItem_Init( &(this->Queue[0]));
    else
@@ -119,6 +119,6 @@ BOOL  TransactionQueue_Dequeue( LPTransactionQueue this, LPTransactionQueueItem 
       memmove( dest, src, count);
       TransactionQueueItem_Init( &(this->Queue[this->size]));
    }
-   
+
    return TRUE;
 }

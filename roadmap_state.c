@@ -67,7 +67,7 @@ void roadmap_state_add (const char *name, RoadMapStateFn state_fn) {
 
 
 RoadMapStateFn roadmap_state_find (const char *name) {
-   
+
    RoadMapState cursor;
 
    for (cursor = RoadMapStateList; cursor != NULL; cursor = cursor->next) {
@@ -82,7 +82,7 @@ RoadMapStateFn roadmap_state_find (const char *name) {
 
 
 void roadmap_state_refresh (void) {
-   
+
    int i;
 
    for (i = 0; i < ROADMAP_STATE_CLIENTS; ++i) {

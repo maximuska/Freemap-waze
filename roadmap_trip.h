@@ -39,7 +39,7 @@ void  roadmap_trip_set_mobile (const char *name,
 
 void roadmap_trip_set_gps_position (const char *name, const char*sprite, const char* image,
                               const RoadMapGpsPosition *gps_position);
-                              
+
 void  roadmap_trip_copy_focus (const char *name);
 
 void  roadmap_trip_set_selection_as (const char *name);

@@ -48,34 +48,34 @@ void roadmap_messagebox_cb(const char *title, const char *message,
          messagebox_closed on_messagebox_closed)
 {
    roadmap_messagebox( title, message);
-}         
+}
 
 static void kill_messagebox_timer (void) {
-	
-	if (MessageBoxCallback) {
-		roadmap_main_remove_periodic (MessageBoxCallback);
-		MessageBoxCallback = NULL;
-	}	
+
+    if (MessageBoxCallback) {
+        roadmap_main_remove_periodic (MessageBoxCallback);
+        MessageBoxCallback = NULL;
+    }
 }
 
 
 static void close_messagebox (void) {
 
-	kill_messagebox_timer ();
-	ssd_dialog_hide ("message_box", dec_ok);
+    kill_messagebox_timer ();
+    ssd_dialog_hide ("message_box", dec_ok);
 }
 
 
 static int button_callback (SsdWidget widget, const char *new_value) {
 
-	close_messagebox ();
+    close_messagebox ();
    return 0;
 }
 
 static void create_messagebox (void) {
 
    SsdWidget dialog;
-   
+
    dialog = ssd_dialog_new ("message_box", "", NULL,
          SSD_CONTAINER_BORDER|SSD_CONTAINER_TITLE|SSD_DIALOG_FLOAT|
          SSD_ALIGN_CENTER|SSD_ALIGN_VCENTER|SSD_ROUNDED_CORNERS);
@@ -94,9 +94,9 @@ static void create_messagebox (void) {
    ssd_widget_add (dialog,
       ssd_button_label ("confirm", roadmap_lang_get ("Ok"),
                         SSD_ALIGN_CENTER|SSD_START_NEW_ROW|SSD_WS_DEFWIDGET|
-                        SSD_WS_TABSTOP, 
+                        SSD_WS_TABSTOP,
                         button_callback));
-   
+
 }
 
 
@@ -114,16 +114,16 @@ void roadmap_messagebox (const char *title, const char *text) {
    dialog->set_value (dialog, title);
    ssd_widget_set_value (dialog, "text", text);
 
-	kill_messagebox_timer ();
+    kill_messagebox_timer ();
    ssd_dialog_draw ();
 }
 
 
 void roadmap_messagebox_timeout (const char *title, const char *text, int seconds) {
 
-	roadmap_messagebox (title, text);	
-	MessageBoxCallback = close_messagebox;
-	roadmap_main_set_periodic (seconds * 1000, close_messagebox);
+    roadmap_messagebox (title, text);
+    MessageBoxCallback = close_messagebox;
+    roadmap_main_set_periodic (seconds * 1000, close_messagebox);
 }
 
 

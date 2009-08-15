@@ -1,24 +1,24 @@
 /* FriBidi - Library of BiDi algorithm
  * Copyright (C) 1999,2000 Dov Grobgeld, and
- * Copyright (C) 2001,2002 Behdad Esfahbod. 
- * 
- * This library is free software; you can redistribute it and/or 
- * modify it under the terms of the GNU Lesser General Public 
- * License as published by the Free Software Foundation; either 
- * version 2.1 of the License, or (at your option) any later version. 
- * 
- * This library is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
- * Lesser General Public License for more details. 
- * 
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library, in a file named COPYING; if not, write to the 
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330, 
- * Boston, MA 02111-1307, USA  
- * 
- * For licensing issues, contact <dov@imagic.weizmann.ac.il> and 
- * <fwpg@sharif.edu>. 
+ * Copyright (C) 2001,2002 Behdad Esfahbod.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library, in a file named COPYING; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA
+ *
+ * For licensing issues, contact <dov@imagic.weizmann.ac.il> and
+ * <fwpg@sharif.edu>.
  */
 
 #include "fribidi_config.h"
@@ -35,7 +35,7 @@
 #define UNI_HAMZA 0x0621
 #define UNI_DAD 0x0636
 
-FriBidiChar fribidi_cp1256_to_unicode_tab[] = {	/* 0x80-0xFF */
+FriBidiChar fribidi_cp1256_to_unicode_tab[] = { /* 0x80-0xFF */
   0x20AC, 0x067E, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021,
   0x02C6, 0x2030, 0x0679, 0x2039, 0x0152, 0x0686, 0x0698, 0x0688,
   0x06AF, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014,
@@ -86,132 +86,132 @@ fribidi_unicode_to_cp1256_c (FriBidiChar uch)
     switch (uch)
       {
       case 0x0152:
-	return (char) 0x8c;
+    return (char) 0x8c;
       case 0x0153:
-	return (char) 0x9c;
+    return (char) 0x9c;
       case 0x0192:
-	return (char) 0x83;
+    return (char) 0x83;
       case 0x02C6:
-	return (char) 0x88;
+    return (char) 0x88;
       case 0x060C:
-	return (char) 0xA1;
+    return (char) 0xA1;
       case 0x061B:
-	return (char) 0xBA;
+    return (char) 0xBA;
       case 0x061F:
-	return (char) 0xBF;
+    return (char) 0xBF;
       case 0x0637:
-	return (char) 0xD8;
+    return (char) 0xD8;
       case 0x0638:
-	return (char) 0xD9;
+    return (char) 0xD9;
       case 0x0639:
-	return (char) 0xDA;
+    return (char) 0xDA;
       case 0x063A:
-	return (char) 0xDB;
+    return (char) 0xDB;
       case 0x0640:
-	return (char) 0xDC;
+    return (char) 0xDC;
       case 0x0641:
-	return (char) 0xDD;
+    return (char) 0xDD;
       case 0x0642:
-	return (char) 0xDE;
+    return (char) 0xDE;
       case 0x0643:
-	return (char) 0xDF;
+    return (char) 0xDF;
       case 0x0644:
-	return (char) 0xE1;
+    return (char) 0xE1;
       case 0x0645:
-	return (char) 0xE3;
+    return (char) 0xE3;
       case 0x0646:
-	return (char) 0xE4;
+    return (char) 0xE4;
       case 0x0647:
-	return (char) 0xE5;
+    return (char) 0xE5;
       case 0x0648:
-	return (char) 0xE6;
+    return (char) 0xE6;
       case 0x0649:
-	return (char) 0xEC;
+    return (char) 0xEC;
       case 0x064A:
-	return (char) 0xED;
+    return (char) 0xED;
       case 0x064B:
-	return (char) 0xF0;
+    return (char) 0xF0;
       case 0x064C:
-	return (char) 0xF1;
+    return (char) 0xF1;
       case 0x064D:
-	return (char) 0xF2;
+    return (char) 0xF2;
       case 0x064E:
-	return (char) 0xF3;
+    return (char) 0xF3;
       case 0x064F:
-	return (char) 0xF5;
+    return (char) 0xF5;
       case 0x0650:
-	return (char) 0xF6;
+    return (char) 0xF6;
       case 0x0651:
-	return (char) 0xF8;
+    return (char) 0xF8;
       case 0x0652:
-	return (char) 0xFA;
+    return (char) 0xFA;
       case 0x0679:
-	return (char) 0x8A;
+    return (char) 0x8A;
       case 0x067E:
-	return (char) 0x81;
+    return (char) 0x81;
       case 0x0686:
-	return (char) 0x8D;
+    return (char) 0x8D;
       case 0x0688:
-	return (char) 0x8F;
+    return (char) 0x8F;
       case 0x0691:
-	return (char) 0x9A;
+    return (char) 0x9A;
       case 0x0698:
-	return (char) 0x8E;
+    return (char) 0x8E;
       case 0x06A9:
-	return (char) 0x98;
+    return (char) 0x98;
       case 0x06AF:
-	return (char) 0x90;
+    return (char) 0x90;
       case 0x06BA:
-	return (char) 0x9F;
+    return (char) 0x9F;
       case 0x06BE:
-	return (char) 0xAA;
+    return (char) 0xAA;
       case 0x06C1:
-	return (char) 0xC0;
+    return (char) 0xC0;
       case 0x200C:
-	return (char) 0x9D;
+    return (char) 0x9D;
       case 0x200D:
-	return (char) 0x9E;
+    return (char) 0x9E;
       case 0x200E:
-	return (char) 0xFD;
+    return (char) 0xFD;
       case 0x200F:
-	return (char) 0xFE;
+    return (char) 0xFE;
       case 0x2013:
-	return (char) 0x96;
+    return (char) 0x96;
       case 0x2014:
-	return (char) 0x97;
+    return (char) 0x97;
       case 0x2018:
-	return (char) 0x91;
+    return (char) 0x91;
       case 0x2019:
-	return (char) 0x92;
+    return (char) 0x92;
       case 0x201A:
-	return (char) 0x82;
+    return (char) 0x82;
       case 0x201C:
-	return (char) 0x93;
+    return (char) 0x93;
       case 0x201D:
-	return (char) 0x94;
+    return (char) 0x94;
       case 0x201E:
-	return (char) 0x84;
+    return (char) 0x84;
       case 0x2020:
-	return (char) 0x86;
+    return (char) 0x86;
       case 0x2021:
-	return (char) 0x87;
+    return (char) 0x87;
       case 0x2022:
-	return (char) 0x95;
+    return (char) 0x95;
       case 0x2026:
-	return (char) 0x85;
+    return (char) 0x85;
       case 0x2030:
-	return (char) 0x89;
+    return (char) 0x89;
       case 0x2039:
-	return (char) 0x8B;
+    return (char) 0x8B;
       case 0x203A:
-	return (char) 0x9B;
+    return (char) 0x9B;
       case 0x20AC:
-	return (char) 0x80;
+    return (char) 0x80;
       case 0x2122:
-	return (char) 0x99;
+    return (char) 0x99;
 
       default:
-	return '¿';
+    return '¿';
       }
 }
 

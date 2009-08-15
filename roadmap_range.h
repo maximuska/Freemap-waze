@@ -39,9 +39,9 @@ int roadmap_range_get_street
        (int range);
 
 void roadmap_range_get_address
-		(int range,
-		 RoadMapStreetRange *left,
-		 RoadMapStreetRange *right);
+        (int range,
+         RoadMapStreetRange *left,
+         RoadMapStreetRange *right);
 
 
 

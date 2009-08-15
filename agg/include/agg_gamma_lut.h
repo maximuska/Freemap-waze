@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -30,9 +30,9 @@
 
 namespace agg
 {
-    template<class LoResT=int8u, 
-             class HiResT=int8u, 
-             unsigned GammaShift=8, 
+    template<class LoResT=int8u,
+             class HiResT=int8u,
+             unsigned GammaShift=8,
              unsigned HiResShift=8> class gamma_lut
     {
     public:
@@ -58,8 +58,8 @@ namespace agg
             pod_allocator<HiResT>::deallocate(m_dir_gamma, gamma_size);
         }
 
-        gamma_lut() : 
-            m_gamma(1.0), 
+        gamma_lut() :
+            m_gamma(1.0),
             m_dir_gamma(pod_allocator<HiResT>::allocate(gamma_size)),
             m_inv_gamma(pod_allocator<LoResT>::allocate(hi_res_size))
         {
@@ -76,14 +76,14 @@ namespace agg
         }
 
         gamma_lut(double g) :
-            m_gamma(1.0), 
+            m_gamma(1.0),
             m_dir_gamma(pod_allocator<HiResT>::allocate(gamma_size)),
             m_inv_gamma(pod_allocator<LoResT>::allocate(hi_res_size))
         {
             gamma(g);
         }
 
-        void gamma(double g) 
+        void gamma(double g)
         {
             m_gamma = g;
 
@@ -107,13 +107,13 @@ namespace agg
             return m_gamma;
         }
 
-        HiResT dir(LoResT v) const 
-        { 
-            return m_dir_gamma[unsigned(v)]; 
+        HiResT dir(LoResT v) const
+        {
+            return m_dir_gamma[unsigned(v)];
         }
 
-        LoResT inv(HiResT v) const 
-        { 
+        LoResT inv(HiResT v) const
+        {
             return m_inv_gamma[unsigned(v)];
         }
 

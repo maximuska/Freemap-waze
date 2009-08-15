@@ -40,25 +40,25 @@ const TUid KUidFreeMapApp = { _UID3 };
 * AVKON application framework for the FreeMap example application.
 */
 class CFreeMapApplication : public CAknApplication
-	{
-	public: // Functions from base classes
+    {
+    public: // Functions from base classes
 
-		/**
-		* From CApaApplication, AppDllUid.
-		* @return Application's UID (KUidFreeMapApp).
-		*/
-		TUid AppDllUid() const;
+        /**
+        * From CApaApplication, AppDllUid.
+        * @return Application's UID (KUidFreeMapApp).
+        */
+        TUid AppDllUid() const;
 
-	protected: // Functions from base classes
+    protected: // Functions from base classes
 
-		/**
-		* From CApaApplication, CreateDocumentL.
-		* Creates CFreeMapDocument document object. The returned
-		* pointer in not owned by the CFreeMapApplication object.
-		* @return A pointer to the created document object.
-		*/
-		CApaDocument* CreateDocumentL();
-	};
+        /**
+        * From CApaApplication, CreateDocumentL.
+        * Creates CFreeMapDocument document object. The returned
+        * pointer in not owned by the CFreeMapApplication object.
+        * @return A pointer to the created document object.
+        */
+        CApaDocument* CreateDocumentL();
+    };
 
 #endif // __FREEMAPAPPLICATION_H__
 

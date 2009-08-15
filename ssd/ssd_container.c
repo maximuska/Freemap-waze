@@ -66,43 +66,43 @@ static void init_containers (void) {
 
 static void draw (SsdWidget widget, RoadMapGuiRect *rect, int flags) {
 
-   
+
    RoadMapGuiPoint points[5];
    int count = 5;
    const char* background = widget->bg_color;
-   
+
    if (!(flags & SSD_GET_SIZE)) {
-      
+
 
       if (widget->in_focus)
          background = "#4791f3";
       else if (widget->background_focus)
          background = "#4791f3";
-      	   
+
       if (background) {
-      	if (widget->flags & SSD_ROUNDED_CORNERS){
-      		RoadMapGuiRect erase_rect;
-			erase_rect.minx = rect->minx + SSD_ROUNDED_CORNER_WIDTH;
-      		erase_rect.miny = rect->miny + SSD_ROUNDED_CORNER_HEIGHT;
-      		erase_rect.maxx = rect->maxx - SSD_ROUNDED_CORNER_WIDTH;
-      		erase_rect.maxy = rect->maxy - SSD_ROUNDED_CORNER_HEIGHT;
-      		
-      		roadmap_canvas_select_pen (bg);
-         	roadmap_canvas_set_foreground (background);
-         
-	        roadmap_canvas_erase_area (&erase_rect);
-      		
-  	  	 }
-  	  	 else{
-         	roadmap_canvas_select_pen (bg);
-         	roadmap_canvas_set_foreground (background);
-         
-         	roadmap_canvas_erase_area (rect);
-  	  	 }
+        if (widget->flags & SSD_ROUNDED_CORNERS){
+            RoadMapGuiRect erase_rect;
+            erase_rect.minx = rect->minx + SSD_ROUNDED_CORNER_WIDTH;
+            erase_rect.miny = rect->miny + SSD_ROUNDED_CORNER_HEIGHT;
+            erase_rect.maxx = rect->maxx - SSD_ROUNDED_CORNER_WIDTH;
+            erase_rect.maxy = rect->maxy - SSD_ROUNDED_CORNER_HEIGHT;
+
+            roadmap_canvas_select_pen (bg);
+            roadmap_canvas_set_foreground (background);
+
+            roadmap_canvas_erase_area (&erase_rect);
+
+         }
+         else{
+            roadmap_canvas_select_pen (bg);
+            roadmap_canvas_set_foreground (background);
+
+            roadmap_canvas_erase_area (rect);
+         }
       }
    }
 
-	if (widget->flags & SSD_CONTAINER_BORDER) {
+    if (widget->flags & SSD_CONTAINER_BORDER) {
 
       points[0].x = rect->minx + 1;
       points[0].y = rect->miny + 1;
@@ -121,71 +121,71 @@ static void draw (SsdWidget widget, RoadMapGuiRect *rect, int flags) {
          roadmap_canvas_select_pen (border);
          if (widget->fg_color) color = widget->fg_color;
          roadmap_canvas_set_foreground (color);
-		 if (widget->flags & SSD_ROUNDED_CORNERS){
-		 	int pointer_type = POINTER_NONE;
-		 	int header_type = HEADER_NONE;
-		 	
-		 	if (widget->flags & SSD_CONTAINER_TITLE)
-		 		header_type= HEADER_BLACK;
-		 	if (widget->flags & SSD_HEADER_GREEN)
-		 		header_type = HEADER_GREEN;
-			if (widget->flags & SSD_HEADER_GRAY)
-				header_type= HEADER_GRAY;
-		 	
-		 	
-		 	if (widget->flags & SSD_POINTER_MENU){
-		 		pointer_type = POINTER_MENU;
-		 		points[2].y -= 10;
-		 	}
-		 	
-		 	else if (widget->flags & SSD_POINTER_COMMENT){
-		 		pointer_type = POINTER_COMMNET;
-		 		points[2].y -= 7;
-		 	}
-		 	else if (widget->flags & SSD_POINTER_NONE){
-		 		pointer_type = POINTER_NONE;
-		 		points[2].y -= 10;
-		 	}
-		 	
-		 	if (widget->in_focus)
-         		background = "#4791f3";
-         	else if ((widget->flags & SSD_POINTER_COMMENT) | (widget->flags & SSD_POINTER_MENU) |  (widget->flags & SSD_POINTER_NONE))
-         		background = "#e4f1f9";
-         	else  
-         		background = "#f3f3f5"; 
-         	
-         	roadmap_display_border(STYLE_NORMAL, header_type, pointer_type, &points[2], &points[0], background, NULL);
-         		
+         if (widget->flags & SSD_ROUNDED_CORNERS){
+            int pointer_type = POINTER_NONE;
+            int header_type = HEADER_NONE;
 
-		 }
-		 else
-	        roadmap_canvas_draw_multiple_lines (1, &count, points, 0);
+            if (widget->flags & SSD_CONTAINER_TITLE)
+                header_type= HEADER_BLACK;
+            if (widget->flags & SSD_HEADER_GREEN)
+                header_type = HEADER_GREEN;
+            if (widget->flags & SSD_HEADER_GRAY)
+                header_type= HEADER_GRAY;
+
+
+            if (widget->flags & SSD_POINTER_MENU){
+                pointer_type = POINTER_MENU;
+                points[2].y -= 10;
+            }
+
+            else if (widget->flags & SSD_POINTER_COMMENT){
+                pointer_type = POINTER_COMMNET;
+                points[2].y -= 7;
+            }
+            else if (widget->flags & SSD_POINTER_NONE){
+                pointer_type = POINTER_NONE;
+                points[2].y -= 10;
+            }
+
+            if (widget->in_focus)
+                background = "#4791f3";
+            else if ((widget->flags & SSD_POINTER_COMMENT) | (widget->flags & SSD_POINTER_MENU) |  (widget->flags & SSD_POINTER_NONE))
+                background = "#e4f1f9";
+            else
+                background = "#f3f3f5";
+
+            roadmap_display_border(STYLE_NORMAL, header_type, pointer_type, &points[2], &points[0], background, NULL);
+
+
+         }
+         else
+            roadmap_canvas_draw_multiple_lines (1, &count, points, 0);
       }
 
-	  if (widget->flags & SSD_ROUNDED_CORNERS){
-		rect->minx += 10;
-		if ((widget->flags & SSD_CONTAINER_TITLE) || (widget->flags & SSD_POINTER_MENU) ||  (widget->flags & SSD_POINTER_NONE))
-      		rect->miny += 10;
-      	else
-      		rect->miny += 4;
-      	rect->maxx -= 10;
-      	rect->maxy -= 10;
-  	  }
-	  else{
-      	rect->minx += 2;
-      	rect->miny += 2;
-      	rect->maxx -= 2;
-      	rect->maxy -= 2;
-	  }
+      if (widget->flags & SSD_ROUNDED_CORNERS){
+        rect->minx += 10;
+        if ((widget->flags & SSD_CONTAINER_TITLE) || (widget->flags & SSD_POINTER_MENU) ||  (widget->flags & SSD_POINTER_NONE))
+            rect->miny += 10;
+        else
+            rect->miny += 4;
+        rect->maxx -= 10;
+        rect->maxy -= 10;
+      }
+      else{
+        rect->minx += 2;
+        rect->miny += 2;
+        rect->maxx -= 2;
+        rect->maxy -= 2;
+      }
 
    }
 
 
    if (widget->flags & SSD_CONTAINER_TITLE){
-   		ssd_widget_set_left_softkey_text(widget, widget->left_softkey);
-   		ssd_widget_set_right_softkey_text(widget, widget->right_softkey);
+        ssd_widget_set_left_softkey_text(widget, widget->left_softkey);
+        ssd_widget_set_right_softkey_text(widget, widget->right_softkey);
    }
-	   
+
    if ((flags & SSD_GET_CONTAINER_SIZE) &&
        (widget->flags & SSD_CONTAINER_TITLE)) {
       SsdWidget title;
@@ -193,15 +193,15 @@ static void draw (SsdWidget widget, RoadMapGuiRect *rect, int flags) {
       title = ssd_widget_get (widget, "title_bar");
 
       if (title) {
-         SsdSize title_size; 
+         SsdSize title_size;
          SsdSize max_size;
          max_size.width = rect->maxx - rect->minx + 1;
          max_size.height = rect->maxy - rect->miny + 1;
-         
+
          ssd_widget_get_size (title, &title_size, &max_size);
          rect->miny += title_size.height;
       }
-     
+
    }
 }
 
@@ -223,32 +223,32 @@ static int short_click (SsdWidget widget, const RoadMapGuiPoint *point) {
 
 static void add_title (SsdWidget w, int flags) {
    SsdWidget title, text;
-	int rt_soft_key_flag;
-	int lf_soft_key_flag;
+    int rt_soft_key_flag;
+    int lf_soft_key_flag;
 #ifdef TOUCH_SCREEN2
-		const char *close_icon[] = {"rm_quit"};
+        const char *close_icon[] = {"rm_quit"};
 #endif
-	
-	if (ssd_widget_rtl (NULL)) {
-		rt_soft_key_flag = SSD_END_ROW;
-		lf_soft_key_flag = SSD_ALIGN_RIGHT;
-	}
-	else{
-		rt_soft_key_flag = SSD_ALIGN_RIGHT;
-		lf_soft_key_flag = SSD_END_ROW;
-	}
-	
+
+    if (ssd_widget_rtl (NULL)) {
+        rt_soft_key_flag = SSD_END_ROW;
+        lf_soft_key_flag = SSD_ALIGN_RIGHT;
+    }
+    else{
+        rt_soft_key_flag = SSD_ALIGN_RIGHT;
+        lf_soft_key_flag = SSD_END_ROW;
+    }
+
    title = ssd_container_new ("title_bar", NULL, SSD_MAX_SIZE, 22 ,
                               SSD_END_ROW);
-  
+
    ssd_widget_set_color (title, "#000000", "#ff0000000");
 
    text = ssd_text_new ("title_text", "" , 16, SSD_WIDGET_SPACE|SSD_ALIGN_VCENTER|SSD_ALIGN_CENTER);
-   
+
    if ((w->flags & SSD_ROUNDED_CORNERS) && (!(w->flags & SSD_POINTER_MENU)))
-   	ssd_widget_set_color (text, "#ffffff", "#ff0000000");
+    ssd_widget_set_color (text, "#ffffff", "#ff0000000");
    ssd_widget_add (title,text);
-   
+
 
    ssd_widget_add (w, title);
 }
@@ -270,7 +270,7 @@ static const char *get_value (SsdWidget widget) {
 }
 
 static BOOL ssd_container_on_key_pressed( SsdWidget   widget,
-                                          const char* utf8char, 
+                                          const char* utf8char,
                                           uint32_t      flags)
 {
    if( KEY_IS_ENTER && widget->callback)
@@ -289,7 +289,7 @@ int on_pointer_down( SsdWidget this, const RoadMapGuiPoint *point)
 
    if( !this->in_focus)
       ssd_dialog_set_focus( this);
-   
+
    return 1;
 }
 
@@ -301,10 +301,10 @@ SsdWidget ssd_container_new (const char *name, const char *title,
    if (!initialized) {
       init_containers();
    }
-   
+
    w = ssd_widget_new (name, ssd_container_on_key_pressed, flags);
 
-   w->_typeid = "Container"; 
+   w->_typeid = "Container";
 
    w->flags = flags;
 
@@ -319,16 +319,16 @@ SsdWidget ssd_container_new (const char *name, const char *title,
 
    w->fg_color = default_fg;
    w->bg_color = default_bg;
-   
+
    w->pointer_down = on_pointer_down;
 
    if (flags & SSD_CONTAINER_TITLE) {
        add_title (w, flags);
    }
-   
+
    if ((flags & SSD_CONTAINER_TITLE) || flags & (flags &SSD_DIALOG_FLOAT)){
-   	   ssd_widget_set_right_softkey_text(w, roadmap_lang_get("Back_key"));
-   	   ssd_widget_set_left_softkey_text(w, roadmap_lang_get("Exit_key"));
+       ssd_widget_set_right_softkey_text(w, roadmap_lang_get("Back_key"));
+       ssd_widget_set_left_softkey_text(w, roadmap_lang_get("Exit_key"));
    }
 
    set_value (w, title);
@@ -337,7 +337,7 @@ SsdWidget ssd_container_new (const char *name, const char *title,
 }
 
 void ssd_container_get_zero_offset(
-                     SsdWidget         this, 
+                     SsdWidget         this,
                      int*              zero_offset_x,
                      int*              zero_offset_y)
 {
@@ -347,7 +347,7 @@ void ssd_container_get_zero_offset(
    assert(this);
    assert(zero_offset_x);
    assert(zero_offset_y);
-   
+
    org_rect.minx = this->position.x;
    org_rect.miny = this->position.y;
    org_rect.maxx = org_rect.minx + this->size.width;
@@ -355,13 +355,13 @@ void ssd_container_get_zero_offset(
    dra_rect      = org_rect;
 
    draw( this, &dra_rect, SSD_GET_SIZE);
-   
+
    (*zero_offset_x) = dra_rect.minx - org_rect.minx;
    (*zero_offset_y) = dra_rect.miny - org_rect.miny;
 }
-                     
+
 void ssd_container_get_visible_dimentions(
-                     SsdWidget         this, 
+                     SsdWidget         this,
                      RoadMapGuiPoint*  position,
                      SsdSize*          size)
 {
@@ -371,7 +371,7 @@ void ssd_container_get_visible_dimentions(
 
    (*position) = this->position;
    (*size)     = this->size;
-   
+
    if( SSD_ROUNDED_CORNERS & this->flags)
    {
       position->x += 3;
@@ -379,7 +379,7 @@ void ssd_container_get_visible_dimentions(
 
       size->width -= (3 + 3);
       size->height-= (4 + 3);
-      
+
      if( (SSD_POINTER_MENU|SSD_POINTER_NONE) & this->flags)
          size->height -= 11;
    }

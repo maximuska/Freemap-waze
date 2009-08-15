@@ -27,7 +27,7 @@
 
 void        roadmap_phone_keyboard_init();
 void        roadmap_phone_keyboard_term();
-const char* roadmap_phone_keyboard_get_multiple_key_value( 
+const char* roadmap_phone_keyboard_get_multiple_key_value(
                      void*       caller,
                      const char* key_pressed,
                      uint16_t    input_type,

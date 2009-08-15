@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -50,7 +50,7 @@ namespace agg
     //
     //------------------------------------------------------------------------------
 
-    static const unsigned crc32tab[256] = 
+    static const unsigned crc32tab[256] =
     {
        0x00000000, 0x77073096, 0xee0e612c, 0x990951ba,
        0x076dc419, 0x706af48f, 0xe963a535, 0x9e6495a3,
@@ -123,10 +123,10 @@ namespace agg
     {
         unsigned crc = (unsigned)~0;
         const unsigned char* p;
-        unsigned len = 0; 
+        unsigned len = 0;
         unsigned nr = size;
 
-        for (len += nr, p = buf; nr--; ++p) 
+        for (len += nr, p = buf; nr--; ++p)
         {
             crc = (crc >> 8) ^ crc32tab[(crc ^ *p) & 0xff];
         }
@@ -180,7 +180,7 @@ namespace agg
 
     //------------------------------------------------------------------------
     template<class Scanline, class ScanlineStorage>
-    void decompose_win32_glyph_bitmap_mono(const char* gbuf, 
+    void decompose_win32_glyph_bitmap_mono(const char* gbuf,
                                            int w, int h,
                                            int x, int y,
                                            bool flip_y,
@@ -221,7 +221,7 @@ namespace agg
 
     //------------------------------------------------------------------------
     template<class Rasterizer, class Scanline, class ScanlineStorage>
-    void decompose_win32_glyph_bitmap_gray8(const char* gbuf, 
+    void decompose_win32_glyph_bitmap_gray8(const char* gbuf,
                                             int w, int h,
                                             int x, int y,
                                             bool flip_y,
@@ -246,7 +246,7 @@ namespace agg
             const int8u* p = buf;
             for(j = 0; j < w; j++)
             {
-                if(*p) 
+                if(*p)
                 {
                     unsigned v = *p;
                     if(v == 64) v = 255;
@@ -270,7 +270,7 @@ namespace agg
     template<class PathStorage>
     bool decompose_win32_glyph_outline(const char* gbuf,
                                        unsigned total_size,
-                                       bool flip_y, 
+                                       bool flip_y,
                                        const trans_affine& mtx,
                                        PathStorage& path)
     {
@@ -278,11 +278,11 @@ namespace agg
         const char* end_glyph = gbuf + total_size;
         double x, y;
         typedef typename PathStorage::value_type value_type;
-        
+
         while(cur_glyph < end_glyph)
         {
             const TTPOLYGONHEADER* th = (TTPOLYGONHEADER*)cur_glyph;
-            
+
             const char* end_poly = cur_glyph + th->cb;
             const char* cur_poly = cur_glyph + sizeof(TTPOLYGONHEADER);
 
@@ -290,13 +290,13 @@ namespace agg
             y = fx_to_dbl(th->pfxStart.y);
             if(flip_y) y = -y;
             mtx.transform(&x, &y);
-            path.move_to(value_type(dbl_to_int26p6(x)), 
+            path.move_to(value_type(dbl_to_int26p6(x)),
                          value_type(dbl_to_int26p6(y)));
 
             while(cur_poly < end_poly)
             {
                 const TTPOLYCURVE* pc = (const TTPOLYCURVE*)cur_poly;
-                
+
                 if (pc->wType == TT_PRIM_LINE)
                 {
                     int i;
@@ -306,11 +306,11 @@ namespace agg
                         y = fx_to_dbl(pc->apfx[i].y);
                         if(flip_y) y = -y;
                         mtx.transform(&x, &y);
-                        path.line_to(value_type(dbl_to_int26p6(x)), 
+                        path.line_to(value_type(dbl_to_int26p6(x)),
                                      value_type(dbl_to_int26p6(y)));
                     }
                 }
-                
+
                 if (pc->wType == TT_PRIM_QSPLINE)
                 {
                     int u;
@@ -318,14 +318,14 @@ namespace agg
                     {
                         POINTFX pnt_b = pc->apfx[u];    // B is always the current point
                         POINTFX pnt_c = pc->apfx[u+1];
-                        
+
                         if (u < pc->cpfx - 2)           // If not on last spline, compute C
                         {
                             // midpoint (x,y)
                             *(int*)&pnt_c.x = (*(int*)&pnt_b.x + *(int*)&pnt_c.x) / 2;
                             *(int*)&pnt_c.y = (*(int*)&pnt_b.y + *(int*)&pnt_c.y) / 2;
                         }
-                        
+
                         double x2, y2;
                         x  = fx_to_dbl(pnt_b.x);
                         y  = fx_to_dbl(pnt_b.y);
@@ -334,9 +334,9 @@ namespace agg
                         if(flip_y) { y = -y; y2 = -y2; }
                         mtx.transform(&x,  &y);
                         mtx.transform(&x2, &y2);
-                        path.curve3(value_type(dbl_to_int26p6(x)), 
+                        path.curve3(value_type(dbl_to_int26p6(x)),
                                     value_type(dbl_to_int26p6(y)),
-                                    value_type(dbl_to_int26p6(x2)), 
+                                    value_type(dbl_to_int26p6(x2)),
                                     value_type(dbl_to_int26p6(y2)));
                     }
                 }
@@ -371,8 +371,8 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    font_engine_win32_tt_base::font_engine_win32_tt_base(bool flag32, 
-                                                         HDC dc, 
+    font_engine_win32_tt_base::font_engine_win32_tt_base(bool flag32,
+                                                         HDC dc,
                                                          unsigned max_fonts) :
         m_flag32(flag32),
         m_dc(dc),
@@ -440,7 +440,7 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
-    bool font_engine_win32_tt_base::create_font(const char* typeface_, 
+    bool font_engine_win32_tt_base::create_font(const char* typeface_,
                                                 glyph_rendering ren_type)
     {
         if(m_dc)
@@ -499,11 +499,11 @@ namespace agg
                         delete [] m_font_names[0];
                         if(m_old_font) ::SelectObject(m_dc, m_old_font);
                         ::DeleteObject(m_fonts[0]);
-                        memcpy(m_fonts, 
-                               m_fonts + 1, 
+                        memcpy(m_fonts,
+                               m_fonts + 1,
                                (m_max_fonts - 1) * sizeof(HFONT));
-                        memcpy(m_font_names, 
-                               m_font_names + 1, 
+                        memcpy(m_font_names,
+                               m_font_names + 1,
                                (m_max_fonts - 1) * sizeof(char*));
                         m_num_fonts = m_max_fonts - 1;
                     }
@@ -527,7 +527,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    bool font_engine_win32_tt_base::create_font(const char* typeface_, 
+    bool font_engine_win32_tt_base::create_font(const char* typeface_,
                                                 glyph_rendering ren_type,
                                                 double height_,
                                                 double width_,
@@ -556,7 +556,7 @@ namespace agg
         {
             unsigned gamma_hash = 0;
             if(m_glyph_rendering == glyph_ren_native_gray8 ||
-               m_glyph_rendering == glyph_ren_agg_mono || 
+               m_glyph_rendering == glyph_ren_agg_mono ||
                m_glyph_rendering == glyph_ren_agg_gray8)
             {
                 unsigned char gamma_table[rasterizer_scanline_aa<>::aa_scale];
@@ -567,9 +567,9 @@ namespace agg
                 }
                 gamma_hash = calc_crc32(gamma_table, sizeof(gamma_table));
             }
-      
-            sprintf(m_signature, 
-                    "%s,%u,%d,%d:%dx%d,%d,%d,%d,%d,%d,%08X", 
+
+            sprintf(m_signature,
+                    "%s,%u,%d,%d:%dx%d,%d,%d,%d,%d,%d,%08X",
                     m_typeface,
                     m_char_set,
                     int(m_glyph_rendering),
@@ -590,12 +590,12 @@ namespace agg
                 double mtx[6];
                 char buf[100];
                 m_affine.store_to(mtx);
-                sprintf(buf, ",%08X%08X%08X%08X%08X%08X", 
-                    dbl_to_plain_fx(mtx[0]), 
-                    dbl_to_plain_fx(mtx[1]), 
-                    dbl_to_plain_fx(mtx[2]), 
-                    dbl_to_plain_fx(mtx[3]), 
-                    dbl_to_plain_fx(mtx[4]), 
+                sprintf(buf, ",%08X%08X%08X%08X%08X%08X",
+                    dbl_to_plain_fx(mtx[0]),
+                    dbl_to_plain_fx(mtx[1]),
+                    dbl_to_plain_fx(mtx[2]),
+                    dbl_to_plain_fx(mtx[3]),
+                    dbl_to_plain_fx(mtx[4]),
                     dbl_to_plain_fx(mtx[5]));
                 strcat(m_signature, buf);
             }
@@ -614,7 +614,7 @@ namespace agg
 
             switch(m_glyph_rendering)
             {
-            case glyph_ren_native_gray8: 
+            case glyph_ren_native_gray8:
                 format = GGO_GRAY8_BITMAP;
                 break;
 
@@ -629,7 +629,7 @@ namespace agg
 #define GGO_UNHINTED 0x0100
 #endif
             if(!m_hinting) format |= GGO_UNHINTED;
-        
+
             GLYPHMETRICS gm;
             int total_size = GetGlyphOutlineX(m_dc,
                                               glyph_code,
@@ -639,7 +639,7 @@ namespace agg
                                               (void*)m_gbuf,
                                               &m_matrix);
 
-            if(total_size < 0) 
+            if(total_size < 0)
             {
                 // GetGlyphOutline() fails when being called for
                 // GGO_GRAY8_BITMAP and white space (stupid Microsoft).
@@ -665,12 +665,12 @@ namespace agg
 
             switch(m_glyph_rendering)
             {
-            case glyph_ren_native_mono: 
-                decompose_win32_glyph_bitmap_mono(m_gbuf, 
+            case glyph_ren_native_mono:
+                decompose_win32_glyph_bitmap_mono(m_gbuf,
                                                   gm.gmBlackBoxX,
                                                   gm.gmBlackBoxY,
                                                   gm.gmptGlyphOrigin.x,
-                                                  m_flip_y ? -gm.gmptGlyphOrigin.y : 
+                                                  m_flip_y ? -gm.gmptGlyphOrigin.y :
                                                               gm.gmptGlyphOrigin.y,
                                                   m_flip_y,
                                                   m_scanline_bin,
@@ -679,16 +679,16 @@ namespace agg
                 m_bounds.y1 = m_scanlines_bin.min_y();
                 m_bounds.x2 = m_scanlines_bin.max_x() + 1;
                 m_bounds.y2 = m_scanlines_bin.max_y() + 1;
-                m_data_size = m_scanlines_bin.byte_size(); 
+                m_data_size = m_scanlines_bin.byte_size();
                 m_data_type = glyph_data_mono;
                 return true;
 
             case glyph_ren_native_gray8:
-                decompose_win32_glyph_bitmap_gray8(m_gbuf, 
+                decompose_win32_glyph_bitmap_gray8(m_gbuf,
                                                    gm.gmBlackBoxX,
                                                    gm.gmBlackBoxY,
                                                    gm.gmptGlyphOrigin.x,
-                                                   m_flip_y ? -gm.gmptGlyphOrigin.y : 
+                                                   m_flip_y ? -gm.gmptGlyphOrigin.y :
                                                                gm.gmptGlyphOrigin.y,
                                                    m_flip_y,
                                                    m_rasterizer,
@@ -698,7 +698,7 @@ namespace agg
                 m_bounds.y1 = m_scanlines_aa.min_y();
                 m_bounds.x2 = m_scanlines_aa.max_x() + 1;
                 m_bounds.y2 = m_scanlines_aa.max_y() + 1;
-                m_data_size = m_scanlines_aa.byte_size(); 
+                m_data_size = m_scanlines_aa.byte_size();
                 m_data_type = glyph_data_gray8;
                 return true;
 
@@ -709,7 +709,7 @@ namespace agg
                     m_path32.remove_all();
                     if(decompose_win32_glyph_outline(m_gbuf,
                                                      total_size,
-                                                     m_flip_y, 
+                                                     m_flip_y,
                                                      m_affine,
                                                      m_path32))
                     {
@@ -728,7 +728,7 @@ namespace agg
                     m_path16.remove_all();
                     if(decompose_win32_glyph_outline(m_gbuf,
                                                      total_size,
-                                                     m_flip_y, 
+                                                     m_flip_y,
                                                      m_affine,
                                                      m_path16))
                     {
@@ -752,7 +752,7 @@ namespace agg
                     m_path32.remove_all();
                     decompose_win32_glyph_outline(m_gbuf,
                                                   total_size,
-                                                  m_flip_y, 
+                                                  m_flip_y,
                                                   m_affine,
                                                   m_path32);
                     m_rasterizer.add_path(m_curves32);
@@ -762,18 +762,18 @@ namespace agg
                     m_path16.remove_all();
                     decompose_win32_glyph_outline(m_gbuf,
                                                   total_size,
-                                                  m_flip_y, 
+                                                  m_flip_y,
                                                   m_affine,
                                                   m_path16);
                     m_rasterizer.add_path(m_curves16);
                 }
-                m_scanlines_bin.prepare(); // Remove all 
+                m_scanlines_bin.prepare(); // Remove all
                 render_scanlines(m_rasterizer, m_scanline_bin, m_scanlines_bin);
                 m_bounds.x1 = m_scanlines_bin.min_x();
                 m_bounds.y1 = m_scanlines_bin.min_y();
                 m_bounds.x2 = m_scanlines_bin.max_x() + 1;
                 m_bounds.y2 = m_scanlines_bin.max_y() + 1;
-                m_data_size = m_scanlines_bin.byte_size(); 
+                m_data_size = m_scanlines_bin.byte_size();
                 m_data_type = glyph_data_mono;
                 return true;
 
@@ -785,7 +785,7 @@ namespace agg
                     m_path32.remove_all();
                     decompose_win32_glyph_outline(m_gbuf,
                                                   total_size,
-                                                  m_flip_y, 
+                                                  m_flip_y,
                                                   m_affine,
                                                   m_path32);
                     m_rasterizer.add_path(m_curves32);
@@ -795,18 +795,18 @@ namespace agg
                     m_path16.remove_all();
                     decompose_win32_glyph_outline(m_gbuf,
                                                   total_size,
-                                                  m_flip_y, 
+                                                  m_flip_y,
                                                   m_affine,
                                                   m_path16);
                     m_rasterizer.add_path(m_curves16);
                 }
-                m_scanlines_aa.prepare(); // Remove all 
+                m_scanlines_aa.prepare(); // Remove all
                 render_scanlines(m_rasterizer, m_scanline_aa, m_scanlines_aa);
                 m_bounds.x1 = m_scanlines_aa.min_x();
                 m_bounds.y1 = m_scanlines_aa.min_y();
                 m_bounds.x2 = m_scanlines_aa.max_x() + 1;
                 m_bounds.y2 = m_scanlines_aa.max_y() + 1;
-                m_data_size = m_scanlines_aa.byte_size(); 
+                m_data_size = m_scanlines_aa.byte_size();
                 m_data_type = glyph_data_gray8;
                 return true;
             }
@@ -868,7 +868,7 @@ namespace agg
                 m_kerning_pairs = new KERNINGPAIR [16384-16];
                 m_max_kerning_pairs = 16384-16;
             }
-            m_num_kerning_pairs = ::GetKerningPairs(m_dc, 
+            m_num_kerning_pairs = ::GetKerningPairs(m_dc,
                                                     m_max_kerning_pairs,
                                                     m_kerning_pairs);
 

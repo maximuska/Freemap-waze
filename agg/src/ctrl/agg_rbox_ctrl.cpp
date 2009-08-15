@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -27,9 +27,9 @@
 
 namespace agg
 {
-  
+
     //------------------------------------------------------------------------
-    rbox_ctrl_impl::rbox_ctrl_impl(double x1, double y1, 
+    rbox_ctrl_impl::rbox_ctrl_impl(double x1, double y1,
                                    double x2, double y2, bool flip_y) :
         ctrl(x1, y1, x2, y2, flip_y),
         m_border_width(1.0),
@@ -72,18 +72,18 @@ namespace agg
 
     //------------------------------------------------------------------------
     void rbox_ctrl_impl::border_width(double t, double extra)
-    { 
-        m_border_width = t; 
+    {
+        m_border_width = t;
         m_border_extra = extra;
-        calc_rbox(); 
+        calc_rbox();
     }
 
 
     //------------------------------------------------------------------------
-    void rbox_ctrl_impl::text_size(double h, double w) 
-    { 
-        m_text_width = w; 
-        m_text_height = h; 
+    void rbox_ctrl_impl::text_size(double h, double w)
+    {
+        m_text_width = w;
+        m_text_height = h;
     }
 
 
@@ -101,34 +101,34 @@ namespace agg
 
         case 0:                 // Background
             m_vertex = 0;
-            m_vx[0] = m_x1 - m_border_extra; 
+            m_vx[0] = m_x1 - m_border_extra;
             m_vy[0] = m_y1 - m_border_extra;
-            m_vx[1] = m_x2 + m_border_extra; 
+            m_vx[1] = m_x2 + m_border_extra;
             m_vy[1] = m_y1 - m_border_extra;
-            m_vx[2] = m_x2 + m_border_extra; 
+            m_vx[2] = m_x2 + m_border_extra;
             m_vy[2] = m_y2 + m_border_extra;
-            m_vx[3] = m_x1 - m_border_extra; 
+            m_vx[3] = m_x1 - m_border_extra;
             m_vy[3] = m_y2 + m_border_extra;
             break;
 
         case 1:                 // Border
             m_vertex = 0;
-            m_vx[0] = m_x1; 
+            m_vx[0] = m_x1;
             m_vy[0] = m_y1;
-            m_vx[1] = m_x2; 
+            m_vx[1] = m_x2;
             m_vy[1] = m_y1;
-            m_vx[2] = m_x2; 
+            m_vx[2] = m_x2;
             m_vy[2] = m_y2;
-            m_vx[3] = m_x1; 
+            m_vx[3] = m_x1;
             m_vy[3] = m_y2;
-            m_vx[4] = m_x1 + m_border_width; 
-            m_vy[4] = m_y1 + m_border_width; 
-            m_vx[5] = m_x1 + m_border_width; 
-            m_vy[5] = m_y2 - m_border_width; 
-            m_vx[6] = m_x2 - m_border_width; 
-            m_vy[6] = m_y2 - m_border_width; 
-            m_vx[7] = m_x2 - m_border_width; 
-            m_vy[7] = m_y1 + m_border_width; 
+            m_vx[4] = m_x1 + m_border_width;
+            m_vy[4] = m_y1 + m_border_width;
+            m_vx[5] = m_x1 + m_border_width;
+            m_vy[5] = m_y2 - m_border_width;
+            m_vx[6] = m_x2 - m_border_width;
+            m_vy[6] = m_y2 - m_border_width;
+            m_vx[7] = m_x2 - m_border_width;
+            m_vy[7] = m_y1 + m_border_width;
             break;
 
         case 2:                 // Text
@@ -142,9 +142,9 @@ namespace agg
             break;
 
         case 3:                 // Inactive items
-            m_ellipse.init(m_xs1 + m_dy / 1.3, 
+            m_ellipse.init(m_xs1 + m_dy / 1.3,
                            m_ys1 + m_dy / 1.3,
-                           m_text_height / 1.5, 
+                           m_text_height / 1.5,
                            m_text_height / 1.5, 32);
             m_ellipse_poly.width(m_text_thickness);
             m_ellipse_poly.rewind(0);
@@ -154,9 +154,9 @@ namespace agg
         case 4:                 // Active Item
             if(m_cur_item >= 0)
             {
-                m_ellipse.init(m_xs1 + m_dy / 1.3, 
+                m_ellipse.init(m_xs1 + m_dy / 1.3,
                                m_ys1 + m_dy * m_cur_item + m_dy / 1.3,
-                               m_text_height / 2.0, 
+                               m_text_height / 2.0,
                                m_text_height / 2.0, 32);
                 m_ellipse.rewind(0);
             }
@@ -200,7 +200,7 @@ namespace agg
                 else
                 {
                     m_text.text(&m_items[m_draw_item][0]);
-                    m_text.start_point(m_xs1 + m_dy * 1.5, 
+                    m_text.start_point(m_xs1 + m_dy * 1.5,
                                        m_ys1 + m_dy * (m_draw_item + 1) - m_dy / 2.0);
 
                     m_text_poly.rewind(0);
@@ -220,9 +220,9 @@ namespace agg
                 }
                 else
                 {
-                    m_ellipse.init(m_xs1 + m_dy / 1.3, 
+                    m_ellipse.init(m_xs1 + m_dy / 1.3,
                                    m_ys1 + m_dy * m_draw_item + m_dy / 1.3,
-                                   m_text_height / 1.5, 
+                                   m_text_height / 1.5,
                                    m_text_height / 1.5, 32);
                     m_ellipse_poly.rewind(0);
                     cmd = m_ellipse_poly.vertex(x, y);
@@ -270,7 +270,7 @@ namespace agg
     {
         inverse_transform_xy(&x, &y);
         unsigned i;
-        for(i = 0; i < m_num_items; i++)  
+        for(i = 0; i < m_num_items; i++)
         {
             double xp = m_xs1 + m_dy / 1.3;
             double yp = m_ys1 + m_dy * i + m_dy / 1.3;
@@ -301,7 +301,7 @@ namespace agg
     {
         if(m_cur_item >= 0)
         {
-            if(up || right) 
+            if(up || right)
             {
                 m_cur_item++;
                 if(m_cur_item >= int(m_num_items))
@@ -311,7 +311,7 @@ namespace agg
                 return true;
             }
 
-            if(down || left) 
+            if(down || left)
             {
                 m_cur_item--;
                 if(m_cur_item < 0)

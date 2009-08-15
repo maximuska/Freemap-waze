@@ -19,8 +19,8 @@
  */
 
 
-#ifndef	__ASYNCTASK_H__
-#define	__ASYNCTASK_H__
+#ifndef __ASYNCTASK_H__
+#define __ASYNCTASK_H__
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -41,10 +41,10 @@ typedef struct tagThreadInfo
    HWND     m_hWnd;
    HANDLE   m_eventPleaseQuit;
    HANDLE   m_eventNewTask;
-   
+
    virtual void HandleNewTask()  = 0;
    virtual void FlushQueue()     = 0;
- 
+
 }  ThreadInfo, *LPThreadInfo;
 
 template <class DataType, int TASK_QUEUE_SIZE>
@@ -65,48 +65,48 @@ public:
 private:
    CASyncTaskMgr( const CASyncTaskMgr&){}
    CASyncTaskMgr& operator=( const CASyncTaskMgr&){ return *this;}
-   
+
 public:
    CASyncTaskMgr()
    { ::InitializeCriticalSection( &m_cs);}
-   
+
    ~CASyncTaskMgr()
-   { 
+   {
       Destroy( true /* bCalledFromDestructor */);
       ::DeleteCriticalSection( &m_cs);
    }
-   
+
    void Init()
    {
       for( int i=0; i<TASK_QUEUE_SIZE; i++)
          InitializeData( m_Queue[i]);
    }
-   
+
    void HandleNewTask()
    { FlushQueue();}
-   
+
    virtual void FlushQueue()
-   {         
+   {
       DataType data;
       do
       {
          if( FAILED( Pop( data)))
             return;
-            
+
          HandleTask( data);
-      
+
       }  while( 1);
    }
-   
+
    HRESULT Create()
    {
       DWORD dw;
-      
+
       if( m_hThread || m_eventPleaseQuit || m_eventNewTask)
          return E_ACCESSDENIED;
-      
+
       Init();
-         
+
       try
       {
          m_eventPleaseQuit = ::CreateEvent( NULL, TRUE, FALSE, NULL);
@@ -116,7 +116,7 @@ public:
          m_eventNewTask = ::CreateEvent( NULL, FALSE, FALSE, NULL);
          if( !m_eventNewTask)
             throw E_FAIL;
-         
+
          m_hThread = ::CreateThread( NULL, 0, ASyncTaskThread, static_cast<LPThreadInfo>(this), 0, &dw);
          if( !m_hThread)
             throw E_FAIL;
@@ -126,30 +126,30 @@ public:
          Destroy();
          return hrErr;
       }
-     
+
       return S_OK;
    }
-   
+
    void Destroy( bool bCalledFromDestructor = false)
    {
       BOOL gracefull_shutdown = TRUE;
-   
+
       if( m_hThread)
       {
          if( m_eventPleaseQuit)
             ::SetEvent( m_eventPleaseQuit);
-            
+
          if( WAIT_OBJECT_0 != ::WaitForSingleObject( m_hThread, 3000))
          {
             assert(0);
             ::TerminateThread( m_hThread, -1);
             gracefull_shutdown = FALSE;
          }
-         
+
          ::CloseHandle( m_hThread);
          m_hThread = NULL;
       }
-      
+
 #ifdef   EMPTY_QUEUE_ON_EXIT
       if( !bCalledFromDestructor && gracefull_shutdown)
          FlushQueue();
@@ -170,7 +170,7 @@ public:
 
    HRESULT  QueueNewTaskRequest( DataType& rData)
    { return Push( rData);}
-   
+
    inline   void SetWindow( HWND hWnd)
    { m_hWnd = hWnd;}
 
@@ -178,7 +178,7 @@ protected:
    HRESULT Push( const DataType& rCI)
    {
       int i;
-      
+
       if( !DataIsValid( rCI))
          return E_INVALIDARG;
 
@@ -195,20 +195,20 @@ protected:
          }
       }
       ::LeaveCriticalSection( &m_cs);
-      
+
       if( i<TASK_QUEUE_SIZE)
       {
          ::SetEvent( m_eventNewTask);
          return S_OK;
       }
-      
+
       return E_OUTOFMEMORY;
    }
-   
+
    HRESULT Pop( DataType& rCI)
    {
       BOOL  bFound = FALSE;
-      
+
       InitializeData( rCI);
 
       ::EnterCriticalSection( &m_cs);
@@ -224,7 +224,7 @@ protected:
          InitializeData( m_Queue[i]);
       }
       ::LeaveCriticalSection( &m_cs);
-      
+
       return bFound? S_OK: E_FAIL;
    }
 };
@@ -232,4 +232,4 @@ protected:
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#endif	//	__ASYNCTASK_H__
+#endif  //  __ASYNCTASK_H__

@@ -43,7 +43,7 @@
 
 - (void)locationManager:(CLLocationManager *)manager
        didFailWithError:(NSError *)error;
-       
+
 @end
 
 #endif // __ROADMAP_IPHONELOCATION__H

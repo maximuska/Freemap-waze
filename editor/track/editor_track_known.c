@@ -23,7 +23,7 @@
  * NOTE:
  * This file implements all the "dynamic" editor functionality.
  * The code here is experimental and needs to be reorganized.
- * 
+ *
  * SYNOPSYS:
  *
  *   See editor_track_unknown.h
@@ -56,7 +56,7 @@
 #define MAX_ENTRIES 15
 #define MAX_PATHS 10
 
-#define DEBUG_TRACKS	0
+#define DEBUG_TRACKS    0
 
 typedef struct {
    RoadMapTracking street;
@@ -79,7 +79,7 @@ static RoadMapNeighbour RoadMapNeighbourhood[ROADMAP_NEIGHBOURHOUD];
 
 int editor_track_known_num_candidates (void) {
 
-	return KnownCandidatesCount;	
+    return KnownCandidatesCount;
 }
 
 
@@ -138,7 +138,7 @@ static int resolve_candidates (const RoadMapGpsPosition *gps_position,
 
       KnownCandidateEntry *entry =
          KnownCandidates[c].entries + KnownCandidates[c].count - 1;
-   
+
       count = editor_track_util_find_street
          (gps_position, &new_street,
           &entry->street,
@@ -220,7 +220,7 @@ static int resolve_candidates (const RoadMapGpsPosition *gps_position,
 
       KnownCandidateEntry *entry1 =
          KnownCandidates[i].entries + KnownCandidates[i].count - 1;
-      
+
       for (j = i+1; j < KnownCandidatesCount; j++) {
 
          KnownCandidateEntry *entry2 =
@@ -260,7 +260,7 @@ static int resolve_candidates (const RoadMapGpsPosition *gps_position,
             if ((abs(entry1_score - entry2_score) <
                   (roadmap_fuzzy_good () / 10)) &&
                (KnownCandidates[i].count != KnownCandidates[j].count)) {
-               
+
                if (KnownCandidates[j].count < KnownCandidates[i].count) {
                   do_switch = 1;
                }
@@ -268,7 +268,7 @@ static int resolve_candidates (const RoadMapGpsPosition *gps_position,
             } else if (entry2_score > entry1_score) {
                do_switch = 1;
             }
-               
+
             if (do_switch) {
                memcpy (KnownCandidates + i, KnownCandidates + j,
                   sizeof (KnownCandidatePath));
@@ -325,11 +325,11 @@ int editor_track_known_end_segment (PluginLine *previous_line,
       }
    }
 
-	roadmap_street_extend_line_ends (line, &from, &to, FLAG_EXTEND_BOTH, NULL, NULL);
+    roadmap_street_extend_line_ends (line, &from, &to, FLAG_EXTEND_BOTH, NULL, NULL);
    trkseg_plugin_id = roadmap_plugin_get_id (line);
    trkseg_line_id = roadmap_plugin_get_line_id (line);
    trkseg_square = roadmap_plugin_get_square (line);
-   
+
    line_length = editor_track_util_get_line_length (line);
    segment_length = editor_track_util_length (0, last_point_id);
 
@@ -342,7 +342,7 @@ int editor_track_known_end_segment (PluginLine *previous_line,
     * and not only touched a part of it.
     */
 
-	/*SRUL*: avoid this problem, see above comment 
+    /*SRUL*: avoid this problem, see above comment
    assert (line_length > 0);
 
    if (line_length == 0) {
@@ -351,35 +351,35 @@ int editor_track_known_end_segment (PluginLine *previous_line,
       editor_log_pop ();
       return 0;
    }
-	*/
+    */
    if (line_length <= 0) line_length = 1;
-	
+
    current = track_point_pos (last_point_id);
    if (roadmap_math_distance (current, &to) >
        roadmap_math_distance (current, &from)) {
 
       flags = ED_TRKSEG_OPPOSITE_DIR;
 #if DEBUG_TRACKS
-	   printf ("Closing trkseg from %d.%06d,%d.%06d to %d.%06d,%d.%06d",
-	   			to.longitude / 1000000, to.longitude % 1000000,
-	   			to.latitude / 1000000, to.latitude % 1000000,
-	   			from.longitude / 1000000, from.longitude % 1000000,
-	   			from.latitude / 1000000, from.latitude % 1000000);
+       printf ("Closing trkseg from %d.%06d,%d.%06d to %d.%06d,%d.%06d",
+                to.longitude / 1000000, to.longitude % 1000000,
+                to.latitude / 1000000, to.latitude % 1000000,
+                from.longitude / 1000000, from.longitude % 1000000,
+                from.latitude / 1000000, from.latitude % 1000000);
 
    } else {
-      
-	   printf ("Closing trkseg from %d.%06d,%d.%06d to %d.%06d,%d.%06d",
-	   			from.longitude / 1000000, from.longitude % 1000000,
-	   			from.latitude / 1000000, from.latitude % 1000000,
-	   			to.longitude / 1000000, to.longitude % 1000000,
-	   			to.latitude / 1000000, to.latitude % 1000000);
+
+       printf ("Closing trkseg from %d.%06d,%d.%06d to %d.%06d,%d.%06d",
+                from.longitude / 1000000, from.longitude % 1000000,
+                from.latitude / 1000000, from.latitude % 1000000,
+                to.longitude / 1000000, to.longitude % 1000000,
+                to.latitude / 1000000, to.latitude % 1000000);
 #endif
    }
-   	
+
 #if DEBUG_TRACKS
    printf (" %d/%d", segment_length, line_length);
 #endif
-   		
+
    if (is_new_track) {
       flags |= ED_TRKSEG_NEW_TRACK;
 #if DEBUG_TRACKS
@@ -387,10 +387,10 @@ int editor_track_known_end_segment (PluginLine *previous_line,
 #endif
    }
 
-	if (!editor_ignore_new_roads ()) {
-		flags |= ED_TRKSEG_RECORDING_ON;
-	}
-	
+    if (!editor_ignore_new_roads ()) {
+        flags |= ED_TRKSEG_RECORDING_ON;
+    }
+
    percentage = 100 * segment_length / line_length;
    if (percentage < 70) {
       editor_log (ROADMAP_INFO, "segment is too small to consider: %d%%",
@@ -431,9 +431,9 @@ int editor_track_known_end_segment (PluginLine *previous_line,
 #if DEBUG_TRACKS
       printf (" LOW");
       if (!roadmap_fuzzy_is_good (street->entry_fuzzyfied))
-      	printf (" (entry)");
+        printf (" (entry)");
       if (!roadmap_fuzzy_is_good (street->cur_fuzzyfied))
-      	printf (" (cur)");
+        printf (" (cur)");
 #endif
    }
 #endif
@@ -445,7 +445,7 @@ int editor_track_known_end_segment (PluginLine *previous_line,
          (trkseg_square, trkseg_line_id, trkseg_plugin_id, 0, last_point_id, flags);
 
    if (flags & ED_TRKSEG_OPPOSITE_DIR) {
-      
+
       editor_log (ROADMAP_INFO, "Updating route direction: to -> from");
       editor_track_add_trkseg
          (line, trkseg, ROUTE_DIRECTION_AGAINST_LINE, ROUTE_CAR_ALLOWED);
@@ -460,7 +460,7 @@ int editor_track_known_end_segment (PluginLine *previous_line,
    editor_log_pop ();
 
 #if DEBUG_TRACKS
-	printf ("\n");
+    printf ("\n");
 #endif
    return 1;
 }
@@ -471,7 +471,7 @@ int editor_track_known_resolve (void) {
 }
 
 void editor_track_known_reset_resolve (void) {
-	KnownCandidatesCount = 0;
+    KnownCandidatesCount = 0;
 }
 
 int editor_track_known_locate_point (int point_id,
@@ -486,13 +486,13 @@ int editor_track_known_locate_point (int point_id,
    int current_fuzzy;
    RoadMapFuzzy best = roadmap_fuzzy_false ();
    RoadMapFuzzy second_best;
-   
+
    const RoadMapPosition *position = track_point_pos (point_id);
-   
+
    RoadMapFuzzy before;
-   
+
    if (KnownCandidatesCount > 1) {
-      
+
       if ((resolve_candidates (gps_position, point_id) == -1) ||
             !KnownCandidatesCount) {
 
@@ -548,9 +548,9 @@ int editor_track_known_locate_point (int point_id,
 
    if (confirmed_street->valid) {
       /* We have an existing street match: check if it is still valid. */
-      
+
       before = confirmed_street->cur_fuzzyfied;
-        
+
       if (!editor_track_util_get_distance (position,
                                            &confirmed_line->line,
                                            confirmed_line)) {
@@ -576,9 +576,9 @@ int editor_track_known_locate_point (int point_id,
          return 0; /* We are on the same street. */
       }
    }
-   
+
    /* We must search again for the best street match. */
-   
+
    count = editor_track_util_find_street
             (gps_position, new_street,
              confirmed_street,
@@ -593,7 +593,7 @@ int editor_track_known_locate_point (int point_id,
        * if we are still close to it. In this case we ignore the fuzzy
        */
    } else
-#endif     
+#endif
 
    if (!roadmap_fuzzy_is_good (best) &&
          roadmap_fuzzy_is_acceptable (best) &&
@@ -660,16 +660,16 @@ int editor_track_known_locate_point (int point_id,
                      RoadMapNeighbourhood+i,
                      0,
                      gps_position->steering);
-      
+
          if (roadmap_fuzzy_is_good (result) ||
             (use_acceptable && roadmap_fuzzy_is_acceptable (result))) {
 
             if (confirmed_street->valid &&
                 roadmap_plugin_same_line (&confirmed_line->line,
                 &RoadMapNeighbourhood[i].line)) {
-               
+
                if (result < best) {
-               
+
                   continue;
                } else {
                   /* delay the decision as the current line is still good */
@@ -728,7 +728,7 @@ int editor_track_known_locate_point (int point_id,
       if (!confirmed_street->valid) confirmed_street->entry_fuzzyfied = best;
       new_street->entry_fuzzyfied = confirmed_street->entry_fuzzyfied;
       *confirmed_street = *new_street;
-      
+
       confirmed_street->cur_fuzzyfied = best;
       confirmed_street->valid = 1;
 

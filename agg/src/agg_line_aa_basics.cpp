@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -39,26 +39,26 @@ namespace agg
     //   [1]          |          [0]
     //       . (3)011 | 001(1) .
     //         .      |      .
-    //           .    |    . 
-    //             .  |  . 
+    //           .    |    .
+    //             .  |  .
     //    (2)010     .|.     000(0)
     // <2> ----------.+.----------- <0>
     //    (6)110   .  |  .   100(4)
     //           .    |    .
     //         .      |      .
     //       .        |        .
-    //         (7)111 | 101(5) 
+    //         (7)111 | 101(5)
     //   [2]          |          [3]
-    //               <3> 
-    //                                                        0,1,2,3,4,5,6,7 
+    //               <3>
+    //                                                        0,1,2,3,4,5,6,7
     const int8u line_parameters::s_orthogonal_quadrant[8] = { 0,0,1,1,3,3,2,2 };
     const int8u line_parameters::s_diagonal_quadrant[8]   = { 0,1,2,1,0,3,2,3 };
 
 
 
     //-------------------------------------------------------------------------
-    void bisectrix(const line_parameters& l1, 
-                   const line_parameters& l2, 
+    void bisectrix(const line_parameters& l1,
+                   const line_parameters& l2,
                    int* x, int* y)
     {
         double k = double(l2.len) / double(l1.len);

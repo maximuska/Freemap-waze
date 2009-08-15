@@ -60,12 +60,12 @@
 #define MAX_TYPES 20
 #define EDITOR_DB_ALIGN 4
 
-#define TYPE_MULTIPLE_FLAG 	0x80000000
-#define TYPE_UPDATE_FLAG   	0x40000000
-#define TYPE_COMMITTED_FLAG	0x20000000
+#define TYPE_MULTIPLE_FLAG  0x80000000
+#define TYPE_UPDATE_FLAG    0x40000000
+#define TYPE_COMMITTED_FLAG 0x20000000
 
 typedef struct {
-	int	generation;
+    int generation;
 } editor_record_header;
 
 static int EditorActiveMap = -1;
@@ -84,18 +84,18 @@ static editor_db_section *editor_db_alloc_section (void) {
 
 static void editor_db_free_section (editor_db_section *section) {
 
-	int i;
-	
-	for (i = 0; i < section->max_blocks; i++) {
-		if (section->blocks[i]) {
-			free (section->blocks[i]);
-			section->blocks[i] = NULL;
-		}
-	}	
-	section->num_items = 0;
-	section->current_generation = 0;
-	section->pending_generation = -1;
-	section->committed_generation = -1;
+    int i;
+
+    for (i = 0; i < section->max_blocks; i++) {
+        if (section->blocks[i]) {
+            free (section->blocks[i]);
+            section->blocks[i] = NULL;
+        }
+    }
+    section->num_items = 0;
+    section->current_generation = 0;
+    section->pending_generation = -1;
+    section->committed_generation = -1;
 }
 
 
@@ -112,12 +112,12 @@ static void editor_db_activate_handler (editor_db_handler *handler) {
    section->record_size = section->item_size + section->item_offset;
    section->items_per_block = DB_DEFAULT_BLOCK_SIZE / section->record_size;
 
-	if (section->flag_committed) {
-		section->current_generation = 0;
-		section->committed_generation = -1;
-		section->pending_generation = -1;
-	}
-	
+    if (section->flag_committed) {
+        section->current_generation = 0;
+        section->committed_generation = -1;
+        section->pending_generation = -1;
+    }
+
    handler->activate(section);
    EditorHandlers[handler->type_id] = handler;
    EditorActiveSections[handler->type_id] = section;
@@ -125,13 +125,13 @@ static void editor_db_activate_handler (editor_db_handler *handler) {
 }
 
 static void editor_db_configure (void) {
-   
+
    int i;
-   
-	for (i = 0; i < MAX_TYPES; i++) {
-		EditorActiveSections[i] = NULL;
-	}	
-	
+
+    for (i = 0; i < MAX_TYPES; i++) {
+        EditorActiveSections[i] = NULL;
+    }
+
    editor_db_activate_handler(&EditorDictionaryHandler);
    editor_db_activate_handler(&EditorMarkersHandler);
    editor_db_activate_handler(&EditorShapeHandler);
@@ -144,10 +144,10 @@ static void editor_db_configure (void) {
 
 
 static void editor_db_update_generation (editor_db_section *section, int generation) {
-	
-	if (generation > section->current_generation) {
-		section->current_generation = generation;
-	}
+
+    if (generation > section->current_generation) {
+        section->current_generation = generation;
+    }
 }
 
 
@@ -162,11 +162,11 @@ static int editor_db_read_items (char **buffer, size_t size,
    char *read_buffer;
    int committed = -1;
 
-	*error = 0;
+    *error = 0;
    if (size < sizeof (unsigned int)) return -1;
 
-	type_id = *(unsigned int *)(*buffer);
-	read_buffer = (*buffer) + sizeof (unsigned int);
+    type_id = *(unsigned int *)(*buffer);
+    read_buffer = (*buffer) + sizeof (unsigned int);
    size -= sizeof (unsigned int);
 
    if (type_id & TYPE_MULTIPLE_FLAG) {
@@ -187,34 +187,34 @@ static int editor_db_read_items (char **buffer, size_t size,
       *item_id = -1;
    }
 
-	if (type_id & TYPE_COMMITTED_FLAG) {
+    if (type_id & TYPE_COMMITTED_FLAG) {
       if (size < sizeof(int)) return -1;
-		committed = *(int *)read_buffer;
-		read_buffer += sizeof (int);
-		type_id &= ~TYPE_COMMITTED_FLAG;
-		count = 0;
-	}
-	
+        committed = *(int *)read_buffer;
+        read_buffer += sizeof (int);
+        type_id &= ~TYPE_COMMITTED_FLAG;
+        count = 0;
+    }
+
    //assert(type_id < MAX_TYPES);
    if (type_id >= MAX_TYPES) {
       editor_log (ROADMAP_ERROR,
                   "editor_db_read_items() - bad type_id.");
-   	*error = -1;
-   	return -1;
+    *error = -1;
+    return -1;
    }
    section = EditorActiveSections[type_id];
    //assert(section);
    if (!section) {
       editor_log (ROADMAP_ERROR,
                   "editor_db_read_items() - invalid section pointer.");
-   	*error = -1;
-   	return -1;
+    *error = -1;
+    return -1;
    }
 
-	if (committed >= 0) {
-		section->committed_generation = committed;
-	}
-	
+    if (committed >= 0) {
+        section->committed_generation = committed;
+    }
+
    if (size < section->record_size * count) return -1;
    *item_section = section;
    *buffer = read_buffer;
@@ -224,15 +224,15 @@ static int editor_db_read_items (char **buffer, size_t size,
 
 static int editor_db_write_committed (editor_db_section *section, int id) {
 
-	unsigned int type_id = section->type_id | TYPE_COMMITTED_FLAG;
-	
+    unsigned int type_id = section->type_id | TYPE_COMMITTED_FLAG;
+
    if (roadmap_file_write(EditorDataFile, &type_id, sizeof(type_id)) < 0)
       return -1;
 
    if (roadmap_file_write(EditorDataFile, &id, sizeof(int)) < 0)
       return -1;
 
-	return 0;	
+    return 0;
 }
 
 
@@ -249,20 +249,20 @@ static void *editor_db_get_record (editor_db_section *section, int item_id) {
 
 static int editor_db_allocate_new_block
                      (editor_db_section *section, int block_id) {
-   
+
    if (section->max_blocks == block_id) {
-   	int new_size = section->max_blocks * 2;
-   	char **more_blocks = (char **)realloc (section->blocks, sizeof (char *) * new_size);
-		if (!more_blocks) {
-	      editor_log (ROADMAP_ERROR,
-	                  "editor_db_allocate_new_block - reached max memory.");
-	      return -1;
-		}
-		
-		section->blocks = more_blocks;
-		while (section->max_blocks < new_size) {
-			section->blocks[section->max_blocks++] = NULL;
-		}
+    int new_size = section->max_blocks * 2;
+    char **more_blocks = (char **)realloc (section->blocks, sizeof (char *) * new_size);
+        if (!more_blocks) {
+          editor_log (ROADMAP_ERROR,
+                      "editor_db_allocate_new_block - reached max memory.");
+          return -1;
+        }
+
+        section->blocks = more_blocks;
+        while (section->max_blocks < new_size) {
+            section->blocks[section->max_blocks++] = NULL;
+        }
    }
 
    section->blocks[block_id] = malloc(DB_DEFAULT_BLOCK_SIZE);
@@ -298,18 +298,18 @@ static int editor_db_write_record (editor_db_section *section, char *data, int i
          (roadmap_file_write(EditorDataFile, &count, sizeof(count)) < 0))
       return -1;
 
-	if (section->flag_committed) {
-	   if (roadmap_file_write(EditorDataFile, data, section->item_offset) < 0)
-	         return -1;
-	}
+    if (section->flag_committed) {
+       if (roadmap_file_write(EditorDataFile, data, section->item_offset) < 0)
+             return -1;
+    }
 
    if (roadmap_file_write(EditorDataFile, data + section->item_offset, section->item_size * count) < 0)
          return -1;
 
    align = (count * section->record_size) % EDITOR_DB_ALIGN;
    if (align) {
-   	memset (dummy, 0, EDITOR_DB_ALIGN - align);
-   	if (roadmap_file_write (EditorDataFile, dummy, EDITOR_DB_ALIGN - align) < 0) return -1;
+    memset (dummy, 0, EDITOR_DB_ALIGN - align);
+    if (roadmap_file_write (EditorDataFile, dummy, EDITOR_DB_ALIGN - align) < 0) return -1;
    }
 
    if (++flush_count == FLUSH_SIZE) {
@@ -323,7 +323,7 @@ static int editor_db_write_record (editor_db_section *section, char *data, int i
 
 
 static int editor_db_add_record (editor_db_section *section, void* header, void *data, int write) {
-   
+
    int block = section->num_items / section->items_per_block;
    int block_offset = section->num_items % section->items_per_block;
    char *rec_addr;
@@ -372,14 +372,14 @@ static int editor_db_read (void) {
                void *data = editor_db_get_record(section, item_id);
                assert(data);
                if (section->flag_committed) {
-               	editor_db_update_generation (section, ((editor_record_header *)data)->generation);
+                editor_db_update_generation (section, ((editor_record_header *)data)->generation);
                }
                memcpy(data, head, section->record_size);
             } else {
                /* Add */
                if (editor_db_add_record(section, head, head + section->item_offset, 0) == -1) return -1;
                if (section->flag_committed) {
-               	editor_db_update_generation (section, ((editor_record_header *)head)->generation);
+                editor_db_update_generation (section, ((editor_record_header *)head)->generation);
                }
             }
             head += section->record_size;
@@ -388,19 +388,19 @@ static int editor_db_read (void) {
          if (align) head += EDITOR_DB_ALIGN - align;
       }
 
-		if (error) break;
-		
+        if (error) break;
+
       size -= (head - buffer);
       if (size > 0) memmove(buffer, head, size);
    }
-   
+
    return error;
 }
 
 
 int editor_db_write_item (editor_db_section *section, int item_id, int count) {
-	
-	return editor_db_write_record (section, editor_db_get_record (section, item_id), -1, count);
+
+    return editor_db_write_record (section, editor_db_get_record (section, item_id), -1, count);
 }
 
 
@@ -411,11 +411,11 @@ int editor_db_create (int map_id) {
 
 static void editor_db_free (void) {
 
-	int i;
-	
-	for (i = 0; i < MAX_TYPES; i++) {
-		if (EditorActiveSections[i]) editor_db_free_section (EditorActiveSections[i]);
-	}
+    int i;
+
+    for (i = 0; i < MAX_TYPES; i++) {
+        if (EditorActiveSections[i]) editor_db_free_section (EditorActiveSections[i]);
+    }
 }
 
 
@@ -430,18 +430,18 @@ int editor_db_open (int map_id) {
 
    map_path = roadmap_db_map_path();
 
-	if (!map_path) {
+    if (!map_path) {
       editor_log (ROADMAP_ERROR, "Can't find editor path");
       editor_log_pop ();
       return -1;
-	}
+    }
 
    snprintf (name, sizeof(name), "edt%05d.dat", map_id);
 
    file_name = roadmap_path_join(map_path, name);
 
    if (roadmap_file_exists (map_path, name)) {
-      EditorDataFile = roadmap_file_open(file_name, "rw");  
+      EditorDataFile = roadmap_file_open(file_name, "rw");
       do_read = 1;
    } else {
       roadmap_path_create (map_path);
@@ -451,26 +451,26 @@ int editor_db_open (int map_id) {
    roadmap_path_free(map_path);
 #endif
 
-	do {
-	   if (!ROADMAP_FILE_IS_VALID(EditorDataFile)) {
-	      editor_log (ROADMAP_ERROR, "Can't open/create new database: %s/%s",
-	            map_path, name);
-		   roadmap_path_free(file_name);
-	      editor_log_pop ();
-	      return -1;
-	   }
-	
-	   if (do_read) {
-   		do_read = 0;
-	   	if (editor_db_read () == -1) {
-	   		editor_db_free ();
-	   		roadmap_messagebox("Error", "Offline data file is currupt: Re-Initializing data");
-	   		roadmap_file_close (EditorDataFile);
-	   		roadmap_file_remove (NULL, file_name);
-		      EditorDataFile = roadmap_file_open(file_name, "w");
-	   	}
-	   }
-	} while (do_read);
+    do {
+       if (!ROADMAP_FILE_IS_VALID(EditorDataFile)) {
+          editor_log (ROADMAP_ERROR, "Can't open/create new database: %s/%s",
+                map_path, name);
+           roadmap_path_free(file_name);
+          editor_log_pop ();
+          return -1;
+       }
+
+       if (do_read) {
+        do_read = 0;
+        if (editor_db_read () == -1) {
+            editor_db_free ();
+            roadmap_messagebox("Error", "Offline data file is currupt: Re-Initializing data");
+            roadmap_file_close (EditorDataFile);
+            roadmap_file_remove (NULL, file_name);
+              EditorDataFile = roadmap_file_open(file_name, "w");
+        }
+       }
+    } while (do_read);
 
    roadmap_path_free(file_name);
    EditorActiveMap = map_id;
@@ -519,18 +519,18 @@ void editor_db_close (int map_id) {
 void editor_db_delete (int map_id) {
 
    char name[100];
-  	const char *map_path;
+    const char *map_path;
 
 #ifdef WIN32
-	map_path = roadmap_path_join (roadmap_path_user(), "maps");
+    map_path = roadmap_path_join (roadmap_path_user(), "maps");
 #else
    map_path = roadmap_path_first ("maps");
    while (map_path && !roadmap_file_exists (map_path,"")) {
-   	map_path = roadmap_path_next ("maps", map_path);
+    map_path = roadmap_path_next ("maps", map_path);
    }
 #endif
    snprintf (name, sizeof(name), "edt%05d.dat", map_id);
-   
+
    if (roadmap_file_exists (map_path, name)) {
 
       char **files;
@@ -562,16 +562,16 @@ void editor_db_delete (int map_id) {
 
 
 int editor_db_add_item (editor_db_section *section, void *data, int write) {
-   
+
    editor_record_header header;
 
-	if (section->flag_committed) {
-		editor_db_update_generation (section, section->committed_generation + 1);
-		editor_db_update_generation (section, section->pending_generation + 1);
-		header.generation = section->current_generation;
-	}
-	
-	return editor_db_add_record (section, &header, data, write);
+    if (section->flag_committed) {
+        editor_db_update_generation (section, section->committed_generation + 1);
+        editor_db_update_generation (section, section->pending_generation + 1);
+        header.generation = section->current_generation;
+    }
+
+    return editor_db_add_record (section, &header, data, write);
 }
 
 
@@ -587,13 +587,13 @@ void *editor_db_get_item (editor_db_section *section,
    int block_offset = item_id % section->items_per_block;
 
    if (section->blocks[block] == NULL) {
-      
+
       if (!create) return NULL;
-      
+
       if (editor_db_allocate_new_block (section, block) == -1) {
          return NULL;
       }
-      
+
       if (init != NULL) {
          int i;
          char *addr = section->blocks[block];
@@ -649,51 +649,51 @@ int editor_db_update_item (editor_db_section *section, int item_id) {
 
    assert(rec != NULL);
 
-	if (section->flag_committed) {
-		editor_db_update_generation (section, section->committed_generation + 1);
-		editor_db_update_generation (section, section->pending_generation + 1);
-		((editor_record_header *)rec)->generation = section->current_generation;
-	}
-	
+    if (section->flag_committed) {
+        editor_db_update_generation (section, section->committed_generation + 1);
+        editor_db_update_generation (section, section->pending_generation + 1);
+        ((editor_record_header *)rec)->generation = section->current_generation;
+    }
+
    return editor_db_write_record(section, rec, item_id, 1);
 }
 
 
 int editor_db_begin_commit (editor_db_section *section) {
 
-	section->pending_generation = section->current_generation;	
-	return section->current_generation;
+    section->pending_generation = section->current_generation;
+    return section->current_generation;
 }
 
 
 void editor_db_confirm_commit (editor_db_section *section, int id) {
 
-	if (id > section->committed_generation) {
-		section->committed_generation = id;
-		if (editor_db_write_committed (section, id) != 0) {
-	      editor_log (ROADMAP_ERROR,
-	                  "editor_db_confirm_commit - editor_db_write_committed failed.");
-		}
-	}	
+    if (id > section->committed_generation) {
+        section->committed_generation = id;
+        if (editor_db_write_committed (section, id) != 0) {
+          editor_log (ROADMAP_ERROR,
+                      "editor_db_confirm_commit - editor_db_write_committed failed.");
+        }
+    }
 }
 
 
 int editor_db_item_committed (editor_db_section *section, int item_id) {
 
-	editor_record_header *rec;
+    editor_record_header *rec;
 
-	assert (section->flag_committed);
-	
+    assert (section->flag_committed);
+
    rec = editor_db_get_record (section, item_id);
 
    assert (section->flag_committed);
-	
+
    return rec->generation <= section->committed_generation;
 }
 
 
 int editor_db_items_pending (editor_db_section *section) {
 
-	editor_db_update_generation (section, section->committed_generation);
-	return section->current_generation - section->committed_generation;	
+    editor_db_update_generation (section, section->committed_generation);
+    return section->current_generation - section->committed_generation;
 }

@@ -94,7 +94,7 @@
     &t1_decoder_funcs,
 
     t1_decrypt,
-    
+
     (const T1_CMap_ClassesRec*) &t1_cmap_classes,
   };
 

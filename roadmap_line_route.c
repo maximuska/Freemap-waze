@@ -67,10 +67,10 @@ static void *roadmap_line_route_map (const roadmap_db_data_file *file) {
    context->type = RoadMapLineRouteType;
 
    if (!roadmap_db_get_data (file,
-   								  model__tile_line_route_data,
-   								  sizeof (RoadMapLineRoute),
-   								  (void**)&(context->LineRoute),
-   								  &(context->LineRouteCount))) {
+                                  model__tile_line_route_data,
+                                  sizeof (RoadMapLineRoute),
+                                  (void**)&(context->LineRoute),
+                                  &(context->LineRouteCount))) {
       roadmap_log (ROADMAP_FATAL, "invalid line_route/data structure");
    }
 

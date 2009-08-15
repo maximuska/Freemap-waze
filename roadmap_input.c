@@ -47,7 +47,7 @@ static void roadmap_input_shift_to_next_line (RoadMapInputContext *context,
    while ((*from < ' ') && (from < data_end)) ++from;
 
    if (from > context->data) {
-         
+
       context->cursor -= (int)(from - context->data);
 
       if (context->cursor <= 0) {

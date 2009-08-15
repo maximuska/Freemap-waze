@@ -1,24 +1,24 @@
 /* FriBidi - Library of BiDi algorithm
  * Copyright (C) 1999,2000 Dov Grobgeld, and
- * Copyright (C) 2001,2002 Behdad Esfahbod. 
- * 
- * This library is free software; you can redistribute it and/or 
- * modify it under the terms of the GNU Lesser General Public 
- * License as published by the Free Software Foundation; either 
- * version 2.1 of the License, or (at your option) any later version. 
- * 
- * This library is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
- * Lesser General Public License for more details. 
- * 
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library, in a file named COPYING; if not, write to the 
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330, 
- * Boston, MA 02111-1307, USA  
- * 
- * For licensing issues, contact <dov@imagic.weizmann.ac.il> and 
- * <fwpg@sharif.edu>. 
+ * Copyright (C) 2001,2002 Behdad Esfahbod.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library, in a file named COPYING; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA
+ *
+ * For licensing issues, contact <dov@imagic.weizmann.ac.il> and
+ * <fwpg@sharif.edu>.
  */
 
 #include "fribidi_config.h"
@@ -31,13 +31,13 @@ typedef struct
   /* Convert the character string "s" to unicode string "us" and
      return it's length. */
   int (*charset_to_unicode) (char *s, int length,
-			     /* output */
-			     FriBidiChar *us);
+                 /* output */
+                 FriBidiChar *us);
   /* Convert the unicode string "us" with length "length" to character
      string "s" and return it's length. */
   int (*unicode_to_charset) (FriBidiChar *us, int length,
-			     /* output */
-			     char *s);
+                 /* output */
+                 char *s);
   /* Charset's name. */
   char *name;
   /* Charset's title. */
@@ -110,8 +110,8 @@ fribidi_parse_charset (char *s)
    string "us" and return it's length. */
 FRIBIDI_API int
 fribidi_charset_to_unicode (FriBidiCharSet char_set, char *s, int length,
-			    /* output */
-			    FriBidiChar *us)
+                /* output */
+                FriBidiChar *us)
 {
   fribidi_char_set_enter (char_set);
   return fribidi_char_sets[char_set].charset_to_unicode == NULL ? 0 :
@@ -122,9 +122,9 @@ fribidi_charset_to_unicode (FriBidiCharSet char_set, char *s, int length,
    string "s" in charset "char_set" and return it's length. */
 FRIBIDI_API int
 fribidi_unicode_to_charset (FriBidiCharSet char_set,
-			    FriBidiChar *us, int length,
-			    /* output */
-			    char *s)
+                FriBidiChar *us, int length,
+                /* output */
+                char *s)
 {
   fribidi_char_set_enter (char_set);
   return fribidi_char_sets[char_set].unicode_to_charset == NULL ? 0 :
@@ -191,19 +191,19 @@ fribidi_char_set_leave (FriBidiCharSet char_set)
 
 FRIBIDI_API int
 fribidi_charset_to_unicode_1 (FriBidiCharSet char_set, char *s,
-			      /* output */
-			      FriBidiChar *us)
+                  /* output */
+                  FriBidiChar *us)
 {
   return fribidi_charset_to_unicode (char_set, s, strlen (s), us);
 }
 
 /* Also old character sets. */
 
-#define FRIBIDI_TO_UNICODE_DEFINE_1(cs)	\
-	int fribidi_##cs##_to_unicode_1 (char *s, FriBidiChar *us)	\
-	{	\
-	  return fribidi_##cs##_to_unicode (s, strlen(s), us);	\
-	}
+#define FRIBIDI_TO_UNICODE_DEFINE_1(cs) \
+    int fribidi_##cs##_to_unicode_1 (char *s, FriBidiChar *us)  \
+    {   \
+      return fribidi_##cs##_to_unicode (s, strlen(s), us);  \
+    }
 FRIBIDI_TO_UNICODE_DEFINE_1 (utf8)
 FRIBIDI_TO_UNICODE_DEFINE_1 (cap_rtl)
 FRIBIDI_TO_UNICODE_DEFINE_1 (iso8859_6)

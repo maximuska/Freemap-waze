@@ -18,8 +18,8 @@
  */
 
 
-#ifndef	__FREEMAP_REALTIMEMATH_H__
-#define	__FREEMAP_REALTIMEMATH_H__
+#ifndef __FREEMAP_REALTIMEMATH_H__
+#define __FREEMAP_REALTIMEMATH_H__
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <time.h>
@@ -38,4 +38,4 @@ RoadMapPosition RoadMapPosition_from_relative_part_factor(  RoadMapPosition   ra
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#endif	//	__FREEMAP_REALTIMEMATH_H__
+#endif  //  __FREEMAP_REALTIMEMATH_H__

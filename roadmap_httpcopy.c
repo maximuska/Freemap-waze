@@ -223,7 +223,7 @@ static int roadmap_httpcopy (RoadMapDownloadCallbacks *callbacks,
          callbacks->error ("Receive error after %d data bytes", loaded);
          goto cancel_download;
       }
-      
+
       if (roadmap_file_write(file, buffer, received) != received) {
          callbacks->error ("Error writing data");
          goto cancel_download;
@@ -236,7 +236,7 @@ static int roadmap_httpcopy (RoadMapDownloadCallbacks *callbacks,
 
    if (loaded != size) {
       callbacks->error ("Receive error after %d data bytes", loaded);
-      goto cancel_download;   
+      goto cancel_download;
    }
    roadmap_net_close (fd);
    roadmap_file_close(file);

@@ -78,7 +78,7 @@ static void roadmap_pointer_button_timeout(void) {
    exec_callbacks (LONG_CLICK, &last_pointer_point);
    is_button_down = 0;
 }
- 
+
 /* Instead of calling the drag motion event with every mouse move,
  * we use this timer as a flow control. It may take time for the
  * application to finish the task of drawing the screen and we don't
@@ -91,7 +91,7 @@ static void roadmap_pointer_drag_flow_control(void) {
    exec_callbacks (DRAG_MOTION, &last_pointer_point);
    is_drag_flow_control_on = 0;
 }
-   
+
 
 static void roadmap_pointer_button_pressed (RoadMapGuiPoint *point) {
    last_pointer_point = *point;
@@ -105,14 +105,14 @@ static void roadmap_pointer_button_pressed (RoadMapGuiPoint *point) {
       cancel_dragging = 0;
    }
 
-   is_button_down = 1;    
+   is_button_down = 1;
    roadmap_main_set_periodic
       (LONG_CLICK_TIMEOUT, roadmap_pointer_button_timeout);
 }
 
 
 static void roadmap_pointer_button_released (RoadMapGuiPoint *point) {
-    
+
    if (is_dragging) {
       if (is_drag_flow_control_on) {
          roadmap_main_remove_periodic(roadmap_pointer_drag_flow_control);
@@ -125,7 +125,7 @@ static void roadmap_pointer_button_released (RoadMapGuiPoint *point) {
       is_button_down = 0;
    } else if (is_button_down) {
       roadmap_main_remove_periodic(roadmap_pointer_button_timeout);
-      
+
       exec_callbacks (SHORT_CLICK, point);
       is_button_down = 0;
    }
@@ -143,7 +143,7 @@ static void roadmap_pointer_moved (RoadMapGuiPoint *point) {
           (abs(point->y - last_pointer_point.y) <= 3)) return;
 
       roadmap_main_remove_periodic(roadmap_pointer_button_timeout);
-      
+
       exec_callbacks (DRAG_START, &last_pointer_point);
 
       last_pointer_point = *point;
@@ -192,7 +192,7 @@ static void queue_callback (int event, void *handler, int priority) {
       if (pointer_callbacks[event][i].priority <= priority) break;
    }
 
-   
+
    memmove (&pointer_callbacks[event][i+1], &pointer_callbacks[event][i],
             sizeof(PointerCallback) * (MAX_CALLBACKS - i - 1));
 

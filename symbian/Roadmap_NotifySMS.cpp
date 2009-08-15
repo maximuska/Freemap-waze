@@ -155,7 +155,7 @@ void CRoadmapNotifySMS::HandleSessionEventL(TMsvSessionEvent aEvent, TAny* aArg1
 //void CRoadmapNativeMsgs::RunL()
 //{
 //}
-//  
+//
 //void CRoadmapNativeMsgs::DoCancel()
 //{
 //}

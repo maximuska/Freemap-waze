@@ -25,7 +25,7 @@
 #ifndef INCLUDE__ADD_ALERT__H
 #define INCLUDE__ADD_ALERT__H
 
-#define MY_DIRECTION 				1
+#define MY_DIRECTION                1
 #define OPPOSITE_DIRECTION 2
 
 void add_alert_initialize(void) ;

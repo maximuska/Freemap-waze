@@ -77,16 +77,16 @@ void CRoadmapNotifyPhone::RunL()
     if ( m_CurrStatus.iStatus == CTelephony::EStatusConnected )
     {
       //TODO call m_pCallAnsweredCallback
-            
+
     }
   }
-  
+
   if(iStatus != KErrCancel)
   {// go on
-    StartListening(); 
+    StartListening();
   }
 }
-  
+
 void CRoadmapNotifyPhone::DoCancel()
 {
   m_Telephony->CancelAsync(CTelephony::EVoiceLineStatusChangeCancel);
@@ -96,7 +96,7 @@ void CRoadmapNotifyPhone::StartListening()
 {
   Cancel();
   m_CurrStatus.iStatus = CTelephony::EStatusUnknown;  //  reset status although not strictly necessary
-  
+
   m_Telephony->NotifyChange(iStatus, CTelephony::EVoiceLineStatusChange, m_CurrStatusPckg);
   SetActive();
 }

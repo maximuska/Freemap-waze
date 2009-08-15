@@ -6,7 +6,7 @@
  *   Label cache 2006, Paul Fox
  *
  *   This code was mostly taken from UMN Mapserver
- *   
+ *
  *   This file is part of RoadMap.
  *
  *   RoadMap is free software; you can redistribute it and/or modify
@@ -141,7 +141,7 @@ static int point_in_bbox( RoadMapGuiPoint *p, RoadMapGuiRect *bb) {
    if ((p->x <= bb->minx) || (p->x >= bb->maxx) ||
        (p->y >= bb->maxy) || (p->y <= bb->miny))
       return 0;
- 
+
    return 1;
 }
 
@@ -168,7 +168,7 @@ static int poly_overlap (roadmap_label *c1, roadmap_label *c2) {
    return 0;
 }
 
-   
+
 static void compute_bbox(RoadMapGuiPoint *poly, RoadMapGuiRect *bbox) {
 
    int i;
@@ -185,7 +185,7 @@ static void compute_bbox(RoadMapGuiPoint *poly, RoadMapGuiRect *bbox) {
 }
 
 
-static RoadMapGuiPoint get_metrics(roadmap_label *c, 
+static RoadMapGuiPoint get_metrics(roadmap_label *c,
                                 RoadMapGuiRect *rect, int centered_y) {
    RoadMapGuiPoint q;
    int x1=0, y1=0;
@@ -272,7 +272,7 @@ void roadmap_label_draw_text(const char *text,
         RoadMapGuiPoint *start, RoadMapGuiPoint *center,
         int doing_angles, int angle, int size)
 {
-               
+
 #ifdef ROADMAP_USE_LINEFONT
    roadmap_linefont_text
         (text, doing_angles ? ROADMAP_CANVAS_CENTER_BOTTOM :
@@ -370,15 +370,15 @@ int roadmap_label_add (const RoadMapGuiPoint *point, int angle,
       sprintf(buf, "%d", cPtr->line.line_id);
       cPtr->text = strdup(buf);
 #elif LABEL_USING_NODEID
-		if (cPtr->line.plugin_id == ROADMAP_PLUGIN_ID) {
-			char buf[100];
-			int from;
-			int to;
-			roadmap_square_set_current (cPtr->line.square);
-			roadmap_line_point_ids (cPtr->line.line_id, &from, &to);
-			sprintf (buf, "%d - %d", from, to);
-			cPtr->text = strdup(buf);
-		} else cPtr->text = strdup (properties.street);
+        if (cPtr->line.plugin_id == ROADMAP_PLUGIN_ID) {
+            char buf[100];
+            int from;
+            int to;
+            roadmap_square_set_current (cPtr->line.square);
+            roadmap_line_point_ids (cPtr->line.line_id, &from, &to);
+            sprintf (buf, "%d - %d", from, to);
+            cPtr->text = strdup(buf);
+        } else cPtr->text = strdup (properties.street);
 #else
       cPtr->text = strdup(properties.street);
 #endif
@@ -474,7 +474,7 @@ int roadmap_label_draw_cache (int angles) {
     */
    for (whichlist = OLDLIST; whichlist <= NEWLIST; whichlist++)  {
 
-      ROADMAP_LIST_FOR_EACH 
+      ROADMAP_LIST_FOR_EACH
            (whichlist == OLDLIST ? &RoadMapLabelCache : &RoadMapLabelNew,
                 item, tmp) {
 
@@ -655,8 +655,8 @@ int roadmap_label_draw_cache (int angles) {
                  ocPtr = (roadmap_label *)item2;
 
                  if (ocPtr->featuresize_sq >= cPtr->featuresize_sq &&
-                 		(!strcmp(cPtr->text, ocPtr->text)) &&
-                 		((cPtr->flags & LABEL_FLAG_PLACE) ==
+                        (!strcmp(cPtr->text, ocPtr->text)) &&
+                        ((cPtr->flags & LABEL_FLAG_PLACE) ==
                       (ocPtr->flags & LABEL_FLAG_PLACE))) {
                      cannot_label++;
                      break;
@@ -670,34 +670,34 @@ int roadmap_label_draw_cache (int angles) {
                 end = (RoadMapListItem *)&RoadMapLabelCache;
              else
                 end = item;
-    
+
              ROADMAP_LIST_FOR_EACH_FROM_TO
                     ( RoadMapLabelCache.list_first, end, item2, tmp2) {
-    
+
                 ocPtr = (roadmap_label *)item2;
-    
+
                 if (ocPtr->gen != RoadMapLabelGeneration) {
                    continue;
                 }
-    
+
                 if ((cPtr->flags & LABEL_FLAG_PLACE) ==
                     (ocPtr->flags & LABEL_FLAG_PLACE) &&
                     !strcmp(cPtr->text, ocPtr->text)) {
-    
+
                    cannot_label++;  /* label is a duplicate */
                    break;
                 }
-    
-    
+
+
                 /* if bounding boxes don't overlap, we're clear */
                 if (rect_overlap (&ocPtr->bbox, &cPtr->bbox)) {
-    
+
                    /* if labels are horizontal, bbox check is sufficient */
                    if(!angles) {
                       cannot_label++;
                       break;
                    }
-    
+
                    /* if labels are "almost" horizontal, the bbox check is
                     * close enough.  (in addition, the line intersector
                     * has trouble with flat or steep lines.)
@@ -707,13 +707,13 @@ int roadmap_label_draw_cache (int angles) {
                       cannot_label++;
                       break;
                    }
-    
+
                    aang = abs(ocPtr->angle);
                    if (aang < 4 || aang > 86) {
                       cannot_label++;
                       break;
                    }
-    
+
                    /* otherwise we do the full poly check */
                    if (poly_overlap (ocPtr, cPtr)) {
                       cannot_label++;
@@ -777,7 +777,7 @@ int roadmap_label_initialize (void) {
    roadmap_config_declare
        ("schema", &RoadMapConfigLabelsColor,  "#000000", NULL);
 
-    
+
    ROADMAP_LIST_INIT(&RoadMapLabelCache);
    ROADMAP_LIST_INIT(&RoadMapLabelSpares);
    ROADMAP_LIST_INIT(&RoadMapLabelNew);
@@ -787,7 +787,7 @@ int roadmap_label_initialize (void) {
 }
 
 void roadmap_label_clear (void) {
-	
+
    RoadMapListItem *item, *tmp;
 
    ROADMAP_LIST_FOR_EACH (&RoadMapLabelCache, item, tmp) {

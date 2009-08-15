@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -82,8 +82,8 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    void vcgen_smooth_poly1::calculate(const vertex_dist& v0, 
-                                       const vertex_dist& v1, 
+    void vcgen_smooth_poly1::calculate(const vertex_dist& v0,
+                                       const vertex_dist& v1,
                                        const vertex_dist& v2,
                                        const vertex_dist& v3)
     {
@@ -158,8 +158,8 @@ namespace agg
                     }
                 }
 
-                calculate(m_src_vertices.prev(m_src_vertex), 
-                          m_src_vertices.curr(m_src_vertex), 
+                calculate(m_src_vertices.prev(m_src_vertex),
+                          m_src_vertices.curr(m_src_vertex),
                           m_src_vertices.next(m_src_vertex),
                           m_src_vertices.next(m_src_vertex + 1));
 
@@ -170,8 +170,8 @@ namespace agg
                 if(m_closed)
                 {
                     m_status = ctrl1;
-                    return ((m_src_vertex == 1) ? 
-                             path_cmd_move_to : 
+                    return ((m_src_vertex == 1) ?
+                             path_cmd_move_to :
                              path_cmd_curve4);
                 }
                 else

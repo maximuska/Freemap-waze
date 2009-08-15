@@ -46,37 +46,37 @@ static int EditorReportSegmentsInProgress = 0;
 
 static void editor_report_markers_cb (BOOL bDetailsVerified, int iErrorCode) {
 
-	EditorReportMarkersInProgress = 0;
-	if (bDetailsVerified) {
-		editor_marker_confirm_commit (EditorReportMarkersId);	
-		editor_report_markers ();
-	}
+    EditorReportMarkersInProgress = 0;
+    if (bDetailsVerified) {
+        editor_marker_confirm_commit (EditorReportMarkersId);
+        editor_report_markers ();
+    }
 }
 
 
 void editor_report_markers (void) {
-	
-	if (EditorReportMarkersInProgress || !editor_marker_items_pending ()) return;
-	
-	EditorReportMarkersId = editor_marker_begin_commit ();
-	EditorReportMarkersInProgress = Realtime_Editor_ExportMarkers (editor_report_markers_cb);
+
+    if (EditorReportMarkersInProgress || !editor_marker_items_pending ()) return;
+
+    EditorReportMarkersId = editor_marker_begin_commit ();
+    EditorReportMarkersInProgress = Realtime_Editor_ExportMarkers (editor_report_markers_cb);
 }
 
 
 static void editor_report_segments_cb (BOOL bDetailsVerified, int iErrorCode) {
 
-	EditorReportSegmentsInProgress = 0;
-	if (bDetailsVerified) {
-		editor_line_confirm_commit (EditorReportSegmentsId);	
-		editor_report_segments ();
-	}
+    EditorReportSegmentsInProgress = 0;
+    if (bDetailsVerified) {
+        editor_line_confirm_commit (EditorReportSegmentsId);
+        editor_report_segments ();
+    }
 }
 
 
 void editor_report_segments (void) {
-	
-	if (EditorReportSegmentsInProgress || !editor_line_items_pending ()) return;
-	
-	EditorReportSegmentsId = editor_line_begin_commit ();
-	EditorReportSegmentsInProgress = Realtime_Editor_ExportSegments (editor_report_segments_cb);
+
+    if (EditorReportSegmentsInProgress || !editor_line_items_pending ()) return;
+
+    EditorReportSegmentsId = editor_line_begin_commit ();
+    EditorReportSegmentsInProgress = Realtime_Editor_ExportSegments (editor_report_segments_cb);
 }

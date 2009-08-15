@@ -21,7 +21,7 @@
  *   along with RoadMap; if not, write to the Free Software
  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 #ifndef ROADMAP_BORDER_H_
 #define ROADMAP_BORDER_H_
 
@@ -34,7 +34,7 @@ typedef enum border_images
    border_image_bottom,
    border_image_bottom_right,
    border_image_bottom_left,
-   
+
    border_image_left,
    border_image_right,
 
@@ -45,20 +45,20 @@ typedef enum border_images
    border_trap_bottom,
    border_trap_bottom_right,
    border_trap_bottom_left,
-   
+
    border_trap_left,
    border_trap_right,
-   
+
    border_heading_red_left,
    border_heading_red_middle,
    border_heading_red_right,
 
-   
+
    border_heading_green_left,
    border_heading_green_middle,
    border_heading_green_right,
 
-   
+
    border_heading_black_left,
    border_heading_black_middle,
    border_heading_black_right,
@@ -68,36 +68,36 @@ typedef enum border_images
    border_heading_gray_middle,
    border_heading_gray_right,
 
-   
+
    border_pointer_menu,
    border_pointer_comment,
-   
+
    border_image_bottom_no_frame,
-   
+
    border_img__count,
    border_img__invalid
-   
+
 }  border_images;
 
 #define STYLE_NORMAL  border_image_top
-#define STYLE_TRAP 	  border_trap_top
+#define STYLE_TRAP    border_trap_top
 
-#define POINTER_NONE 	 -1
+#define POINTER_NONE     -1
 #define POINTER_POSITION 0
-#define POINTER_MENU  	 border_pointer_menu
+#define POINTER_MENU     border_pointer_menu
 #define POINTER_COMMNET  border_pointer_comment
 
-#define HEADER_NONE		 -1
-#define HEADER_GREEN 	 border_heading_green_left
-#define HEADER_RED		 border_heading_red_left
-#define HEADER_BLACK	 border_heading_black_left
-#define HEADER_GRAY		 border_heading_gray_left
+#define HEADER_NONE      -1
+#define HEADER_GREEN     border_heading_green_left
+#define HEADER_RED       border_heading_red_left
+#define HEADER_BLACK     border_heading_black_left
+#define HEADER_GRAY      border_heading_gray_left
 
 
 typedef struct broder_image{
-	RoadMapImage image;
-	int height;
-	int width;
+    RoadMapImage image;
+    int height;
+    int width;
 }border_image;
 
 BOOL load_border_images(void);

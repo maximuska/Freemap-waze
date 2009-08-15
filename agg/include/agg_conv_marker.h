@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -45,10 +45,10 @@ namespace agg
 
     private:
         conv_marker(const conv_marker<MarkerLocator, MarkerShapes>&);
-        const conv_marker<MarkerLocator, MarkerShapes>& 
+        const conv_marker<MarkerLocator, MarkerShapes>&
             operator = (const conv_marker<MarkerLocator, MarkerShapes>&);
 
-        enum status_e 
+        enum status_e
         {
             initial,
             markers,
@@ -67,7 +67,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class MarkerLocator, class MarkerShapes> 
+    template<class MarkerLocator, class MarkerShapes>
     conv_marker<MarkerLocator, MarkerShapes>::conv_marker(MarkerLocator& ml, MarkerShapes& ms) :
         m_marker_locator(&ml),
         m_marker_shapes(&ms),
@@ -79,7 +79,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class MarkerLocator, class MarkerShapes> 
+    template<class MarkerLocator, class MarkerShapes>
     void conv_marker<MarkerLocator, MarkerShapes>::rewind(unsigned)
     {
         m_status = initial;
@@ -89,7 +89,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class MarkerLocator, class MarkerShapes> 
+    template<class MarkerLocator, class MarkerShapes>
     unsigned conv_marker<MarkerLocator, MarkerShapes>::vertex(double* x, double* y)
     {
         unsigned cmd = path_cmd_move_to;

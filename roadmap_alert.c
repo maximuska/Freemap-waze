@@ -24,7 +24,7 @@
  * SYNOPSYS:
  *
  */
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,9 +43,9 @@
 #include "roadmap_alert.h"
 #include "roadmap_alerter.h"
 
-#define ALERT_AUDIO	"ApproachSpeedCam"
-#define ALERT_ICON 		"speed_cam_alert.png"
-#define WARN_ICON 		"speed_cam_warn.png"
+#define ALERT_AUDIO "ApproachSpeedCam"
+#define ALERT_ICON      "speed_cam_alert.png"
+#define WARN_ICON       "speed_cam_warn.png"
 
 
 static void *roadmap_alert_map (const roadmap_db_data_file *file);
@@ -53,8 +53,8 @@ static void roadmap_alert_activate (void *context);
 static void roadmap_alert_unmap (void *context);
 static int roadmap_alert_is_cancelable(int alertId);
 static int roadmap_alert_cancel(int alertId);
-static RoadMapConfigDescriptor AlertDistanceCfg = 
-			ROADMAP_CONFIG_ITEM("Alerts", "Alert Distance");
+static RoadMapConfigDescriptor AlertDistanceCfg =
+            ROADMAP_CONFIG_ITEM("Alerts", "Alert Distance");
 
 
 static char *RoadMapAlertType = "RoadMapAlertContext";
@@ -63,7 +63,7 @@ typedef struct {
    RoadMapAlert *Alert;
    int           AlertCount;
 } RoadMapAlertContext;
- 
+
 static RoadMapAlertContext *RoadMapAlertActive = NULL;
 
 roadmap_db_handler RoadMapAlertHandler = {
@@ -90,11 +90,11 @@ roadmap_alert_providor RoadmapAlertProvidor = {
    roadmap_alert_cancel
 };
 int roadmap_alert_is_cancelable(int alertId){
-	return TRUE;
-} 
+    return TRUE;
+}
 
 int roadmap_alert_cancel(int alertId){
-	request_speed_cam_delete();
+    request_speed_cam_delete();
    return TRUE;
 }
 
@@ -109,18 +109,18 @@ static void *roadmap_alert_map (const roadmap_db_data_file *file) {
 
    context->type = RoadMapAlertType;
 
-	if (!roadmap_db_get_data (file,
-									  model__tile_alert_data,
-									  sizeof(RoadMapAlert),
-									  (void **)&(context->Alert),
-									  &(context->AlertCount))) {
-									  	
+    if (!roadmap_db_get_data (file,
+                                      model__tile_alert_data,
+                                      sizeof(RoadMapAlert),
+                                      (void **)&(context->Alert),
+                                      &(context->AlertCount))) {
+
       roadmap_log (ROADMAP_FATAL, "invalid alert/data structure");
    }
-   
-   	//Distance to alert 
-	roadmap_config_declare
-	("preferences", &AlertDistanceCfg, "400", NULL);
+
+    //Distance to alert
+    roadmap_config_declare
+    ("preferences", &AlertDistanceCfg, "400", NULL);
 
    return context;
 }
@@ -158,7 +158,7 @@ int roadmap_alert_count (void) {
    if (RoadMapAlertActive == NULL) {
       return 0;
    }
-   
+
    return RoadMapAlertActive->AlertCount;
 }
 
@@ -169,16 +169,16 @@ RoadMapAlert * roadmap_alert_get_alert(int record){
 
 RoadMapAlert *roadmap_alert_get_alert_by_id( int id)
 {
-	int i; 
-	RoadMapAlert *alert;
-	
-	//	Find alert:
-	for( i=0; i< RoadMapAlertActive->AlertCount; i++){
-		alert = roadmap_alert_get_alert(i);
-		if( alert->id == id)
-			return alert;
-	}
-	return NULL;
+    int i;
+    RoadMapAlert *alert;
+
+    //  Find alert:
+    for( i=0; i< RoadMapAlertActive->AlertCount; i++){
+        alert = roadmap_alert_get_alert(i);
+        if( alert->id == id)
+            return alert;
+    }
+    return NULL;
 }
 
 
@@ -219,50 +219,50 @@ int roadmap_alert_get_id(int alert){
 // check if an alert should be generated for a specific category
 int roadmap_alert_alertable(int record){
 
-	int alert_category = roadmap_alert_get_category(record);
+    int alert_category = roadmap_alert_get_category(record);
 
-	switch (alert_category) {
-	case ALERT_CATEGORY_SPEED_CAM:
-		return 1;
-	default:
-		return 0;
-	}
+    switch (alert_category) {
+    case ALERT_CATEGORY_SPEED_CAM:
+        return 1;
+    default:
+        return 0;
+    }
 }
 
 const char *  roadmap_alert_get_string(int id){
-	return "Speed trap" ;
+    return "Speed trap" ;
 }
 
 const char * roadmap_alert_get_map_icon(int id){
-	
-	RoadMapAlert *alert_st  = roadmap_alert_get_alert_by_id(id);
 
-	switch (alert_st->category) {
-	case ALERT_CATEGORY_SPEED_CAM: 
-		return "rm_speed_cam.png" ;
-	case ALERT_CATEGORY_DUMMY_SPEED_CAM:
-		return "rm_dummy_speed_cam.png";
-	default:
-		return  NULL; 
-	}
-} 
+    RoadMapAlert *alert_st  = roadmap_alert_get_alert_by_id(id);
+
+    switch (alert_st->category) {
+    case ALERT_CATEGORY_SPEED_CAM:
+        return "rm_speed_cam.png" ;
+    case ALERT_CATEGORY_DUMMY_SPEED_CAM:
+        return "rm_dummy_speed_cam.png";
+    default:
+        return  NULL;
+    }
+}
 
 int roadmap_alert_get_distance(int record){
-	return roadmap_config_get_integer(&AlertDistanceCfg);
+    return roadmap_config_get_integer(&AlertDistanceCfg);
 }
 
 const char *roadmap_alert_get_alert_icon(int Id){
-	return ALERT_ICON;
+    return ALERT_ICON;
 }
 
 const char *roadmap_alert_get_warning_icon(int Id){
-	return WARN_ICON;
+    return WARN_ICON;
 }
 
 RoadMapSoundList  roadmap_alert_get_alert_sound(int Id){
-		
-	RoadMapSoundList sound_list;
-		sound_list = roadmap_sound_list_create (0);
-		roadmap_sound_list_add (sound_list,  ALERT_AUDIO);
-		return sound_list;
+
+    RoadMapSoundList sound_list;
+        sound_list = roadmap_sound_list_create (0);
+        roadmap_sound_list_add (sound_list,  ALERT_AUDIO);
+        return sound_list;
 }

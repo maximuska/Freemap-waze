@@ -34,7 +34,7 @@ typedef enum navigate_context_menu_items
    nc_cm_save,
    nc_cm_recalculate,
    nc_cm_exit,
-   
+
    nc_cm__count,
    nc_cm__invalid
 

@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: fib.h,v 1.2 2007/04/13 09:04:33 eshabtai Exp $
+ *  $Id: fib.h,v 1.2 2007/04/13 09:04:33 eshabtai Exp $
  *
  */
 

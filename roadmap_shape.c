@@ -70,10 +70,10 @@ static void *roadmap_shape_map (const roadmap_db_data_file *file) {
    context->type = RoadMapShapeType;
 
    if (!roadmap_db_get_data (file,
-   								  model__tile_shape_data,
-   								  sizeof (RoadMapShape),
-   								  (void**)&(context->Shape),
-   								  &(context->ShapeCount))) {
+                                  model__tile_shape_data,
+                                  sizeof (RoadMapShape),
+                                  (void**)&(context->Shape),
+                                  &(context->ShapeCount))) {
       roadmap_log (ROADMAP_FATAL, "invalid shape/data structure");
    }
 

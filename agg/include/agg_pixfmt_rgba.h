@@ -5,29 +5,29 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 //
-// Adaptation for high precision colors has been sponsored by 
+// Adaptation for high precision colors has been sponsored by
 // Liberty Technology Systems, Inc., visit http://lib-sys.com
 //
 // Liberty Technology Systems, Inc. is the provider of
 // PostScript and PDF technology for software developers.
-// 
+//
 //----------------------------------------------------------------------------
 
 #ifndef AGG_PIXFMT_RGBA_INCLUDED
@@ -126,7 +126,7 @@ namespace agg
     };
 
 
-    
+
 
 
 
@@ -141,16 +141,16 @@ namespace agg
         typedef Order order_type;
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
-        enum base_scale_e 
-        { 
+        enum base_scale_e
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         //--------------------------------------------------------------------
-        static AGG_INLINE void blend_pix(value_type* p, 
+        static AGG_INLINE void blend_pix(value_type* p,
                                          unsigned cr, unsigned cg, unsigned cb,
-                                         unsigned alpha, 
+                                         unsigned alpha,
                                          unsigned cover=0)
         {
             calc_type r = p[Order::R];
@@ -172,13 +172,13 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         //--------------------------------------------------------------------
-        static AGG_INLINE void blend_pix(value_type* p, 
+        static AGG_INLINE void blend_pix(value_type* p,
                                          unsigned cr, unsigned cg, unsigned cb,
                                          unsigned alpha,
                                          unsigned cover)
@@ -192,7 +192,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        static AGG_INLINE void blend_pix(value_type* p, 
+        static AGG_INLINE void blend_pix(value_type* p,
                                          unsigned cr, unsigned cg, unsigned cb,
                                          unsigned alpha)
         {
@@ -214,7 +214,7 @@ namespace agg
         enum base_scale_e { base_shift = color_type::base_shift };
 
         //--------------------------------------------------------------------
-        static AGG_INLINE void blend_pix(value_type* p, 
+        static AGG_INLINE void blend_pix(value_type* p,
                                          unsigned cr, unsigned cg, unsigned cb,
                                          unsigned alpha,
                                          unsigned cover=0)
@@ -249,12 +249,12 @@ namespace agg
         typedef Order order_type;
         typedef typename color_type::value_type value_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
-        static AGG_INLINE void blend_pix(value_type* p, 
+        static AGG_INLINE void blend_pix(value_type* p,
                                          unsigned, unsigned, unsigned, unsigned,
                                          unsigned cover)
         {
@@ -268,7 +268,7 @@ namespace agg
             }
             else
             {
-                p[0] = p[1] = p[2] = p[3] = 0; 
+                p[0] = p[1] = p[2] = p[3] = 0;
             }
         }
     };
@@ -280,8 +280,8 @@ namespace agg
         typedef Order order_type;
         typedef typename color_type::value_type value_type;
 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -309,8 +309,8 @@ namespace agg
         typedef Order order_type;
         typedef typename color_type::value_type value_type;
 
-        static AGG_INLINE void blend_pix(value_type*, 
-                                         unsigned, unsigned, unsigned, 
+        static AGG_INLINE void blend_pix(value_type*,
+                                         unsigned, unsigned, unsigned,
                                          unsigned, unsigned)
         {
         }
@@ -324,15 +324,15 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         //   Dca' = Sca + Dca.(1 - Sa)
-        //   Da'  = Sa + Da - Sa.Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        //   Da'  = Sa + Da - Sa.Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -358,15 +358,15 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = Dca + Sca.(1 - Da)
-        // Da'  = Sa + Da - Sa.Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        // Da'  = Sa + Da - Sa.Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -392,15 +392,15 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = Sca.Da
-        // Da'  = Sa.Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        // Da'  = Sa.Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             calc_type da = p[Order::A];
@@ -430,15 +430,15 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = Dca.Sa
-        // Da'  = Sa.Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned, unsigned, unsigned, 
+        // Da'  = Sa.Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned, unsigned, unsigned,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -460,15 +460,15 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = Sca.(1 - Da)
-        // Da'  = Sa.(1 - Da) 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        // Da'  = Sa.(1 - Da)
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             calc_type da = base_mask - p[Order::A];
@@ -498,15 +498,15 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
-        // Dca' = Dca.(1 - Sa) 
-        // Da'  = Da.(1 - Sa) 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned, unsigned, unsigned, 
+        // Dca' = Dca.(1 - Sa)
+        // Da'  = Da.(1 - Sa)
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned, unsigned, unsigned,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -529,15 +529,15 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = Sca.Da + Dca.(1 - Sa)
         // Da'  = Da
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -563,15 +563,15 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = Dca.Sa + Sca.(1 - Da)
-        // Da'  = Sa 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        // Da'  = Sa
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             calc_type da = base_mask - p[Order::A];
@@ -605,15 +605,15 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = Sca.(1 - Da) + Dca.(1 - Sa)
-        // Da'  = Sa + Da - 2.Sa.Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        // Da'  = Sa + Da - 2.Sa.Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -643,15 +643,15 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = Sca + Dca
-        // Da'  = Sa + Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        // Da'  = Sa + Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -683,15 +683,15 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = Dca - Sca
         // Da' = 1 - (1 - Sa).(1 - Da)
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -723,15 +723,15 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = Sca.Dca + Sca.(1 - Da) + Dca.(1 - Sa)
-        // Da'  = Sa + Da - Sa.Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        // Da'  = Sa + Da - Sa.Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -764,15 +764,15 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = Sca + Dca - Sca.Dca
-        // Da'  = Sa + Da - Sa.Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        // Da'  = Sa + Da - Sa.Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -804,7 +804,7 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
@@ -813,10 +813,10 @@ namespace agg
         //   Dca' = 2.Sca.Dca + Sca.(1 - Da) + Dca.(1 - Sa)
         // otherwise
         //   Dca' = Sa.Da - 2.(Da - Dca).(Sa - Sca) + Sca.(1 - Da) + Dca.(1 - Sa)
-        // 
+        //
         // Da' = Sa + Da - Sa.Da
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -836,16 +836,16 @@ namespace agg
                 calc_type da   = p[Order::A];
                 calc_type sada = sa * p[Order::A];
 
-                p[Order::R] = (value_type)(((2*dr < da) ? 
-                    2*sr*dr + sr*d1a + dr*s1a : 
+                p[Order::R] = (value_type)(((2*dr < da) ?
+                    2*sr*dr + sr*d1a + dr*s1a :
                     sada - 2*(da - dr)*(sa - sr) + sr*d1a + dr*s1a + base_mask) >> base_shift);
 
-                p[Order::G] = (value_type)(((2*dg < da) ? 
-                    2*sg*dg + sg*d1a + dg*s1a : 
+                p[Order::G] = (value_type)(((2*dg < da) ?
+                    2*sg*dg + sg*d1a + dg*s1a :
                     sada - 2*(da - dg)*(sa - sg) + sg*d1a + dg*s1a + base_mask) >> base_shift);
 
-                p[Order::B] = (value_type)(((2*db < da) ? 
-                    2*sb*db + sb*d1a + db*s1a : 
+                p[Order::B] = (value_type)(((2*db < da) ?
+                    2*sb*db + sb*d1a + db*s1a :
                     sada - 2*(da - db)*(sa - sb) + sb*d1a + db*s1a + base_mask) >> base_shift);
 
                 p[Order::A] = (value_type)(sa + da - ((sa * da + base_mask) >> base_shift));
@@ -865,15 +865,15 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = min(Sca.Da, Dca.Sa) + Sca.(1 - Da) + Dca.(1 - Sa)
-        // Da'  = Sa + Da - Sa.Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        // Da'  = Sa + Da - Sa.Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -908,15 +908,15 @@ namespace agg
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = max(Sca.Da, Dca.Sa) + Sca.(1 - Da) + Dca.(1 - Sa)
-        // Da'  = Sa + Da - Sa.Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        // Da'  = Sa + Da - Sa.Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -952,7 +952,7 @@ namespace agg
         typedef typename color_type::calc_type calc_type;
         typedef typename color_type::long_type long_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
@@ -962,9 +962,9 @@ namespace agg
         // otherwise
         //   Dca' = Dca.Sa/(1-Sca/Sa) + Sca.(1 - Da) + Dca.(1 - Sa)
         //
-        // Da'  = Sa + Da - Sa.Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        // Da'  = Sa + Da - Sa.Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -990,15 +990,15 @@ namespace agg
                 long_type sbda = sb * da;
                 long_type sada = sa * da;
 
-                p[Order::R] = (value_type)((srda + drsa >= sada) ? 
+                p[Order::R] = (value_type)((srda + drsa >= sada) ?
                     (sada + sr * d1a + dr * s1a + base_mask) >> base_shift :
                     drsa / (base_mask - (sr << base_shift) / sa) + ((sr * d1a + dr * s1a + base_mask) >> base_shift));
 
-                p[Order::G] = (value_type)((sgda + dgsa >= sada) ? 
+                p[Order::G] = (value_type)((sgda + dgsa >= sada) ?
                     (sada + sg * d1a + dg * s1a + base_mask) >> base_shift :
                     dgsa / (base_mask - (sg << base_shift) / sa) + ((sg * d1a + dg * s1a + base_mask) >> base_shift));
 
-                p[Order::B] = (value_type)((sbda + dbsa >= sada) ? 
+                p[Order::B] = (value_type)((sbda + dbsa >= sada) ?
                     (sada + sb * d1a + db * s1a + base_mask) >> base_shift :
                     dbsa / (base_mask - (sb << base_shift) / sa) + ((sb * d1a + db * s1a + base_mask) >> base_shift));
 
@@ -1016,7 +1016,7 @@ namespace agg
         typedef typename color_type::calc_type calc_type;
         typedef typename color_type::long_type long_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
@@ -1025,10 +1025,10 @@ namespace agg
         //   Dca' = Sca.(1 - Da) + Dca.(1 - Sa)
         // otherwise
         //   Dca' = Sa.(Sca.Da + Dca.Sa - Sa.Da)/Sca + Sca.(1 - Da) + Dca.(1 - Sa)
-        // 
-        // Da'  = Sa + Da - Sa.Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        //
+        // Da'  = Sa + Da - Sa.Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -1054,15 +1054,15 @@ namespace agg
                 long_type sbda = sb * da;
                 long_type sada = sa * da;
 
-                p[Order::R] = (value_type)(((srda + drsa <= sada) ? 
+                p[Order::R] = (value_type)(((srda + drsa <= sada) ?
                     sr * d1a + dr * s1a :
                     sa * (srda + drsa - sada) / sr + sr * d1a + dr * s1a + base_mask) >> base_shift);
 
-                p[Order::G] = (value_type)(((sgda + dgsa <= sada) ? 
+                p[Order::G] = (value_type)(((sgda + dgsa <= sada) ?
                     sg * d1a + dg * s1a :
                     sa * (sgda + dgsa - sada) / sg + sg * d1a + dg * s1a + base_mask) >> base_shift);
 
-                p[Order::B] = (value_type)(((sbda + dbsa <= sada) ? 
+                p[Order::B] = (value_type)(((sbda + dbsa <= sada) ?
                     sb * d1a + db * s1a :
                     sa * (sbda + dbsa - sada) / sb + sb * d1a + db * s1a + base_mask) >> base_shift);
 
@@ -1080,7 +1080,7 @@ namespace agg
         typedef typename color_type::calc_type calc_type;
         typedef typename color_type::long_type long_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
@@ -1089,10 +1089,10 @@ namespace agg
         //    Dca' = 2.Sca.Dca + Sca.(1 - Da) + Dca.(1 - Sa)
         // otherwise
         //    Dca' = Sa.Da - 2.(Da - Dca).(Sa - Sca) + Sca.(1 - Da) + Dca.(1 - Sa)
-        // 
+        //
         // Da'  = Sa + Da - Sa.Da
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -1112,16 +1112,16 @@ namespace agg
                 calc_type da   = p[Order::A];
                 calc_type sada = sa * da;
 
-                p[Order::R] = (value_type)(((2*sr < sa) ? 
-                    2*sr*dr + sr*d1a + dr*s1a : 
+                p[Order::R] = (value_type)(((2*sr < sa) ?
+                    2*sr*dr + sr*d1a + dr*s1a :
                     sada - 2*(da - dr)*(sa - sr) + sr*d1a + dr*s1a + base_mask) >> base_shift);
 
-                p[Order::G] = (value_type)(((2*sg < sa) ? 
-                    2*sg*dg + sg*d1a + dg*s1a : 
+                p[Order::G] = (value_type)(((2*sg < sa) ?
+                    2*sg*dg + sg*d1a + dg*s1a :
                     sada - 2*(da - dg)*(sa - sg) + sg*d1a + dg*s1a + base_mask) >> base_shift);
 
-                p[Order::B] = (value_type)(((2*sb < sa) ? 
-                    2*sb*db + sb*d1a + db*s1a : 
+                p[Order::B] = (value_type)(((2*sb < sa) ?
+                    2*sb*db + sb*d1a + db*s1a :
                     sada - 2*(da - db)*(sa - sb) + sb*d1a + db*s1a + base_mask) >> base_shift);
 
                 p[Order::A] = (value_type)(sa + da - ((sa * da + base_mask) >> base_shift));
@@ -1138,7 +1138,7 @@ namespace agg
         typedef typename color_type::calc_type calc_type;
         typedef typename color_type::long_type long_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
@@ -1149,11 +1149,11 @@ namespace agg
         //   Dca' = Dca.(Sa + (1 - Dca/Da).(2.Sca - Sa).(3 - 8.Dca/Da)) + Sca.(1 - Da) + Dca.(1 - Sa)
         // otherwise
         //   Dca' = (Dca.Sa + ((Dca/Da)^(0.5).Da - Dca).(2.Sca - Sa)) + Sca.(1 - Da) + Dca.(1 - Sa)
-        // 
-        // Da'  = Sa + Da - Sa.Da 
+        //
+        // Da'  = Sa + Da - Sa.Da
 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned r, unsigned g, unsigned b, 
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned r, unsigned g, unsigned b,
                                          unsigned a, unsigned cover)
         {
             double sr = double(r * cover) / (base_mask * 255);
@@ -1200,16 +1200,16 @@ namespace agg
         typedef typename color_type::calc_type calc_type;
         typedef typename color_type::long_type long_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_scale = color_type::base_scale,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = Sca + Dca - 2.min(Sca.Da, Dca.Sa)
-        // Da'  = Sa + Da - Sa.Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        // Da'  = Sa + Da - Sa.Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -1242,15 +1242,15 @@ namespace agg
         typedef typename color_type::calc_type calc_type;
         typedef typename color_type::long_type long_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = (Sca.Da + Dca.Sa - 2.Sca.Dca) + Sca.(1 - Da) + Dca.(1 - Sa)
-        // Da'  = Sa + Da - Sa.Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        // Da'  = Sa + Da - Sa.Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -1285,14 +1285,14 @@ namespace agg
         typedef typename color_type::calc_type calc_type;
         typedef typename color_type::long_type long_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -1309,9 +1309,9 @@ namespace agg
             long_type d2a = da >> 1;
             unsigned s2a = sa >> 1;
 
-            int r = (int)((((dr - d2a) * int((sr - s2a)*2 + base_mask)) >> base_shift) + d2a); 
-            int g = (int)((((dg - d2a) * int((sg - s2a)*2 + base_mask)) >> base_shift) + d2a); 
-            int b = (int)((((db - d2a) * int((sb - s2a)*2 + base_mask)) >> base_shift) + d2a); 
+            int r = (int)((((dr - d2a) * int((sr - s2a)*2 + base_mask)) >> base_shift) + d2a);
+            int g = (int)((((dg - d2a) * int((sg - s2a)*2 + base_mask)) >> base_shift) + d2a);
+            int b = (int)((((db - d2a) * int((sb - s2a)*2 + base_mask)) >> base_shift) + d2a);
 
             r = (r < 0) ? 0 : r;
             g = (g < 0) ? 0 : g;
@@ -1332,15 +1332,15 @@ namespace agg
         typedef typename color_type::calc_type calc_type;
         typedef typename color_type::long_type long_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = (Da - Dca) * Sa + Dca.(1 - Sa)
-        // Da'  = Sa + Da - Sa.Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        // Da'  = Sa + Da - Sa.Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             sa = (sa * cover + 255) >> 8;
@@ -1368,15 +1368,15 @@ namespace agg
         typedef typename color_type::calc_type calc_type;
         typedef typename color_type::long_type long_type;
         enum base_scale_e
-        { 
+        {
             base_shift = color_type::base_shift,
             base_mask  = color_type::base_mask
         };
 
         // Dca' = (Da - Dca) * Sca + Dca.(1 - Sa)
-        // Da'  = Sa + Da - Sa.Da 
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned sr, unsigned sg, unsigned sb, 
+        // Da'  = Sa + Da - Sa.Da
+        static AGG_INLINE void blend_pix(value_type* p,
+                                         unsigned sr, unsigned sg, unsigned sb,
                                          unsigned sa, unsigned cover)
         {
             if(cover < 255)
@@ -1409,9 +1409,9 @@ namespace agg
     template<class ColorT, class Order> struct comp_op_table_rgba
     {
         typedef typename ColorT::value_type value_type;
-        typedef void (*comp_op_func_type)(value_type* p, 
-                                          unsigned cr, 
-                                          unsigned cg, 
+        typedef void (*comp_op_func_type)(value_type* p,
+                                          unsigned cr,
+                                          unsigned cg,
                                           unsigned cb,
                                           unsigned ca,
                                           unsigned cover);
@@ -1419,9 +1419,9 @@ namespace agg
     };
 
     //==========================================================g_comp_op_func
-    template<class ColorT, class Order> 
+    template<class ColorT, class Order>
     typename comp_op_table_rgba<ColorT, Order>::comp_op_func_type
-    comp_op_table_rgba<ColorT, Order>::g_comp_op_func[] = 
+    comp_op_table_rgba<ColorT, Order>::g_comp_op_func[] =
     {
         comp_op_rgba_clear      <ColorT,Order>::blend_pix,
         comp_op_rgba_src        <ColorT,Order>::blend_pix,
@@ -1503,18 +1503,18 @@ namespace agg
         typedef ColorT color_type;
         typedef typename color_type::value_type value_type;
         enum base_scale_e
-        {  
+        {
             base_shift = color_type::base_shift,
-            base_mask  = color_type::base_mask 
+            base_mask  = color_type::base_mask
         };
 
-        static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
+        static AGG_INLINE void blend_pix(unsigned op, value_type* p,
                                          unsigned cr, unsigned cg, unsigned cb,
                                          unsigned ca,
                                          unsigned cover)
         {
             comp_op_table_rgba<ColorT, Order>::g_comp_op_func[op]
-                (p, (cr * ca + base_mask) >> base_shift, 
+                (p, (cr * ca + base_mask) >> base_shift,
                     (cg * ca + base_mask) >> base_shift,
                     (cb * ca + base_mask) >> base_shift,
                      ca, cover);
@@ -1528,12 +1528,12 @@ namespace agg
         typedef ColorT color_type;
         typedef typename color_type::value_type value_type;
         enum base_scale_e
-        {  
+        {
             base_shift = color_type::base_shift,
-            base_mask  = color_type::base_mask 
+            base_mask  = color_type::base_mask
         };
 
-        static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
+        static AGG_INLINE void blend_pix(unsigned op, value_type* p,
                                          unsigned cr, unsigned cg, unsigned cb,
                                          unsigned ca,
                                          unsigned cover)
@@ -1543,10 +1543,10 @@ namespace agg
             cb = (cb * ca + base_mask) >> base_shift;
             unsigned da = p[Order::A];
             comp_op_table_rgba<ColorT, Order>::g_comp_op_func[op]
-                (p, (cr * da + base_mask) >> base_shift, 
-                    (cg * da + base_mask) >> base_shift, 
-                    (cb * da + base_mask) >> base_shift, 
-                    (ca * da + base_mask) >> base_shift, 
+                (p, (cr * da + base_mask) >> base_shift,
+                    (cg * da + base_mask) >> base_shift,
+                    (cb * da + base_mask) >> base_shift,
+                    (ca * da + base_mask) >> base_shift,
                     cover);
         }
     };
@@ -1558,12 +1558,12 @@ namespace agg
         typedef ColorT color_type;
         typedef typename color_type::value_type value_type;
         enum base_scale_e
-        {  
+        {
             base_shift = color_type::base_shift,
-            base_mask  = color_type::base_mask 
+            base_mask  = color_type::base_mask
         };
 
-        static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
+        static AGG_INLINE void blend_pix(unsigned op, value_type* p,
                                          unsigned cr, unsigned cg, unsigned cb,
                                          unsigned ca,
                                          unsigned cover)
@@ -1579,22 +1579,22 @@ namespace agg
         typedef ColorT color_type;
         typedef typename color_type::value_type value_type;
         enum base_scale_e
-        {  
+        {
             base_shift = color_type::base_shift,
-            base_mask  = color_type::base_mask 
+            base_mask  = color_type::base_mask
         };
 
-        static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
+        static AGG_INLINE void blend_pix(unsigned op, value_type* p,
                                          unsigned cr, unsigned cg, unsigned cb,
                                          unsigned ca,
                                          unsigned cover)
         {
             unsigned da = p[Order::A];
             comp_op_table_rgba<ColorT, Order>::g_comp_op_func[op]
-                (p, (cr * da + base_mask) >> base_shift, 
-                    (cg * da + base_mask) >> base_shift, 
-                    (cb * da + base_mask) >> base_shift, 
-                    (ca * da + base_mask) >> base_shift, 
+                (p, (cr * da + base_mask) >> base_shift,
+                    (cg * da + base_mask) >> base_shift,
+                    (cb * da + base_mask) >> base_shift,
+                    (ca * da + base_mask) >> base_shift,
                     cover);
         }
     };
@@ -1606,18 +1606,18 @@ namespace agg
         typedef typename BlenderPre::color_type color_type;
         typedef typename color_type::value_type value_type;
         enum base_scale_e
-        {  
+        {
             base_shift = color_type::base_shift,
-            base_mask  = color_type::base_mask 
+            base_mask  = color_type::base_mask
         };
 
-        static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
+        static AGG_INLINE void blend_pix(unsigned op, value_type* p,
                                          unsigned cr, unsigned cg, unsigned cb,
                                          unsigned ca,
                                          unsigned cover)
         {
-            BlenderPre::blend_pix(p, 
-                                  (cr * ca + base_mask) >> base_shift, 
+            BlenderPre::blend_pix(p,
+                                  (cr * ca + base_mask) >> base_shift,
                                   (cg * ca + base_mask) >> base_shift,
                                   (cb * ca + base_mask) >> base_shift,
                                   ca, cover);
@@ -1631,12 +1631,12 @@ namespace agg
         typedef typename BlenderPre::color_type color_type;
         typedef typename color_type::value_type value_type;
         enum base_scale_e
-        {  
+        {
             base_shift = color_type::base_shift,
-            base_mask  = color_type::base_mask 
+            base_mask  = color_type::base_mask
         };
 
-        static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
+        static AGG_INLINE void blend_pix(unsigned op, value_type* p,
                                          unsigned cr, unsigned cg, unsigned cb,
                                          unsigned ca,
                                          unsigned cover)
@@ -1645,11 +1645,11 @@ namespace agg
             cg = (cg * ca + base_mask) >> base_shift;
             cb = (cb * ca + base_mask) >> base_shift;
             unsigned da = p[order_type::A];
-            BlenderPre::blend_pix(p, 
-                                  (cr * da + base_mask) >> base_shift, 
-                                  (cg * da + base_mask) >> base_shift, 
-                                  (cb * da + base_mask) >> base_shift, 
-                                  (ca * da + base_mask) >> base_shift, 
+            BlenderPre::blend_pix(p,
+                                  (cr * da + base_mask) >> base_shift,
+                                  (cg * da + base_mask) >> base_shift,
+                                  (cb * da + base_mask) >> base_shift,
+                                  (ca * da + base_mask) >> base_shift,
                                   cover);
         }
     };
@@ -1661,22 +1661,22 @@ namespace agg
         typedef typename BlenderPre::color_type color_type;
         typedef typename color_type::value_type value_type;
         enum base_scale_e
-        {  
+        {
             base_shift = color_type::base_shift,
-            base_mask  = color_type::base_mask 
+            base_mask  = color_type::base_mask
         };
 
-        static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
+        static AGG_INLINE void blend_pix(unsigned op, value_type* p,
                                          unsigned cr, unsigned cg, unsigned cb,
                                          unsigned ca,
                                          unsigned cover)
         {
             unsigned da = p[order_type::A];
-            BlenderPre::blend_pix(p, 
-                                  (cr * da + base_mask) >> base_shift, 
-                                  (cg * da + base_mask) >> base_shift, 
-                                  (cb * da + base_mask) >> base_shift, 
-                                  (ca * da + base_mask) >> base_shift, 
+            BlenderPre::blend_pix(p,
+                                  (cr * da + base_mask) >> base_shift,
+                                  (cg * da + base_mask) >> base_shift,
+                                  (cb * da + base_mask) >> base_shift,
+                                  (ca * da + base_mask) >> base_shift,
                                   cover);
         }
     };
@@ -1701,7 +1701,7 @@ namespace agg
         };
 
         //--------------------------------------------------------------------
-        static AGG_INLINE void copy_or_blend_pix(value_type* p, 
+        static AGG_INLINE void copy_or_blend_pix(value_type* p,
                                                  unsigned cr, unsigned cg, unsigned cb,
                                                  unsigned alpha)
         {
@@ -1722,7 +1722,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        static AGG_INLINE void copy_or_blend_pix(value_type* p, 
+        static AGG_INLINE void copy_or_blend_pix(value_type* p,
                                                  unsigned cr, unsigned cg, unsigned cb,
                                                  unsigned alpha,
                                                  unsigned cover)
@@ -1756,9 +1756,9 @@ namespace agg
 
 
 
-    
+
     //=================================================pixfmt_alpha_blend_rgba
-    template<class Blender, class RenBuf, class PixelT = int32u> 
+    template<class Blender, class RenBuf, class PixelT = int32u>
     class pixfmt_alpha_blend_rgba
     {
     public:
@@ -1792,7 +1792,7 @@ namespace agg
             if(r.clip(rect_i(0, 0, pixf.width()-1, pixf.height()-1)))
             {
                 int stride = pixf.stride();
-                m_rbuf->attach(pixf.pix_ptr(r.x1, stride < 0 ? r.y2 : r.y1), 
+                m_rbuf->attach(pixf.pix_ptr(r.x1, stride < 0 ? r.y2 : r.y1),
                                (r.x2 - r.x1) + 1,
                                (r.y2 - r.y1) + 1,
                                stride);
@@ -1839,9 +1839,9 @@ namespace agg
             if(p)
             {
                 p += x << 2;
-                return color_type(p[order_type::R], 
-                                  p[order_type::G], 
-                                  p[order_type::B], 
+                return color_type(p[order_type::R],
+                                  p[order_type::G],
+                                  p[order_type::B],
                                   p[order_type::A]);
             }
             return color_type::no_color();
@@ -1861,15 +1861,15 @@ namespace agg
         AGG_INLINE void blend_pixel(int x, int y, const color_type& c, int8u cover)
         {
             cob_type::copy_or_blend_pix(
-                (value_type*)m_rbuf->row_ptr(x, y, 1) + (x << 2), 
-                c.r, c.g, c.b, c.a, 
+                (value_type*)m_rbuf->row_ptr(x, y, 1) + (x << 2),
+                c.r, c.g, c.b, c.a,
                 cover);
         }
 
 
         //--------------------------------------------------------------------
-        AGG_INLINE void copy_hline(int x, int y, 
-                                   unsigned len, 
+        AGG_INLINE void copy_hline(int x, int y,
+                                   unsigned len,
                                    const color_type& c)
         {
             value_type* p = (value_type*)m_rbuf->row_ptr(x, y, len) + (x << 2);
@@ -1889,7 +1889,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         AGG_INLINE void copy_vline(int x, int y,
-                                   unsigned len, 
+                                   unsigned len,
                                    const color_type& c)
         {
             pixel_type v;
@@ -1908,7 +1908,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         void blend_hline(int x, int y,
-                         unsigned len, 
+                         unsigned len,
                          const color_type& c,
                          int8u cover)
         {
@@ -1957,7 +1957,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         void blend_vline(int x, int y,
-                         unsigned len, 
+                         unsigned len,
                          const color_type& c,
                          int8u cover)
         {
@@ -2006,14 +2006,14 @@ namespace agg
 
         //--------------------------------------------------------------------
         void blend_solid_hspan(int x, int y,
-                               unsigned len, 
+                               unsigned len,
                                const color_type& c,
                                const int8u* covers)
         {
             if (c.a)
             {
                 value_type* p = (value_type*)m_rbuf->row_ptr(x, y, len) + (x << 2);
-                do 
+                do
                 {
                     calc_type alpha = (calc_type(c.a) * (calc_type(*covers) + 1)) >> 8;
                     if(alpha == base_mask)
@@ -2037,13 +2037,13 @@ namespace agg
 
         //--------------------------------------------------------------------
         void blend_solid_vspan(int x, int y,
-                               unsigned len, 
+                               unsigned len,
                                const color_type& c,
                                const int8u* covers)
         {
             if (c.a)
             {
-                do 
+                do
                 {
                     value_type* p = (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2);
                     calc_type alpha = (calc_type(c.a) * (calc_type(*covers) + 1)) >> 8;
@@ -2067,11 +2067,11 @@ namespace agg
 
         //--------------------------------------------------------------------
         void copy_color_hspan(int x, int y,
-                              unsigned len, 
+                              unsigned len,
                               const color_type* colors)
         {
             value_type* p = (value_type*)m_rbuf->row_ptr(x, y, len) + (x << 2);
-            do 
+            do
             {
                 p[order_type::R] = colors->r;
                 p[order_type::G] = colors->g;
@@ -2086,10 +2086,10 @@ namespace agg
 
         //--------------------------------------------------------------------
         void copy_color_vspan(int x, int y,
-                              unsigned len, 
+                              unsigned len,
                               const color_type* colors)
         {
-            do 
+            do
             {
                 value_type* p = (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2);
                 p[order_type::R] = colors->r;
@@ -2104,7 +2104,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         void blend_color_hspan(int x, int y,
-                               unsigned len, 
+                               unsigned len,
                                const color_type* colors,
                                const int8u* covers,
                                int8u cover)
@@ -2112,13 +2112,13 @@ namespace agg
             value_type* p = (value_type*)m_rbuf->row_ptr(x, y, len) + (x << 2);
             if(covers)
             {
-                do 
+                do
                 {
-                    cob_type::copy_or_blend_pix(p, 
-                                                colors->r, 
-                                                colors->g, 
-                                                colors->b, 
-                                                colors->a, 
+                    cob_type::copy_or_blend_pix(p,
+                                                colors->r,
+                                                colors->g,
+                                                colors->b,
+                                                colors->a,
                                                 *covers++);
                     p += 4;
                     ++colors;
@@ -2129,12 +2129,12 @@ namespace agg
             {
                 if(cover == 255)
                 {
-                    do 
+                    do
                     {
-                        cob_type::copy_or_blend_pix(p, 
-                                                    colors->r, 
-                                                    colors->g, 
-                                                    colors->b, 
+                        cob_type::copy_or_blend_pix(p,
+                                                    colors->r,
+                                                    colors->g,
+                                                    colors->b,
                                                     colors->a);
                         p += 4;
                         ++colors;
@@ -2143,13 +2143,13 @@ namespace agg
                 }
                 else
                 {
-                    do 
+                    do
                     {
-                        cob_type::copy_or_blend_pix(p, 
-                                                    colors->r, 
-                                                    colors->g, 
-                                                    colors->b, 
-                                                    colors->a, 
+                        cob_type::copy_or_blend_pix(p,
+                                                    colors->r,
+                                                    colors->g,
+                                                    colors->b,
+                                                    colors->a,
                                                     cover);
                         p += 4;
                         ++colors;
@@ -2163,7 +2163,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         void blend_color_vspan(int x, int y,
-                               unsigned len, 
+                               unsigned len,
                                const color_type* colors,
                                const int8u* covers,
                                int8u cover)
@@ -2171,13 +2171,13 @@ namespace agg
             value_type* p;
             if(covers)
             {
-                do 
+                do
                 {
                     p = (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2);
-                    cob_type::copy_or_blend_pix(p, 
-                                                colors->r, 
-                                                colors->g, 
-                                                colors->b, 
+                    cob_type::copy_or_blend_pix(p,
+                                                colors->r,
+                                                colors->g,
+                                                colors->b,
                                                 colors->a,
                                                 *covers++);
                     ++colors;
@@ -2188,13 +2188,13 @@ namespace agg
             {
                 if(cover == 255)
                 {
-                    do 
+                    do
                     {
                         p = (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2);
-                        cob_type::copy_or_blend_pix(p, 
-                                                    colors->r, 
-                                                    colors->g, 
-                                                    colors->b, 
+                        cob_type::copy_or_blend_pix(p,
+                                                    colors->r,
+                                                    colors->g,
+                                                    colors->b,
                                                     colors->a);
                         ++colors;
                     }
@@ -2202,14 +2202,14 @@ namespace agg
                 }
                 else
                 {
-                    do 
+                    do
                     {
                         p = (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2);
-                        cob_type::copy_or_blend_pix(p, 
-                                                    colors->r, 
-                                                    colors->g, 
-                                                    colors->b, 
-                                                    colors->a, 
+                        cob_type::copy_or_blend_pix(p,
+                                                    colors->r,
+                                                    colors->g,
+                                                    colors->b,
+                                                    colors->a,
                                                     cover);
                         ++colors;
                     }
@@ -2228,7 +2228,7 @@ namespace agg
                 if(r.ptr)
                 {
                     unsigned len = r.x2 - r.x1 + 1;
-                    value_type* p = 
+                    value_type* p =
                         (value_type*)m_rbuf->row_ptr(r.x1, y, len) + (r.x1 << 2);
                     do
                     {
@@ -2265,7 +2265,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        template<class RenBuf2> void copy_from(const RenBuf2& from, 
+        template<class RenBuf2> void copy_from(const RenBuf2& from,
                                                int xdst, int ydst,
                                                int xsrc, int ysrc,
                                                unsigned len)
@@ -2273,15 +2273,15 @@ namespace agg
             const int8u* p = from.row_ptr(ysrc);
             if(p)
             {
-                memmove(m_rbuf->row_ptr(xdst, ydst, len) + xdst * pix_width, 
-                        p + xsrc * pix_width, 
+                memmove(m_rbuf->row_ptr(xdst, ydst, len) + xdst * pix_width,
+                        p + xsrc * pix_width,
                         len * pix_width);
             }
         }
 
         //--------------------------------------------------------------------
         template<class SrcPixelFormatRenderer>
-        void blend_from(const SrcPixelFormatRenderer& from, 
+        void blend_from(const SrcPixelFormatRenderer& from,
                         int xdst, int ydst,
                         int xsrc, int ysrc,
                         unsigned len,
@@ -2292,7 +2292,7 @@ namespace agg
             if(psrc)
             {
                 psrc += xsrc << 2;
-                value_type* pdst = 
+                value_type* pdst =
                     (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + (xdst << 2);
                 int incp = 4;
                 if(xdst > xsrc)
@@ -2304,9 +2304,9 @@ namespace agg
 
                 if(cover == 255)
                 {
-                    do 
+                    do
                     {
-                        cob_type::copy_or_blend_pix(pdst, 
+                        cob_type::copy_or_blend_pix(pdst,
                                                     psrc[src_order::R],
                                                     psrc[src_order::G],
                                                     psrc[src_order::B],
@@ -2318,9 +2318,9 @@ namespace agg
                 }
                 else
                 {
-                    do 
+                    do
                     {
-                        cob_type::copy_or_blend_pix(pdst, 
+                        cob_type::copy_or_blend_pix(pdst,
                                                     psrc[src_order::R],
                                                     psrc[src_order::G],
                                                     psrc[src_order::B],
@@ -2336,7 +2336,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         template<class SrcPixelFormatRenderer>
-        void blend_from_color(const SrcPixelFormatRenderer& from, 
+        void blend_from_color(const SrcPixelFormatRenderer& from,
                               const color_type& color,
                               int xdst, int ydst,
                               int xsrc, int ysrc,
@@ -2347,11 +2347,11 @@ namespace agg
             const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
             if(psrc)
             {
-                value_type* pdst = 
+                value_type* pdst =
                     (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + (xdst << 2);
-                do 
+                do
                 {
-                    cob_type::copy_or_blend_pix(pdst, 
+                    cob_type::copy_or_blend_pix(pdst,
                                                 color.r, color.g, color.b, color.a,
                                                 (*psrc * cover + base_mask) >> base_shift);
                     ++psrc;
@@ -2363,7 +2363,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         template<class SrcPixelFormatRenderer>
-        void blend_from_lut(const SrcPixelFormatRenderer& from, 
+        void blend_from_lut(const SrcPixelFormatRenderer& from,
                             const color_type* color_lut,
                             int xdst, int ydst,
                             int xsrc, int ysrc,
@@ -2374,15 +2374,15 @@ namespace agg
             const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
             if(psrc)
             {
-                value_type* pdst = 
+                value_type* pdst =
                     (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + (xdst << 2);
 
                 if(cover == 255)
                 {
-                    do 
+                    do
                     {
                         const color_type& color = color_lut[*psrc];
-                        cob_type::copy_or_blend_pix(pdst, 
+                        cob_type::copy_or_blend_pix(pdst,
                                                     color.r, color.g, color.b, color.a);
                         ++psrc;
                         pdst += 4;
@@ -2391,10 +2391,10 @@ namespace agg
                 }
                 else
                 {
-                    do 
+                    do
                     {
                         const color_type& color = color_lut[*psrc];
-                        cob_type::copy_or_blend_pix(pdst, 
+                        cob_type::copy_or_blend_pix(pdst,
                                                     color.r, color.g, color.b, color.a,
                                                     cover);
                         ++psrc;
@@ -2428,13 +2428,13 @@ namespace agg
             base_shift = color_type::base_shift,
             base_scale = color_type::base_scale,
             base_mask  = color_type::base_mask,
-            pix_width  = sizeof(value_type) * 4 
+            pix_width  = sizeof(value_type) * 4
         };
 
 
         //--------------------------------------------------------------------
         pixfmt_custom_blend_rgba() : m_rbuf(0), m_comp_op(3) {}
-        explicit pixfmt_custom_blend_rgba(rbuf_type& rb, unsigned comp_op=3) : 
+        explicit pixfmt_custom_blend_rgba(rbuf_type& rb, unsigned comp_op=3) :
             m_rbuf(&rb),
             m_comp_op(comp_op)
         {}
@@ -2448,7 +2448,7 @@ namespace agg
             if(r.clip(rect_i(0, 0, pixf.width()-1, pixf.height()-1)))
             {
                 int stride = pixf.stride();
-                m_rbuf->attach(pixf.pix_ptr(r.x1, stride < 0 ? r.y2 : r.y1), 
+                m_rbuf->attach(pixf.pix_ptr(r.x1, stride < 0 ? r.y2 : r.y1),
                                (r.x2 - r.x1) + 1,
                                (r.y2 - r.y1) + 1,
                                stride);
@@ -2495,9 +2495,9 @@ namespace agg
         color_type pixel(int x, int y) const
         {
             const value_type* p = (value_type*)m_rbuf->row_ptr(y) + (x << 2);
-            return color_type(p[order_type::R], 
-                              p[order_type::G], 
-                              p[order_type::B], 
+            return color_type(p[order_type::R],
+                              p[order_type::G],
+                              p[order_type::B],
                               p[order_type::A]);
         }
 
@@ -2505,8 +2505,8 @@ namespace agg
         void copy_pixel(int x, int y, const color_type& c)
         {
             blender_type::blend_pix(
-                m_comp_op, 
-                (value_type*)m_rbuf->row_ptr(x, y, 1) + (x << 2), 
+                m_comp_op,
+                (value_type*)m_rbuf->row_ptr(x, y, 1) + (x << 2),
                 c.r, c.g, c.b, c.a, 255);
         }
 
@@ -2514,9 +2514,9 @@ namespace agg
         void blend_pixel(int x, int y, const color_type& c, int8u cover)
         {
             blender_type::blend_pix(
-                m_comp_op, 
+                m_comp_op,
                 (value_type*)m_rbuf->row_ptr(x, y, 1) + (x << 2),
-                c.r, c.g, c.b, c.a, 
+                c.r, c.g, c.b, c.a,
                 cover);
         }
 
@@ -2538,7 +2538,7 @@ namespace agg
             do
             {
                 blender_type::blend_pix(
-                    m_comp_op, 
+                    m_comp_op,
                     (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2),
                     c.r, c.g, c.b, c.a, 255);
             }
@@ -2546,7 +2546,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void blend_hline(int x, int y, unsigned len, 
+        void blend_hline(int x, int y, unsigned len,
                          const color_type& c, int8u cover)
         {
 
@@ -2560,30 +2560,30 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void blend_vline(int x, int y, unsigned len, 
+        void blend_vline(int x, int y, unsigned len,
                          const color_type& c, int8u cover)
         {
 
             do
             {
                 blender_type::blend_pix(
-                    m_comp_op, 
-                    (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2), 
-                    c.r, c.g, c.b, c.a, 
+                    m_comp_op,
+                    (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2),
+                    c.r, c.g, c.b, c.a,
                     cover);
             }
             while(--len);
         }
 
         //--------------------------------------------------------------------
-        void blend_solid_hspan(int x, int y, unsigned len, 
+        void blend_solid_hspan(int x, int y, unsigned len,
                                const color_type& c, const int8u* covers)
         {
             value_type* p = (value_type*)m_rbuf->row_ptr(x, y, len) + (x << 2);
-            do 
+            do
             {
-                blender_type::blend_pix(m_comp_op, 
-                                        p, c.r, c.g, c.b, c.a, 
+                blender_type::blend_pix(m_comp_op,
+                                        p, c.r, c.g, c.b, c.a,
                                         *covers++);
                 p += 4;
             }
@@ -2591,15 +2591,15 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void blend_solid_vspan(int x, int y, unsigned len, 
+        void blend_solid_vspan(int x, int y, unsigned len,
                                const color_type& c, const int8u* covers)
         {
-            do 
+            do
             {
                 blender_type::blend_pix(
-                    m_comp_op, 
-                    (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2), 
-                    c.r, c.g, c.b, c.a, 
+                    m_comp_op,
+                    (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2),
+                    c.r, c.g, c.b, c.a,
                     *covers++);
             }
             while(--len);
@@ -2607,12 +2607,12 @@ namespace agg
 
         //--------------------------------------------------------------------
         void copy_color_hspan(int x, int y,
-                              unsigned len, 
+                              unsigned len,
                               const color_type* colors)
         {
 
             value_type* p = (value_type*)m_rbuf->row_ptr(x, y, len) + (x << 2);
-            do 
+            do
             {
                 p[order_type::R] = colors->r;
                 p[order_type::G] = colors->g;
@@ -2626,10 +2626,10 @@ namespace agg
 
         //--------------------------------------------------------------------
         void copy_color_vspan(int x, int y,
-                              unsigned len, 
+                              unsigned len,
                               const color_type* colors)
         {
-            do 
+            do
             {
                 value_type* p = (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2);
                 p[order_type::R] = colors->r;
@@ -2642,20 +2642,20 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void blend_color_hspan(int x, int y, unsigned len, 
-                               const color_type* colors, 
+        void blend_color_hspan(int x, int y, unsigned len,
+                               const color_type* colors,
                                const int8u* covers,
                                int8u cover)
         {
             value_type* p = (value_type*)m_rbuf->row_ptr(x, y, len) + (x << 2);
-            do 
+            do
             {
-                blender_type::blend_pix(m_comp_op, 
-                                        p, 
-                                        colors->r, 
-                                        colors->g, 
-                                        colors->b, 
-                                        colors->a, 
+                blender_type::blend_pix(m_comp_op,
+                                        p,
+                                        colors->r,
+                                        colors->g,
+                                        colors->b,
+                                        colors->a,
                                         covers ? *covers++ : cover);
                 p += 4;
                 ++colors;
@@ -2664,16 +2664,16 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void blend_color_vspan(int x, int y, unsigned len, 
-                               const color_type* colors, 
+        void blend_color_vspan(int x, int y, unsigned len,
+                               const color_type* colors,
                                const int8u* covers,
                                int8u cover)
         {
-            do 
+            do
             {
                 blender_type::blend_pix(
-                    m_comp_op, 
-                    (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2), 
+                    m_comp_op,
+                    (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2),
                     colors->r,
                     colors->g,
                     colors->b,
@@ -2695,7 +2695,7 @@ namespace agg
                 if(r.ptr)
                 {
                     unsigned len = r.x2 - r.x1 + 1;
-                    value_type* p = 
+                    value_type* p =
                         (value_type*)m_rbuf->row_ptr(r.x1, y, len) + (r.x1 << 2);
                     do
                     {
@@ -2732,7 +2732,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        template<class RenBuf2> void copy_from(const RenBuf2& from, 
+        template<class RenBuf2> void copy_from(const RenBuf2& from,
                                                int xdst, int ydst,
                                                int xsrc, int ysrc,
                                                unsigned len)
@@ -2740,15 +2740,15 @@ namespace agg
             const int8u* p = from.row_ptr(ysrc);
             if(p)
             {
-                memmove(m_rbuf->row_ptr(xdst, ydst, len) + xdst * pix_width, 
-                        p + xsrc * pix_width, 
+                memmove(m_rbuf->row_ptr(xdst, ydst, len) + xdst * pix_width,
+                        p + xsrc * pix_width,
                         len * pix_width);
             }
         }
 
         //--------------------------------------------------------------------
-        template<class SrcPixelFormatRenderer> 
-        void blend_from(const SrcPixelFormatRenderer& from, 
+        template<class SrcPixelFormatRenderer>
+        void blend_from(const SrcPixelFormatRenderer& from,
                         int xdst, int ydst,
                         int xsrc, int ysrc,
                         unsigned len,
@@ -2759,7 +2759,7 @@ namespace agg
             if(psrc)
             {
                 psrc += xsrc << 2;
-                value_type* pdst = 
+                value_type* pdst =
                     (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + (xdst << 2);
 
                 int incp = 4;
@@ -2770,10 +2770,10 @@ namespace agg
                     incp = -4;
                 }
 
-                do 
+                do
                 {
-                    blender_type::blend_pix(m_comp_op, 
-                                            pdst, 
+                    blender_type::blend_pix(m_comp_op,
+                                            pdst,
                                             psrc[src_order::R],
                                             psrc[src_order::G],
                                             psrc[src_order::B],
@@ -2788,7 +2788,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         template<class SrcPixelFormatRenderer>
-        void blend_from_color(const SrcPixelFormatRenderer& from, 
+        void blend_from_color(const SrcPixelFormatRenderer& from,
                               const color_type& color,
                               int xdst, int ydst,
                               int xsrc, int ysrc,
@@ -2799,12 +2799,12 @@ namespace agg
             const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
             if(psrc)
             {
-                value_type* pdst = 
+                value_type* pdst =
                     (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + (xdst << 2);
-                do 
+                do
                 {
                     blender_type::blend_pix(m_comp_op,
-                                            pdst, 
+                                            pdst,
                                             color.r, color.g, color.b, color.a,
                                             (*psrc * cover + base_mask) >> base_shift);
                     ++psrc;
@@ -2816,7 +2816,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         template<class SrcPixelFormatRenderer>
-        void blend_from_lut(const SrcPixelFormatRenderer& from, 
+        void blend_from_lut(const SrcPixelFormatRenderer& from,
                             const color_type* color_lut,
                             int xdst, int ydst,
                             int xsrc, int ysrc,
@@ -2827,13 +2827,13 @@ namespace agg
             const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
             if(psrc)
             {
-                value_type* pdst = 
+                value_type* pdst =
                     (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + (xdst << 2);
-                do 
+                do
                 {
                     const color_type& color = color_lut[*psrc];
                     blender_type::blend_pix(m_comp_op,
-                                            pdst, 
+                                            pdst,
                                             color.r, color.g, color.b, color.a,
                                             cover);
                     ++psrc;

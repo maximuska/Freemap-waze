@@ -25,11 +25,11 @@
 #include "ssd/ssd_list.h"
 
 void ssd_combobox_new(  SsdWidget            main_cont,
-                        const char*          title, 
-                        int                  count, 
+                        const char*          title,
+                        int                  count,
                         const char**         labels,
                         const void**         values,
-                        const char**				icons,
+                        const char**                icons,
                         PFN_ON_INPUT_CHANGED on_text_changed,  // User modified edit-box text
                         SsdIconListCallback  on_list_selection,// User selected iterm from list
                         SsdIconListDeleteCallback  on_delete_list_item, // User is trying to delete an item from the list
@@ -37,11 +37,11 @@ void ssd_combobox_new(  SsdWidget            main_cont,
                         void*                context);
 
 // Release context pointer
-void ssd_combobox_free( SsdWidget            main_cont); 
+void ssd_combobox_free( SsdWidget            main_cont);
 
 void ssd_combobox_update_list(
                         SsdWidget            main_cont,
-                        int                  count, 
+                        int                  count,
                         const char**         labels,
                         const void**         values,
                         const char**   icons);
@@ -66,8 +66,8 @@ void*       ssd_combobox_get_context(
 
 SsdWidget   ssd_combobox_get_list(
                         SsdWidget            main_cont);
-                        
-                      
+
+
 
 void        ssd_combobox_reset_focus(
                         SsdWidget            main_cont);

@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ namespace agg
 {
 
     //==============================================renderer_raster_htext_solid
-    template<class BaseRenderer, class GlyphGenerator> 
+    template<class BaseRenderer, class GlyphGenerator>
     class renderer_raster_htext_solid
     {
     public:
@@ -95,7 +95,7 @@ namespace agg
 
 
     //=============================================renderer_raster_vtext_solid
-    template<class BaseRenderer, class GlyphGenerator> 
+    template<class BaseRenderer, class GlyphGenerator>
     class renderer_raster_vtext_solid
     {
     public:
@@ -162,7 +162,7 @@ namespace agg
 
 
     //===================================================renderer_raster_htext
-    template<class ScanlineRenderer, class GlyphGenerator> 
+    template<class ScanlineRenderer, class GlyphGenerator>
     class renderer_raster_htext
     {
     public:
@@ -184,14 +184,14 @@ namespace agg
 
                 const_span() {}
                 const_span(int x_, unsigned len_, const cover_type* covers_) :
-                    x(x_), len(len_), covers(covers_) 
+                    x(x_), len(len_), covers(covers_)
                 {}
             };
 
             typedef const const_span* const_iterator;
 
             //----------------------------------------------------------------
-            scanline_single_span(int x, int y, unsigned len, 
+            scanline_single_span(int x, int y, unsigned len,
                                  const cover_type* covers) :
                 m_y(y),
                 m_span(x, len, covers)
@@ -235,8 +235,8 @@ namespace agg
                         for(i = r.y1; i <= r.y2; i++)
                         {
                             m_ren->render(
-                                scanline_single_span(r.x1, 
-                                                     i, 
+                                scanline_single_span(r.x1,
+                                                     i,
                                                      (r.x2 - r.x1 + 1),
                                                      m_glyph->span(r.y2 - i)));
                         }
@@ -246,8 +246,8 @@ namespace agg
                         for(i = r.y1; i <= r.y2; i++)
                         {
                             m_ren->render(
-                                scanline_single_span(r.x1, 
-                                                     i, 
+                                scanline_single_span(r.x1,
+                                                     i,
                                                      (r.x2 - r.x1 + 1),
                                                      m_glyph->span(i - r.y1)));
                         }

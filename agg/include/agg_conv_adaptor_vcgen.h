@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -42,8 +42,8 @@ namespace agg
 
 
     //------------------------------------------------------conv_adaptor_vcgen
-    template<class VertexSource, 
-             class Generator, 
+    template<class VertexSource,
+             class Generator,
              class Markers=null_markers> class conv_adaptor_vcgen
     {
         enum status
@@ -55,7 +55,7 @@ namespace agg
 
     public:
         explicit conv_adaptor_vcgen(VertexSource& source) :
-            m_source(&source), 
+            m_source(&source),
             m_status(initial)
         {}
         void attach(VertexSource& source) { m_source = &source; }
@@ -65,10 +65,10 @@ namespace agg
 
         Markers& markers() { return m_markers; }
         const Markers& markers() const { return m_markers; }
-        
-        void rewind(unsigned path_id) 
-        { 
-            m_source->rewind(path_id); 
+
+        void rewind(unsigned path_id)
+        {
+            m_source->rewind(path_id);
             m_status = initial;
         }
 
@@ -77,7 +77,7 @@ namespace agg
     private:
         // Prohibit copying
         conv_adaptor_vcgen(const conv_adaptor_vcgen<VertexSource, Generator, Markers>&);
-        const conv_adaptor_vcgen<VertexSource, Generator, Markers>& 
+        const conv_adaptor_vcgen<VertexSource, Generator, Markers>&
             operator = (const conv_adaptor_vcgen<VertexSource, Generator, Markers>&);
 
         VertexSource* m_source;
@@ -94,7 +94,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class VertexSource, class Generator, class Markers> 
+    template<class VertexSource, class Generator, class Markers>
     unsigned conv_adaptor_vcgen<VertexSource, Generator, Markers>::vertex(double* x, double* y)
     {
         unsigned cmd = path_cmd_stop;

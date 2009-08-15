@@ -111,7 +111,7 @@ static int roadmap_lang_load (const char *path) {
         if (p == NULL) continue;
 
         /* Decode the line (name= value). */
-        
+
         name = p;
 
         p = roadmap_config_skip_until (p, '=');
@@ -156,9 +156,9 @@ const char* roadmap_lang_get (const char *name) {
 
    int hash;
    int i;
-   
+
    if (!RoadMapLangLoaded) return name;
-   
+
    hash = roadmap_hash_string (name);
 
    for (i = roadmap_hash_get_first (RoadMapLangHash, hash);
@@ -166,7 +166,7 @@ const char* roadmap_lang_get (const char *name) {
         i = roadmap_hash_get_next (RoadMapLangHash, i)) {
 
       if (!strcmp(name, RoadMapLangItems[i].name)) {
-         
+
          return RoadMapLangItems[i].value;
       }
    }

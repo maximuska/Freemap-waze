@@ -24,11 +24,11 @@
 #include "roadmap_input_type.h"
 
 BOOL  is_valid_key   ( const char* utf8char, uint16_t input_type);
-BOOL  is_alphabetic	( unsigned char key);
-BOOL  is_numeric		( unsigned char key);
-BOOL  is_white_space	( unsigned char key);
-BOOL  is_punctuation	( unsigned char key);
-BOOL  is_symbol		( unsigned char key);
+BOOL  is_alphabetic ( unsigned char key);
+BOOL  is_numeric        ( unsigned char key);
+BOOL  is_white_space    ( unsigned char key);
+BOOL  is_punctuation    ( unsigned char key);
+BOOL  is_symbol     ( unsigned char key);
 
 #endif // __ROADMAP_KEYBOARD_TEXT_H__
 

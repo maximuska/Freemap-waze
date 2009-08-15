@@ -138,7 +138,7 @@ void roadmap_string_release (RoadMapDynamicString item) {
    if (item != NULL) {
 
       if (item->lock < 0xffff) {
-         
+
          if (--item->lock == 0) {
 
             if (item->previous != NULL) {
@@ -201,19 +201,19 @@ int roadmap_string_match (RoadMapDynamicString item, const char *value) {
 
 int roadmap_string_is_sub_ignore_case (const char *where, const char *what) {
 
-	const char *start;
-	const char *find;
-	
-	if (!*what) return 1;
-	
-	for (start = where; *start; start++) {
-		const char *curr = start;
-		for (find = what; (*find) && *(curr); find++, curr++) {
-			if (tolower(*find) != tolower (*curr)) break;
-		} 
-		if (!*find) return 1;
-	}	
-	
-	return 0;
+    const char *start;
+    const char *find;
+
+    if (!*what) return 1;
+
+    for (start = where; *start; start++) {
+        const char *curr = start;
+        for (find = what; (*find) && *(curr); find++, curr++) {
+            if (tolower(*find) != tolower (*curr)) break;
+        }
+        if (!*find) return 1;
+    }
+
+    return 0;
 }
 

@@ -102,7 +102,7 @@ static void roadmap_download_progress (int loaded) {
             SSD_CONTAINER_BORDER|SSD_CONTAINER_TITLE|SSD_DIALOG_FLOAT|
             SSD_ALIGN_CENTER|SSD_ALIGN_VCENTER|SSD_ROUNDED_CORNERS);
 
-      ssd_widget_add  (dialog, 
+      ssd_widget_add  (dialog,
          ssd_button_new ("sync", "", sync_icon, 1,
             SSD_ALIGN_RIGHT|SSD_END_ROW, NULL));
 
@@ -146,7 +146,7 @@ static void roadmap_download_progress (int loaded) {
 
       SyncProgressLoaded = loaded;
 
-      snprintf (progress_str, sizeof(progress_str), "%d", 
+      snprintf (progress_str, sizeof(progress_str), "%d",
          100 / SyncProgressItems * (SyncProgressCurrentItem - 1) +
          (100 / SyncProgressItems) * SyncProgressLoaded / SyncProgressTarget);
       ssd_widget_set_value (dialog, "Progress", progress_str);
@@ -206,25 +206,25 @@ static RoadMapDownloadCallbacks SyncDownloadCallbackFunctions = {
 
 const char *editor_sync_get_export_path (void) {
 
-	static char path[1024];
-	char *joined;
-	static int initialized = 0; 
-	
-	if (!initialized) {
-		joined = roadmap_path_join (roadmap_db_map_path (), "queue");
-		strncpy_safe (path, joined, 1024);
-		
-	   roadmap_path_create (path);
-	   initialized = 1;
-	}
-	
-	return path;
+    static char path[1024];
+    char *joined;
+    static int initialized = 0;
+
+    if (!initialized) {
+        joined = roadmap_path_join (roadmap_db_map_path (), "queue");
+        strncpy_safe (path, joined, 1024);
+
+       roadmap_path_create (path);
+       initialized = 1;
+    }
+
+    return path;
 }
 
 
 const char *editor_sync_get_export_name (void) {
-	
-	static char name[255];
+
+    static char name[255];
    struct tm *tm;
    time_t now;
 
@@ -235,7 +235,7 @@ const char *editor_sync_get_export_name (void) {
                      tm->tm_mday, tm->tm_mon+1, tm->tm_year-100,
                      tm->tm_hour, tm->tm_min, tm->tm_sec);
 
-	return name;
+    return name;
 }
 
 
@@ -259,7 +259,7 @@ static int sync_do_upload (char *messages[MAX_MSGS], int *num_msgs) {
    *num_msgs = 0;
 
    for (cursor = files; *cursor != NULL; ++cursor) {
-      
+
       char *full_name = roadmap_path_join (directory, *cursor);
       int res = editor_upload_auto (full_name, &SyncDownloadCallbackFunctions,
                                     messages + *num_msgs);
@@ -301,7 +301,7 @@ int export_sync (void) {
       return -1;
    }
 #endif
-   
+
    roadmap_download_progress (0);
 
 #ifdef SSD
@@ -327,12 +327,12 @@ int export_sync (void) {
 #endif
 
    roadmap_main_flush ();
-   
+
    Realtime_OfflineClose ();
    res = sync_do_upload (messages, &num_msgs);
-	Realtime_OfflineOpen (editor_sync_get_export_path (), 
-								 editor_sync_get_export_name ());
-   
+    Realtime_OfflineOpen (editor_sync_get_export_path (),
+                                 editor_sync_get_export_name ());
+
 
    fips = roadmap_locator_active ();
 
@@ -377,9 +377,9 @@ int export_sync (void) {
                             roadmap_lang_get ("Downloading new maps..."));
 #endif
 
-	roadmap_label_clear ();
-	navigate_graph_clear ();
-	
+    roadmap_label_clear ();
+    navigate_graph_clear ();
+
    roadmap_main_flush ();
    res = editor_download_update_map (&SyncDownloadCallbackFunctions);
 

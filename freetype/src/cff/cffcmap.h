@@ -39,14 +39,14 @@ FT_BEGIN_HEADER
   {
     FT_CMapRec  cmap;
     FT_UShort*  gids;   /* up to 256 elements */
-    
+
   } CFF_CMapStdRec;
 
 
   FT_CALLBACK_TABLE const FT_CMap_ClassRec
   cff_cmap_encoding_class_rec;
 
-  
+
   /*************************************************************************/
   /*************************************************************************/
   /*****                                                               *****/
@@ -62,7 +62,7 @@ FT_BEGIN_HEADER
   {
     FT_UInt32  unicode;
     FT_UInt    gindex;
-  
+
   } CFF_CMapUniPairRec, *CFF_CMapUniPair;
 
 

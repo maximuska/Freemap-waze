@@ -22,7 +22,7 @@
 #include "AudioPlayer.h"
 #include <eikenv.h>
 
-CAudioPlayer::CAudioPlayer() 
+CAudioPlayer::CAudioPlayer()
 {
   iMdaAudioPlayerUtility = NULL;
 }
@@ -30,7 +30,7 @@ CAudioPlayer::CAudioPlayer()
 CAudioPlayer* CAudioPlayer::NewL( const TDes& aFileName, MMdaObjectStateChangeObserver* apObserver)
 {
     CAudioPlayer* self = NewLC( aFileName, apObserver);
-    CleanupStack::Pop( self );  
+    CleanupStack::Pop( self );
     return self;
 }
 
@@ -51,7 +51,7 @@ void CAudioPlayer::ConstructL( const TDes& aFileName, MMdaObjectStateChangeObser
 CAudioPlayer* CAudioPlayer::NewL( const TDes8& aDesc, MMdaObjectStateChangeObserver* apObserver)
 {
   CAudioPlayer* self = NewLC( aDesc, apObserver);
-  CleanupStack::Pop( self );  
+  CleanupStack::Pop( self );
   return self;
 }
 
@@ -75,7 +75,7 @@ CAudioPlayer::~CAudioPlayer()
   if ( iMdaAudioPlayerUtility != NULL )
   {
     iMdaAudioPlayerUtility->Close();
-    delete iMdaAudioPlayerUtility;    
+    delete iMdaAudioPlayerUtility;
   }
 }
 
@@ -101,12 +101,12 @@ void CAudioPlayer::SetVolume( TInt aVolume )
 {
   if ( iMdaAudioPlayerUtility != NULL )
   {
-    	iMdaAudioPlayerUtility->SetVolume( aVolume );
+        iMdaAudioPlayerUtility->SetVolume( aVolume );
   }
-  
+
 }
 
-const CMdaAudioRecorderUtility& CAudioPlayer::GetAudioUtility() const 
-{ 
-	return *iMdaAudioPlayerUtility;
+const CMdaAudioRecorderUtility& CAudioPlayer::GetAudioUtility() const
+{
+    return *iMdaAudioPlayerUtility;
 };

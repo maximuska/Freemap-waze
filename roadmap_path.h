@@ -143,7 +143,7 @@ int roadmap_path_is_directory (const char *name);
  *   and constructs a full path by appending resource tail path to the base directory.
  *   The sample of the path constructed in out_path buffer:
  *   [c:\Data\Freemap]\<prefix><filename><suffix>
- *   
+ *
  *   Function returns 0 on success, !0 on failure.
  *   Suffix and prefix are not mandatory and can be NULL or "".
  */

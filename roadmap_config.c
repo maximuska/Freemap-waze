@@ -120,7 +120,7 @@ static RoadMapConfigItem *roadmap_config_search_item
     if (descriptor == NULL) {
         return NULL;
     }
-    
+
     for (item = file->first_item; item != NULL; item = item->next) {
 
       if ((strcmp (item->name, descriptor->name) == 0) &&
@@ -141,13 +141,13 @@ static RoadMapConfigItem *roadmap_config_retrieve
     if (descriptor == NULL) {
         return NULL;
     }
-    
+
     if ((descriptor->reference == NULL) ||
         (descriptor->age != RoadMapConfigAge)) {
 
         descriptor->reference = NULL;
         descriptor->age = RoadMapConfigAge;
-        
+
         for (file = RoadMapConfigFiles; file->name != NULL; ++file) {
 
             item = roadmap_config_search_item (file, descriptor);
@@ -221,7 +221,7 @@ static RoadMapConfigItem *roadmap_config_new_item
         new_item->value = NULL;
         new_item->state = ROADMAP_CONFIG_CLEAN;
         new_item->type  = item_type;
-   
+
         new_item->cached_valid = 0;
 
         if (callback) new_item->callback = callback;
@@ -238,7 +238,7 @@ static RoadMapConfigItem *roadmap_config_new_item
 
    descriptor->age = RoadMapConfigAge;
    descriptor->reference = new_item;
-   
+
    return new_item;
 }
 
@@ -360,7 +360,7 @@ int roadmap_config_first (const char *config,
     descriptor->name = file->first_item->name;
     descriptor->reference = file->first_item;
     descriptor->age = RoadMapConfigAge;
-    
+
     return 1;
 }
 
@@ -372,14 +372,14 @@ int roadmap_config_next (RoadMapConfigDescriptor *descriptor) {
     }
 
     descriptor->reference = descriptor->reference->next;
-   
+
     if (descriptor->reference == NULL) {
 
        descriptor->category  = NULL;
        descriptor->name      = NULL;
        return 0;
     }
-   
+
     descriptor->category  = descriptor->reference->category;
     descriptor->name      = descriptor->reference->name;
     descriptor->age       = RoadMapConfigAge;
@@ -408,7 +408,7 @@ char *roadmap_config_get_enumeration_value (void *enumeration) {
 
    RoadMapConfigEnum *item = (RoadMapConfigEnum *)enumeration;
 
-   if (item == NULL) { 
+   if (item == NULL) {
       return NULL;
    }
 
@@ -420,7 +420,7 @@ void *roadmap_config_get_enumeration_next (void *enumeration) {
 
    RoadMapConfigEnum *item = (RoadMapConfigEnum *)enumeration;
 
-   if (item == NULL) { 
+   if (item == NULL) {
       return NULL;
    }
 
@@ -432,7 +432,7 @@ static int roadmap_config_set_item
                 (RoadMapConfigItem *item, const char *value) {
 
     /* First check that this new value actually changes something. */
-    
+
     if (item->value != NULL) {
         if (value != NULL) {
             if (strcmp (item->value, value) == 0) {
@@ -448,7 +448,7 @@ static int roadmap_config_set_item
             }
         }
     }
-   
+
     if (value != NULL) {
         item->value = strdup(value);
     } else {
@@ -459,7 +459,7 @@ static int roadmap_config_set_item
     item->cached_valid = 0;
 
     if (item->callback) (*item->callback)();
-    
+
     return 1;
 }
 
@@ -496,7 +496,7 @@ static int roadmap_config_load
 
 
         /* Decode the line (category.name: value). */
-        
+
         p = roadmap_config_skip_until (category, '.');
         if (*p != '.') continue;
         *(p++) = 0;
@@ -523,7 +523,7 @@ static int roadmap_config_load
 
 
         /* Retrieve or create this configuration item. */
-        
+
         item = roadmap_config_new_item
                     (config, &descriptor, "", ROADMAP_CONFIG_STRING,
                      NULL, &new_item);
@@ -537,7 +537,7 @@ static int roadmap_config_load
         }
         item->value = value;
         item->state = intended_state;
-      
+
         item->cached_valid = 0;
     }
     fclose (file);
@@ -594,20 +594,20 @@ char *roadmap_config_skip_spaces (char *p) {
 
 
 char *roadmap_config_extract_data (char *line, int size) {
-    
+
     char *p;
-    
+
     line[size-1] = 0;
-    
+
     line = roadmap_config_skip_spaces (line);
 
     /* deal with any termination style */
     if (*line == '\r' || *line == '\n' || *line == '#') return NULL;
-        
+
     for (p = line; *p && *p != '\n' && *p != '\r'; p++)
-	/* empty */ ;
+    /* empty */ ;
     *p = 0;
-        
+
     return line;
 }
 
@@ -639,7 +639,7 @@ int  roadmap_config_reload (const char *name) {
            p = roadmap_path_next(file->set, p)) {
 
          loaded = roadmap_config_load (p, file, ROADMAP_CONFIG_CLEAN);
-         
+
          if (loaded) break;
       }
 
@@ -712,9 +712,9 @@ int roadmap_config_get_integer(RoadMapConfigDescriptor *descriptor) {
     RoadMapConfigItem *item = roadmap_config_retrieve (descriptor);
 
     if (item != NULL) {
-        
+
         if (! item->cached_valid) {
-            
+
             if (item->value != NULL) {
                 actual = item->value;
             } else {

@@ -54,7 +54,7 @@ static void editor_street_activate (editor_db_section *context) {
 
    ActiveStreetDB = context;
 }
- 
+
 editor_db_handler EditorStreetHandler = {
    EDITOR_DB_STREETS,
    sizeof (editor_db_street),
@@ -96,7 +96,7 @@ int editor_street_create (const char *_name,
          }
       }
    }
-   
+
    return editor_db_add_item (ActiveStreetDB, &street, 1);
 }
 
@@ -131,7 +131,7 @@ static int editor_street_get_distance_with_shape
       /* skip the for loop */
       last_shape = -2;
    }
-      
+
    for (i = first_shape; i <= last_shape; i++) {
 
       editor_shape_position (i, &current.to);
@@ -189,7 +189,7 @@ int editor_street_get_closest (const RoadMapPosition *position,
                                RoadMapNeighbour *neighbours,
                                int count,
                                int max) {
-   
+
    int i;
    int min_category = 256;
    int lines_count;
@@ -198,13 +198,13 @@ int editor_street_get_closest (const RoadMapPosition *position,
    int fips = roadmap_locator_active ();
    int line;
 
-	if (!editor_plugin_get_override ()) return count;
-	
+    if (!editor_plugin_get_override ()) return count;
+
    for (i = 0; i < categories_count; ++i) {
         if (min_category > categories[i]) min_category = categories[i];
    }
 
-	lines_count = editor_line_get_count ();
+    lines_count = editor_line_get_count ();
 
    if (! (-1 << min_category)) {
       return count;
@@ -243,7 +243,7 @@ int editor_street_get_connected_lines (const RoadMapPosition *crossing,
 
    /* FIXME - this is wrong */
    int fips = roadmap_locator_active ();
-   
+
    if (editor_db_activate (fips) == -1) return 0;
 
    //FIXME:
@@ -253,7 +253,7 @@ int editor_street_get_connected_lines (const RoadMapPosition *crossing,
    }
 #endif
    lines_count = editor_line_get_count ();
-   
+
    for (line=0; line<lines_count; line++) {
 
       RoadMapPosition line_from;
@@ -299,7 +299,7 @@ const char *editor_street_get_full_name
     address = editor_street_get_street_address (street_id);
     city    = editor_street_get_street_city
                   (street_id);
-    
+
     snprintf (RoadMapStreetName, sizeof(RoadMapStreetName),
               "%s%s%s%s%s",
               address,
@@ -307,7 +307,7 @@ const char *editor_street_get_full_name
               editor_street_get_street_name (street_id),
               (city[0])? ", " : "",
               city);
-    
+
     return RoadMapStreetName;
 }
 
@@ -352,33 +352,33 @@ const char *editor_street_get_street_address
 
     return RoadMapStreetAddress;
 #endif
-	return "";    
+    return "";
 }
 
 
 const char *editor_street_get_street_name
                (int street_id) {
-   
+
    static char name[512];
    const char *fename = editor_street_get_street_fename (street_id);
    const char *fetype = editor_street_get_street_fetype (street_id);
 
-	sprintf (name, "%s%s%s",
-				fetype,
-				*fetype ? " " : "",
-				fename);
-				
+    sprintf (name, "%s%s%s",
+                fetype,
+                *fetype ? " " : "",
+                fename);
+
    return name;
 }
 
 
 const char *editor_street_get_street_fename
                (int street_id) {
-   
+
    editor_db_street *street;
-   
+
    if (street_id < 0) return "";
-   
+
    street =
       (editor_db_street *) editor_db_get_item
                               (ActiveStreetDB, street_id, 0, NULL);
@@ -394,11 +394,11 @@ const char *editor_street_get_street_fename
 
 const char *editor_street_get_street_fetype
                (int street_id) {
-   
+
    editor_db_street *street;
-   
+
    if (street_id < 0) return "";
-   
+
    street =
       (editor_db_street *) editor_db_get_item
                               (ActiveStreetDB, street_id, 0, NULL);
@@ -416,9 +416,9 @@ const char *editor_street_get_street_city
                 (int street_id) {
 
    editor_db_street *street;
-   
+
    if (street_id < 0) return "";
-   
+
    street =
       (editor_db_street *) editor_db_get_item
                               (ActiveStreetDB, street_id, 0, NULL);
@@ -436,9 +436,9 @@ const char *editor_street_get_street_t2s
                (int street_id) {
 
    editor_db_street *street;
-   
+
    if (street_id < 0) return "";
-   
+
    street =
       (editor_db_street *) editor_db_get_item
                               (ActiveStreetDB, street_id, 0, NULL);

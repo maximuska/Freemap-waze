@@ -125,7 +125,7 @@ extern "C" {
       // Indicates whether or not the keyboard hardware has alphanumeric keys.
       #define  KBDI_KEYBOARD_ALPHA_NUM       (0x08)
    #endif   // KBDI_KEYBOARD_ALPHA_NUM
-   
+
    // All flags:
    #define  ROADMAP_FULL_KEYBOARD            (KBDI_KEYBOARD_PRESENT|KBDI_KEYBOARD_ENABLED|KBDI_KEYBOARD_ENTER_ESC|KBDI_KEYBOARD_ALPHA_NUM)
 #endif   // UNDER_CE
@@ -182,7 +182,7 @@ static   HMENU      g_hWndDialogMenuBar      = NULL;
 static CConnectionThreadMgr   g_ConnectionThreadMgr;
 
 // Global Variables used by other C modules:
-extern "C"  
+extern "C"
 {
    HINSTANCE   g_hInst            = NULL;
    HWND        RoadMapMainWindow   = NULL;
@@ -236,9 +236,9 @@ static HANDLE g_hMutexAppRunning = NULL;
 static BOOL AppInstanceExists()
 {
    BOOL bAppRunning = FALSE;
-   
+
    assert( !g_hMutexAppRunning);
-   g_hMutexAppRunning = CreateMutex( NULL, FALSE, 
+   g_hMutexAppRunning = CreateMutex( NULL, FALSE,
                                      L"Global\\FreeMap RoadMap");
    if( !g_hMutexAppRunning)
    {
@@ -286,7 +286,7 @@ static BOOL roadmap_main_should_sync (void) {
       unsigned int last_sync_time =
          roadmap_config_get_integer(&RoadMapConfigLastSync);
 
-      if (last_sync_time && 
+      if (last_sync_time &&
          ((last_sync_time + MIN_SYNC_TIME) > time(NULL))) {
 
          return FALSE;
@@ -363,7 +363,7 @@ static void setup_virtual_serial (void) {
    RegSetValueEx(key, L"Index", 0, REG_DWORD, (unsigned char*)&index, sizeof(DWORD));
 
    RegCloseKey(key);
-   
+
    //res = RegisterDevice(L"COM", 4, L"ComSplit.dll", 0);
    VirtualSerialHandle = ActivateDevice(L"Drivers\\RoadMap", NULL);
 
@@ -396,29 +396,29 @@ int handleException(EXCEPTION_POINTERS *exceptionPointers) {
    HANDLE      hThread     = ::GetCurrentThread();
    HANDLE      hProcess    = ::GetCurrentProcess();
    DWORD       dwProcessID = ::GetCurrentProcessId();
-   
+
    EI.ThreadId          = ::GetCurrentThreadId();
    EI.ExceptionPointers = exceptionPointers;
    EI.ClientPointers    = TRUE;
-   
+
    ::GetLocalTime( &ST);
-   
-   
+
+
    wsprintf( FileName, L"WazerDumpFile - %02d.%02d.%02d - %02d.%02d.%02d.dmp",
                         ST.wYear, ST.wMonth, ST.wDay,
                         ST.wHour, ST.wMinute, ST.wSecond);
 
-   hFile = ::CreateFile(FileName, 
+   hFile = ::CreateFile(FileName,
                         GENERIC_READ|GENERIC_WRITE,
                         0,
-                        NULL, 
+                        NULL,
                         CREATE_ALWAYS,
                         FILE_ATTRIBUTE_NORMAL,
                         NULL);
 
-   if( INVALID_HANDLE_VALUE == hFile)                                                
+   if( INVALID_HANDLE_VALUE == hFile)
       return EXCEPTION_EXECUTE_HANDLER;
-   
+
    ::MiniDumpWriteDump( hProcess,
                         dwProcessID,
                         hFile,
@@ -426,7 +426,7 @@ int handleException(EXCEPTION_POINTERS *exceptionPointers) {
                         &EI,
                         NULL,
                         NULL);
-                        
+
    ::CloseHandle( hFile);
    hFile = INVALID_HANDLE_VALUE;*/
 }
@@ -453,7 +453,7 @@ BOOL Freemap_ShowMenuBar()
    MBI.hInstRes   = g_hInst;
    MBI.dwFlags   = SHCMBF_HMENU;
 
-   if( ::SHCreateMenuBar( &MBI)) 
+   if( ::SHCreateMenuBar( &MBI))
       g_hWndDialogMenuBar   = MBI.hwndMB;
    else
    {
@@ -461,19 +461,19 @@ BOOL Freemap_ShowMenuBar()
       return FALSE;
    }
 
-   
+
 #else
    //   Windows 32
    if( g_hWndDialogMenuBar)
       return TRUE;
-      
+
 /*   For windows build - fix the menu issue (RC file)
    Maybe build menu dynamically  */
-      
+
    g_hWndDialogMenuBar = ::LoadMenu( g_hInst, MAKEINTRESOURCE(IDM_MENU));
    if( g_hWndDialogMenuBar)
       ::SetMenu( g_hMainWnd, g_hWndDialogMenuBar);
-   
+
 #endif   //   UNDER_CE
 
    return TRUE;
@@ -514,7 +514,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 {
    MSG      msg;
    LPTSTR   cmd_line = L"";
-   
+
 #ifdef UNDER_CE
 #ifndef  FORCE_PHONE_KEYBOARD_USAGE
    DWORD dwKeyboardStatus  = ::GetKeyboardStatus();
@@ -524,7 +524,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
    else
       USING_PHONE_KEYPAD = TRUE;
 #endif   // FORCE_PHONE_KEYBOARD_USAGE
-      
+
    cmd_line = lpCmdLine;
 #endif
 
@@ -537,12 +537,12 @@ int WINAPI WinMain(HINSTANCE hInstance,
    if(FAILED( g_ConnectionThreadMgr.Create()))
       return -1;
 
-   __try 
+   __try
    {
       // Perform application initialization:
       if (!InitInstance(hInstance, cmd_line))
          return -1;
-   
+
       setup_virtual_serial ();
    }
    __except (handleException(GetExceptionInformation())) {}
@@ -552,24 +552,24 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
    HACCEL hAccelTable;
    hAccelTable = 0;
-   
+
    // Main message loop:
-    while (GetMessage(&msg, NULL, 0, 0)) 
+    while (GetMessage(&msg, NULL, 0, 0))
    {
-      if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) 
+      if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
       {
          TranslateMessage(&msg);
          DispatchMessage(&msg);
       }
    }
-   
+
    if( !shutting_down)
    {
       ::SetEvent( eventShuttingDown);
       shutting_down = TRUE;
       roadmap_start_exit();
    }
-   
+
    g_ConnectionThreadMgr.Destroy();
 
 #ifdef UNDER_CE
@@ -592,7 +592,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 ATOM MyRegisterClass(HINSTANCE hInstance, LPTSTR szWindowClass)
 {
    WNDCLASS wc;
-   
+
    wc.style         = CS_HREDRAW | CS_VREDRAW;
    wc.lpfnWndProc   = WndProc;
    wc.cbClsExtra    = 0;
@@ -607,7 +607,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance, LPTSTR szWindowClass)
    wc.hbrBackground = (HBRUSH) GetStockObject(WHITE_BRUSH);
    wc.lpszMenuName  = 0;
    wc.lpszClassName = szWindowClass;
-   
+
    return RegisterClass(&wc);
 }
 
@@ -619,18 +619,18 @@ void CheckIfOrientationChanged( bool force = false)
    BOOL  bWideScreen    = (iScreenHeight < iScreenWidth);
    static
    BOOL  s_bWideScreen  = bWideScreen;
-   
+
    if( force || (s_bWideScreen != bWideScreen))
    {
       s_bWideScreen  = bWideScreen;
-      
+
       roadmap_device_event_notification( device_event_window_orientation_changed);
    }
 }
 #endif   // UNDER_CE
 
 #ifdef UNDER_CE
-// Get RS232 connection event 
+// Get RS232 connection event
 static   BOOL g_EnableAutoSync  = FALSE;
 
 static void SetAutoSync( BOOL bActivate)
@@ -650,11 +650,11 @@ static void SetAutoSync( BOOL bActivate)
       res = ::CeRunAppAtEvent(roadmap_exe, NOTIFICATION_EVENT_RS232_DETECTED);
    else
       res = ::CeRunAppAtEvent(roadmap_exe, NOTIFICATION_EVENT_NONE);
-   
+
    if( res)
       g_EnableAutoSync = bActivate;
    else
-      roadmap_log(ROADMAP_ERROR, 
+      roadmap_log(ROADMAP_ERROR,
                   "SetAutoSync(%d) - '::CeRunAppAtEvent()' failed; Last error: %d",
                   bActivate, ::GetLastError());*/
 }
@@ -692,7 +692,7 @@ BOOL InitInstance(HINSTANCE hInstance, LPTSTR lpCmdLine)
    bool     do_sync     = false;
 
    g_hInst = hInstance; // Store instance handle in our global variable
-   
+
 #ifdef UNDER_CE
    SHInitExtraControls();
 
@@ -701,17 +701,17 @@ BOOL InitInstance(HINSTANCE hInstance, LPTSTR lpCmdLine)
        !wcscmp(lpCmdLine, APP_RUN_AFTER_SYNC)) {
       //do_sync = true;
       //roadmap_log( ROADMAP_INFO, "InitInstance(PID: 0x%08X) - Received '%S' command", dwProcessID, lpCmdLine);
-	return FALSE;
+    return FALSE;
    }
 #endif   // UNDER_CE
-   
+
 #ifndef _ROADGPS
    if( AppInstanceExists())
    {
       roadmap_log( ROADMAP_INFO, "InitInstance(PID: 0x%08X) - Other 'Freemap.exe' instance is already running", dwProcessID);
 
-      HWND hWnd = FindWindow(g_szWindowClass, NULL);   
-      if (hWnd) 
+      HWND hWnd = FindWindow(g_szWindowClass, NULL);
+      if (hWnd)
       {
 /*/[BOOKMARK]:[DISABLED-CODE]:[PAZ] - Auto-sync when application is down - code disabled 7/1/09
          if( do_sync)
@@ -724,7 +724,7 @@ BOOL InitInstance(HINSTANCE hInstance, LPTSTR lpCmdLine)
             // The "| 0x00000001" is used to bring any owned windows to the
             // foreground and activate them.
             SetForegroundWindow((HWND)((ULONG) hWnd | 0x00000001));
-      } 
+      }
       else
          roadmap_log( ROADMAP_WARNING, "InitInstance(PID: 0x%08X) - Failed to find other instance window handle (maybe this is a secondery event)", dwProcessID);
 
@@ -749,7 +749,7 @@ BOOL InitInstance(HINSTANCE hInstance, LPTSTR lpCmdLine)
       roadmap_config_declare_enumeration
       ("preferences", &RoadMapConfigAutoSync, NULL, "Yes", "No", NULL);
 
-      if (!roadmap_main_should_sync ()) 
+      if (!roadmap_main_should_sync ())
       {
          roadmap_log( ROADMAP_INFO, "InitInstance(PID: 0x%08X) - Does not have to perform sync", dwProcessID);
          return FALSE;
@@ -777,7 +777,7 @@ BOOL InitInstance(HINSTANCE hInstance, LPTSTR lpCmdLine)
 #endif
       roadmap_res_shutdown ();
       CEDevice::end();
-    
+
       return FALSE;
    }*/
 #endif
@@ -788,7 +788,7 @@ BOOL InitInstance(HINSTANCE hInstance, LPTSTR lpCmdLine)
 #if(!defined _ROADGPS && defined FREEMAP_IL)
 
    roadmap_config_declare_enumeration
-               ("preferences", &RoadMapConfigFirstTime, NULL, "Yes", "No", NULL);    
+               ("preferences", &RoadMapConfigFirstTime, NULL, "Yes", "No", NULL);
 
    if (roadmap_config_match(&RoadMapConfigFirstTime, "Yes")) {
 #ifdef UNDER_CE
@@ -815,17 +815,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
    int wmId, wmEvent;
    PAINTSTRUCT ps;
    HDC hdc;
-   
+
 #ifdef UNDER_CE
    static SHACTIVATEINFO s_sai;
 #endif
 
    __try {
-   switch (message) 
+   switch (message)
    {
    case WM_COMMAND:
-      wmId    = LOWORD(wParam); 
-      wmEvent = HIWORD(wParam); 
+      wmId    = LOWORD(wParam);
+      wmEvent = HIWORD(wParam);
       {
          if ((wmId >= MENU_ID_START) &&
             (wmId < (MENU_ID_START + MAX_MENU_ITEMS))) {
@@ -871,47 +871,47 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 #endif   //   UNDER_CE
       g_ConnectionThreadMgr.SetWindow( hWnd);
       g_hMainWnd = hWnd;
-      
-      
+
+
       break;
    }
-      
+
    case WM_PAINT:
       hdc = BeginPaint(hWnd, &ps);
       roadmap_canvas_refresh();
       EndPaint(hWnd, &ps);
       break;
-      
+
 #ifdef   UNDER_CE
    case WM_WINDOWPOSCHANGED:
       CheckIfOrientationChanged();
       return DefWindowProc(hWnd, message, wParam, lParam);
 #endif   // UNDER_CE
-      
+
    case WM_SIZE:
       roadmap_canvas_new(RoadMapMainWindow, NULL);
       break;
-   
+
    case WM_DESTROY:
 #ifdef UNDER_CE
       CEDevice::end();
 #endif
       PostQuitMessage(0);
       break;
-      
+
    case WM_LBUTTONDOWN:
       {
          POINT point;
          point.x = LOWORD(lParam);
          point.y = HIWORD(lParam);
 
-#ifdef   TESTING_BUILD      
+#ifdef   TESTING_BUILD
          //TestingFeature( &point);
          roadmap_canvas_button_pressed(&point);
-#else         
+#else
          roadmap_canvas_button_pressed(&point);
 
-#endif   // TESTING_BUILD      
+#endif   // TESTING_BUILD
       }
       break;
 
@@ -932,7 +932,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
          roadmap_canvas_mouse_moved(&point);
       }
       break;
-            
+
    case WM_KEYDOWN:
    {
       WORD  Code           = (WORD)wParam;
@@ -944,10 +944,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       if( OnKeyDown( Code))
          return 0;
-      
+
       return DefWindowProc(hWnd, message, wParam, lParam);
    }
-      
+
    case WM_KEYUP:
    {
       WORD  Code           = (WORD)wParam;
@@ -959,7 +959,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       if( OnKeyUp( Code))
          return 0;
-      
+
       return DefWindowProc(hWnd, message, wParam, lParam);
    }
 
@@ -970,10 +970,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       BOOL  bALT_IsDown    = (lParam & 0x20000000)? TRUE: FALSE;
       BOOL  bAlreadyPressed= (lParam & 0x40000000)? TRUE: FALSE;
       BOOL  bNowReleased   = (lParam & 0x80000000)? TRUE: FALSE;
-      
+
       if( OnChar( Key))
          return 0;
-      
+
       return DefWindowProc(hWnd, message, wParam, lParam);
    }
 
@@ -1012,7 +1012,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
          if (lParam != 1) {
             Win32SerialConn *conn = (Win32SerialConn *) lParam;
-         
+
             if (!ROADMAP_SERIAL_IS_VALID (conn)) {
                /* An old input which was removed */
                break;
@@ -1022,17 +1022,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
          (*context->callback) (context->io);
          break;
       }
-   
+
    case WM_FREEMAP_SOCKET:
    {
       LPConnectionInfo  pCI   = (LPConnectionInfo)wParam;
       RoadMapSocket     Socket= (RoadMapSocket)lParam;
-      
+
       pCI->pfnOnNewSocket( Socket, pCI->pContext, pCI->eNetErr);
-      
+
       break;
    }
-      
+
    default:
       return DefWindowProc(hWnd, message, wParam, lParam);
    }
@@ -1093,16 +1093,16 @@ static void config_auto_sync () {
 static int roadmap_main_toolbar_icon (const char *icon)
 {
    if (icon == NULL) return NULL;
-   
+
    tb_icon *itr = RoadMapIcons;
-   
+
    while (itr->name != NULL) {
       if (!strcasecmp(icon, itr->name)) {
          return itr->id;
       }
       itr++;
    }
-   
+
    return -1;
 }
 
@@ -1115,10 +1115,10 @@ void roadmap_main_toggle_full_screen (void)
 
 #ifndef TOUCH_SCREEN
    static BOOL already_set = FALSE;
-   
+
    if( already_set)
       return;
-      
+
    already_set = TRUE;
    SHFullScreen(RoadMapMainWindow, SHFS_HIDETASKBAR|SHFS_HIDESIPBUTTON|SHFS_HIDESTARTICON);
    MoveWindow(RoadMapMainWindow, 0, 0,GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),TRUE);
@@ -1126,9 +1126,9 @@ void roadmap_main_toggle_full_screen (void)
    RECT rc2;
 
    full_screen = !full_screen;
-   
+
    GetWindowRect(RoadMapMainWindow, &rc2);
-   
+
    if( full_screen)
    {
       SHFullScreen(RoadMapMainWindow, SHFS_HIDETASKBAR|SHFS_HIDESIPBUTTON);
@@ -1137,13 +1137,13 @@ void roadmap_main_toggle_full_screen (void)
    else
    {
       RECT rc;
-   
+
       SHFullScreen(RoadMapMainWindow, SHFS_SHOWTASKBAR);
 
       SystemParametersInfo(SPI_GETWORKAREA, 0, &rc, FALSE);
       MoveWindow(RoadMapMainWindow, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, TRUE);
    }
-   
+
 
 #endif   //TOUCH_SCREEN
 #endif
@@ -1162,7 +1162,7 @@ void roadmap_main_new (const char *title, int width, int height)
     ("preferences", &RoadMapConfigAutoSync, OnSettingsChanged_EnableAutoSync, "Yes", "No", NULL);
 
    SetAutoSync( GetAutoSyncSetting());
-   
+
    roadmap_config_declare
     ("session", &RoadMapConfigLastSync, "0", NULL);
 #else
@@ -1188,12 +1188,12 @@ void roadmap_main_new (const char *title, int width, int height)
    editor_main_set (1);
 #endif
 }
-   
-   
+
+
    void roadmap_main_set_input (RoadMapIO *io, RoadMapInput callback)
    {
       int i;
-      
+
       for (i = 0; i < ROADMAP_MAX_IO; ++i) {
          if (RoadMapMainIo[i] == NULL) {
             RoadMapMainIo[i] = (roadmap_main_io *) malloc (sizeof(roadmap_main_io));
@@ -1203,12 +1203,12 @@ void roadmap_main_new (const char *title, int width, int height)
             break;
          }
       }
-      
+
       if (i == ROADMAP_MAX_IO) {
          roadmap_log (ROADMAP_FATAL, "Too many set input calls");
          return;
       }
-      
+
       HANDLE monitor_thread = NULL;
       switch (io->subsystem) {
       case ROADMAP_IO_SERIAL:
@@ -1225,7 +1225,7 @@ void roadmap_main_new (const char *title, int width, int height)
             FileMonThread, (void*)RoadMapMainIo[i], 0, NULL);
          break;
       }
-      
+
       if(monitor_thread == NULL)
       {
          roadmap_log (ROADMAP_FATAL, "Can't create monitor thread");
@@ -1236,12 +1236,12 @@ void roadmap_main_new (const char *title, int width, int height)
          CloseHandle(monitor_thread);
       }
    }
-   
-   
+
+
    void roadmap_main_remove_input (RoadMapIO *io)
    {
       int i;
-            
+
       for (i = 0; i < ROADMAP_MAX_IO; ++i) {
          if (RoadMapMainIo[i] && RoadMapMainIo[i]->io == io) {
 
@@ -1256,25 +1256,25 @@ void roadmap_main_new (const char *title, int width, int height)
          }
       }
    }
-   
-   
+
+
    static void roadmap_main_timeout (HWND hwnd, UINT uMsg, UINT idEvent,
-      DWORD dwTime) 
-   {   
+      DWORD dwTime)
+   {
       int i;
       struct roadmap_main_timer *timer = NULL;
-      
+
       for( i=0; i<ROADMAP_MAX_TIMER; i++)
          if( RoadMapMainPeriodicTimer[i].id == idEvent)
          {
             timer = RoadMapMainPeriodicTimer + i;
             break;
          }
-      
+
       if( timer)
       {
          RoadMapCallback callback = (RoadMapCallback) timer->callback;
-         
+
          if (callback != NULL) {
             (*callback) ();
          }
@@ -1282,17 +1282,17 @@ void roadmap_main_new (const char *title, int width, int height)
       else
          assert(0);
    }
-   
-   
+
+
    void roadmap_main_set_periodic (int interval, RoadMapCallback callback)
    {
       int   index;
       struct roadmap_main_timer *timer = NULL;
-      
+
       assert(callback);
-      
+
       for (index = 0; index < ROADMAP_MAX_TIMER; ++index) {
-         
+
          if (RoadMapMainPeriodicTimer[index].callback == callback) {
             return;
          }
@@ -1302,51 +1302,51 @@ void roadmap_main_new (const char *title, int width, int height)
             break;
          }
       }
-      
+
       if( timer)
       {
          timer->callback= callback;
          timer->hWnd    = RoadMapMainWindow;
-         timer->id      = SetTimer( RoadMapMainWindow, 
-                                    timer->id, 
+         timer->id      = SetTimer( RoadMapMainWindow,
+                                    timer->id,
                                     interval,
                                     (TIMERPROC)roadmap_main_timeout);
       }
       else
          roadmap_log (ROADMAP_FATAL, "WIN32::roadmap_main_set_periodic() - Timer table saturated");
    }
-   
-   
+
+
    void roadmap_main_remove_periodic (RoadMapCallback callback)
    {
       int index;
       bool found = false;
-      
+
       for (index = 0; index < ROADMAP_MAX_TIMER; ++index) {
-         
+
          if (RoadMapMainPeriodicTimer[index].callback == callback) {
-            
+
             assert( !found);
-            
+
             KillTimer(  RoadMapMainPeriodicTimer[index].hWnd,
                         RoadMapMainPeriodicTimer[index].id);
-                        
+
             RoadMapMainPeriodicTimer[index].callback  = NULL;
             RoadMapMainPeriodicTimer[index].id        = index+1;
             RoadMapMainPeriodicTimer[index].hWnd      = NULL;
-            
+
             found = true;
          }
       }
-      
+
       if( !found)
          roadmap_log (ROADMAP_ERROR, "timer 0x%08x not found", callback);
    }
-   
-   
+
+
    void roadmap_main_set_status (const char *text) {}
-   
-   void roadmap_main_flush (void) 
+
+   void roadmap_main_flush (void)
    {
       HWND w = GetFocus();
       MSG msg;
@@ -1369,7 +1369,7 @@ void roadmap_main_new (const char *title, int width, int height)
          ::SetEvent( eventShuttingDown);
          shutting_down = TRUE;
       }
-      
+
       roadmap_start_exit ();
       SendMessage(RoadMapMainWindow, WM_CLOSE, 0, 0);
    }
@@ -1409,7 +1409,7 @@ static void wizard_detect_gps (const char *name, void *context) {
 }
 
 static void setup_wizard_callback(int exit_code, void *context){
-	roadmap_config_set (&RoadMapConfigFirstTime, "No");
+    roadmap_config_set (&RoadMapConfigFirstTime, "No");
 
     if (exit_code != dec_yes)
          return;
@@ -1417,9 +1417,9 @@ static void setup_wizard_callback(int exit_code, void *context){
     roadmap_gps_detect_receiver();
 }
 
-   
+
 void first_time_wizard (void) {
-	  ssd_confirm_dialog (".Welcome to Waze!", "Detect GPS", TRUE, setup_wizard_callback , NULL);
+      ssd_confirm_dialog (".Welcome to Waze!", "Detect GPS", TRUE, setup_wizard_callback , NULL);
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1446,7 +1446,7 @@ typedef enum tagEMSVirtualKey
 BOOL show_key_pressed( WORD key, BOOL virtual_key)
 {
    char msg[120];
-   
+
    if( virtual_key)
       sprintf( msg, "Virtual key: %s", roadmap_keyboard_virtual_key_name( (EVirtualKey)key));
    else
@@ -1457,7 +1457,7 @@ BOOL show_key_pressed( WORD key, BOOL virtual_key)
 #else
    MessageBoxA( NULL, msg, "show_key_pressed()", MB_OK);
 #endif   // UNDER_CE
-   
+
    return TRUE;
 }
 #endif   // TESTING_KEYBOARD
@@ -1482,7 +1482,7 @@ BOOL HandleKeyboardKey( WORD key, uint32_t flags)
       flags |= KEYBOARD_VIRTUAL_KEY;
    }
 #endif   // UNDER_CE
-   
+
 #ifdef   TESTING_BUILD
    if( VK_Softkey_left == key)
    {
@@ -1496,43 +1496,43 @@ BOOL HandleKeyboardKey( WORD key, uint32_t flags)
    {
       vk[0] = (char)key;
       vk[1] = '\0';
-      
+
       out   = vk;
    }
    else
    {
-#ifdef   _DEBUG   
+#ifdef   _DEBUG
       if( !key)
       {
          assert(0);
          return FALSE;
       }
 #endif   // _DEBUG
-      
+
       utf8char = utf8_char_from_utf16( key);
       if( !utf8char || !(*utf8char))
       {
          assert(0);
          return FALSE;
       }
-      
+
       if( !utf8char[1])
          flags |= KEYBOARD_ASCII;
-      
+
       out = utf8char;
    }
-   
+
    res = roadmap_keyboard_handler__key_pressed( out, flags);
-   
+
    FREE(utf8char)
 
    return res;
 }
 
 BOOL OnKeyDown( WORD key)
-{ 
+{
    EVirtualKey vk = VK_None;
-   
+
    switch(key)
    {
       case MSVK_Arrow_up     : vk = VK_Arrow_up;      break;
@@ -1540,7 +1540,7 @@ BOOL OnKeyDown( WORD key)
       case MSVK_Arrow_left   : vk = VK_Arrow_left;    break;
       case MSVK_Arrow_right  : vk = VK_Arrow_right;   break;
    }
-   
+
    if( VK_None == vk)
       return FALSE;
 
@@ -1551,7 +1551,7 @@ BOOL OnKeyUp( WORD key)
 {
    EVirtualKey vk       = VK_None;
    BOOL        bEscape  = FALSE;
-   
+
    switch(key)
    {
       case MSVK_Back         : vk = VK_Back;          break;
@@ -1559,7 +1559,7 @@ BOOL OnKeyUp( WORD key)
       case MSVK_Softkey_right: vk = VK_Softkey_right; break;
       case MSVK_Escape       : bEscape = TRUE;        break;
    }
-   
+
    if( VK_None == vk)
    {
       if( bEscape)
@@ -1590,7 +1590,7 @@ void roadmap_main_show (void)
       roadmap_canvas_new(RoadMapMainWindow, NULL);
    }
 }
-   
+
 void      roadmap_main_add_status()                        {}
 void      roadmap_main_popup_menu(RoadMapMenu,int,int)      {}
 void      roadmap_main_add_tool(   const char *label,
@@ -1602,7 +1602,7 @@ void      roadmap_main_add_menu_item(   RoadMapMenu menu,
                               const char *label,
                               const char *tip,
                               RoadMapCallback callback)   {}
-void      roadmap_main_add_menu      (RoadMapMenu menu, 
+void      roadmap_main_add_menu      (RoadMapMenu menu,
                               const char *label)         {}
 RoadMapMenu   roadmap_main_new_menu      ()   { return NULL;}
 void      roadmap_main_add_separator(   RoadMapMenu menu)   {}
@@ -1613,16 +1613,16 @@ void      roadmap_main_set_keyboard(   struct RoadMapFactoryKeyMap *bindings,
 
 extern "C"
 BOOL win32_roadmap_net_async_connect(  const char*                protocol,
-                                       const char*                name, 
-                                       int                        default_port, 
+                                       const char*                name,
+                                       int                        default_port,
                                        RoadMapNetConnectCallback  on_net_connected,
                                        void*                      context)
 {
    ConnectionInfo CI;
-   
+
    if( !protocol || !(*protocol) || !name || !(*name) || !on_net_connected)
       return FALSE;
-     
+
    ConnectionInfo_Init( &CI);
    strncpy( CI.Protocol,protocol, CI_STRING_MAX_SIZE);
    strncpy( CI.Name,    name,     CI_STRING_MAX_SIZE);
@@ -1642,7 +1642,7 @@ void roadmap_main_add_canvas (void)
 #if((!defined _ROADGPS) && (!defined SIMPLE_SCREEN))
    roadmap_main_toggle_full_screen ();
 #endif
-      
+
    roadmap_canvas_new(RoadMapMainWindow, NULL);
 }
 
@@ -1652,7 +1652,7 @@ void roadmap_main_add_canvas (void)
 
 extern "C" void draw_rect( int x, int y, int width, int height)
 {
-   RoadMapGuiPoint points[] = 
+   RoadMapGuiPoint points[] =
    {
       { x,   y},
       { x + width,y},
@@ -1661,7 +1661,7 @@ extern "C" void draw_rect( int x, int y, int width, int height)
       { x,   y + 10}
    };
    int count = sizeof(points)/sizeof(RoadMapGuiPoint);;
-   
+
    roadmap_canvas_set_foreground("#FF3322");
    roadmap_canvas_set_thickness (1);
    roadmap_canvas_draw_multiple_lines( 1, &count, points, 0);
@@ -1690,7 +1690,7 @@ void TestingFeature( POINT* pPoint)
       return;
    }
    cm_is_active = true;
-   
+
    address_tabcontrol_show( on_tc_closed);
 }*/
 

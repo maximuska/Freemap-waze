@@ -55,7 +55,7 @@ typedef struct key_set_t {
    const char   *action_images[2];
    int size;
 } SsdKeySet;
-   
+
 static SsdKeySet key_sets[] = {
    {
       {"key1_large_up", "key1_large_down"},
@@ -91,7 +91,7 @@ static void show_keyboard (SsdKeyboard *keyboard, const char *title,
 SsdKeyboard keyboards[] = {
    {"letters",
     SSD_KEYBOARD_LETTERS,
-    SSD_KEYBOARD_MULTI, 
+    SSD_KEYBOARD_MULTI,
     "א1ב2ג3ד4ה5ו6ז7ח8ט9י0כךל_מםנןס-ע\"פףצץק'ר:ש,ת.||",
     SSD_KEY_CONFIRM | SSD_KEY_SPACE | SSD_KEY_BACKSPACE | SSD_KEY_SWITCH,
     NULL,
@@ -102,7 +102,7 @@ SsdKeyboard keyboards[] = {
 
    {"english",
     SSD_KEYBOARD_LETTERS,
-    SSD_KEYBOARD_MULTI|SSD_KEYBOARD_LTR, 
+    SSD_KEYBOARD_MULTI|SSD_KEYBOARD_LTR,
     "aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ||",
     SSD_KEY_CONFIRM | SSD_KEY_SPACE | SSD_KEY_BACKSPACE | SSD_KEY_SWITCH,
     NULL,
@@ -212,7 +212,7 @@ static int button_callback (SsdWidget widget, const char *new_value) {
    char key_store[20];
    char *key = key_store;
    char text[255];
-   size_t	len;
+   size_t   len;
 
    SsdKeyboard *keyboard;
    SsdWidget k = widget->parent;
@@ -327,15 +327,15 @@ static SsdWidget add_key (SsdWidget container,
    if (type == SSD_BUTTON_KEY) {
       SsdWidget wrapper;
       SsdWidget w = ssd_text_new ("key1", key1, KEY_TEXT_SIZE, SSD_ALIGN_VCENTER|SSD_END_ROW);
-#ifdef IPHONE      
+#ifdef IPHONE
       ssd_widget_set_color (w, "#ffffff", 0);
-#else      
-	  ssd_widget_set_color (w, "#000000", 0);
-#endif	 
+#else
+      ssd_widget_set_color (w, "#000000", 0);
+#endif
       wrapper = ssd_container_new("wapper1", NULL,
                 key_sets[key_set].size, key_sets[key_set].size/2, SSD_END_ROW);
       if (flags & SSD_ALIGN_LTR) w->flags |= SSD_ALIGN_RIGHT;
-      
+
       wrapper->bg_color = NULL;
       ssd_widget_set_offset (w, txt_offset, 3);
       ssd_widget_add (wrapper, w);
@@ -368,16 +368,16 @@ static void ssd_keyboard_new (SsdKeyboard *keyboard) {
 
    const char *keys = keyboard->keys;
    int flags;
-   size_t	count;
-   size_t	i;
+   size_t   count;
+   size_t   i;
 
    dialog = ssd_dialog_new (keyboard->name, "", NULL,
-		            SSD_CONTAINER_TITLE|SSD_DIALOG_GUI_TAB_ORDER);
+                    SSD_CONTAINER_TITLE|SSD_DIALOG_GUI_TAB_ORDER);
    keyboard->widget = dialog;
-#ifdef IPHONE   
+#ifdef IPHONE
    ssd_widget_set_color (ssd_widget_get(dialog, "title_text"), "#ffffff", "#000000");
    ssd_widget_set_color (dialog, "#ffffff", "#000000");
-#else   
+#else
    ssd_widget_set_color (ssd_widget_get(dialog, "title_text"), "#000000", "#000000");
    ssd_widget_set_color (dialog, "#ffffff", "#e4f1f9");
 #endif
@@ -548,6 +548,6 @@ void ssd_keyboard_hide (void) {
    }
 }
 
-void ssd_keyboard_hide_all(void){ 
-	ssd_dialog_hide_all (dec_close); 
+void ssd_keyboard_hide_all(void){
+    ssd_dialog_hide_all (dec_close);
 }

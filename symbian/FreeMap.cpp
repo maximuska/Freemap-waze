@@ -24,12 +24,12 @@
 
 
 LOCAL_C CApaApplication* NewApplication()
-	{
-	return new CFreeMapApplication;
-	}
+    {
+    return new CFreeMapApplication;
+    }
 
 GLDEF_C TInt E32Main()
-	{
-	return EikStart::RunApplication( NewApplication );
-	}
+    {
+    return EikStart::RunApplication( NewApplication );
+    }
 

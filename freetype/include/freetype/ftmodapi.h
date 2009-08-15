@@ -84,7 +84,7 @@ FT_BEGIN_HEADER
   typedef void
   (*FT_Module_Destructor)( FT_Module  module );
 
-  typedef FT_Module_Interface 
+  typedef FT_Module_Interface
   (*FT_Module_Requester)( FT_Module    module,
                           const char*  name );
 

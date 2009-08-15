@@ -198,7 +198,7 @@ int roadmap_help_next_topic (const char **label,
       RoadMapHelpTopicsCursor = NULL;
       return 0;
    }
-   
+
    RoadMapHelpTopicsCursor += 1;
    return roadmap_help_get_topic(label, callback);
 }
@@ -208,7 +208,7 @@ void roadmap_help_menu(void){
 
 void roadmap_open_help(void){
 #if defined (_WIN32) || defined (__SYMBIAN32__)
-	roadmap_internet_open_browser(roadmap_config_get(&RoadMapConfigBrowserOptions));
+    roadmap_internet_open_browser(roadmap_config_get(&RoadMapConfigBrowserOptions));
 #endif
 }
 

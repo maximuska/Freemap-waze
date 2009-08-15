@@ -194,7 +194,7 @@ int roadmap_county_by_position
 
          if (position->longitude > edges.east ||
              position->longitude < edges.west ||
-             position->latitude  > edges.north || 
+             position->latitude  > edges.north ||
              position->latitude  < edges.south) {
             RoadMapPosition *pos = (RoadMapPosition *)position;
              pos->longitude = (edges.east + edges.west) / 2;

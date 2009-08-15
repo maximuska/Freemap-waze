@@ -1,22 +1,22 @@
 /* FriBidi - Library of BiDi algorithm
- * Copyright (C) 2001,2002 Behdad Esfahbod. 
- * 
- * This library is free software; you can redistribute it and/or 
- * modify it under the terms of the GNU Lesser General Public 
- * License as published by the Free Software Foundation; either 
- * version 2.1 of the License, or (at your option) any later version. 
- * 
- * This library is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
- * Lesser General Public License for more details. 
- * 
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library, in a file named COPYING; if not, write to the 
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330, 
- * Boston, MA 02111-1307, USA  
- * 
- * For licensing issues, contact <fwpg@sharif.edu>. 
+ * Copyright (C) 2001,2002 Behdad Esfahbod.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library, in a file named COPYING; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA
+ *
+ * For licensing issues, contact <fwpg@sharif.edu>.
  */
 
 #include <stdlib.h>
@@ -59,7 +59,7 @@ read_bidi_mirroring (void)
   while (fgets (s, sizeof s, f))
     {
       if (s[0] == '#' || s[0] == '\0' || s[0] == '\n')
-	continue;
+    continue;
       sscanf (s, "%x; %x", &i, &j);
       table[i] = j;
       table[j] = i;
@@ -76,9 +76,9 @@ headermacro (char *file)
   while (*p)
     {
       if (*p >= 'a' && *p <= 'z')
-	*p += 'A' - 'a';
+    *p += 'A' - 'a';
       else if ((*p < 'A' || *p > 'Z') && (*p < '0' || *p > '9'))
-	*p = '_';
+    *p = '_';
       p++;
     }
   return t;
@@ -95,28 +95,28 @@ write_mirror (char *file)
   if (!(f = fopen (file, "wt")))
     err2 ("cannot open `%s' for writing", file);
   fprintf (f, "/*\n"
-	   "  This file was automatically created from BidiMirroring.txt, version %s\n"
-	   "  by fribidi_create_mirroring\n*/\n\n", FRIBIDI_UNICODE_VERSION);
+       "  This file was automatically created from BidiMirroring.txt, version %s\n"
+       "  by fribidi_create_mirroring\n*/\n\n", FRIBIDI_UNICODE_VERSION);
   fprintf (f, "#ifndef %s\n#define %s\n\n#include \"fribidi.h\"\n\n",
-	   FILENAME, FILENAME);
+       FILENAME, FILENAME);
   fprintf (f, "/*\n"
-	   "  Mirrored characters include all the characters in the Unicode list\n"
-	   "  that have been declared as being mirrored and that have a mirrored\n"
-	   "  equivalent.\n"
-	   "\n"
-	   "  There are lots of characters that are designed as being mirrored\n"
-	   "  but do not have any mirrored glyph, e.g. the sign for there exist.\n");
+       "  Mirrored characters include all the characters in the Unicode list\n"
+       "  that have been declared as being mirrored and that have a mirrored\n"
+       "  equivalent.\n"
+       "\n"
+       "  There are lots of characters that are designed as being mirrored\n"
+       "  but do not have any mirrored glyph, e.g. the sign for there exist.\n");
   fprintf (f,
-	   "  Are these used in Arabic? That is are all the mathematical signs\n"
-	   "  that are assigned to be mirrorable actually mirrored in Arabic?\n"
-	   "  If that is the case, we'll change the below code to include also\n"
-	   "  characters that mirror to themself. It will then be the responsibility\n"
-	   "  of the display engine to actually mirror these.\n" "*/\n\n");
+       "  Are these used in Arabic? That is are all the mathematical signs\n"
+       "  that are assigned to be mirrorable actually mirrored in Arabic?\n"
+       "  If that is the case, we'll change the below code to include also\n"
+       "  characters that mirror to themself. It will then be the responsibility\n"
+       "  of the display engine to actually mirror these.\n" "*/\n\n");
   fprintf (f, "/* *INDENT-OFF" "* */\n\n");
   fprintf (f, "static const struct\n"
-	   "{\n"
-	   "  FriBidiChar ch, mirrored_ch;\n"
-	   "}\n" "FriBidiMirroredChars[] =\n" "{\n");
+       "{\n"
+       "  FriBidiChar ch, mirrored_ch;\n"
+       "}\n" "FriBidiMirroredChars[] =\n" "{\n");
   for (i = 0; i < 0x110000; i++)
     if (table[i])
       fprintf (f, "  {0x%04X, 0x%04X},\n", i, table[i]);

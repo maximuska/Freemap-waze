@@ -24,7 +24,7 @@
 
 #ifndef __SSD_CHOICE_LIST_H_
 #define __SSD_CHOICE_LIST_H_
-  
+
 #include "ssd_widget.h"
 
 SsdWidget ssd_choice_new (const char *name, int count,

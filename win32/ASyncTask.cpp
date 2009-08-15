@@ -33,18 +33,18 @@ DWORD WINAPI ASyncTaskThread( void* pParams)
    HANDLE         events[] = {eventShuttingDown, pTI->m_eventPleaseQuit, pTI->m_eventNewTask};
    int            count    = sizeof(events)/sizeof(HANDLE);
    DWORD          res;
-   
+
    do
    {
       res = ::WaitForMultipleObjects( count, events, FALSE, INFINITE);
       if( ((WAIT_OBJECT_0 + 0) == res) || ((WAIT_OBJECT_0 + 1) == res))
          break;   // Was asked to quit
-      
+
       if( (WAIT_OBJECT_0 + 2) != res)
          continue;
-         
+
       pTI->FlushQueue();
-      
+
    }  while(1);
 
 #ifdef   EMPTY_QUEUE_ON_EXIT

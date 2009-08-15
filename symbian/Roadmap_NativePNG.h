@@ -4,7 +4,7 @@
  *
  *   Copyright 2008 Giant Steps Ltd.
  *   Copyright 2008 Ehud Shabtai
- * 
+ *
  *   This file is part of RoadMap.
  *
  *   RoadMap is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 #define _ROADMAP_NATIVE_PNG__H_
 
 #include <e32base.h>
-#include <ImageConversion.h> 
+#include <ImageConversion.h>
 #include <fbs.h>
 
 //  This class is a wrapper for CImageDecoder
@@ -39,20 +39,20 @@ class CRoadmapNativePNG : public CActive
 public:
   CRoadmapNativePNG(CImageDecoder* apDecoder, CFbsBitmap* apFrame, CFbsBitmap* apFrameMask);
   virtual ~CRoadmapNativePNG();
-  
+
   //  Main method called to decode a PNG file
   static CRoadmapNativePNG* NewL(CImageDecoder* apDecoder, CFbsBitmap* apFrame, CFbsBitmap* apFrameMask);
   void Decode();
-  
-private: 
+
+private:
   void ConstructL();
   void RunL();
   void DoCancel();
-  
+
   CImageDecoder* m_pDecoder;
   CFbsBitmap* m_pFrame;
   CFbsBitmap* m_pFrameMask;
-  
+
   CActiveSchedulerWait* m_pAsw;
   TRequestStatus m_ConvertStatus;
 };

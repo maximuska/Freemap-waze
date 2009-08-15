@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -36,7 +36,7 @@ namespace agg
     class simple_polygon_vertex_source
     {
     public:
-        simple_polygon_vertex_source(const double* polygon, unsigned np, 
+        simple_polygon_vertex_source(const double* polygon, unsigned np,
                                      bool roundoff = false,
                                      bool close = true) :
             m_polygon(polygon),
@@ -58,7 +58,7 @@ namespace agg
         unsigned vertex(double* x, double* y)
         {
             if(m_vertex > m_num_points) return path_cmd_stop;
-            if(m_vertex == m_num_points) 
+            if(m_vertex == m_num_points)
             {
                 ++m_vertex;
                 return path_cmd_end_poly | (m_close ? path_flags_close : 0);
@@ -95,7 +95,7 @@ namespace agg
         double yn(unsigned n) const { return m_polygon[n * 2 + 1]; }
         double& xn(unsigned n) { return m_polygon[n * 2];     }
         double& yn(unsigned n) { return m_polygon[n * 2 + 1]; }
-    
+
         const double* polygon() const { return &m_polygon[0]; }
 
         void   line_width(double w) { m_stroke.width(w); }
@@ -151,9 +151,9 @@ namespace agg
             m_color(rgba(0.0, 0.0, 0.0))
         {
         }
-          
+
         void line_color(const ColorT& c) { m_color = c; }
-        const ColorT& color(unsigned i) const { return m_color; } 
+        const ColorT& color(unsigned i) const { return m_color; }
 
     private:
         polygon_ctrl(const polygon_ctrl<ColorT>&);

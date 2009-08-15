@@ -82,14 +82,14 @@ void CTimeoutTimer::RunL()
 //  Socket Reader
 //
 
-CReadSocket::CReadSocket(RSocket* apSocket, MSocketNotifier& aNotifier) 
+CReadSocket::CReadSocket(RSocket* apSocket, MSocketNotifier& aNotifier)
   : CActive(EPriorityStandard), TNativeSocket(apSocket, aNotifier), m_ReadBuffer(NULL, 0)
 {
   m_pInputCallback = NULL;
   m_pIO = NULL;
 }
 
-CReadSocket::~CReadSocket() 
+CReadSocket::~CReadSocket()
 {
 }
 
@@ -128,9 +128,9 @@ void CReadSocket::IssuePollRequest(void* apInputCallback, void* mainIO)
     m_eStatus = ESockStatusReady;
     m_pIO = NULL;
     if (IsActive())
-  	{
+    {
       Cancel();
-  	}
+    }
   }
   else
   {
@@ -170,18 +170,18 @@ void CReadSocket::RunL()
       break;
     }
   }
-  else 
+  else
   {
-		/* Check if this input was unregistered while we were
-		 * sleeping.
-		 */
-		if (io->subsystem == ROADMAP_IO_INVALID) {
+        /* Check if this input was unregistered while we were
+         * sleeping.
+         */
+        if (io->subsystem == ROADMAP_IO_INVALID) {
          if (data->is_valid) {
             data->is_valid = 0;
          } else {
             free (data);
          }
-		}
+        }
     //TODO roadmap_log(ROADMAP_ERROR, "Socket read error!");
   }
 }
@@ -202,7 +202,7 @@ int CReadSocket::IssueReceiveRequest(void* apData, int aDataLen)
     TRequestStatus aStatus;
     m_Len = -1;
     if (apData != NULL) {
-    	m_ReadBuffer.Set((unsigned char *)apData, aDataLen, aDataLen);
+        m_ReadBuffer.Set((unsigned char *)apData, aDataLen, aDataLen);
     }
     if ( m_eSockType == ESockTypeTcp )
     {
@@ -213,7 +213,7 @@ int CReadSocket::IssueReceiveRequest(void* apData, int aDataLen)
       m_pSocket->RecvFrom(m_ReadBuffer, m_Address, NULL, aStatus);
     }
     User::WaitForRequest(aStatus);
-    
+
     if (aStatus == KErrNone) {
        roadmap_net_mon_recv(m_Len());
        return m_Len();
@@ -222,7 +222,7 @@ int CReadSocket::IssueReceiveRequest(void* apData, int aDataLen)
        return aStatus.Int();
     }
   }
-  
+
   roadmap_net_mon_error("Error in recv.");
   return -1;
 }
@@ -232,7 +232,7 @@ int CReadSocket::IssueReceiveRequest(void* apData, int aDataLen)
 //  Socket Writer
 //
 
-CWriteSocket::CWriteSocket(RSocket* apSocket, MSocketNotifier& aNotifier) 
+CWriteSocket::CWriteSocket(RSocket* apSocket, MSocketNotifier& aNotifier)
   : CActive(EPriorityStandard), TNativeSocket(apSocket, aNotifier)
 {
 }
@@ -262,7 +262,7 @@ CWriteSocket::~CWriteSocket()
 }
 
 void CWriteSocket::DoCancel()
-{   
+{
   m_pSocket->CancelWrite();
 }
 
@@ -275,7 +275,7 @@ void CWriteSocket::RunL()
       m_eStatus = ESockStatusWaiting;
     }
   }
-  else 
+  else
   {
     //TODO roadmap_log(ROADMAP_ERROR, "Could not write to socket!");
   }
@@ -305,7 +305,7 @@ int CWriteSocket::IssueWriteRequest(const void* apData, int aDataLen)
   //m_eStatus = ESockStatusSending;
 }
 
-CRoadMapNativeSocket::CRoadMapNativeSocket(const char *apHostname, int aPort) 
+CRoadMapNativeSocket::CRoadMapNativeSocket(const char *apHostname, int aPort)
   : CActive(EPriorityNormal), CRoadMapNativeNet(apHostname, aPort)
 {
   m_isHttp = 0;
@@ -317,12 +317,12 @@ CRoadMapNativeSocket::CRoadMapNativeSocket(const char *apHostname, int aPort)
 CRoadMapNativeSocket::~CRoadMapNativeSocket()
 {
   Close();
-  delete m_pWriteSocket; 
+  delete m_pWriteSocket;
   delete m_pReadSocket;
   delete m_pTimeoutTimer;
 }
 
-CRoadMapNativeSocket* CRoadMapNativeSocket::NewL(const char *apHostname, int aPort, 
+CRoadMapNativeSocket* CRoadMapNativeSocket::NewL(const char *apHostname, int aPort,
                                                   RoadMapNetConnectCallback apCallback, void* apContext)//, MSocketNotifier& aNotifier)
 {
   CRoadMapNativeSocket* self = NewLC(apHostname, aPort, apCallback, apContext);//, aNotifier);
@@ -330,7 +330,7 @@ CRoadMapNativeSocket* CRoadMapNativeSocket::NewL(const char *apHostname, int aPo
   return self;
 }
 
-CRoadMapNativeSocket* CRoadMapNativeSocket::NewLC(const char *apHostname, int aPort, 
+CRoadMapNativeSocket* CRoadMapNativeSocket::NewLC(const char *apHostname, int aPort,
                                                   RoadMapNetConnectCallback apCallback, void* apContext)//, MSocketNotifier& aNotifier)
 {
   CRoadMapNativeSocket* self = new ( ELeave ) CRoadMapNativeSocket(apHostname, aPort);
@@ -345,17 +345,17 @@ int CRoadMapNativeSocket::GetPortFromService(const char * apService)
   RServiceResolver resolver;
   TBuf<256> servName;
   TPortNum portNum;
-  
+
   GSConvert::CharPtrToTDes16(apService, servName);
   TInt error = resolver.Open(*m_pSocketServer, KAfInet, KSockStream, KProtocolInetTcp);
 
-  error = resolver.GetByName(servName, portNum);  
+  error = resolver.GetByName(servName, portNum);
   resolver.Close();
   if ( error == KErrNone )
   {
     return -1;
   }
-  
+
   return portNum();
 }
 
@@ -363,15 +363,15 @@ void CRoadMapNativeSocket::ConstructL(RoadMapNetConnectCallback apCallback, void
 {
   CRoadMapNativeNet::ConstructL(apCallback, apContext);
   m_eNetStatus = ESockStatusReady;
-  
+
   StartL();
 
   if ( m_pTimeoutTimer == NULL )
   {
     m_pTimeoutTimer = CTimeoutTimer::NewL(*this);
   }
-  
-  CActiveScheduler::Add(this);  
+
+  CActiveScheduler::Add(this);
 }
 
 void CRoadMapNativeSocket::OpenL(ENativeSockType aSockType)
@@ -390,7 +390,7 @@ void CRoadMapNativeSocket::OpenL(ENativeSockType aSockType)
     break;
   }
   User::LeaveIfError(err);
-  
+
   m_pReadSocket = CReadSocket::NewL(&m_Socket, *this);
   m_pWriteSocket = CWriteSocket::NewL(&m_Socket, *this);
   ConnectWithParamsL();
@@ -434,7 +434,7 @@ void CRoadMapNativeSocket::ConnectL(TInetAddr& addr)
     User::WaitForRequest(aStatus);
     //  Cancel the timer if sync connected/failed
     m_pTimeoutTimer->Cancel();
-    if ( aStatus == KErrNone) 
+    if ( aStatus == KErrNone)
     {
       m_eNetStatus = ESockStatusConnected;
     }
@@ -486,10 +486,10 @@ void CRoadMapNativeSocket::InvokeIOCallback(int aConnectionStatus)
   {// since we got here it's obviously not null, but checking anyway
     //  Set up the IO object
     //  Inform our client that we have a connection
-	if (aConnectionStatus == 0)
-		(*m_pConnectCallback)(this, m_context, neterr_success);
-	else
-		(*m_pConnectCallback)(this, m_context, neterr_general_error);
+    if (aConnectionStatus == 0)
+        (*m_pConnectCallback)(this, m_context, neterr_success);
+    else
+        (*m_pConnectCallback)(this, m_context, neterr_general_error);
   }
 }
 
@@ -508,16 +508,16 @@ void CRoadMapNativeSocket::RunL()
         m_eNetStatus = ESockStatusConnected;
         InvokeIOCallback(0);  //  (iStatus.Int());
         break;
-      case ESockStatusConnected: 
+      case ESockStatusConnected:
         break;
-      case ESockStatusTimedOut: 
+      case ESockStatusTimedOut:
         InvokeIOCallback(iStatus.Int());
         break;
       default:
         break;
     }
   }
-  else 
+  else
   {
     SetActive();  //  go on with the state machine
   }
@@ -528,7 +528,7 @@ void CRoadMapNativeSocket::DoCancel()
   //TODO state machine?
   m_pTimeoutTimer->Cancel();
   m_Socket.CancelAll();
-  
+
 }
 
 void CRoadMapNativeSocket::StartPolling(void* apInputCallback, void* apIO)
@@ -549,7 +549,7 @@ void CRoadMapNativeSocket::StopPolling()
 
 void CRoadMapNativeSocket::DataReady(const void* /*apData*/)
 {
-  
+
 }
 
 void CRoadMapNativeSocket::OnConnectTimeout()
@@ -570,59 +570,59 @@ void CRoadMapNativeSocket::ConnectWithParamsL()
   TInetAddr addr;
   TBuf<256> hostName;
   char *hostname = NULL;
-  char *separator = NULL; 
+  char *separator = NULL;
   char *separator_slash = NULL;
   bool isIPAddr = false;
   int port = -1;
-  int err = 0; 
-  
+  int err = 0;
+
   hostname = strdup(m_hostname);
   roadmap_check_allocated(hostname);
   isIPAddr = isdigit(m_hostname[0]);
-  separator = strchr (m_hostname, ':');  
+  separator = strchr (m_hostname, ':');
 
   // Get port number, either parsing or default to the one supplied
-  if (separator != NULL) 
+  if (separator != NULL)
   {
     //TODO fix
     //port = s->GetPortFromService(separator+1);
-    if (port < 0) 
+    if (port < 0)
     {
-      if (isdigit(separator[1])) 
+      if (isdigit(separator[1]))
       {
         port = atoi(separator+1);
-        if (port == 0) 
+        if (port == 0)
         {
           roadmap_log (ROADMAP_ERROR, "invalid port in '%s'", m_hostname);
           free(hostname);
           User::Leave(KErrArgument);  //  bad params
         }
-      } 
-      else 
+      }
+      else
       {
         roadmap_log (ROADMAP_ERROR, "invalid service in '%s'", m_hostname);
         free(hostname);
         User::Leave(KErrArgument);  //  bad params
       }
-    } 
+    }
     *(strchr(hostname, ':')) = 0;
-  } 
-  else 
+  }
+  else
   {
     port = m_port;
   }
-    
+
   //  init addr with port
   addr.SetPort(port);
   //  init addr with hostname (if any)
   GSConvert::CharPtrToTDes16(hostname, hostName);
   free(hostname);
-  if (isIPAddr == true) 
+  if (isIPAddr == true)
   {
     addr.Input(hostName);
     ConnectL(addr);
-  } 
-  else 
+  }
+  else
   {
     ConnectL(hostName, port);
   }

@@ -45,10 +45,10 @@ static   int               ItemsCount=  0;
 static int IncrementIndex( int i)
 {
    i++;
-   
+
    if( i < RTSYSTEMMESSAGE_QUEUE_MAXSIZE)
       return i;
-      
+
    return 0;
 }
 
@@ -58,20 +58,20 @@ static int AllocCell()
 
    if( RTSYSTEMMESSAGE_QUEUE_MAXSIZE == ItemsCount)
       return -1;
-   
+
    if( -1 == FirstItem)
    {
       FirstItem = 0;
       ItemsCount= 1;
       return 0;
    }
-   
+
    iNextFreeCell = (FirstItem + ItemsCount);
    ItemsCount++;
 
    if( iNextFreeCell < RTSYSTEMMESSAGE_QUEUE_MAXSIZE)
       return iNextFreeCell;
-      
+
    return (iNextFreeCell - RTSYSTEMMESSAGE_QUEUE_MAXSIZE);
 }
 
@@ -81,24 +81,24 @@ static LPRTSystemMessage AllocSystemMessage()
    int               iCell = AllocCell();
    if( -1 == iCell)
       return NULL;
-   
+
    pCell = RTSystemMessageQueue + iCell;
    RTSystemMessage_Init( pCell);
-   
+
    return pCell;
 }
 
 static BOOL PopOldest( LPRTSystemMessage pSM)
 {
    LPRTSystemMessage pCell;
-   
+
    if( !ItemsCount || (-1 == FirstItem))
    {
       if( pSM)
          RTSystemMessage_Init( pSM);
       return FALSE;
    }
-   
+
    pCell = RTSystemMessageQueue + FirstItem;
 
    if( pSM)
@@ -111,7 +111,7 @@ static BOOL PopOldest( LPRTSystemMessage pSM)
    else
       // Item is NOT being copied; Release item resources:
       RTSystemMessage_Free( pCell);
-   
+
    if( 1 == ItemsCount)
    {
       ItemsCount =  0;
@@ -122,7 +122,7 @@ static BOOL PopOldest( LPRTSystemMessage pSM)
       ItemsCount--;
       FirstItem = IncrementIndex( FirstItem);
    }
-   
+
    return TRUE;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -132,13 +132,13 @@ static BOOL PopOldest( LPRTSystemMessage pSM)
 void  RTSystemMessageQueue_Push( LPRTSystemMessage this)
 {
    LPRTSystemMessage p;
-   
+
    if( RTSystemMessageQueue_IsFull())
       PopOldest( NULL);
 
    p = AllocSystemMessage();
-   
-   (*p) = (*this);     
+
+   (*p) = (*this);
 }
 
 BOOL  RTSystemMessageQueue_Pop ( LPRTSystemMessage this)

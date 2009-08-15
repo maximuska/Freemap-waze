@@ -17,45 +17,45 @@
  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef	__LMAP_BASE_H__
-#define	__LMAP_BASE_H__
+#ifndef __LMAP_BASE_H__
+#define __LMAP_BASE_H__
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef	BYTE
-	typedef unsigned char       BYTE;
-#endif	//	BYTE
+#ifndef BYTE
+    typedef unsigned char       BYTE;
+#endif  //  BYTE
 
 typedef enum tagETransactionResult
 {
    transaction_succeeded,
    transaction_failed,
    transaction_in_progress
-   
+
 }  ETransactionResult;
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #if defined (__SYMBIAN32__)
-#define	RT_DEVICE_ID							(10)
+#define RT_DEVICE_ID                            (10)
 
 #elif defined (IPHONE)
-#define	RT_DEVICE_ID							(20)
+#define RT_DEVICE_ID                            (20)
 
 #elif defined (UNDER_CE)
 #ifdef TOUCH_SCREEN
-#define	RT_DEVICE_ID							(30)
+#define RT_DEVICE_ID                            (30)
 #else
-#define	RT_DEVICE_ID							(31)
+#define RT_DEVICE_ID                            (31)
 #endif
 
 #elif defined (_WIN32)
-#define	RT_DEVICE_ID							(40)
+#define RT_DEVICE_ID                            (40)
 
 #elif defined (__linux__)
-#define	RT_DEVICE_ID							(50)
+#define RT_DEVICE_ID                            (50)
 
 #else
 #error UNKNOWN DEVICE
@@ -81,4 +81,4 @@ typedef enum tagETransactionResult
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#endif	//	__LMAP_BASE_H__
+#endif  //  __LMAP_BASE_H__

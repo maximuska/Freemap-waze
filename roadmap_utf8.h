@@ -35,8 +35,8 @@ char*       utf8_char_from_utf16    ( unsigned short utf16);
 char*       utf8_string_from_utf16  ( const unsigned short* utf16);
 
 // Break utf8 string into an array of utf8 characters
-//    Return value: 
-//       Array of utf8 characters (strings). 
+//    Return value:
+//       Array of utf8 characters (strings).
 //       Size of array is 'size'.
 char**      utf8_to_char_array      ( /* IN */ const char* utf8, /* OUT */ int* size);
 void        utf8_free_char_array    ( char** array, int size);

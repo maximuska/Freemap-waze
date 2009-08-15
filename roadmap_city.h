@@ -32,8 +32,8 @@ struct RoadMapCityItem;
 typedef struct RoadMapCityItem *RoadMapCityEntry;
 
 typedef struct {
-	int square_id;
-	int city_id;
+    int square_id;
+    int city_id;
 } RoadMapCityId;
 
 void roadmap_city_init (void);

@@ -57,12 +57,12 @@ void get_state (SsdWidget widget, int *state, RoadMapImage *image, int *image_st
 
    struct ssd_button_data *data = (struct ssd_button_data *) widget->data;
    int i;
-   
+
    if ((widget->in_focus ))
       *state = IMAGE_SELECTED;
    else
       *state = data->state;
-   
+
    for (i=*state; i>=0; i--) {
       if (data->bitmaps[i] &&
          (*image = roadmap_res_get (RES_BITMAP, RES_SKIN, data->bitmaps[i]))) {
@@ -77,7 +77,7 @@ static void draw (SsdWidget widget, RoadMapGuiRect *rect, int flags) {
 
    struct ssd_button_data *data = (struct ssd_button_data *) widget->data;
    RoadMapImage image = NULL;
-   RoadMapGuiPoint point; 
+   RoadMapGuiPoint point;
    int image_state;
    int state;
 
@@ -87,10 +87,10 @@ static void draw (SsdWidget widget, RoadMapGuiRect *rect, int flags) {
    get_state(widget, &state, &image, &image_state);
 
    if ((flags & SSD_GET_SIZE)) {
-   	if (data->bitmaps[state] != NULL)
-     		image = roadmap_res_get (RES_BITMAP, RES_SKIN, data->bitmaps[state]);
+    if (data->bitmaps[state] != NULL)
+            image = roadmap_res_get (RES_BITMAP, RES_SKIN, data->bitmaps[state]);
       else
-      	image = roadmap_res_get (RES_BITMAP, RES_SKIN, data->bitmaps[0]);
+        image = roadmap_res_get (RES_BITMAP, RES_SKIN, data->bitmaps[0]);
       if (!image) {
          widget->size.height = widget->size.width = 0;
          return;
@@ -98,8 +98,8 @@ static void draw (SsdWidget widget, RoadMapGuiRect *rect, int flags) {
 
       rect->maxx = rect->minx + roadmap_canvas_image_width(image);
       rect->maxy = rect->minx + roadmap_canvas_image_height(image);
-   	
-   	return;
+
+    return;
    }
 
 
@@ -136,17 +136,17 @@ static int ssd_button_pointer_down (SsdWidget widget,
 static SsdWidget delayed_widget;
 
 static void button_callbak (void) {
-	
-	struct ssd_button_data *data = (struct ssd_button_data *) delayed_widget->data;
 
-	roadmap_main_remove_periodic (button_callbak);
+    struct ssd_button_data *data = (struct ssd_button_data *) delayed_widget->data;
+
+    roadmap_main_remove_periodic (button_callbak);
 
    if (delayed_widget->callback) {
       (*delayed_widget->callback) (delayed_widget, SSD_BUTTON_SHORT_CLICK);
    }
-	
-	data->state = BUTTON_STATE_NORMAL;
-	roadmap_screen_redraw ();
+
+    data->state = BUTTON_STATE_NORMAL;
+    roadmap_screen_redraw ();
 }
 
 static int ssd_button_short_click (SsdWidget widget,
@@ -154,7 +154,7 @@ static int ssd_button_short_click (SsdWidget widget,
    struct ssd_button_data *data = (struct ssd_button_data *) widget->data;
 
    static RoadMapSoundList list;
-   
+
    if (!list) {
       list = roadmap_sound_list_create (SOUND_LIST_NO_FREE);
       roadmap_sound_list_add (list, "click");
@@ -162,26 +162,26 @@ static int ssd_button_short_click (SsdWidget widget,
    }
 
    roadmap_sound_play_list (list);
-   
+
 #ifdef IPHONE
-	if (widget->callback == NULL){
-		data->state = BUTTON_STATE_NORMAL;
-		roadmap_screen_redraw ();
-		return 0;
-	}
-	else{
-		delayed_widget = widget;
-		roadmap_main_set_periodic (300, button_callbak);
-	}
+    if (widget->callback == NULL){
+        data->state = BUTTON_STATE_NORMAL;
+        roadmap_screen_redraw ();
+        return 0;
+    }
+    else{
+        delayed_widget = widget;
+        roadmap_main_set_periodic (300, button_callbak);
+    }
 #else
    if (widget->callback) {
       (*widget->callback) (widget, SSD_BUTTON_SHORT_CLICK);
    }
-	
-	data->state = BUTTON_STATE_NORMAL;
-	roadmap_screen_redraw ();
+
+    data->state = BUTTON_STATE_NORMAL;
+    roadmap_screen_redraw ();
 #endif
-	
+
    return 1;
 }
 
@@ -212,9 +212,9 @@ static int ssd_button_long_click (SsdWidget widget,
 static int set_value (SsdWidget widget, const char *value) {
    struct ssd_button_data *data = (struct ssd_button_data *) widget->data;
    RoadMapImage bmp;
-	int max_width = 0;
-	int max_height = 0;
-	int is_different = 0;
+    int max_width = 0;
+    int max_height = 0;
+    int is_different = 0;
    int i;
 
    if (widget->value && *widget->value) free (widget->value);
@@ -223,12 +223,12 @@ static int set_value (SsdWidget widget, const char *value) {
    else widget->value = "";
 
    if (widget->flags & SSD_VAR_SIZE) {
-   	widget->size.height = -1; 
-   	widget->size.width  = -1; 
+    widget->size.height = -1;
+    widget->size.width  = -1;
       return 0;
    }
 
-	for (i=0; i<MAX_STATES; i++) {
+    for (i=0; i<MAX_STATES; i++) {
       if (!data->bitmaps[i]) continue;
 
       bmp = roadmap_res_get (RES_BITMAP, RES_SKIN, data->bitmaps[i]);
@@ -252,14 +252,14 @@ static int set_value (SsdWidget widget, const char *value) {
       }
    }
 
-	widget->size.height = max_height; 
-  	widget->size.width  = max_width; 
+    widget->size.height = max_height;
+    widget->size.width  = max_width;
 
    return 0;
 }
 
 static BOOL ssd_button_on_key_pressed (SsdWidget button, const char* utf8char, uint32_t flags)
-{ 
+{
    if( KEY_IS_ENTER)
    {
       button->callback(button, SSD_BUTTON_SHORT_CLICK);
@@ -304,13 +304,13 @@ SsdWidget ssd_button_new (const char *name, const char *value,
 
 
 int ssd_button_change_icon( SsdWidget widget, const char **bitmaps, int num_bitmaps){
-	int i;
-	struct ssd_button_data *data = (struct ssd_button_data *) widget->data;
+    int i;
+    struct ssd_button_data *data = (struct ssd_button_data *) widget->data;
     RoadMapImage bmp;
-   
-	for (i=0; i<num_bitmaps; i++) data->bitmaps[i] = bitmaps[i];
-	
-	
+
+    for (i=0; i<num_bitmaps; i++) data->bitmaps[i] = bitmaps[i];
+
+
     bmp = roadmap_res_get (RES_BITMAP, RES_SKIN, data->bitmaps[0]);
     if (!bmp) {
       widget->size.height = widget->size.width = 0;
@@ -331,11 +331,11 @@ SsdWidget ssd_button_label (const char *name, const char *label,
    SsdWidget text;
    SsdWidget button = ssd_button_new (name, "", button_icon, 2,
                                       flags, callback);
-                                      
+
    text = ssd_text_new ("label", label, -1, SSD_ALIGN_VCENTER| SSD_ALIGN_CENTER) ;
-#ifdef IPHONE   
+#ifdef IPHONE
    ssd_widget_set_color(text, "#ffffff", "#ffffff");
-#else   
+#else
    ssd_widget_set_color(text, "#000000", "#000000");
 #endif
    ssd_widget_add (button,text);

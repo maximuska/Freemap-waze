@@ -135,14 +135,14 @@ int roadmap_geocode_address (RoadMapGeocode **selections,
     * expand the match list, else decode that street number and update the
     * match list.
     */
-    
+
    if (number_image[0] == 0) {
-   	
-   	number = -1;
+
+    number = -1;
    } else {
-   	
+
       number = roadmap_math_street_address (number_image, strlen(number_image));
-   } 
+   }
 
    results = (RoadMapGeocode *)
        calloc (count, sizeof(RoadMapGeocode));
@@ -152,16 +152,16 @@ int roadmap_geocode_address (RoadMapGeocode **selections,
    for (i = 0, j = 0; i< count; ++i) {
 
       if (roadmap_street_get_position
-      			(blocks + i, number, &results[j].position)) {
+                (blocks + i, number, &results[j].position)) {
 
-	      RoadMapStreetProperties properties;
-	          
-	      roadmap_street_get_properties (blocks[i].line, &properties);
-       	results[j].fips = fips;
-        	results[j].square = blocks[i].square; // roadmap_square_active ();
-        	results[j].line = blocks[i].line;
-        	results[j].name = strdup (roadmap_street_get_full_name (&properties));
-        	j += 1;
+          RoadMapStreetProperties properties;
+
+          roadmap_street_get_properties (blocks[i].line, &properties);
+        results[j].fips = fips;
+            results[j].square = blocks[i].square; // roadmap_square_active ();
+            results[j].line = blocks[i].line;
+            results[j].name = strdup (roadmap_street_get_full_name (&properties));
+            j += 1;
       }
    }
 

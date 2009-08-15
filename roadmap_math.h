@@ -47,7 +47,7 @@ void roadmap_math_zoom_in      (void);
 void roadmap_math_zoom_out     (void);
 void roadmap_math_zoom_reset   (void);
 int  roadmap_math_zoom_set     (int zoom);
-void roadmap_math_adjust_zoom	 (int square);
+void roadmap_math_adjust_zoom    (int square);
 int  roadmap_math_set_scale    (int scale, int use_map_units);
 int  roadmap_math_get_scale    (int use_map_units);
 
@@ -136,8 +136,8 @@ int  roadmap_math_intersection (RoadMapPosition *from1,
                                 RoadMapPosition *intersection);
 
 int roadmap_math_screen_intersect (RoadMapGuiPoint *f1, RoadMapGuiPoint *t1,
-			   RoadMapGuiPoint *f2, RoadMapGuiPoint *t2,
-			   RoadMapGuiPoint *isect);
+               RoadMapGuiPoint *f2, RoadMapGuiPoint *t2,
+               RoadMapGuiPoint *isect);
 
 void roadmap_math_screen_edges (RoadMapArea *area);
 

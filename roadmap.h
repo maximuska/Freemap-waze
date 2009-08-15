@@ -28,7 +28,7 @@
 #include <assert.h>
 
 #ifdef __SYMBIAN32__
-typedef	unsigned int		uint32_t;
+typedef unsigned int        uint32_t;
 typedef unsigned short      uint16_t;
 #elif (defined WIN32 || defined _WIN32 || defined WINCE || defined _WIN32_WCE)
    #include "Win32\stdint.h"
@@ -38,7 +38,7 @@ typedef unsigned short      uint16_t;
    #define INVALID_THREAD_ID        (0xFFFFFFFF)
 #else
    #include <stdint.h>
-#endif   
+#endif
 
 #define  CLIENT_VERSION_MAJOR       (0)
 #define  CLIENT_VERSION_MINOR       (14)
@@ -59,25 +59,25 @@ typedef unsigned short      uint16_t;
 
 #if defined (__SYMBIAN32__) || (!defined (_WIN32) && !defined (IPHONE))
 #if((!defined BOOL_DEFINED))
-	#define	BOOL_DEFINED
-	typedef signed char	BOOL;
-#endif	//	BOOL_DEFINED
+    #define BOOL_DEFINED
+    typedef signed char BOOL;
+#endif  //  BOOL_DEFINED
 #elif defined (IPHONE)
 #include <objc/objc.h>
 #endif
 
 extern int USING_PHONE_KEYPAD;
 
-#ifndef	TRUE
-	#define	TRUE	(1)
-#endif	//	TRUE
-#ifndef	FALSE
-	#define	FALSE	(0)
-#endif	//	FALSE
+#ifndef TRUE
+    #define TRUE    (1)
+#endif  //  TRUE
+#ifndef FALSE
+    #define FALSE   (0)
+#endif  //  FALSE
 
-#ifndef	FREE
-	#define	FREE(_p_)				if((_p_)){ free((_p_)); (_p_)=NULL;}
-#endif	//	FREE
+#ifndef FREE
+    #define FREE(_p_)               if((_p_)){ free((_p_)); (_p_)=NULL;}
+#endif  //  FREE
 
 #ifdef J2ME
 

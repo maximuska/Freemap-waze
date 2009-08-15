@@ -57,22 +57,22 @@ static int edit_callback (SsdWidget widget, const char *new_value) {
 
 #ifdef __SYMBIAN32__
    {
-	   SsdWidget text = ssd_widget_get(widget->children, "Text");
-	
-	   if ( text && (text->flags & SSD_TEXT_PASSWORD) )
-	   {
-	   		ShowEditbox( "", value, keyboard_callback, widget, EEditBoxPassword );
-	   }
-	   else
-	   {
-			ShowEditbox( "", value, keyboard_callback, widget, EEditBoxStandard );
-	   }
+       SsdWidget text = ssd_widget_get(widget->children, "Text");
+
+       if ( text && (text->flags & SSD_TEXT_PASSWORD) )
+       {
+            ShowEditbox( "", value, keyboard_callback, widget, EEditBoxPassword );
+       }
+       else
+       {
+            ShowEditbox( "", value, keyboard_callback, widget, EEditBoxStandard );
+       }
    }
-	   
+
 #else
    ssd_keyboard_show(SSD_KEYBOARD_LETTERS, "", value, NULL,
                       keyboard_callback, widget);
-#endif  
+#endif
 
    return 1;
 }

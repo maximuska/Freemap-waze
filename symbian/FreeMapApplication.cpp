@@ -31,11 +31,11 @@
 // -----------------------------------------------------------------------------
 //
 CApaDocument* CFreeMapApplication::CreateDocumentL()
-	{
-	// Create an FreeMap document, and return a pointer to it
-	return (static_cast<CApaDocument*>
-					( CFreeMapDocument::NewL( *this ) ) );
-	}
+    {
+    // Create an FreeMap document, and return a pointer to it
+    return (static_cast<CApaDocument*>
+                    ( CFreeMapDocument::NewL( *this ) ) );
+    }
 
 // -----------------------------------------------------------------------------
 // CFreeMapApplication::AppDllUid()
@@ -43,9 +43,9 @@ CApaDocument* CFreeMapApplication::CreateDocumentL()
 // -----------------------------------------------------------------------------
 //
 TUid CFreeMapApplication::AppDllUid() const
-	{
-	// Return the UID for the FreeMap application
-	return KUidFreeMapApp;
-	}
+    {
+    // Return the UID for the FreeMap application
+    return KUidFreeMapApp;
+    }
 
 // End of File

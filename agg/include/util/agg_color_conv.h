@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -36,7 +36,7 @@ namespace agg
 {
 
     //--------------------------------------------------------------color_conv
-    template<class RenBuf, class CopyRow> 
+    template<class RenBuf, class CopyRow>
     void color_conv(RenBuf* dst, const RenBuf* src, CopyRow copy_row_functor)
     {
         unsigned width = src->width();
@@ -50,8 +50,8 @@ namespace agg
             unsigned y;
             for(y = 0; y < height; y++)
             {
-                copy_row_functor(dst->row_ptr(0, y, width), 
-                                 src->row_ptr(y), 
+                copy_row_functor(dst->row_ptr(0, y, width),
+                                 src->row_ptr(y),
                                  width);
             }
         }
@@ -59,8 +59,8 @@ namespace agg
 
 
     //---------------------------------------------------------color_conv_row
-    template<class CopyRow> 
-    void color_conv_row(int8u* dst, 
+    template<class CopyRow>
+    void color_conv_row(int8u* dst,
                         const int8u* src,
                         unsigned width,
                         CopyRow copy_row_functor)
@@ -73,7 +73,7 @@ namespace agg
     template<int BPP> class color_conv_same
     {
     public:
-        void operator () (int8u* dst, 
+        void operator () (int8u* dst,
                           const int8u* src,
                           unsigned width) const
         {

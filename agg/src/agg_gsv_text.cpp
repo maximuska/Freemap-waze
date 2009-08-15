@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -31,7 +31,7 @@
 
 namespace agg
 {
-    int8u gsv_default_font[] = 
+    int8u gsv_default_font[] =
     {
         0x40,0x00,0x6c,0x0f,0x15,0x00,0x0e,0x00,0xf9,0xff,
         0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -591,7 +591,7 @@ namespace agg
     {
         m_status = initial;
         if(m_font == 0) return;
-        
+
         m_indices = (int8u*)m_font;
         double base_height = value(m_indices + 4);
         m_indices += value(m_indices);
@@ -609,13 +609,13 @@ namespace agg
         int8 yc, yf;
         int dx, dy;
         bool quit = false;
-        
+
         while(!quit)
         {
             switch(m_status)
             {
             case initial:
-                if(m_font == 0) 
+                if(m_font == 0)
                 {
                     quit = true;
                     break;
@@ -623,7 +623,7 @@ namespace agg
                 m_status = next_char;
 
             case next_char:
-                if(*m_cur_chr == 0) 
+                if(*m_cur_chr == 0)
                 {
                     quit = true;
                     break;
@@ -655,7 +655,7 @@ namespace agg
                 }
                 dx = int(*m_bglyph++);
                 yf = (yc = *m_bglyph++) & 0x80;
-                yc <<= 1; 
+                yc <<= 1;
                 yc >>= 1;
                 dy = int(yc);
                 m_x += double(dx) * m_w;

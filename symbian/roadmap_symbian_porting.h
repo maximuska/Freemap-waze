@@ -11,14 +11,14 @@ int vsnprintf(char * __restrict str, size_t n, const char * __restrict fmt, va_l
 extern int global_FreeMapLock();
 extern int global_FreeMapUnlock();
 
-typedef enum 
+typedef enum
 {
-	// Standard edit box
-	EEditBoxStandard = 0,
-	// Empty forbidden string edit box
-	EEditBoxEmptyForbidden,
-	// Secured edit box for password
-	EEditBoxPassword		
+    // Standard edit box
+    EEditBoxStandard = 0,
+    // Empty forbidden string edit box
+    EEditBoxEmptyForbidden,
+    // Secured edit box for password
+    EEditBoxPassword
 } TEditBoxType;
 
 extern void ShowEditbox( const char* aTitleUtf8, const char* aTextUtf8, int(*aCallback)(int, const char*, void*), void *context, TEditBoxType aBoxType );

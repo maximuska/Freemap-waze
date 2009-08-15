@@ -89,16 +89,16 @@ static void RealtimeTrafficInfoRegister (void) {
 static void RealtimeTrafficInfoUregister () {
 
    if (plugId != -1)
-   	roadmap_plugin_unregister (plugId);
+    roadmap_plugin_unregister (plugId);
    plugId = -1;
 
 }
 
 int RealtimeTrafficInfoState(){
-	if (roadmap_config_match(&RouteInfoConfigDisplayTraffic, "yes"))
-		return 1;
-	else
-		return 0;
+    if (roadmap_config_match(&RouteInfoConfigDisplayTraffic, "yes"))
+        return 1;
+    else
+        return 0;
 
 }
 
@@ -129,42 +129,42 @@ void RealtimeTrafficInfoPluginInit () {
       (roadmap_config_get (&RouteInfoConfigRouteColorBad));
    roadmap_canvas_set_thickness (TRAFFIC_PEN_WIDTH);
 
-   speed_text_pen = 	roadmap_canvas_create_pen("SpeedText");
-	roadmap_canvas_set_foreground("#000000");
+   speed_text_pen =     roadmap_canvas_create_pen("SpeedText");
+    roadmap_canvas_set_foreground("#000000");
 
    if (roadmap_config_match(&RouteInfoConfigDisplayTraffic, "yes")){
-   	RealtimeTrafficInfoRegister();
-   	Realtime_SendTrafficInfo(1);
+    RealtimeTrafficInfoRegister();
+    Realtime_SendTrafficInfo(1);
    }
 }
 
 
 void RealtimeTrafficInfoPluginTerm(){
-	RealtimeTrafficInfoUregister(plugId);
-	plugId = -1;
+    RealtimeTrafficInfoUregister(plugId);
+    plugId = -1;
 }
 
 void RealtimeRoadToggleShowTraffic(){
    if (roadmap_config_match(&RouteInfoConfigDisplayTraffic, "yes")){
-		 roadmap_config_set (&RouteInfoConfigDisplayTraffic,"no");
-		 Realtime_SendTrafficInfo(0);
+         roadmap_config_set (&RouteInfoConfigDisplayTraffic,"no");
+         Realtime_SendTrafficInfo(0);
 
-		 //RealtimeTrafficInfoUregister(plugId);
-		 //plugId = -1;
+         //RealtimeTrafficInfoUregister(plugId);
+         //plugId = -1;
    }
    else{
-		 roadmap_config_set (&RouteInfoConfigDisplayTraffic,"yes");
-		 Realtime_SendTrafficInfo(1);
-		//RealtimeTrafficInfoRegister();
+         roadmap_config_set (&RouteInfoConfigDisplayTraffic,"yes");
+         Realtime_SendTrafficInfo(1);
+        //RealtimeTrafficInfoRegister();
    }
   roadmap_screen_redraw();
 }
 
 BOOL isDisplayingTrafficInfoOn(){
-	if (roadmap_config_match(&RouteInfoConfigDisplayTraffic, "yes"))
-		return TRUE;
-	else
-		return FALSE;
+    if (roadmap_config_match(&RouteInfoConfigDisplayTraffic, "yes"))
+        return TRUE;
+    else
+        return FALSE;
 }
 
 static void RealtimeTrafficInfoScreenRepaint (int max_pen) {
@@ -175,33 +175,33 @@ static void RealtimeTrafficInfoScreenRepaint (int max_pen) {
    int previous_type = -1;
 
    if (!isDisplayingTrafficInfoOn())
-   	return;
+    return;
 
-	if (RTTrafficInfo_IsEmpty()) return;
+    if (RTTrafficInfo_IsEmpty()) return;
 
     iNumLines = RTTrafficInfo_GetNumLines();
 
 
     for (i=0; i<iNumLines; i++) {
-		RTTrafficInfoLines *pTrafficLine = RTTrafficInfo_GetLine(i);
-		RoadMapGuiPoint seg_middle;
-		RoadMapPen previous_pen;
+        RTTrafficInfoLines *pTrafficLine = RTTrafficInfo_GetLine(i);
+        RoadMapGuiPoint seg_middle;
+        RoadMapPen previous_pen;
         RoadMapPen layer_pen;
 
-		roadmap_square_set_current(pTrafficLine->pluginLine.square);
+        roadmap_square_set_current(pTrafficLine->pluginLine.square);
 
-		if (!roadmap_layer_is_visible (pTrafficLine->pluginLine.cfcc, 0))
-			continue;
+        if (!roadmap_layer_is_visible (pTrafficLine->pluginLine.cfcc, 0))
+            continue;
 
-		if (!roadmap_math_line_is_visible (&pTrafficLine->positionFrom, &pTrafficLine->positionTo))
-			continue;
+        if (!roadmap_math_line_is_visible (&pTrafficLine->positionFrom, &pTrafficLine->positionTo))
+            continue;
 
-		layer_pen = roadmap_layer_get_pen (pTrafficLine->pluginLine.cfcc, 0, 0);
+        layer_pen = roadmap_layer_get_pen (pTrafficLine->pluginLine.cfcc, 0, 0);
 
         if (layer_pen)
-         	width = roadmap_canvas_get_thickness (layer_pen)+1;
+            width = roadmap_canvas_get_thickness (layer_pen)+1;
         else
-         	width = TRAFFIC_PEN_WIDTH;
+            width = TRAFFIC_PEN_WIDTH;
 
         if (width < TRAFFIC_PEN_WIDTH) {
             width = TRAFFIC_PEN_WIDTH;
@@ -210,43 +210,43 @@ static void RealtimeTrafficInfoScreenRepaint (int max_pen) {
         previous_pen = roadmap_canvas_select_pen (pens[pTrafficLine->iType]);
         roadmap_canvas_set_thickness (width);
 
-	    if (previous_pen) {
-    	       roadmap_canvas_select_pen (previous_pen);
-      	}
+        if (previous_pen) {
+               roadmap_canvas_select_pen (previous_pen);
+        }
 
 
-		if ((width != previous_with) || (previous_type != pTrafficLine->iType))
-	  		roadmap_screen_draw_flush();
+        if ((width != previous_with) || (previous_type != pTrafficLine->iType))
+            roadmap_screen_draw_flush();
 
-	  	previous_with = width;
-	  	previous_type = pTrafficLine->iType;
+        previous_with = width;
+        previous_type = pTrafficLine->iType;
 
 
       roadmap_screen_draw_one_line (&pTrafficLine->positionFrom,
-   	                                &pTrafficLine->positionTo,
-      	                            0,
-      	                            &pTrafficLine->positionFrom,
-            	                    pTrafficLine->iFirstShape,
-               	                    pTrafficLine->iLastShape,
-                  	                roadmap_shape_get_position,
-                     	            &pens[pTrafficLine->iType],
-                        	        1,
+                                    &pTrafficLine->positionTo,
+                                    0,
+                                    &pTrafficLine->positionFrom,
+                                    pTrafficLine->iFirstShape,
+                                    pTrafficLine->iLastShape,
+                                    roadmap_shape_get_position,
+                                    &pens[pTrafficLine->iType],
+                                    1,
                                    -1,
-                           	        NULL,
-                              	    &seg_middle,
-                                 	NULL);
+                                    NULL,
+                                    &seg_middle,
+                                    NULL);
 
-      	if (width >= 4){
-      			static const char *direction_colors[3] = {"#fd9f0b", "#FFF380", "#FFFFFF"};
-		 		roadmap_screen_draw_line_direction (&pTrafficLine->positionFrom,
-       												&pTrafficLine->positionTo,
-       												&pTrafficLine->positionFrom,
-                  									pTrafficLine->iFirstShape,
-                  									pTrafficLine->iLastShape,
-                  									roadmap_shape_get_position,
-		                  							width,
-      		            							pTrafficLine->iDirection,
-      		            							direction_colors[pTrafficLine->iType]);
+        if (width >= 4){
+                static const char *direction_colors[3] = {"#fd9f0b", "#FFF380", "#FFFFFF"};
+                roadmap_screen_draw_line_direction (&pTrafficLine->positionFrom,
+                                                    &pTrafficLine->positionTo,
+                                                    &pTrafficLine->positionFrom,
+                                                    pTrafficLine->iFirstShape,
+                                                    pTrafficLine->iLastShape,
+                                                    roadmap_shape_get_position,
+                                                    width,
+                                                    pTrafficLine->iDirection,
+                                                    direction_colors[pTrafficLine->iType]);
        }
    }
 }

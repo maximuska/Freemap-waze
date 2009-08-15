@@ -20,7 +20,7 @@
 
 #include <string.h>
 #include <stdio.h>   //   _snprintf
-   
+
 #include "RealtimeDefs.h"
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -52,16 +52,16 @@ void RTUserLocation_CreateGUIID( LPRTUserLocation this)
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void RTUsers_Init(LPRTUsers   this, 
-                  PFN_ONUSER  pfnOnAddUser, 
-                  PFN_ONUSER  pfnOnMoveUser, 
+void RTUsers_Init(LPRTUsers   this,
+                  PFN_ONUSER  pfnOnAddUser,
+                  PFN_ONUSER  pfnOnMoveUser,
                   PFN_ONUSER  pfnOnRemoveUser)
 {
-   int i; 
-   
+   int i;
+
    for( i=0; i<RL_MAXIMUM_USERS_COUNT; i++)
       RTUserLocation_Init( &(this->Users[i]));
-   
+
    this->iCount      = 0;
    gs_pfnOnAddUser   = pfnOnAddUser;
    gs_pfnOnMoveUser  = pfnOnMoveUser;
@@ -70,11 +70,11 @@ void RTUsers_Init(LPRTUsers   this,
 
 void RTUsers_Reset(LPRTUsers   this)
 {
-   int i; 
-   
+   int i;
+
    for( i=0; i<RL_MAXIMUM_USERS_COUNT; i++)
       RTUserLocation_Init( &(this->Users[i]));
-   
+
    this->iCount = 0;
 }
 
@@ -99,31 +99,31 @@ BOOL RTUsers_Add( LPRTUsers this, LPRTUserLocation pUser)
    //   Full?
    if( RL_MAXIMUM_USERS_COUNT == this->iCount)
       return FALSE;
-   
+
    //   Already exists?
    if( RTUsers_Exists( this, pUser->iID))
       return FALSE;
-   
+
    this->Users[this->iCount]            = (*pUser);
    this->Users[this->iCount].bWasUpdated= TRUE;
    this->iCount++;
    gs_pfnOnAddUser( pUser);
-   
+
    return TRUE;
 }
 
 BOOL RTUsers_Update( LPRTUsers this, LPRTUserLocation pUser)
 {
    LPRTUserLocation pUI = RTUsers_UserByID( this, pUser->iID);
-   
+
    assert(gs_pfnOnMoveUser);
-   
+
    if( !pUI)
       return FALSE;
-   
+
    (*pUI) = (*pUser);
    gs_pfnOnMoveUser( pUser);
-   pUI->bWasUpdated = TRUE;      
+   pUI->bWasUpdated = TRUE;
    return TRUE;
 }
 
@@ -132,20 +132,20 @@ BOOL RTUsers_UpdateOrAdd( LPRTUsers this, LPRTUserLocation pUser)
    if( !RTUsers_Update( this, pUser) && !RTUsers_Add( this, pUser))
       return FALSE;
 
-   pUser->bWasUpdated = TRUE;      
+   pUser->bWasUpdated = TRUE;
    return TRUE;
 }
 
 BOOL  RTUsers_RemoveByIndex( LPRTUsers this, int iIndex)
 {
-   int i; 
-   
+   int i;
+
    assert(gs_pfnOnRemoveUser);
 
    //   Are we empty?
    if( (iIndex < 0) || (this->iCount <= iIndex))
       return FALSE;
-   
+
    gs_pfnOnRemoveUser( &(this->Users[iIndex]));
 
    for( i=iIndex; i<(this->iCount-1); i++)
@@ -159,19 +159,19 @@ BOOL  RTUsers_RemoveByIndex( LPRTUsers this, int iIndex)
 
 BOOL RTUsers_RemoveByID( LPRTUsers this, int iUserID)
 {
-   int   i; 
-   
+   int   i;
+
    //   Are we empty?
    if( 0 == this->iCount)
       return FALSE;
-   
+
    for( i=0; i<this->iCount; i++)
       if( this->Users[i].iID == iUserID)
       {
          RTUsers_RemoveByIndex( this, i);
          return TRUE;
       }
-   
+
    return FALSE;
 }
 
@@ -179,33 +179,33 @@ BOOL RTUsers_Exists( LPRTUsers this, int iUserID)
 {
    if( NULL == RTUsers_UserByID( this, iUserID))
       return FALSE;
-         
+
    return TRUE;
 }
 
 void RTUsers_ClearAll( LPRTUsers this)
 {
-   int i; 
-   
+   int i;
+
    assert(gs_pfnOnRemoveUser);
 
    //   Find user:
    for( i=0; i<this->iCount; i++)
    {
       LPRTUserLocation pUI = &(this->Users[i]);
-   
+
       gs_pfnOnRemoveUser( pUI);
       RTUserLocation_Init( pUI);
    }
-   
+
    this->iCount = 0;
-   
+
 }
 
 void RTUsers_ResetUpdateFlag( LPRTUsers this)
 {
-   int i; 
-   
+   int i;
+
    //   Find user:
    for( i=0; i<this->iCount; i++)
       this->Users[i].bWasUpdated = FALSE;
@@ -213,8 +213,8 @@ void RTUsers_ResetUpdateFlag( LPRTUsers this)
 
 void RTUsers_RedoUpdateFlag( LPRTUsers this)
 {
-   int i; 
-   
+   int i;
+
    //   Find user:
    for( i=0; i<this->iCount; i++)
       this->Users[i].bWasUpdated = TRUE;
@@ -223,9 +223,9 @@ void RTUsers_RedoUpdateFlag( LPRTUsers this)
 void RTUsers_RemoveUnupdatedUsers( LPRTUsers this, int* pUpdatedCount, int* pRemovedCount)
 {
    int i;
-   
+
    (*pUpdatedCount) = 0;
-   (*pRemovedCount) = 0;   
+   (*pRemovedCount) = 0;
 
    for( i=0; i<this->iCount; i++)
       if( this->Users[i].bWasUpdated)
@@ -248,8 +248,8 @@ LPRTUserLocation RTUsers_User( LPRTUsers this, int iIndex)
 
 LPRTUserLocation RTUsers_UserByID( LPRTUsers this, int iUserID)
 {
-   int i; 
-   
+   int i;
+
    //   Find user:
    for( i=0; i<this->iCount; i++)
       if( this->Users[i].iID == iUserID)

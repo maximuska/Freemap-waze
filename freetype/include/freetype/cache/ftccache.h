@@ -269,7 +269,7 @@ FT_BEGIN_HEADER
    *
    * It is used when creating a new cache node, or within a lookup
    * that needs to allocate data (e.g., the sbit cache lookup).
-   * 
+   *
    * Example:
    *
    *   {

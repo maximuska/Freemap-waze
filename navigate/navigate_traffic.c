@@ -137,7 +137,7 @@ static void create_ssd_dialog (void) {
                          (const char **)yesno_label,
                          (const void **)yesno,
                          SSD_END_ROW, NULL));
-        
+
    ssd_widget_add (dialog, box);
 
    box = ssd_container_new ("display group", NULL, SSD_MIN_SIZE, SSD_MIN_SIZE,
@@ -154,7 +154,7 @@ static void create_ssd_dialog (void) {
                          (const char **)yesno_label,
                          (const void **)yesno,
                          SSD_END_ROW, NULL));
-         
+
    ssd_widget_add (dialog, box);
 
    ssd_widget_add (dialog,
@@ -193,7 +193,7 @@ static void create_pens (void) {
 
    /* FIXME should only create pens for road class */
 
-   for (i=1; i<MAX_LAYERS; ++i) 
+   for (i=1; i<MAX_LAYERS; ++i)
       for (j=0; j<MAX_PEN_LAYERS; j++) {
 
          RoadMapPen *pen = &TrafficPens[i][j];
@@ -268,7 +268,7 @@ static void cache_set (int fips, int line, int state) {
  * should be removed.
  */
 void navigate_traffic_adjust_layer (int layer, int thickness, int pen_count) {
-    
+
    int i;
 
    if (layer > ROADMAP_ROAD_LAST) return;
@@ -286,7 +286,7 @@ void navigate_traffic_adjust_layer (int layer, int thickness, int pen_count) {
 
       if (i == 1) {
          if (thickness < 3) thickness = 3;
-         
+
          roadmap_canvas_set_thickness (thickness - 2);
       } else {
          roadmap_canvas_set_thickness (thickness);

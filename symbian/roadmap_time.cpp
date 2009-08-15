@@ -36,17 +36,17 @@ extern "C"{
 #include "roadmap_time.h"
 }
 
-char *roadmap_time_get_hours_minutes (time_t /*gmt*/) 
+char *roadmap_time_get_hours_minutes (time_t /*gmt*/)
 {
   //TODO note that the original implementation can work here as well
   static TBuf8<32> buf;
   _LIT8(KTimeFormatTxt,"%2d:%02d");
-  
+
   //  We don't care for gmt here
   TTime homeTime;
   homeTime.HomeTime();
   TDateTime dateTime = homeTime.DateTime();
-  buf.Format(KTimeFormatTxt, dateTime.Hour(), dateTime.Minute()); 
+  buf.Format(KTimeFormatTxt, dateTime.Hour(), dateTime.Minute());
 
   return (char*)(buf.Ptr());
 }
@@ -58,14 +58,14 @@ time_t roadmap_time(time_t * /*_timer*/)
   utcTime.UniversalTime();
   TDateTime baseTime;
   baseTime.Set(1970,EJanuary,1,0,0,0,0);
-  
+
   TTimeIntervalSeconds intervalSeconds;
   if ( utcTime.SecondsFrom(baseTime, intervalSeconds) != KErrNone )
   {
     return 0;
   }
   return intervalSeconds.Int();
-} 
+}
 
 uint32_t roadmap_time_get_millis(void) {
   TTime utcTime;
@@ -74,7 +74,7 @@ uint32_t roadmap_time_get_millis(void) {
   baseTime.Set(1970,EJanuary,1,0,0,0,0);
 
   TTimeIntervalMicroSeconds tmicro = utcTime.MicroSecondsFrom(baseTime);
-  
+
   return (unsigned long) (tmicro.Int64() / 1000);
 
 }

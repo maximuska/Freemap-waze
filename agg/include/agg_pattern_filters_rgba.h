@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -39,13 +39,13 @@ namespace agg
         typedef ColorT color_type;
         static unsigned dilation() { return 0; }
 
-        static void AGG_INLINE pixel_low_res(color_type const* const* buf, 
+        static void AGG_INLINE pixel_low_res(color_type const* const* buf,
                                              color_type* p, int x, int y)
         {
             *p = buf[y][x];
         }
 
-        static void AGG_INLINE pixel_high_res(color_type const* const* buf, 
+        static void AGG_INLINE pixel_high_res(color_type const* const* buf,
                                               color_type* p, int x, int y)
         {
             *p = buf[y >> line_subpixel_shift]
@@ -67,13 +67,13 @@ namespace agg
 
         static unsigned dilation() { return 1; }
 
-        static AGG_INLINE void pixel_low_res(color_type const* const* buf, 
+        static AGG_INLINE void pixel_low_res(color_type const* const* buf,
                                              color_type* p, int x, int y)
         {
             *p = buf[y][x];
         }
 
-        static AGG_INLINE void pixel_high_res(color_type const* const* buf, 
+        static AGG_INLINE void pixel_high_res(color_type const* const* buf,
                                               color_type* p, int x, int y)
         {
             calc_type r, g, b, a;
@@ -87,7 +87,7 @@ namespace agg
             y &= line_subpixel_mask;
             const color_type* ptr = buf[y_lr] + x_lr;
 
-            weight = (line_subpixel_scale - x) * 
+            weight = (line_subpixel_scale - x) *
                      (line_subpixel_scale - y);
             r += weight * ptr->r;
             g += weight * ptr->g;

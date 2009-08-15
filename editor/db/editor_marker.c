@@ -64,17 +64,17 @@ int editor_marker_add(int longitude,
                       unsigned char flags,
                       const char *note,
                       const char *icon) {
-   
+
    editor_db_marker marker;
    int id;
 
-	while (steering < 0) {
-		steering += 360;
-	}
-	while (steering >= 360) {
-		steering -= 360;
-	}
-	
+    while (steering < 0) {
+        steering += 360;
+    }
+    while (steering >= 360) {
+        steering -= 360;
+    }
+
    marker.longitude = longitude;
    marker.latitude  = latitude;
    marker.steering  = steering;
@@ -85,14 +85,14 @@ int editor_marker_add(int longitude,
    if (note == NULL) {
       marker.note = ROADMAP_INVALID_STRING;
    } else {
-      
+
       marker.note = editor_dictionary_add(note);
    }
 
    if (icon == NULL) {
      marker.icon = ROADMAP_INVALID_STRING;
    } else {
-      
+
       marker.icon = editor_dictionary_add(icon);
    }
 
@@ -139,17 +139,17 @@ const char *edit_marker_icon(int marker){
 }
 
 const char *editor_marker_type(int marker) {
-   
+
    editor_db_marker *marker_st =
       editor_db_get_item (ActiveMarkersDB, marker, 0, 0);
    assert(marker_st != NULL);
 
    return MarkerTypes[marker_st->type]->name;
 }
-   
+
 
 const char *editor_marker_note(int marker) {
-   
+
    editor_db_marker *marker_st =
       editor_db_get_item (ActiveMarkersDB, marker, 0, 0);
    assert(marker_st != NULL);
@@ -164,7 +164,7 @@ const char *editor_marker_note(int marker) {
 
 
 time_t editor_marker_time(int marker) {
-   
+
    editor_db_marker *marker_st =
       editor_db_get_item (ActiveMarkersDB, marker, 0, 0);
    assert(marker_st != NULL);
@@ -174,7 +174,7 @@ time_t editor_marker_time(int marker) {
 
 
 unsigned char editor_marker_flags(int marker) {
-   
+
    editor_db_marker *marker_st =
       editor_db_get_item (ActiveMarkersDB, marker, 0, 0);
    assert(marker_st != NULL);
@@ -185,7 +185,7 @@ unsigned char editor_marker_flags(int marker) {
 
 int editor_marker_committed (int marker) {
 
-	return editor_db_item_committed (ActiveMarkersDB, marker);	
+    return editor_db_item_committed (ActiveMarkersDB, marker);
 }
 
 
@@ -255,12 +255,12 @@ int editor_marker_export(int marker, const char **name, const char **description
                          const char *keys[ED_MARKER_MAX_ATTRS],
                          char       *values[ED_MARKER_MAX_ATTRS],
                          int *count) {
-   
+
    editor_db_marker *marker_st =
       editor_db_get_item (ActiveMarkersDB, marker, 0, 0);
-   
+
    assert(marker_st != NULL);
-   
+
    return MarkerTypes[marker_st->type]->export_marker (marker,
                                                        name,
                                                        description,
@@ -274,32 +274,32 @@ int editor_marker_verify(int marker, unsigned char *flags, const char **note) {
 
    editor_db_marker *marker_st =
       editor_db_get_item (ActiveMarkersDB, marker, 0, 0);
-   
+
    assert(marker_st != NULL);
-   
+
    return MarkerTypes[marker_st->type]->update_marker (marker, flags, note);
 }
 
 
 int editor_marker_begin_commit (void) {
 
-	return editor_db_begin_commit (ActiveMarkersDB);	
+    return editor_db_begin_commit (ActiveMarkersDB);
 }
 
 
 void editor_marker_confirm_commit (int id) {
 
-	editor_db_confirm_commit (ActiveMarkersDB, id);	
+    editor_db_confirm_commit (ActiveMarkersDB, id);
 }
 
 
 int editor_marker_item_committed (int item_id) {
 
-	return editor_db_item_committed (ActiveMarkersDB, item_id);	
+    return editor_db_item_committed (ActiveMarkersDB, item_id);
 }
 
 
 int editor_marker_items_pending (void) {
 
-	return editor_db_items_pending (ActiveMarkersDB);	
+    return editor_db_items_pending (ActiveMarkersDB);
 }

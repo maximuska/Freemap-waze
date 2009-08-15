@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -82,13 +82,13 @@ namespace agg
             m_src_vertices.close(false);
             if(m_src_vertices.size() > 2)
             {
-                if(m_src_vertices[m_src_vertices.size() - 2].dist * 10.0 < 
+                if(m_src_vertices[m_src_vertices.size() - 2].dist * 10.0 <
                    m_src_vertices[m_src_vertices.size() - 3].dist)
                 {
-                    d = m_src_vertices[m_src_vertices.size() - 3].dist + 
+                    d = m_src_vertices[m_src_vertices.size() - 3].dist +
                         m_src_vertices[m_src_vertices.size() - 2].dist;
 
-                    m_src_vertices[m_src_vertices.size() - 2] = 
+                    m_src_vertices[m_src_vertices.size() - 2] =
                         m_src_vertices[m_src_vertices.size() - 1];
 
                     m_src_vertices.remove_last();
@@ -115,7 +115,7 @@ namespace agg
     double trans_single_path::total_length() const
     {
         if(m_base_length >= 1e-10) return m_base_length;
-        return (m_status == ready) ? 
+        return (m_status == ready) ?
             m_src_vertices[m_src_vertices.size() - 1].dist :
             0.0;
     }
@@ -128,7 +128,7 @@ namespace agg
         {
             if(m_base_length > 1e-10)
             {
-                *x *= m_src_vertices[m_src_vertices.size() - 1].dist / 
+                *x *= m_src_vertices[m_src_vertices.size() - 1].dist /
                       m_base_length;
             }
 
@@ -172,13 +172,13 @@ namespace agg
                 if(m_preserve_x_scale)
                 {
                     unsigned k;
-                    for(i = 0; (j - i) > 1; ) 
+                    for(i = 0; (j - i) > 1; )
                     {
-                        if(*x < m_src_vertices[k = (i + j) >> 1].dist) 
+                        if(*x < m_src_vertices[k = (i + j) >> 1].dist)
                         {
-                            j = k; 
+                            j = k;
                         }
-                        else 
+                        else
                         {
                             i = k;
                         }

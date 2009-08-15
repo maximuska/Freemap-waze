@@ -4,7 +4,7 @@
  *
  *   Copyright 2008 Giant Steps Ltd.
  *   Copyright 2008 Ehud Shabtai
- * 
+ *
  *   This file is part of RoadMap.
  *
  *   RoadMap is free software; you can redistribute it and/or modify
@@ -29,28 +29,28 @@
 #define _ROADMAP_NOTIFY_SMS__H_
 
 #include <e32base.h>
-#include <msvapi.h> 
+#include <msvapi.h>
 
 class CRoadmapNotifySMS : public MMsvSessionObserver //, public CActive
 {
 public:
   CRoadmapNotifySMS();
   virtual ~CRoadmapNotifySMS();
-  
+
   static CRoadmapNotifySMS* NewL(void* apSmsReceivedCallback);
-  
+
   virtual void HandleSessionEventL(TMsvSessionEvent aEvent, TAny* aArg1, TAny* aArg2, TAny* aArg3);
-  
-private: 
+
+private:
   void ConstructL(void* apSmsReceivedCallback);
   //void RunL();
   //void DoCancel();
-  
+
   // A session to the messaging server
-  CMsvSession* m_pMsvSession;  
+  CMsvSession* m_pMsvSession;
   CMsvEntry* m_pMsvEntry;
   TMsvId m_NewMessageId;
-  
+
   void* m_pSmsReceivedCallback;
 };
 

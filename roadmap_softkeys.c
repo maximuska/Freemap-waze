@@ -25,7 +25,7 @@
  *
  *   See roadmap_softkeys.h
  */
-                                                
+
 #include <string.h>
 #include <stdlib.h>
 
@@ -35,36 +35,36 @@
 
 #define MAX_SOFTKEYS 30
 typedef struct {
-	char * name;
-	Softkey sk;
+    char * name;
+    Softkey sk;
 }SoftKeyEntry;
 
 SoftKeyEntry right_soft_key[MAX_SOFTKEYS];
 SoftKeyEntry left_soft_key[MAX_SOFTKEYS];
 
- 
+
 #ifndef __SYMBIAN32__
 int roadmap_softkeys_orientation(){
-	return SOFT_KEYS_ON_BOTTOM;
+    return SOFT_KEYS_ON_BOTTOM;
 }
 #endif
 
 static void queue_softkey (const char *name, Softkey *s, SoftKeyEntry *table) {
    int i;
    BOOL found = FALSE;
-   
+
    for (i=MAX_SOFTKEYS -1; i>=0; i--) {
-   	  
+
       if (table[i].name && !strcmp(table[i].name, name)){
-      	 found = TRUE;
-      	 break;
+         found = TRUE;
+         break;
       }
    }
 
- 
+
    if (found)
-   	return;
-   
+    return;
+
    for (i=0; i<MAX_SOFTKEYS; i++) {
       if (table[i].name == NULL) break;
    }
@@ -74,7 +74,7 @@ static void queue_softkey (const char *name, Softkey *s, SoftKeyEntry *table) {
       return;
    }
 
-  
+
    strcpy(table[i].sk.text,s->text);
    table[i].sk.callback = s->callback;
    table[i].name = strdup(name);
@@ -84,12 +84,12 @@ static void remove_softkey (const char *name, SoftKeyEntry *table) {
 
    int i;
    BOOL found = FALSE;
-   
+
    for (i=MAX_SOFTKEYS -1; i>=0; i--) {
-   	  
+
       if (table[i].name && !strcmp(table[i].name, name)) {
-      	found = TRUE;
-      	break;
+        found = TRUE;
+        break;
       }
    }
 
@@ -104,22 +104,22 @@ static void remove_softkey (const char *name, SoftKeyEntry *table) {
 }
 
 void roadmap_softkeys_set_left_soft_key(const char *name, Softkey *s ){
-	queue_softkey(name, s, left_soft_key);
+    queue_softkey(name, s, left_soft_key);
 }
 
 void roadmap_softkeys_set_right_soft_key(const char *name, Softkey *s){
-	queue_softkey(name, s, right_soft_key);
+    queue_softkey(name, s, right_soft_key);
 }
 
 void roamdap_softkeys_chnage_left_text(const char *name, const char *new_text){
    int i;
    BOOL found = FALSE;
-   
+
    for (i=MAX_SOFTKEYS -1; i>=0; i--) {
-   	  
+
       if (left_soft_key[i].name && !strcmp(left_soft_key[i].name, name)) {
-      	found = TRUE;
-      	break;
+        found = TRUE;
+        break;
       }
    }
 
@@ -131,11 +131,11 @@ void roamdap_softkeys_chnage_left_text(const char *name, const char *new_text){
 }
 
 void roadmap_softkeys_remove_left_soft_key(const char *name ){
-	remove_softkey(name, left_soft_key);
+    remove_softkey(name, left_soft_key);
 }
 
 void roadmap_softkeys_remove_right_soft_key(const char *name){
-	remove_softkey(name, right_soft_key);
+    remove_softkey(name, right_soft_key);
 }
 
 const char *roadmap_softkeys_get_left_soft_key_text(){
@@ -144,16 +144,16 @@ const char *roadmap_softkeys_get_left_soft_key_text(){
 
    while (i>=0) {
       if (left_soft_key[i].name){
-      	res = left_soft_key[i].sk.text;
-      	if (res) break;
+        res = left_soft_key[i].sk.text;
+        if (res) break;
       }
       i--;
    }
-   
-   if (res)	
-   		return roadmap_lang_get(res);
+
+   if (res)
+        return roadmap_lang_get(res);
    else
-   		return "";
+        return "";
 }
 
 const char *roadmap_softkeys_get_right_soft_key_text(){
@@ -161,17 +161,17 @@ const char *roadmap_softkeys_get_right_soft_key_text(){
    const char * res = NULL;
 
    while (i>=0){
-   	  if (right_soft_key[i].name){
-      	res = right_soft_key[i].sk.text;
-      	if (res) break;
-   	  }
+      if (right_soft_key[i].name){
+        res = right_soft_key[i].sk.text;
+        if (res) break;
+      }
       i--;
    }
-	
-	if (res)	
-   		return roadmap_lang_get(res);
-   	else
-   		return "";
+
+    if (res)
+        return roadmap_lang_get(res);
+    else
+        return "";
 }
 
 void roadmap_softkeys_left_softkey_callback(){
@@ -179,15 +179,15 @@ void roadmap_softkeys_left_softkey_callback(){
    RoadMapCallback callback = NULL;
 
    while (i>=0){
-   	  if (left_soft_key[i].name){
-      	callback = left_soft_key[i].sk.callback;
-      	if (callback) break;
-   	  }
+      if (left_soft_key[i].name){
+        callback = left_soft_key[i].sk.callback;
+        if (callback) break;
+      }
       i--;
    }
-   
+
    if (callback)
-   	(*callback)();
+    (*callback)();
 }
 
 void roadmap_softkeys_right_softkey_callback(){
@@ -195,13 +195,13 @@ void roadmap_softkeys_right_softkey_callback(){
    RoadMapCallback callback = NULL;
 
    while (i>=0){
-   	  if (right_soft_key[i].name){
-      	callback = right_soft_key[i].sk.callback;
-      	if (callback) break;
-   	  }
+      if (right_soft_key[i].name){
+        callback = right_soft_key[i].sk.callback;
+        if (callback) break;
+      }
       i--;
    }
-   
+
    if (callback)
-   	(*callback)();
+    (*callback)();
 }

@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -28,7 +28,7 @@ namespace agg
 {
 
     //------------------------------------------------------------------------
-    scale_ctrl_impl::scale_ctrl_impl(double x1, double y1, 
+    scale_ctrl_impl::scale_ctrl_impl(double x1, double y1,
                                      double x2, double y2, bool flip_y) :
         ctrl(x1, y1, x2, y2, flip_y),
         m_border_thickness(1.0),
@@ -56,10 +56,10 @@ namespace agg
 
     //------------------------------------------------------------------------
     void scale_ctrl_impl::border_thickness(double t, double extra)
-    { 
-        m_border_thickness = t; 
+    {
+        m_border_thickness = t;
         m_border_extra = extra;
-        calc_box(); 
+        calc_box();
     }
 
 
@@ -70,30 +70,30 @@ namespace agg
         m_y1 = y1;
         m_x2 = x2;
         m_y2 = y2;
-        calc_box(); 
-        m_border_extra = (fabs(x2 - x1) > fabs(y2 - y1)) ? 
-                            (y2 - y1) / 2 : 
+        calc_box();
+        m_border_extra = (fabs(x2 - x1) > fabs(y2 - y1)) ?
+                            (y2 - y1) / 2 :
                             (x2 - x1) / 2;
     }
 
 
     //------------------------------------------------------------------------
-    void scale_ctrl_impl::value1(double value) 
-    { 
+    void scale_ctrl_impl::value1(double value)
+    {
         if(value < 0.0) value = 0.0;
         if(value > 1.0) value = 1.0;
         if(m_value2 - value < m_min_d) value = m_value2 - m_min_d;
-        m_value1 = value; 
+        m_value1 = value;
     }
 
 
     //------------------------------------------------------------------------
-    void scale_ctrl_impl::value2(double value) 
-    { 
+    void scale_ctrl_impl::value2(double value)
+    {
         if(value < 0.0) value = 0.0;
         if(value > 1.0) value = 1.0;
         if(m_value1 + value < m_min_d) value = m_value1 + m_min_d;
-        m_value2 = value; 
+        m_value2 = value;
     }
 
 
@@ -126,34 +126,34 @@ namespace agg
 
         case 0:                 // Background
             m_vertex = 0;
-            m_vx[0] = m_x1 - m_border_extra; 
+            m_vx[0] = m_x1 - m_border_extra;
             m_vy[0] = m_y1 - m_border_extra;
-            m_vx[1] = m_x2 + m_border_extra; 
+            m_vx[1] = m_x2 + m_border_extra;
             m_vy[1] = m_y1 - m_border_extra;
-            m_vx[2] = m_x2 + m_border_extra; 
+            m_vx[2] = m_x2 + m_border_extra;
             m_vy[2] = m_y2 + m_border_extra;
-            m_vx[3] = m_x1 - m_border_extra; 
+            m_vx[3] = m_x1 - m_border_extra;
             m_vy[3] = m_y2 + m_border_extra;
             break;
 
         case 1:                 // Border
             m_vertex = 0;
-            m_vx[0] = m_x1; 
+            m_vx[0] = m_x1;
             m_vy[0] = m_y1;
-            m_vx[1] = m_x2; 
+            m_vx[1] = m_x2;
             m_vy[1] = m_y1;
-            m_vx[2] = m_x2; 
+            m_vx[2] = m_x2;
             m_vy[2] = m_y2;
-            m_vx[3] = m_x1; 
+            m_vx[3] = m_x1;
             m_vy[3] = m_y2;
-            m_vx[4] = m_x1 + m_border_thickness; 
-            m_vy[4] = m_y1 + m_border_thickness; 
-            m_vx[5] = m_x1 + m_border_thickness; 
-            m_vy[5] = m_y2 - m_border_thickness; 
-            m_vx[6] = m_x2 - m_border_thickness; 
-            m_vy[6] = m_y2 - m_border_thickness; 
-            m_vx[7] = m_x2 - m_border_thickness; 
-            m_vy[7] = m_y1 + m_border_thickness; 
+            m_vx[4] = m_x1 + m_border_thickness;
+            m_vy[4] = m_y1 + m_border_thickness;
+            m_vx[5] = m_x1 + m_border_thickness;
+            m_vy[5] = m_y2 - m_border_thickness;
+            m_vx[6] = m_x2 - m_border_thickness;
+            m_vy[6] = m_y2 - m_border_thickness;
+            m_vx[7] = m_x2 - m_border_thickness;
+            m_vy[7] = m_y1 + m_border_thickness;
             break;
 
         case 2:                 // pointer1
@@ -162,7 +162,7 @@ namespace agg
                 m_ellipse.init(m_xs1 + (m_xs2 - m_xs1) * m_value1,
                                (m_ys1 + m_ys2) / 2.0,
                                m_y2 - m_y1,
-                               m_y2 - m_y1, 
+                               m_y2 - m_y1,
                                32);
             }
             else
@@ -170,7 +170,7 @@ namespace agg
                 m_ellipse.init((m_xs1 + m_xs2) / 2.0,
                                m_ys1 + (m_ys2 - m_ys1) * m_value1,
                                m_x2 - m_x1,
-                               m_x2 - m_x1, 
+                               m_x2 - m_x1,
                                32);
             }
             m_ellipse.rewind(0);
@@ -182,7 +182,7 @@ namespace agg
                 m_ellipse.init(m_xs1 + (m_xs2 - m_xs1) * m_value2,
                                (m_ys1 + m_ys2) / 2.0,
                                m_y2 - m_y1,
-                               m_y2 - m_y1, 
+                               m_y2 - m_y1,
                                32);
             }
             else
@@ -190,7 +190,7 @@ namespace agg
                 m_ellipse.init((m_xs1 + m_xs2) / 2.0,
                                m_ys1 + (m_ys2 - m_ys1) * m_value2,
                                m_x2 - m_x1,
-                               m_x2 - m_x1, 
+                               m_x2 - m_x1,
                                32);
             }
             m_ellipse.rewind(0);
@@ -202,11 +202,11 @@ namespace agg
             {
                 m_vx[0] = m_xs1 + (m_xs2 - m_xs1) * m_value1;
                 m_vy[0] = m_y1 - m_border_extra / 2.0;
-                m_vx[1] = m_xs1 + (m_xs2 - m_xs1) * m_value2; 
+                m_vx[1] = m_xs1 + (m_xs2 - m_xs1) * m_value2;
                 m_vy[1] = m_vy[0];
-                m_vx[2] = m_vx[1]; 
+                m_vx[2] = m_vx[1];
                 m_vy[2] = m_y2 + m_border_extra / 2.0;
-                m_vx[3] = m_vx[0]; 
+                m_vx[3] = m_vx[0];
                 m_vy[3] = m_vy[2];
             }
             else
@@ -214,11 +214,11 @@ namespace agg
                 m_vx[0] = m_x1 - m_border_extra / 2.0;
                 m_vy[0] = m_ys1 + (m_ys2 - m_ys1) * m_value1;
                 m_vx[1] = m_vx[0];
-                m_vy[1] = m_ys1 + (m_ys2 - m_ys1) * m_value2; 
+                m_vy[1] = m_ys1 + (m_ys2 - m_ys1) * m_value2;
                 m_vx[2] = m_x2 + m_border_extra / 2.0;
-                m_vy[2] = m_vy[1]; 
+                m_vy[2] = m_vy[1];
                 m_vx[3] = m_vx[2];
-                m_vy[3] = m_vy[0]; 
+                m_vy[3] = m_vy[0];
             }
             break;
         }

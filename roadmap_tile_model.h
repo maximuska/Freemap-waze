@@ -26,74 +26,74 @@
 
 enum {
 
-	model__tile_square_first			= 0,
-	
-	model__tile_string_first			= model__tile_square_first,
-	model__tile_string_prefix			= model__tile_string_first,
-	model__tile_string_street,
-	model__tile_string_text2speech,
-	model__tile_string_type,
-	model__tile_string_suffix,
-	model__tile_string_city,
-	model__tile_string_attributes,
-	model__tile_string_landmark,
-	model__tile_string_last				= model__tile_string_landmark,
-	
-	model__tile_shape_first,
-	model__tile_shape_data				= model__tile_shape_first,
-	model__tile_shape_last				= model__tile_shape_data,
-	
-	model__tile_line_first,
-	model__tile_line_data				= model__tile_line_first,
-	model__tile_line_bysquare1,
-	model__tile_line_broken,
-	model__tile_line_roundabout,
-	model__tile_line_last				= model__tile_line_roundabout,
-	
-	model__tile_point_first,
-	model__tile_point_data				= model__tile_point_first,
-	model__tile_point_id,
-	model__tile_point_last				= model__tile_point_id,
+    model__tile_square_first            = 0,
 
-	model__tile_line_route_first,
-	model__tile_line_route_data		= model__tile_line_route_first,
-	model__tile_line_route_last		= model__tile_line_route_data,
-	
-	model__tile_street_first,
-	model__tile_street_name				= model__tile_street_first,
-	model__tile_street_city,
-	model__tile_street_last				= model__tile_street_city,
-	
-	model__tile_polygon_first,
-	model__tile_polygon_head			= model__tile_polygon_first,
-	model__tile_polygon_point,
-	model__tile_polygon_last			= model__tile_polygon_point,
-	
-	model__tile_line_speed_first,
-	model__tile_line_speed_line_ref	= model__tile_line_speed_first,
-	model__tile_line_speed_avg,
-	model__tile_line_speed_index,
-	model__tile_line_speed_data,
-	model__tile_line_speed_last		= model__tile_line_speed_data,
-	
-	model__tile_range_first,
-	model__tile_range_addr				= model__tile_range_first,
-	model__tile_range_last				= model__tile_range_addr,
-	
-	model__tile_alert_first,
-	model__tile_alert_data				= model__tile_alert_first,
-	model__tile_alert_last				= model__tile_alert_data,
-	
-	model__tile_square_data,
-	model__tile_square_last				= model__tile_square_data,
-	
-	model__tile_metadata_first,
-	model__tile_metadata_attributes	= model__tile_metadata_first,
-	model__tile_metadata_last			= model__tile_metadata_attributes,
-	
-	
-	
-	model__tile
+    model__tile_string_first            = model__tile_square_first,
+    model__tile_string_prefix           = model__tile_string_first,
+    model__tile_string_street,
+    model__tile_string_text2speech,
+    model__tile_string_type,
+    model__tile_string_suffix,
+    model__tile_string_city,
+    model__tile_string_attributes,
+    model__tile_string_landmark,
+    model__tile_string_last             = model__tile_string_landmark,
+
+    model__tile_shape_first,
+    model__tile_shape_data              = model__tile_shape_first,
+    model__tile_shape_last              = model__tile_shape_data,
+
+    model__tile_line_first,
+    model__tile_line_data               = model__tile_line_first,
+    model__tile_line_bysquare1,
+    model__tile_line_broken,
+    model__tile_line_roundabout,
+    model__tile_line_last               = model__tile_line_roundabout,
+
+    model__tile_point_first,
+    model__tile_point_data              = model__tile_point_first,
+    model__tile_point_id,
+    model__tile_point_last              = model__tile_point_id,
+
+    model__tile_line_route_first,
+    model__tile_line_route_data     = model__tile_line_route_first,
+    model__tile_line_route_last     = model__tile_line_route_data,
+
+    model__tile_street_first,
+    model__tile_street_name             = model__tile_street_first,
+    model__tile_street_city,
+    model__tile_street_last             = model__tile_street_city,
+
+    model__tile_polygon_first,
+    model__tile_polygon_head            = model__tile_polygon_first,
+    model__tile_polygon_point,
+    model__tile_polygon_last            = model__tile_polygon_point,
+
+    model__tile_line_speed_first,
+    model__tile_line_speed_line_ref = model__tile_line_speed_first,
+    model__tile_line_speed_avg,
+    model__tile_line_speed_index,
+    model__tile_line_speed_data,
+    model__tile_line_speed_last     = model__tile_line_speed_data,
+
+    model__tile_range_first,
+    model__tile_range_addr              = model__tile_range_first,
+    model__tile_range_last              = model__tile_range_addr,
+
+    model__tile_alert_first,
+    model__tile_alert_data              = model__tile_alert_first,
+    model__tile_alert_last              = model__tile_alert_data,
+
+    model__tile_square_data,
+    model__tile_square_last             = model__tile_square_data,
+
+    model__tile_metadata_first,
+    model__tile_metadata_attributes = model__tile_metadata_first,
+    model__tile_metadata_last           = model__tile_metadata_attributes,
+
+
+
+    model__tile
 };
 
 

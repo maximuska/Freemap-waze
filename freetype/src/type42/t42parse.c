@@ -1071,7 +1071,7 @@
             if ( !name )
               continue;
 
-            if ( cur[0] == name[0]                                  && 
+            if ( cur[0] == name[0]                                  &&
                  len == (FT_PtrDist)ft_strlen( (const char *)name ) &&
                  ft_memcmp( cur, name, len ) == 0                   )
             {

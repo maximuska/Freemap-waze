@@ -1253,7 +1253,7 @@
         for ( j = 0; j < point_count; ++j )
         {
           int  pindex = localpoints[j];
-          
+
           face->cvt[pindex] = (FT_Short)( face->cvt[pindex] +
                                           FT_MulFix( deltas[j], apply ) );
         }

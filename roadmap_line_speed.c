@@ -74,38 +74,38 @@ static void *roadmap_line_speed_map (const roadmap_db_data_file *file) {
    context->type = RoadMapLineSpeedType;
 
    if (!roadmap_db_get_data (file,
-   								  model__tile_line_speed_avg,
-   								  sizeof (RoadMapLineSpeedAvg),
-   								  (void**)&(context->LineSpeedAvg),
-   								  &(context->LineSpeedAvgCount))) {
+                                  model__tile_line_speed_avg,
+                                  sizeof (RoadMapLineSpeedAvg),
+                                  (void**)&(context->LineSpeedAvg),
+                                  &(context->LineSpeedAvgCount))) {
       roadmap_log (ROADMAP_FATAL, "invalid line_speed/avg structure");
    }
 
    if (!roadmap_db_get_data (file,
-   								  model__tile_line_speed_line_ref,
-   								  sizeof (RoadMapLineSpeed),
-   								  (void**)&(context->LineSpeedRef),
-   								  &(context->LineSpeedRefCount))) {
+                                  model__tile_line_speed_line_ref,
+                                  sizeof (RoadMapLineSpeed),
+                                  (void**)&(context->LineSpeedRef),
+                                  &(context->LineSpeedRefCount))) {
       roadmap_log (ROADMAP_FATAL, "invalid line_speed/line_ref structure");
    }
 
    if (context->LineSpeedRefCount) {
 
-	   if (!roadmap_db_get_data (file,
-	   								  model__tile_line_speed_index,
-	   								  sizeof (int),
-	   								  (void**)&(context->LineSpeedIndex),
-	   								  &(context->LineSpeedIndexCount))) {
-	      roadmap_log (ROADMAP_FATAL, "invalid line_speed/index structure");
-	   }
+       if (!roadmap_db_get_data (file,
+                                      model__tile_line_speed_index,
+                                      sizeof (int),
+                                      (void**)&(context->LineSpeedIndex),
+                                      &(context->LineSpeedIndexCount))) {
+          roadmap_log (ROADMAP_FATAL, "invalid line_speed/index structure");
+       }
 
-	   if (!roadmap_db_get_data (file,
-	   								  model__tile_line_speed_data,
-	   								  sizeof (RoadMapLineSpeedRef),
-	   								  (void**)&(context->LineSpeedSlots),
-	   								  &(context->LineSpeedSlotsCount))) {
-	      roadmap_log (ROADMAP_FATAL, "invalid line_speed/index structure");
-	   }
+       if (!roadmap_db_get_data (file,
+                                      model__tile_line_speed_data,
+                                      sizeof (RoadMapLineSpeedRef),
+                                      (void**)&(context->LineSpeedSlots),
+                                      &(context->LineSpeedSlotsCount))) {
+          roadmap_log (ROADMAP_FATAL, "invalid line_speed/index structure");
+       }
    }
 
    return context;
@@ -188,7 +188,7 @@ static LineRouteTime calc_cross_time (int line, int time_slot,
    if (!speed) return 0;
 
    length = roadmap_line_length (line);
-   
+
    length_m = roadmap_math_to_cm(length) / 100;
 
    return (LineRouteTime)(length_m * 3.6 / speed) + 1;
@@ -332,7 +332,7 @@ int roadmap_line_speed_get_avg_cross_time (int line, int against_dir) {
 
       length = roadmap_line_length (line);
 
-	  length_m = roadmap_math_to_cm(length) / 100;
+      length_m = roadmap_math_to_cm(length) / 100;
 
       return (int)(length_m * 3.6 / speed) + 1;
    }

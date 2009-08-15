@@ -53,9 +53,9 @@
 #define SSD_WS_DEFWIDGET    0x00200000
 #define SSD_TAB_CONTROL     0x00400000
 
-#define SSD_POINTER_NONE	0x01000000
-#define SSD_POINTER_COMMENT	0x02000000
-#define SSD_POINTER_MENU	0x04000000
+#define SSD_POINTER_NONE    0x01000000
+#define SSD_POINTER_COMMENT 0x02000000
+#define SSD_POINTER_MENU    0x04000000
 #define SSD_HEADER_GREEN    0x08000000
 #define SSD_HEADER_GRAY     0x10000000
 
@@ -76,10 +76,10 @@
 #define SSD_DIALOG_VERTICAL       0x80000
 
 /* Container flags */
-#define SSD_CONTAINER_BORDER 	0x1000
-#define SSD_CONTAINER_TITLE  	0x2000
-#define SSD_ROUNDED_CORNERS	    0x4000
-#define SSD_BG_IMAGE 		    0x8000
+#define SSD_CONTAINER_BORDER    0x1000
+#define SSD_CONTAINER_TITLE     0x2000
+#define SSD_ROUNDED_CORNERS     0x4000
+#define SSD_BG_IMAGE            0x8000
 
 /* Text flags */
 #define SSD_TEXT_LABEL    0x1000 /* Adds a ':' sign */
@@ -100,7 +100,7 @@ typedef enum {
    FOCUS_RIGHT,
    FOCUS_UP,
    FOCUS_DOWN
-   
+
 } SSD_FOCUS_DIRECTION;
 
 typedef struct ssd_size {
@@ -147,7 +147,7 @@ struct ssd_widget {
    BOOL        in_focus;        //  Keyboard focus
    BOOL        background_focus;//  Visability-only focus (nested context menus)
    int         tab_sequence;
-   
+
    SsdWidget   prev_tabstop;    //  Previous this in the tab order
    SsdWidget   next_tabstop;    //  Next     this in the tab order
    SsdWidget   left_tabstop;    //  GUI location tab-stop:   Left
@@ -165,10 +165,10 @@ struct ssd_widget {
    RoadMapGuiPoint position;
    const char *right_softkey;
    const char *left_softkey;
-   
+
    SsdSoftKeyCallback right_softkey_callback;
    SsdSoftKeyCallback left_softkey_callback;
-   
+
    void *data; /* Widget specific data */
 
    const char * (*get_value)(SsdWidget widget);

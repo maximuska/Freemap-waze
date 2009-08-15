@@ -17,9 +17,9 @@
  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-                                               
-#ifndef	__FREEMAP_REALTIMETRANSACTIONQUEUE_H__
-#define	__FREEMAP_REALTIMETRANSACTIONQUEUE_H__
+
+#ifndef __FREEMAP_REALTIMETRANSACTIONQUEUE_H__
+#define __FREEMAP_REALTIMETRANSACTIONQUEUE_H__
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -65,4 +65,4 @@ BOOL  TransactionQueue_Dequeue( LPTransactionQueue this, LPTransactionQueueItem 
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#endif	//	__FREEMAP_REALTIMETRANSACTIONQUEUE_H__
+#endif  //  __FREEMAP_REALTIMETRANSACTIONQUEUE_H__

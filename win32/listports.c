@@ -32,7 +32,7 @@ static BOOL Win2000ListPorts(LISTPORTS_CALLBACK lpCbk,LPVOID lpCbkValue);
 static BOOL WinCEListPorts(LISTPORTS_CALLBACK lpCbk,LPVOID lpCbkValue);
 static BOOL ScanEnumTree(LPCTSTR lpEnumPath,LISTPORTS_CALLBACK lpCbk,LPVOID lpCbkValue);
 static LONG OpenSubKeyByIndex(
-              HKEY hKey,DWORD dwIndex,REGSAM samDesired,PHKEY phkResult,LPTSTR* lppSubKeyName); 
+              HKEY hKey,DWORD dwIndex,REGSAM samDesired,PHKEY phkResult,LPTSTR* lppSubKeyName);
 static LONG QueryStringValue(HKEY hKey,LPCTSTR lpValueName, LPTSTR* lppStringValue);
 
 BOOL ListPorts(LISTPORTS_CALLBACK lpCbk,LPVOID lpCbkValue)
@@ -176,7 +176,7 @@ static BOOL WinNT40ListPorts(LISTPORTS_CALLBACK lpCbk,LPVOID lpCbkValue)
     if(!lpCbk(lpCbkValue,&portinfo)){
       goto end; /* listing aborted by callback */
     }
-  } 
+  }
 
 end:
   free(lpValueName);
@@ -232,7 +232,7 @@ static BOOL WinCEListPorts(LISTPORTS_CALLBACK lpCbk,LPVOID lpCbkValue)
   LISTPORTS_PORTINFO  portinfo;
   DWORD               index;
   DWORD               wordSize = sizeof(DWORD);
-  BYTE                found[20] = {0};       
+  BYTE                found[20] = {0};
 
   portinfo.lpPortName = (LPTSTR)malloc(64);
 
@@ -279,7 +279,7 @@ static BOOL WinCEListPorts(LISTPORTS_CALLBACK lpCbk,LPVOID lpCbkValue)
     if(!lpCbk(lpCbkValue, &portinfo)){
       break;
     }
-  } 
+  }
 
   if(hKey!=NULL) {
      RegCloseKey(hKey);
@@ -290,22 +290,22 @@ static BOOL WinCEListPorts(LISTPORTS_CALLBACK lpCbk,LPVOID lpCbkValue)
      0,KEY_READ,&hKey)){
      goto end;
   } else {
-     
+
      DWORD dwIndex = 0;
-     
+
      for(;;){
         TCHAR SubKeyName[20+1];
         DWORD cbSubkeyName = 20;
         FILETIME           filetime;
-        
+
         if(!(dwError=RegEnumKeyEx(hKey,dwIndex,SubKeyName,&cbSubkeyName,
            0,NULL,NULL,&filetime))){
-           
+
            if (!wcsncmp(SubKeyName, L"Serial", 6)) {
               DWORD index = 0;
-              
+
               if (swscanf(SubKeyName, L"Serial%d:", &index)) {
-                 
+
                  if (index && (index<sizeof(found)/sizeof(found[0]))) {
                     found[index] = 1;
 
@@ -450,7 +450,7 @@ BOOL ScanEnumTree(LPCTSTR lpEnumPath,LISTPORTS_CALLBACK lpCbk,LPVOID lpCbkValue)
           }
         }
         if(dwError){
-          if(dwError==ERROR_FILE_NOT_FOUND){ 
+          if(dwError==ERROR_FILE_NOT_FOUND){
             /* boy that was strange, we better skip this device */
             dwError=0;
             continue;

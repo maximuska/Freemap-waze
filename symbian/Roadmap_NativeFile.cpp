@@ -43,8 +43,8 @@ CRoadMapNativeFile::~CRoadMapNativeFile()
   iSession.Close();
 }
 
-CRoadMapNativeFile* CRoadMapNativeFile::NewL( TFileName &fileName, 
-                                              EFileOp fileOp, 
+CRoadMapNativeFile* CRoadMapNativeFile::NewL( TFileName &fileName,
+                                              EFileOp fileOp,
                                               TInt &aErrorCode)
 {
   CRoadMapNativeFile* self = NewLC(fileName, fileOp, aErrorCode);
@@ -52,8 +52,8 @@ CRoadMapNativeFile* CRoadMapNativeFile::NewL( TFileName &fileName,
   return self;
 }
 
-CRoadMapNativeFile* CRoadMapNativeFile::NewLC( TFileName &fileName, 
-                                              EFileOp fileOp, 
+CRoadMapNativeFile* CRoadMapNativeFile::NewLC( TFileName &fileName,
+                                              EFileOp fileOp,
                                               TInt &aErrorCode)
 {
   CRoadMapNativeFile* self = new ( ELeave ) CRoadMapNativeFile();
@@ -62,14 +62,14 @@ CRoadMapNativeFile* CRoadMapNativeFile::NewLC( TFileName &fileName,
   return self;
 }
 
-void CRoadMapNativeFile::ConstructL(TFileName &fileName, 
+void CRoadMapNativeFile::ConstructL(TFileName &fileName,
                                     EFileOp fileOp,
                                     TInt &aErrorCode)
 {
   User::LeaveIfError(iSession.Connect());
   aErrorCode = KErrNone;
   TInt offsetFromEnd = 0;
-  
+
   //  Open the file according to the name and op/mode
   switch (fileOp)
   {
@@ -92,7 +92,7 @@ void CRoadMapNativeFile::ConstructL(TFileName &fileName,
     {
       return;
     }
-    
+
     if (fileOp == EFileOpAppend) {
        aErrorCode = iFile.Seek(ESeekEnd, offsetFromEnd);
     }
@@ -102,7 +102,7 @@ void CRoadMapNativeFile::ConstructL(TFileName &fileName,
   default:
     break;
   }
-  
+
   if ( aErrorCode == KErrNone )
   {
     m_IsFileValid = true;

@@ -113,7 +113,7 @@
 
     if ( sfnt )
       kerning->x = sfnt->get_kerning( face, left_glyph, right_glyph );
-      
+
     return 0;
   }
 

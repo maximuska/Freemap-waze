@@ -20,9 +20,9 @@
 
 #include "roadmap.h"
 
-#ifndef  TOUCH_SCREEN 
+#ifndef  TOUCH_SCREEN
 #include <string.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 
 #include "ssd/ssd_combobox.h"
 #include "ssd/ssd_tabcontrol.h"
@@ -58,7 +58,7 @@ static   BOOL                 s_context_menu_is_active= FALSE;
 static   on_text_changed_ctx  s_on_text_changed_ctx;
 
 // Context menu items:
-static ssd_cm_item main_menu_items[] = 
+static ssd_cm_item main_menu_items[] =
 {
    //                  Label     ,           Item-ID
    SSD_CM_INIT_ITEM  ( "Navigate",           cmi_navigate),
@@ -70,15 +70,15 @@ static ssd_cm_item main_menu_items[] =
 // Context menu:
 static ssd_contextmenu  context_menu = SSD_CM_INIT_MENU( main_menu_items);
 ///////////////////////////////////////
-   
+
 
 ///////////////////////////////////////
-void roadmap_address_register_nav( RoadMapAddressNav navigate) 
+void roadmap_address_register_nav( RoadMapAddressNav navigate)
 { s_navigator = navigate;}
-/////////////////////////////////////// 
+///////////////////////////////////////
 
 
-// Cached data of the ssd_list content   
+// Cached data of the ssd_list content
 void list_items_init( list_items_ptr this)
 { memset( this, 0, sizeof(list_items));}
 
@@ -92,7 +92,7 @@ void list_items_free( list_items_ptr this)
       FREE( this->labels[i])
       this->values[i] = NULL;
    }
-   
+
    this->size = 0;
 }
 ///////////////////////////////////////
@@ -100,7 +100,7 @@ void list_items_free( list_items_ptr this)
 
 // Single tab info   //////////////////
 void atc_tab_info_init( atc_tab_info_ptr this, tabid id, void* parent)
-{ 
+{
    this->id             = id;
    this->tab            = NULL;
    list_items_init( &(this->items));
@@ -109,7 +109,7 @@ void atc_tab_info_init( atc_tab_info_ptr this, tabid id, void* parent)
 }
 
 void atc_tab_info_free( atc_tab_info_ptr this)
-{  
+{
    list_items_free( &(this->items));
    this->list_is_empty = TRUE;
 }
@@ -118,17 +118,17 @@ void atc_tab_info_free( atc_tab_info_ptr this)
 
 // Module context /////////////////////
 void atcctx_init( atcctx_ptr this)
-{ 
+{
    int i;
 
    memset( this, 0, sizeof(atcctx));
-   
+
    for( i=0; i<tab__count; i++)
       atc_tab_info_init( (this->tab_info + i), i, this);
 }
 
 void atcctx_free( atcctx_ptr this)
-{ 
+{
    int i;
 
    for( i=0; i<tab__count; i++)
@@ -145,14 +145,14 @@ void  on_text_changed_ctx_copy(  on_text_changed_ctx_ptr this,
    on_text_changed_ctx_free( this);
 
    this->context = context;
-   
+
    if( new_text && (*new_text))
    {
       this->new_text= malloc( strlen( new_text) + 1);
       strcpy( this->new_text, new_text);
    }
 }
-      
+
 void  on_text_changed_ctx_free( on_text_changed_ctx_ptr this)
 {
    FREE(this->new_text)
@@ -166,22 +166,22 @@ void  on_text_changed_ctx_init( on_text_changed_ctx_ptr this)
 ///////////////////////////////////////
 static void hide_our_dialogs( int exit_code)
 {
-   ssd_dialog_hide( ATC_NAME, exit_code);   
-   ssd_dialog_hide( "Main Menu", exit_code);   
-   ssd_dialog_hide( "Search", exit_code);   
+   ssd_dialog_hide( ATC_NAME, exit_code);
+   ssd_dialog_hide( "Main Menu", exit_code);
+   ssd_dialog_hide( "Search", exit_code);
 }
 
 static void empty_list( SsdWidget tab)
 {
    atc_tab_info_ptr ti = ssd_combobox_get_context(tab);
-   
+
    list_items_free( &(ti->items));
 
    if( ti->list_is_empty)
       return;
 
    ssd_combobox_update_list(  tab,
-                              0, 
+                              0,
                               NULL,
                               NULL,
                               NULL);
@@ -189,24 +189,24 @@ static void empty_list( SsdWidget tab)
 }
 
 static void populate_list( SsdWidget   tab,
-                           int         count, 
+                           int         count,
                            char**      labels,
                            void**      values)
 {
    atc_tab_info_ptr ti = NULL;
-   
+
    if( !count)
    {
       empty_list( tab);
       return;
    }
-   
+
    ssd_combobox_update_list(  tab,
-                              count, 
+                              count,
                               (const char **)labels,
                               (const void **)values,
                               NULL);
-   
+
    ti                = ssd_combobox_get_context(tab);
    ti->list_is_empty = FALSE;
 }
@@ -217,68 +217,68 @@ static BOOL create_address_string(  char*       address,
                                     const char* house)
 {
    if( street && house && city && (*street) && (*house) && (*city))
-      snprintf(address, 
-               ADDRESS_STRING_MAX_SIZE, 
+      snprintf(address,
+               ADDRESS_STRING_MAX_SIZE,
                "%s %s, %s", street, house, city);
    else if( street && city && (*street) && (*city))
-      snprintf(address, 
-               ADDRESS_STRING_MAX_SIZE, 
+      snprintf(address,
+               ADDRESS_STRING_MAX_SIZE,
                "%s, %s", street, city);
    else if( city && (*city))
-      snprintf(address, 
-               ADDRESS_STRING_MAX_SIZE, 
+      snprintf(address,
+               ADDRESS_STRING_MAX_SIZE,
                "%s", city);
    else if( street && (*street))
-      snprintf(address, 
-               ADDRESS_STRING_MAX_SIZE, 
+      snprintf(address,
+               ADDRESS_STRING_MAX_SIZE,
                "%s, ", street);
    else
       return FALSE;
-                        
+
    return TRUE;
-}                                     
+}
 
 static int get_house_number_from_address( const char* address)
 {
    const char* p     = NULL;
    int         power = 1;
    int         value = 0;
-   
+
    if( !address || !(*address))
       return -1;
-      
-   p = strchr( address, ',');   
+
+   p = strchr( address, ',');
    if( !p)
       return -1;
-   
+
    p--;
    if(((*p) < '0') || ('9' < (*p)))
       return -1;
-      
+
    do
    {
       if( ((*p) < '0') || ('9' < (*p)))
          return value;
-         
+
       value += (power * ((*p) - '0'));
       power *= 10;
 
    }  while( --p != address);
-   
+
    return value;
 }
 
 static const char* get_city_name_from_address( const char* address)
 {
    const char* p = NULL;
-   
+
    if( !address || !(*address))
       return NULL;
-      
-   p = strchr( address, ',');   
+
+   p = strchr( address, ',');
    if( !p)
       return address;
-   
+
    while( (*p) && ((' '==(*p)) || (','==(*p)) || ('\t'==(*p))))
       p++;
 
@@ -289,54 +289,54 @@ static const char* get_street_name_from_address( const char* address, char* stre
 {
    int         size;
    const char* p = NULL;
-   
+
    if( !address || !(*address) || !street)
       return NULL;
-   
+
    (*street) = '\0';
-      
-   p = strchr( address, ',');   
+
+   p = strchr( address, ',');
    if( !p)
       return NULL;
-   
+
    p--;
    while( (p != address) && ((('0' <= (*p)) && ((*p) <= '9')) || (' '==(*p)) || ('\t'==(*p))))
       p--;
-   
+
    if( p == address)
       return NULL;
 
    size = p - address + 1;
-   
+
    if( ADDRESS_STREET_NAME_MAX_SIZE < size)
    {
       assert(0);
       return NULL;
    }
-   
+
    strncpy_safe( street, address, ADDRESS_STREET_NAME_MAX_SIZE);
-   return street;      
+   return street;
 }
 
 static SsdWidget get_house_number_widget()
 {
    atcctx_ptr  tc = get_atcctx();
    SsdWidget   tab= ssd_tabcontrol_get_tab( tc->tabcontrol, tab_house);
-   
+
    return ssd_widget_get( tab, ATC_HOUSETAB_NM_EDIT);
 }
 
 static const char* get_house_number()
 {
    SsdWidget house_number_widget = get_house_number_widget();
-   
+
    return house_number_widget->value;
 }
 
 static void set_house_number( const char* number)
 {
    SsdWidget house_number_widget = get_house_number_widget();
-   
+
    house_number_widget->set_value( house_number_widget, number);
 }
 
@@ -347,7 +347,7 @@ static void invalidate_street()
 {
    atcctx_ptr  tc = get_atcctx();
    SsdWidget   tab= ssd_tabcontrol_get_tab( tc->tabcontrol, tab_street);
-   
+
    empty_list( tab);
    ssd_combobox_set_text( tab, "");
 
@@ -358,12 +358,12 @@ static void invalidate_city()
 {
    atcctx_ptr  tc = get_atcctx();
    SsdWidget   tab= ssd_tabcontrol_get_tab( tc->tabcontrol, tab_city);
-   
+
    empty_list( tab);
    ssd_combobox_set_text( tab, "");
 
    invalidate_street();
-   
+
    s_viewing_history = FALSE;
 }
 
@@ -379,10 +379,10 @@ static void invalidate_all()
 int on_city_found( RoadMapString index, const char* item, void* data)
 {
    list_items_ptr li = data;
-   
+
    if( ATC_LIST_MAX_SIZE == li->size)
       return 0;
-   
+
    li->labels[li->size++] = strdup(item);
    return 1;
 }
@@ -394,7 +394,7 @@ static void update_title()
    const char* street= ssd_combobox_get_text( ssd_tabcontrol_get_tab( tc->tabcontrol, tab_street));
    const char* house = get_house_number();
    char        address[128];
-   
+
    if( create_address_string( address, city, street, house) && address[0])
       ssd_tabcontrol_set_title( tc->tabcontrol, address);
    else
@@ -416,28 +416,28 @@ static void verify_child_data_is_valid( int tab)
    else if( tab_house == tab)
    {
       const char* street = ssd_combobox_get_text( ssd_tabcontrol_get_tab( tc->tabcontrol, tab_street));
-      
+
       if( strlen(ti->last_ctx_val) && (0 != strcmp( street, ti->last_ctx_val)))
          invalidate_house_number();
    }
 }
 
 static void add_address_to_history( int category,
-									const char* city,
+                                    const char* city,
                                     const char* street,
                                     const char* house,
                                     const char *name)
 {
    const char* address[ahi__count];
-   
+
    address[ahi_city]          = city;
    address[ahi_street]        = street;
    address[ahi_house_number]  = house;
    address[ahi_state]         = ADDRESS_HISTORY_STATE;
    if(name)
-   	address[ahi_name]	= name;
+    address[ahi_name]   = name;
    else
-   	address[ahi_name]	= "";
+    address[ahi_name]   = "";
 
    roadmap_history_add( category, address);
 }
@@ -462,7 +462,7 @@ static BOOL navigate( BOOL take_me_there)
                                     ADDRESS_HISTORY_STATE);
    if( count <= 0)
    {
-      roadmap_log(ROADMAP_ERROR, 
+      roadmap_log(ROADMAP_ERROR,
                   "address_tabcontrol::navigate() - 'roadmap_geocode_address()' returned %d", count);
       FREE( selections)
 
@@ -470,7 +470,7 @@ static BOOL navigate( BOOL take_me_there)
                           roadmap_geocode_last_error_string());
       return FALSE;
    }
-   
+
    add_address_to_history(ADDRESS_HISTORY_CATEGORY, city, street, house, NULL);
 
    roadmap_locator_activate( selections->fips);
@@ -478,7 +478,7 @@ static BOOL navigate( BOOL take_me_there)
                             selections->square, selections->fips);
    roadmap_trip_set_point ("Selection",&selections->position);
    roadmap_trip_set_point ("Address",  &selections->position);
-   
+
    if( s_navigator && take_me_there)
    {
       address_info   ai;
@@ -487,7 +487,7 @@ static BOOL navigate( BOOL take_me_there)
       ai.city =city;
       ai.street = street;
       ai.house = house;
-   
+
       if( -1 == s_navigator( &selections->position, &line, 0, &ai))
          return FALSE;
    }
@@ -501,7 +501,7 @@ static BOOL navigate( BOOL take_me_there)
    for( i=0; i<count; i++)
       FREE(selections[i].name)
    FREE(selections)
-   
+
    return TRUE;
 }
 
@@ -510,19 +510,19 @@ void on_text_changed__city( atc_tab_info_ptr ti, const char* new_text)
    if( new_text && (*new_text))
    {
       list_items_ptr  li = &(ti->items);
-      
+
       s_viewing_history = FALSE;
-      
+
       empty_list( ti->tab);
-           
+
       roadmap_locator_search_city( new_text, on_city_found, li);
-      
+
       if( !li->size)
          return;
-      
+
       populate_list( ti->tab, li->size, (char **)li->labels, (void **)li->values);
-   }      
-   else                                 
+   }
+   else
       insert_history_into_city_list( FALSE);
 }
 
@@ -533,10 +533,10 @@ int on_street_found( RoadMapString index, const char* item, void* data)
    const char*    city  = ssd_combobox_get_text( ssd_tabcontrol_get_tab( tc->tabcontrol, tab_city));
    const char*    street= NULL;
    char           buffer[ADDRESS_STREET_NAME_MAX_SIZE+1];
-   
+
    if( ATC_LIST_MAX_SIZE == li->size)
       return 0;
-   
+
    if( strlen(city))
       street = get_street_name_from_address( item, buffer);
 
@@ -544,7 +544,7 @@ int on_street_found( RoadMapString index, const char* item, void* data)
       li->labels[li->size++] = strdup(street);
    else
       li->labels[li->size++] = strdup(item);
-      
+
    return 1;
 }
 
@@ -552,10 +552,10 @@ int on_street_found( RoadMapString index, const char* item, void* data)
 void remove_string_last_decorations( char* str)
 {
    char* p;
-   
+
    if( !str || !(*str))
       return;
-   
+
    p = str + strlen(str);
    while( --p != str)
    {
@@ -584,18 +584,18 @@ void on_text_changed__street( atc_tab_info_ptr ti, const char* new_text)
 
    city  = ssd_combobox_get_text( ssd_tabcontrol_get_tab( tc->tabcontrol, tab_city));
    count = roadmap_street_search( city, new_text, ATC_LIST_MAX_SIZE, on_street_found, li);
-   
+
    if( !count)
    {
       assert( !li->size);
       return;
    }
-   
+
    assert(li->size);
-   
+
    for( i=0; i<li->size; i++)
       remove_string_last_decorations( li->labels[i]);
-   
+
    populate_list( ti->tab, li->size, li->labels, li->values);
 }
 
@@ -603,25 +603,25 @@ void on_text_changed__street( atc_tab_info_ptr ti, const char* new_text)
 void on_timer__on_text_changed(void)
 {
    atc_tab_info_ptr tab_info = s_on_text_changed_ctx.context;
-   
+
    roadmap_main_remove_periodic( on_timer__on_text_changed);
 
    switch( tab_info->id)
    {
-      case tab_city:    
-         on_text_changed__city   ( tab_info, s_on_text_changed_ctx.new_text);   
+      case tab_city:
+         on_text_changed__city   ( tab_info, s_on_text_changed_ctx.new_text);
          verify_child_data_is_valid( tab_street);
          break;
-         
-      case tab_street:  
+
+      case tab_street:
          on_text_changed__street ( tab_info, s_on_text_changed_ctx.new_text);
          verify_child_data_is_valid( tab_house);
          break;
-         
+
       default:
          assert(0);
    }
-   
+
    update_title();
    roadmap_screen_redraw();
    on_text_changed_ctx_free( &s_on_text_changed_ctx);
@@ -630,12 +630,12 @@ void on_timer__on_text_changed(void)
 void on_text_changed(const char* new_text, void* context)
 {
    on_text_changed_ctx_copy( &s_on_text_changed_ctx, new_text, context);
-   
+
    roadmap_main_remove_periodic( on_timer__on_text_changed);
    roadmap_main_set_periodic( 1200, on_timer__on_text_changed);
 }
 
-                                 
+
 void distribute_address_sections_between_tabs(  const char* address,
                                                 int         calling_tab)
 {
@@ -653,7 +653,7 @@ void distribute_address_sections_between_tabs(  const char* address,
       ssd_combobox_set_text( tab, city);
    else
       ssd_combobox_set_text( tab, "");
-   
+
    tab = ssd_tabcontrol_get_tab( tc->tabcontrol, tab_street);
    if( tab_street != tab_street)
       empty_list(tab);
@@ -661,13 +661,13 @@ void distribute_address_sections_between_tabs(  const char* address,
    if( street)
    {
       ssd_combobox_set_text( tab, street);
-      
+
       if( city && (*city))
          strcpy( tc->tab_info[tab_street].last_ctx_val, city);
    }
    else
       ssd_combobox_set_text( tab, "");
-   
+
    tab = ssd_tabcontrol_get_tab( tc->tabcontrol, tab_house);
    tc->tab_info[tab_house].last_ctx_val[0] = '\0';
    if( -1 != house)
@@ -694,29 +694,29 @@ void on_timer__on_select(void)
       case tab_city:
       {
          const char* city  = ssd_combobox_get_text( ssd_tabcontrol_get_tab( tc->tabcontrol, tab_city));
-         
+
          if( city && (*city))
          {
             ssd_tabcontrol_set_active_tab ( tc->tabcontrol, tab_street);
             roadmap_screen_redraw();
          }
-      
+
          break;
       }
-      
+
       case tab_street:
       {
          const char* street  = ssd_combobox_get_text( ssd_tabcontrol_get_tab( tc->tabcontrol, tab_street));
-         
+
          if( street && (*street))
          {
             ssd_tabcontrol_set_active_tab ( tc->tabcontrol, tab_house);
             roadmap_screen_redraw();
          }
-         
+
          break;
       }
-      
+
       case tab_house:
          on_options( NULL, NULL, NULL);
          break;
@@ -730,10 +730,10 @@ int on_list_selection_city(SsdWidget widget, const char *new_value, const void *
 {
    if( !new_value || !(*new_value))
       return -1;
-   
+
    distribute_address_sections_between_tabs(new_value,tab_city);
-   update_title();      
-   
+   update_title();
+
    if( s_viewing_history)
    {
       on_options( NULL, NULL, NULL);
@@ -751,16 +751,16 @@ int on_list_selection_street(SsdWidget widget, const char *new_value, const void
 {
    atcctx_ptr  tc = get_atcctx();
    SsdWidget   tab= ssd_tabcontrol_get_tab( tc->tabcontrol, tab_street);
-   
+
    if( !new_value || !(*new_value))
       return -1;
-   
+
    if( strchr( new_value, ','))
       distribute_address_sections_between_tabs(new_value,tab_street);
-   else   
+   else
       ssd_combobox_set_text( tab, new_value);
 
-   update_title();      
+   update_title();
 
    roadmap_main_remove_periodic( on_timer__on_select);
    roadmap_main_set_periodic( 500, on_timer__on_select);
@@ -782,14 +782,14 @@ static void erase_history_entry()
    SsdWidget   list     = ssd_combobox_get_list( ssd_tabcontrol_get_tab( tc->tabcontrol, tab_city));
    const void* selected = ssd_list_selected_value ( list);
    const char* string   = ssd_list_selected_string( list);
-   
+
    if( !selected || !string || !(*string))
       return;
-      
-   ssd_confirm_dialog(  string, 
-                        "Are you sure you want to remove item from history?", 
-                        FALSE,  
-                        on_erase_history_item, 
+
+   ssd_confirm_dialog(  string,
+                        "Are you sure you want to remove item from history?",
+                        FALSE,
+                        on_erase_history_item,
                         (void*)selected);
 }
 
@@ -797,7 +797,7 @@ BOOL on_tab_loose_focus(int tab)
 {
    atcctx_ptr        tc = get_atcctx();
    atc_tab_info_ptr  ti = &(tc->tab_info[tab]);
-   
+
    if( tab_street == tab)
    {
       const char* city  = ssd_combobox_get_text( ssd_tabcontrol_get_tab( tc->tabcontrol, tab_city));
@@ -817,9 +817,9 @@ BOOL on_tab_loose_focus(int tab)
 void on_tab_gain_focus(int tab)
 {
    atcctx_ptr        tc = get_atcctx();
-   
+
    tc->active_tab = tab;
-   
+
    verify_child_data_is_valid( tab);
 
    if( tab_street == tab)
@@ -831,7 +831,7 @@ void on_tab_gain_focus(int tab)
          insert_city_history_into_street_list();
    }
 
-   update_title();      
+   update_title();
 }
 
 int on_delete_history_item( SsdWidget widget, const char *new_value, const void *value)
@@ -848,17 +848,17 @@ int on_delete_history_item( SsdWidget widget, const char *new_value, const void 
 static SsdWidget create_tab__city( atcctx_ptr tc)
 {
    atc_tab_info_ptr  ti = (tc->tab_info + tab_city);
-   
-   ti->tab = ssd_container_new( 
-                     "citytabcontainer", 
-                     NULL, 
-                     SSD_MAX_SIZE, 
-                     SSD_MAX_SIZE, 
+
+   ti->tab = ssd_container_new(
+                     "citytabcontainer",
+                     NULL,
+                     SSD_MAX_SIZE,
+                     SSD_MAX_SIZE,
                      0);
 
    ssd_combobox_new( ti->tab,
-                     NULL, 
-                     0, 
+                     NULL,
+                     0,
                      NULL,
                      NULL,
                      NULL,
@@ -867,7 +867,7 @@ static SsdWidget create_tab__city( atcctx_ptr tc)
                      on_delete_history_item, // User is trying to delete an item from the list
                      inputtype_alpha_spaces, // inputtype_<xxx> from 'roadmap_input_type.h'
                      ti);
-   
+
    return ti->tab;
 }
 
@@ -875,16 +875,16 @@ static SsdWidget create_tab__street( atcctx_ptr tc)
 {
    atc_tab_info_ptr  ti = (tc->tab_info + tab_street);
 
-   ti->tab = ssd_container_new( 
-                     "streettabcontainer", 
-                     NULL, 
-                     SSD_MAX_SIZE, 
-                     SSD_MAX_SIZE, 
+   ti->tab = ssd_container_new(
+                     "streettabcontainer",
+                     NULL,
+                     SSD_MAX_SIZE,
+                     SSD_MAX_SIZE,
                      0);
 
    ssd_combobox_new( ti->tab,
-                     NULL, 
-                     0, 
+                     NULL,
+                     0,
                      NULL,
                      NULL,
                      NULL,
@@ -893,31 +893,31 @@ static SsdWidget create_tab__street( atcctx_ptr tc)
                      NULL,                      // User is trying to delete an item from the list
                      inputtype_alpha_spaces,    // inputtype_<xxx> from 'roadmap_input_type.h'
                      ti);
-   
+
    return ti->tab;
 }
 
-static BOOL on_key_pressed__delegate_to_editbox( 
-                                 SsdWidget   this, 
-                                 const char* utf8char, 
+static BOOL on_key_pressed__delegate_to_editbox(
+                                 SsdWidget   this,
+                                 const char* utf8char,
                                  uint32_t    flags)
 {
-	SsdWidget   editbox = this->children;
-	BOOL        handled = FALSE;
-	
-	if( editbox->key_pressed( editbox, utf8char, flags))
-	{
-	   handled = TRUE;
+    SsdWidget   editbox = this->children;
+    BOOL        handled = FALSE;
+
+    if( editbox->key_pressed( editbox, utf8char, flags))
+    {
+       handled = TRUE;
       update_title();
    }
-   
-   
+
+
    if( KEY_IS_ENTER)
    {
       on_options( NULL, NULL, NULL);
-	   handled = TRUE;
-	}
-   
+       handled = TRUE;
+    }
+
    return handled;
 }
 
@@ -929,44 +929,44 @@ static SsdWidget create_tab__house( atcctx_ptr tc)
    SsdWidget            edit;
    atc_tab_info_ptr ti = (tc->tab_info + tab_house);
 
-   ti->tab = ssd_container_new( 
-                        ATC_HOUSETAB_NM_TAB, 
-                        NULL, 
-                        SSD_MAX_SIZE, 
-                        SSD_MAX_SIZE, 
+   ti->tab = ssd_container_new(
+                        ATC_HOUSETAB_NM_TAB,
+                        NULL,
+                        SSD_MAX_SIZE,
+                        SSD_MAX_SIZE,
                         0);
 
-   cont =  ssd_container_new( 
-                        ATC_HOUSETAB_NM_CONT, 
-                        NULL, 
-                        SSD_MAX_SIZE, 
-                        20, 
+   cont =  ssd_container_new(
+                        ATC_HOUSETAB_NM_CONT,
+                        NULL,
+                        SSD_MAX_SIZE,
+                        20,
                         SSD_END_ROW);
-   label= ssd_text_new( ATC_HOUSETAB_NM_LABL, 
-                        roadmap_lang_get("House number"), 
-                        18, 
-                        SSD_TEXT_LABEL);                     
-   ecnt =  ssd_container_new( 
-                        ATC_HOUSETAB_NM_ECNT, 
-                        NULL, 
-                        SSD_MAX_SIZE, 
-                        20, 
+   label= ssd_text_new( ATC_HOUSETAB_NM_LABL,
+                        roadmap_lang_get("House number"),
+                        18,
+                        SSD_TEXT_LABEL);
+   ecnt =  ssd_container_new(
+                        ATC_HOUSETAB_NM_ECNT,
+                        NULL,
+                        SSD_MAX_SIZE,
+                        20,
                         SSD_CONTAINER_BORDER|SSD_WS_TABSTOP);
-   edit = ssd_text_new( ATC_HOUSETAB_NM_EDIT, 
-                        "", 
-                        18, 
-                        0);                     
+   edit = ssd_text_new( ATC_HOUSETAB_NM_EDIT,
+                        "",
+                        18,
+                        0);
 
-   ssd_text_set_input_type( edit, inputtype_numeric);                        
+   ssd_text_set_input_type( edit, inputtype_numeric);
    ssd_text_set_readonly  ( edit, FALSE);
-   
-	//	Delegate the 'on key pressed' event to the child edit-box:
-	ecnt->key_pressed = on_key_pressed__delegate_to_editbox;
 
-	ssd_widget_add( ecnt, edit);
-	ssd_widget_add( cont, label);
-	ssd_widget_add( cont, ecnt);
-	ssd_widget_add( ti->tab, cont);
+    //  Delegate the 'on key pressed' event to the child edit-box:
+    ecnt->key_pressed = on_key_pressed__delegate_to_editbox;
+
+    ssd_widget_add( ecnt, edit);
+    ssd_widget_add( cont, label);
+    ssd_widget_add( cont, ecnt);
+    ssd_widget_add( ti->tab, cont);
 
    return ti->tab;
 }
@@ -974,7 +974,7 @@ static SsdWidget create_tab__house( atcctx_ptr tc)
 void on_tabcontrol_closed( int exit_code, void* context)
 {
    atcctx_ptr tc = get_atcctx();
-   
+
    if(tc->on_tabcontrol_closed)
       tc->on_tabcontrol_closed();
 
@@ -982,15 +982,15 @@ void on_tabcontrol_closed( int exit_code, void* context)
 }
 
 // If tab cannot handle key pressed, move focus to tab default widget:
-static BOOL on_unhandled_key_pressed( 
-               int         tab, 
-               const char* utf8char, 
+static BOOL on_unhandled_key_pressed(
+               int         tab,
+               const char* utf8char,
                uint32_t    flags)
 {
    atcctx_ptr  tc             = get_atcctx();
    SsdWidget   active_tab     = tc->tab_info[tab].tab;
    SsdWidget   default_widget = NULL;
-   
+
    switch(tab)
    {
       case tab_city:
@@ -1001,52 +1001,52 @@ static BOOL on_unhandled_key_pressed(
       case tab_house:
          default_widget = ssd_widget_get( active_tab, ATC_HOUSETAB_NM_ECNT);
    }
-   
+
    if( !default_widget || !ssd_dialog_set_focus( default_widget))
    {
       assert(0);
       return FALSE;
    }
-      
+
    return default_widget->key_pressed( default_widget, utf8char, flags);
 }
 
 static int keyboard_callback(int type, const char *new_value, void *data)
 {
-   
+
    atcctx_ptr  tc    = get_atcctx();
    const char* city  = ssd_combobox_get_text( ssd_tabcontrol_get_tab( tc->tabcontrol, tab_city));
    const char* street= ssd_combobox_get_text( ssd_tabcontrol_get_tab( tc->tabcontrol, tab_street));
    const char* house = get_house_number();
 
-   
+
     if (type != SSD_KEYBOARD_OK)
         return 1;
 
-	roadmap_history_declare ('F', 5);
-  	add_address_to_history(ADDRESS_FAVORITE_CATEGORY, city, street, house, new_value);
-  
-	roadmap_history_save();
+    roadmap_history_declare ('F', 5);
+    add_address_to_history(ADDRESS_FAVORITE_CATEGORY, city, street, house, new_value);
+
+    roadmap_history_save();
     ssd_keyboard_hide();
 
-		
+
     return 1;
 
 }
 
 static void add_to_favorites(int exit_code, void *data){
-	
-	if( dec_yes != exit_code)
+
+    if( dec_yes != exit_code)
       return;
-      
-	#ifdef __SYMBIAN32__
-    	ShowEditbox(roadmap_lang_get("Name"), "",
+
+    #ifdef __SYMBIAN32__
+        ShowEditbox(roadmap_lang_get("Name"), "",
             keyboard_callback, (void *)data, EEditBoxStandard );
-	#else
-  	  ssd_keyboard_show (SSD_KEYBOARD_LETTERS,
+    #else
+      ssd_keyboard_show (SSD_KEYBOARD_LETTERS,
             roadmap_lang_get("Name"), "", NULL, keyboard_callback, (void *)data);
-	#endif  	
-	
+    #endif
+
 }
 
 static void on_add_to_favorites(){
@@ -1056,28 +1056,28 @@ static void on_add_to_favorites(){
    const char* house = get_house_number();
    char        address[128];
    create_address_string( address, city, street, house);
-   
-   ssd_confirm_dialog( address, 
-                        "Are you sure you want to Add item to favorites?", 
-                        FALSE,  
-                        add_to_favorites, 
+
+   ssd_confirm_dialog( address,
+                        "Are you sure you want to Add item to favorites?",
+                        FALSE,
+                        add_to_favorites,
                         NULL);
-	
+
 }
 
 
 static void on_option_selected(  BOOL              made_selection,
                                  ssd_cm_item_ptr   item,
-                                 void*             context)                           
-{   
+                                 void*             context)
+{
    context_menu_items      selection = cmi__invalid;
    int                     exit_code = dec_ok;
    BOOL                    goto_map  = FALSE;
    s_context_menu_is_active          = FALSE;
-   
+
    if( !made_selection)
-      return;  
-      
+      return;
+
    selection = item->id;
 
    switch( selection)
@@ -1085,19 +1085,19 @@ static void on_option_selected(  BOOL              made_selection,
       case cmi_navigate:
          goto_map = navigate(TRUE);
          break;
-         
+
       case cmi_show:
          goto_map = navigate(FALSE);
          break;
-         
+
       case cmi_erase_history_entry:
          erase_history_entry();
          break;
-         
+
      case cmi_add_to_favorites:
-     	on_add_to_favorites();
-     	break;    
-      
+        on_add_to_favorites();
+        break;
+
      case cmi_exit:
          goto_map = TRUE;
          break;
@@ -1110,7 +1110,7 @@ static void on_option_selected(  BOOL              made_selection,
    {
       if( cmi_exit == selection)
          exit_code = dec_cancel;
-         
+
       hide_our_dialogs( exit_code);
       roadmap_screen_redraw ();
    }
@@ -1122,15 +1122,15 @@ static int on_erase_char(SsdWidget widget, const char *new_value, void *context)
    if( !s_context_menu_is_active)
    {
       static char  key[2];
-      
+
       if( BACKSPACE != key[0])
       {
          key[0] = BACKSPACE;
          key[1] = '\0';
       }
-      
+
       ssd_dialog_send_keyboard_event( key, KEYBOARD_ASCII);
-   }      
+   }
 
    return 0;
 }
@@ -1149,55 +1149,55 @@ static int on_options(SsdWidget widget, const char *new_value, void *context)
       ssd_dialog_hide_current(dec_ok);
       s_context_menu_is_active = FALSE;
    }
-   
+
    tc       = get_atcctx();
    city     = ssd_combobox_get_text( ssd_tabcontrol_get_tab( tc->tabcontrol, tab_city));
    street   = ssd_combobox_get_text( ssd_tabcontrol_get_tab( tc->tabcontrol, tab_street));
    if( (!city || !(*city)) && (!street || !(*street)))
    {
       SsdWidget   active_tab = tc->tab_info[ tc->active_tab].tab;
-   
+
       can_navigate = FALSE;
 
       if( tab_city == tc->active_tab)
       {
          SsdWidget   list     = ssd_combobox_get_list( active_tab);
          const char* selection= ssd_list_selected_string ( list);
-         
+
          if( selection && (*selection))
          {
             distribute_address_sections_between_tabs(selection,tab_city);
-            update_title();      
+            update_title();
             can_navigate = TRUE;
          }
       }
    }
-   
-   ssd_contextmenu_show_item( &context_menu, 
-                              cmi_navigate,           
-                              can_navigate,      
+
+   ssd_contextmenu_show_item( &context_menu,
+                              cmi_navigate,
+                              can_navigate,
                               FALSE);
-   ssd_contextmenu_show_item( &context_menu, 
+   ssd_contextmenu_show_item( &context_menu,
                               cmi_show,
                               can_navigate,
                               FALSE);
-   ssd_contextmenu_show_item( &context_menu, 
+   ssd_contextmenu_show_item( &context_menu,
                               cmi_add_to_favorites,
                               can_navigate,
                               FALSE);
- 
+
    if  (ssd_widget_rtl (NULL))
-	   menu_x = SSD_X_SCREEN_RIGHT;
-	else
-		menu_x = SSD_X_SCREEN_LEFT;
-		
+       menu_x = SSD_X_SCREEN_RIGHT;
+    else
+        menu_x = SSD_X_SCREEN_LEFT;
+
    ssd_context_menu_show(  menu_x,              // X
                            SSD_Y_SCREEN_BOTTOM, // Y
                            &context_menu,
                            on_option_selected,
                            NULL,
-                           dir_default); 
- 
+                           dir_default);
+
    s_context_menu_is_active = TRUE;
 
    return 0;
@@ -1216,21 +1216,21 @@ static void set_softkeys( SsdWidget dialog)
 
 static SsdTcCtx create_address_tabcontrol( atcctx_ptr tc)
 {
-   const char* tab_titles  [tab__count];     
+   const char* tab_titles  [tab__count];
    SsdWidget   tab_conts   [tab__count];
 
    // Titles initialization
    tab_titles[tab_city]    = roadmap_lang_get("City");
    tab_titles[tab_street]  = roadmap_lang_get("Street");
    tab_titles[tab_house]   = roadmap_lang_get("House number");
-   
+
    // Tabs initialization
    tab_conts[tab_city]     = create_tab__city(tc);
    tab_conts[tab_street]   = create_tab__street(tc);
    tab_conts[tab_house]    = create_tab__house(tc);
-   
-   
-   tc->tabcontrol = ssd_tabcontrol_new( 
+
+
+   tc->tabcontrol = ssd_tabcontrol_new(
                               ATC_NAME,
                               roadmap_lang_get(ATC_TITLE),
                               on_tabcontrol_closed,
@@ -1244,11 +1244,11 @@ static SsdTcCtx create_address_tabcontrol( atcctx_ptr tc)
 
    if( !tc->tabcontrol)
    {
-      roadmap_log(ROADMAP_ERROR, 
+      roadmap_log(ROADMAP_ERROR,
                   "address_tabcontrol::create_address_tabcontrol() - 'ssd_tabcontrol_new' failed");
       return NULL;
    }
-   
+
    set_softkeys( ssd_tabcontrol_get_dialog( tc->tabcontrol));
 
    return tc->tabcontrol;
@@ -1259,18 +1259,18 @@ static atcctx_ptr get_atcctx()
    static atcctx_ptr s_tc = NULL;
    if( s_tc)
       return s_tc;
-   
+
    s_tc = malloc( sizeof(atcctx));
    atcctx_init( s_tc);
-   
+
    on_text_changed_ctx_init( &s_on_text_changed_ctx);
-   
+
    if( !create_address_tabcontrol( s_tc))
    {
       FREE(s_tc)
       return NULL;
    }
-   
+
    return s_tc;
 }
 
@@ -1282,40 +1282,40 @@ static void insert_city_history_into_street_list()
    const char*    city  = ssd_combobox_get_text( ssd_tabcontrol_get_tab( tc->tabcontrol, tab_city));
    void*          cursor= NULL;
    int            count = 0;
-   
+
    if( !s_history_was_loaded)
    {
       roadmap_history_declare( ADDRESS_HISTORY_CATEGORY, ahi__count);
       s_history_was_loaded = TRUE;
    }
-   
+
    list_items_free(li);
    empty_list( street);
-   
+
    cursor = roadmap_history_latest( ADDRESS_HISTORY_CATEGORY);
    if( !cursor)
       return;
-   
+
    count = 0;
    while( (count++ < 500) && (li->size < ATC_LIST_MAX_SIZE))
    {
       char* last = cursor;
       char* address_items[ahi__count];
-      
+
       roadmap_history_get( ADDRESS_HISTORY_CATEGORY, cursor, address_items);
-      
+
       if( 0 == strncmp( address_items[ahi_city], city, strlen(city)))
       {
-         li->labels[li->size] = strdup(address_items[ahi_street]);                  
+         li->labels[li->size] = strdup(address_items[ahi_street]);
          li->values[li->size] = cursor;
          li->size++;
       }
-      
+
       cursor = roadmap_history_before( ADDRESS_HISTORY_CATEGORY, cursor);
       if( cursor == last)
          break;
    }
-   
+
    populate_list( street, li->size, li->labels, li->values);
 }
 
@@ -1325,58 +1325,58 @@ static void insert_history_into_city_list( BOOL force_reload)
    SsdWidget   city  = ssd_tabcontrol_get_tab( tc->tabcontrol, tab_city);
    void*       cursor= NULL;
    int         count = 0;
-   int 		   i;
-   BOOL 	   exist;
-   
+   int         i;
+   BOOL        exist;
+
    s_viewing_history = FALSE;
-   
+
    if( !s_history_was_loaded)
    {
       roadmap_history_declare( ADDRESS_HISTORY_CATEGORY, ahi__count);
       s_history_was_loaded = TRUE;
    }
-   
+
    if( !force_reload && s_history.size)
    {
       populate_list( city, s_history.size, s_history.labels, s_history.values);
       s_viewing_history = TRUE;
-      return;                                 
+      return;
    }
-   
+
    cursor = roadmap_history_latest( ADDRESS_HISTORY_CATEGORY);
    if( !cursor)
       return;
-   
+
    count = 0;
    while( count < ATC_LIST_MAX_SIZE)
    {
       char* last = cursor;
       char* address_items[ahi__count];
-      
+
       roadmap_history_get( ADDRESS_HISTORY_CATEGORY, cursor, address_items);
       exist = FALSE;
       for (i = 0; i< count; i++){
-      	if (!strcmp(s_history.labels[i], address_items[ahi_city])){
-      		exist = TRUE;
-      		break;
-      	}
+        if (!strcmp(s_history.labels[i], address_items[ahi_city])){
+            exist = TRUE;
+            break;
+        }
       }
-	  
-	  if (!exist){
-      	s_history.labels[count] = strdup(address_items[ahi_city]);
-      	s_history.values[count] = cursor;
-      	count++;
-	  }
-	  
+
+      if (!exist){
+        s_history.labels[count] = strdup(address_items[ahi_city]);
+        s_history.values[count] = cursor;
+        count++;
+      }
+
       cursor = roadmap_history_before( ADDRESS_HISTORY_CATEGORY, cursor);
       if( cursor == last)
          break;
    }
-   
+
    s_history.size = count;
 
    populate_list( city, count, s_history.labels, s_history.values);
-   
+
    s_viewing_history = FALSE;
 }
 
@@ -1384,34 +1384,34 @@ void address_tabcontrol_show( RoadMapCallback on_tabcontrol_closed)
 {
    // Create/Get tab-control:
    atcctx_ptr tc = get_atcctx();
-   
+
    if( !tc)
    {
       assert(0);
       return;
    }
-   
+
    tc->on_tabcontrol_closed= on_tabcontrol_closed;
    tc->active_tab          = tab_city;
-   
+
    // Cancel any current navigation:
    navigate_main_stop_navigation();
 
    // Invalidate all data in the controls (maybe from previous usage)
    invalidate_all();
-   
+
    // Populate with History:
    insert_history_into_city_list( FALSE);
-   
+
    // Show the tab-control:
    ssd_tabcontrol_show( tc->tabcontrol);
-   
+
    // If we have history - move focus to first item:
    if( s_history.size)
    {
       SsdWidget list = ssd_combobox_get_list( tc->tab_info[tab_city].tab);
       SsdWidget item = ssd_list_get_first_item( list);
-      
+
       ssd_dialog_set_focus( item);
    }
 }

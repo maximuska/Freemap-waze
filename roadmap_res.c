@@ -94,7 +94,7 @@ static void *load_resource (unsigned int type, unsigned int flags,
                break;
          }
 
-         if (data) break; 
+         if (data) break;
       }
 
    } else {
@@ -143,7 +143,7 @@ static void *find_resource (unsigned int type, const char *name) {
    RoadMapResource *res = &Resources[type];
 
    if (!res->count) return NULL;
-   
+
    hash = roadmap_hash_string (name);
 
    for (i = roadmap_hash_get_first (res->hash, hash);
@@ -151,7 +151,7 @@ static void *find_resource (unsigned int type, const char *name) {
         i = roadmap_hash_get_next (res->hash, i)) {
 
       if (!strcmp(name, res->slots[i].name)) {
-         
+
          return res->slots[i].data;
       }
    }
@@ -168,8 +168,8 @@ void *roadmap_res_get (unsigned int type, unsigned int flags,
    RoadMapResource *res = &Resources[type];
 
    if (name == NULL)
-   	return NULL;
-   	
+    return NULL;
+
    if (! (flags & RES_NOCACHE)) {
       data = find_resource (type, name);
 
@@ -178,8 +178,8 @@ void *roadmap_res_get (unsigned int type, unsigned int flags,
       if (!Resources[type].count) allocate_resource (type);
 
       //TODO implement grow (or old deletion)
-      if (Resources[type].count == Resources[type].max) 
-      	return NULL;
+      if (Resources[type].count == Resources[type].max)
+        return NULL;
    }
 
    if (flags & RES_NOCREATE) return NULL;

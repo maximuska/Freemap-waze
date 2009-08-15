@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -29,7 +29,7 @@ namespace agg
 {
 
     //------------------------------------------------------------------------
-    spline_ctrl_impl::spline_ctrl_impl(double x1, double y1, double x2, double y2, 
+    spline_ctrl_impl::spline_ctrl_impl(double x1, double y1, double x2, double y2,
                                        unsigned num_pnt, bool flip_y) :
         ctrl(x1, y1, x2, y2, flip_y),
         m_num_pnt(num_pnt),
@@ -61,10 +61,10 @@ namespace agg
 
     //------------------------------------------------------------------------
     void spline_ctrl_impl::border_width(double t, double extra)
-    { 
-        m_border_width = t; 
+    {
+        m_border_width = t;
         m_border_extra = extra;
-        calc_spline_box(); 
+        calc_spline_box();
     }
 
 
@@ -101,7 +101,7 @@ namespace agg
         m_curve_pnt.move_to(m_xs1, m_ys1 + (m_ys2 - m_ys1) * m_spline_values[0]);
         for(i = 1; i < 256; i++)
         {
-            m_curve_pnt.line_to(m_xs1 + (m_xs2 - m_xs1) * double(i) / 255.0, 
+            m_curve_pnt.line_to(m_xs1 + (m_xs2 - m_xs1) * double(i) / 255.0,
                                 m_ys1 + (m_ys2 - m_ys1) * m_spline_values[i]);
         }
     }
@@ -155,7 +155,7 @@ namespace agg
     //------------------------------------------------------------------------
     void spline_ctrl_impl::point(unsigned idx, double x, double y)
     {
-        if(idx < m_num_pnt) 
+        if(idx < m_num_pnt)
         {
             set_xp(idx, x);
             set_yp(idx, y);
@@ -166,7 +166,7 @@ namespace agg
     //------------------------------------------------------------------------
     void spline_ctrl_impl::value(unsigned idx, double y)
     {
-        if(idx < m_num_pnt) 
+        if(idx < m_num_pnt)
         {
             set_yp(idx, y);
         }
@@ -174,7 +174,7 @@ namespace agg
 
     //------------------------------------------------------------------------
     double spline_ctrl_impl::value(double x) const
-    { 
+    {
         x = m_spline.get(x);
         if(x < 0.0) x = 0.0;
         if(x > 1.0) x = 1.0;
@@ -195,34 +195,34 @@ namespace agg
 
         case 0:                 // Background
             m_vertex = 0;
-            m_vx[0] = m_x1 - m_border_extra; 
+            m_vx[0] = m_x1 - m_border_extra;
             m_vy[0] = m_y1 - m_border_extra;
-            m_vx[1] = m_x2 + m_border_extra; 
+            m_vx[1] = m_x2 + m_border_extra;
             m_vy[1] = m_y1 - m_border_extra;
-            m_vx[2] = m_x2 + m_border_extra; 
+            m_vx[2] = m_x2 + m_border_extra;
             m_vy[2] = m_y2 + m_border_extra;
-            m_vx[3] = m_x1 - m_border_extra; 
+            m_vx[3] = m_x1 - m_border_extra;
             m_vy[3] = m_y2 + m_border_extra;
             break;
 
         case 1:                 // Border
             m_vertex = 0;
-            m_vx[0] = m_x1; 
+            m_vx[0] = m_x1;
             m_vy[0] = m_y1;
-            m_vx[1] = m_x2; 
+            m_vx[1] = m_x2;
             m_vy[1] = m_y1;
-            m_vx[2] = m_x2; 
+            m_vx[2] = m_x2;
             m_vy[2] = m_y2;
-            m_vx[3] = m_x1; 
+            m_vx[3] = m_x1;
             m_vy[3] = m_y2;
-            m_vx[4] = m_x1 + m_border_width; 
-            m_vy[4] = m_y1 + m_border_width; 
-            m_vx[5] = m_x1 + m_border_width; 
-            m_vy[5] = m_y2 - m_border_width; 
-            m_vx[6] = m_x2 - m_border_width; 
-            m_vy[6] = m_y2 - m_border_width; 
-            m_vx[7] = m_x2 - m_border_width; 
-            m_vy[7] = m_y1 + m_border_width; 
+            m_vx[4] = m_x1 + m_border_width;
+            m_vy[4] = m_y1 + m_border_width;
+            m_vx[5] = m_x1 + m_border_width;
+            m_vy[5] = m_y2 - m_border_width;
+            m_vx[6] = m_x2 - m_border_width;
+            m_vy[6] = m_y2 - m_border_width;
+            m_vx[7] = m_x2 - m_border_width;
+            m_vy[7] = m_y1 + m_border_width;
             break;
 
         case 2:                 // Curve
@@ -238,7 +238,7 @@ namespace agg
             {
                 if(int(i) != m_active_pnt)
                 {
-                    m_ellipse.init(calc_xp(i), calc_yp(i), 
+                    m_ellipse.init(calc_xp(i), calc_yp(i),
                                    m_point_size, m_point_size, 32);
                     m_curve_pnt.concat_path(m_ellipse);
                 }
@@ -251,7 +251,7 @@ namespace agg
             m_curve_pnt.remove_all();
             if(m_active_pnt >= 0)
             {
-                m_ellipse.init(calc_xp(m_active_pnt), calc_yp(m_active_pnt), 
+                m_ellipse.init(calc_xp(m_active_pnt), calc_yp(m_active_pnt),
                                m_point_size, m_point_size, 32);
 
                 m_curve_pnt.concat_path(m_ellipse);
@@ -308,7 +308,7 @@ namespace agg
     }
 
 
-    
+
     //------------------------------------------------------------------------
     void spline_ctrl_impl::active_point(int i)
     {
@@ -329,7 +329,7 @@ namespace agg
     {
         inverse_transform_xy(&x, &y);
         unsigned i;
-        for(i = 0; i < m_num_pnt; i++)  
+        for(i = 0; i < m_num_pnt; i++)
         {
             double xp = calc_xp(i);
             double yp = calc_yp(i);

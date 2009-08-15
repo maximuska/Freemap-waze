@@ -151,7 +151,7 @@ static int editor_http_send (RoadMapSocket socket,
    va_list ap;
    int     length;
    char    buffer[ROADMAP_HTTP_MAX_CHUNK];
-   
+
    va_start(ap, format);
    vsnprintf (buffer, sizeof(buffer), format, ap);
    va_end(ap);
@@ -173,7 +173,7 @@ static void send_auth(const char *user, const char *pw, RoadMapSocket fd,
     char auth_encoded[sizeof(auth_string) * 2];
     char *itr = auth_string;
     char *encoded_itr = auth_encoded;
-    
+
     snprintf (auth_string, sizeof(auth_string), "%s:%s", user, pw);
     auth_string[sizeof(auth_string) - 1] = 0;
 
@@ -260,7 +260,7 @@ static RoadMapSocket editor_http_send_header (const char *target,
 
       if (editor_http_send (fd, error, "Host: %s\r\n", host) == -1)
          goto send_error;
-      
+
       if (editor_http_send (fd, error, "User-Agent: FreeMap/%s\r\n",
             editor_main_get_version() ) == -1) goto send_error;
 #endif
@@ -468,7 +468,7 @@ static int editor_post_file (const char *target,
          roadmap_file_close (file);
          return -1;
       }
-      
+
       strcpy(user_digest_hex, "anon_");
       MD5Hex (digest, user_digest_hex + strlen(user_digest_hex));
 
@@ -513,7 +513,7 @@ static int editor_post_file (const char *target,
    loaded = sizeof(buffer);
    size = editor_http_decode_response
              (fd, buffer, &loaded, callbacks->error);
-             
+
    if (size < 0) {
       goto cancel_upload;
    }
@@ -632,7 +632,7 @@ static void editor_upload_file_dialog_ok
 
 
 void editor_upload_select (void) {
-                                
+
    roadmap_fileselection_new ("Upload file",
                               "track.gz",
                               roadmap_path_user (),
@@ -658,13 +658,13 @@ int editor_upload_auto (const char *filename,
                         RoadMapDownloadCallbacks *callbacks,
                         char **message) {
 
-	const char *user = roadmap_config_get (&RoadMapConfigUser);
-	const char *password = roadmap_config_get (&RoadMapConfigPassword);
-	const char *url = roadmap_config_get (&RoadMapConfigTarget);
-	
+    const char *user = roadmap_config_get (&RoadMapConfigUser);
+    const char *password = roadmap_config_get (&RoadMapConfigPassword);
+    const char *url = roadmap_config_get (&RoadMapConfigTarget);
+
    return editor_post_file (
             url,
-            filename, 
+            filename,
             user,
             password,
             callbacks,

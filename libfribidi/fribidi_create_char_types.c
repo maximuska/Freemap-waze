@@ -1,22 +1,22 @@
 /* FriBidi - Library of BiDi algorithm
- * Copyright (C) 2001,2002 Behdad Esfahbod. 
- * 
- * This library is free software; you can redistribute it and/or 
- * modify it under the terms of the GNU Lesser General Public 
- * License as published by the Free Software Foundation; either 
- * version 2.1 of the License, or (at your option) any later version. 
- * 
- * This library is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
- * Lesser General Public License for more details. 
- * 
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library, in a file named COPYING; if not, write to the 
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330, 
- * Boston, MA 02111-1307, USA  
- * 
- * For licensing issues, contact <fwpg@sharif.edu>. 
+ * Copyright (C) 2001,2002 Behdad Esfahbod.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library, in a file named COPYING; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA
+ *
+ * For licensing issues, contact <fwpg@sharif.edu>.
  */
 
 #include <stdlib.h>
@@ -149,10 +149,10 @@ init_table (void)
   if (FRIBIDI_UNICODE_CHARS > 0x10000)
     {
       for (c = 0x10800; c < 0x11000; c++)
-	table[c] = RTL;
+    table[c] = RTL;
 
       for (c = 0xE0000; c < 0xE1000; c++)
-	table[c] = BN;
+    table[c] = BN;
     }
 }
 
@@ -182,9 +182,9 @@ headermacro (const char *file)
   while (*p)
     {
       if (*p >= 'a' && *p <= 'z')
-	*p += 'A' - 'a';
+    *p += 'A' - 'a';
       else if ((*p < 'A' || *p > 'Z') && (*p < '0' || *p > '9'))
-	*p = '_';
+    *p = '_';
       p++;
     }
   return t;
@@ -201,11 +201,11 @@ write_char_type (const char *file, int max_depth)
   if (!(f = fopen (file, "wt")))
     err2 ("error: cannot open `%s' for writing", file);
   fprintf (f, "/*\n"
-	   "  This file was automatically created from UnicodeData.txt version %s\n"
-	   "  by fribidi_create_char_types\n*/\n\n", FRIBIDI_UNICODE_VERSION);
+       "  This file was automatically created from UnicodeData.txt version %s\n"
+       "  by fribidi_create_char_types\n*/\n\n", FRIBIDI_UNICODE_VERSION);
 
   fprintf (f, "#ifndef %s\n#define %s\n\n#include \"fribidi.h\"\n\n",
-	   FILENAME, FILENAME);
+       FILENAME, FILENAME);
 
   for (i = 0; i < type_names_count; i++)
     if (names[i])
@@ -226,22 +226,22 @@ write_char_type (const char *file, int max_depth)
       fprintf (f, "#undef %s\n", names[i]);
 
   fprintf (f,
-	   "/*======================================================================\n"
-	   " *  %s() returns the bidi type of a character.\n"
-	   " *----------------------------------------------------------------------*/\n"
-	   "%s %s\n"
-	   "%s (%s uch)\n"
-	   "{\n"
-	   "  if (uch < 0x%x)\n"
-	   "    return %s[(unsigned char)%s (uch)];\n"
-	   "  else\n"
-	   "    return FRIBIDI_TYPE_%s;\n"
-	   "  /* Non-Unicode chars */\n"
-	   "}\n"
-	   "\n",
-	   function_name, export_api, char_type_name, function_name,
-	   char_name, FRIBIDI_UNICODE_CHARS, prop_to_type_name, macro_name,
-	   default_type);
+       "/*======================================================================\n"
+       " *  %s() returns the bidi type of a character.\n"
+       " *----------------------------------------------------------------------*/\n"
+       "%s %s\n"
+       "%s (%s uch)\n"
+       "{\n"
+       "  if (uch < 0x%x)\n"
+       "    return %s[(unsigned char)%s (uch)];\n"
+       "  else\n"
+       "    return FRIBIDI_TYPE_%s;\n"
+       "  /* Non-Unicode chars */\n"
+       "}\n"
+       "\n",
+       function_name, export_api, char_type_name, function_name,
+       char_name, FRIBIDI_UNICODE_CHARS, prop_to_type_name, macro_name,
+       default_type);
   fprintf (f, "\n#endif /* %s */\n", FILENAME);
 
   fclose (f);
@@ -262,7 +262,7 @@ main (int argc, char **argv)
     err ("invalid depth");
   if (max_depth < 2 || max_depth > 9)
     err2 ("invalid max_depth `%s', max_depth should be between 2 and 9",
-	  argv[1]);
+      argv[1]);
   sprintf (file, "fribidi_tab_char_type_%d.i", max_depth);
   init_table ();
   read_unicode_data ();

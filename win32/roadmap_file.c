@@ -237,7 +237,7 @@ int roadmap_file_truncate (const char *path, const char *name,
       } else {
          res = -1;
       }
-      
+
       CloseHandle(file);
    }
 
@@ -333,14 +333,14 @@ const char *roadmap_file_map (const char *set,
    if ((name[0] == '\\') || (name[0] == '/') || (name[1] == ':')) {
       LPWSTR name_unicode = ConvertToWideChar(name, CP_UTF8);
 
-#ifdef UNDER_CE                
+#ifdef UNDER_CE
       context->hFile = CreateFileForMapping(
          name_unicode,
          open_mode,
-         FILE_SHARE_READ, NULL, OPEN_EXISTING, 
+         FILE_SHARE_READ, NULL, OPEN_EXISTING,
          FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH, NULL);
 
-#else                
+#else
       context->hFile = CreateFile(
             name_unicode,
             open_mode,
@@ -349,7 +349,7 @@ const char *roadmap_file_map (const char *set,
             OPEN_EXISTING,
             FILE_ATTRIBUTE_NORMAL,
             0 );
-#endif                
+#endif
       free(name_unicode);
       sequence = ""; /* Whatever, but NULL. */
 
@@ -395,7 +395,7 @@ const char *roadmap_file_map (const char *set,
          context->hFile = CreateFileForMapping(
             full_name_unicode,
             open_mode,
-            FILE_SHARE_READ, NULL, OPEN_EXISTING, 
+            FILE_SHARE_READ, NULL, OPEN_EXISTING,
             FILE_ATTRIBUTE_NORMAL, NULL);
 #else
 
@@ -407,7 +407,7 @@ const char *roadmap_file_map (const char *set,
                               OPEN_EXISTING,
                               FILE_ATTRIBUTE_NORMAL,
                               0 );
-#endif                
+#endif
          free(full_name_unicode);
 
          if (context->hFile != INVALID_HANDLE_VALUE) break;
@@ -440,7 +440,7 @@ const char *roadmap_file_map (const char *set,
    context->size = file_size;
 
    context->hMapFile = CreateFileMapping(
-      context->hFile, 
+      context->hFile,
       NULL,
       map_mode,
       0,0,0);
@@ -529,9 +529,9 @@ RoadMapFile roadmap_file_open(const char *name, const char *mode)
 {
    HANDLE file = INVALID_HANDLE_VALUE;
    LPWSTR url_unicode;
-   
+
    DWORD os_mode;
-   
+
    if (strcmp(mode, "r") == 0) {
       os_mode = GENERIC_READ;
    } else if (strchr (mode, 'w') != NULL) {
@@ -543,9 +543,9 @@ RoadMapFile roadmap_file_open(const char *name, const char *mode)
          "%s: invalid file access mode %s", name, mode);
       return INVALID_HANDLE_VALUE;
    }
-   
+
    url_unicode = ConvertToWideChar(name, CP_UTF8);
-   
+
    file = CreateFile (url_unicode,
       os_mode,
       FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -553,9 +553,9 @@ RoadMapFile roadmap_file_open(const char *name, const char *mode)
       OPEN_ALWAYS,
       0,
       NULL);
-   
-      if (strchr(mode, 'a') && 
-         (SetFilePointer (file, 0, NULL, FILE_END) == 
+
+      if (strchr(mode, 'a') &&
+         (SetFilePointer (file, 0, NULL, FILE_END) ==
                            INVALID_SET_FILE_POINTER)) {
 
          CloseHandle((HANDLE)file);
@@ -571,7 +571,7 @@ RoadMapFile roadmap_file_open(const char *name, const char *mode)
 int roadmap_file_read(RoadMapFile file, void *data, int size)
 {
    DWORD num_bytes;
-   
+
    if (!ReadFile((HANDLE)file, data, size, &num_bytes, NULL)) {
       return -1;
    } else {
@@ -583,7 +583,7 @@ int roadmap_file_read(RoadMapFile file, void *data, int size)
 int roadmap_file_write(RoadMapFile file, const void *data, int length)
 {
    DWORD num_bytes;
-   
+
    if (!WriteFile((HANDLE)file, data, length, &num_bytes, NULL)) {
       return -1;
    } else {
@@ -594,24 +594,24 @@ int roadmap_file_write(RoadMapFile file, const void *data, int length)
 
 int roadmap_file_seek(RoadMapFile file, int offset, RoadMapSeekWhence whence)
 {
-	DWORD dwMethod;
+    DWORD dwMethod;
 
-	switch (whence) {
-		case ROADMAP_SEEK_START:
-			dwMethod = FILE_BEGIN;
-			break;
-		case ROADMAP_SEEK_CURR:
-			dwMethod = FILE_CURRENT;
-			break;
-		case ROADMAP_SEEK_END:
-			dwMethod = FILE_END;
-			break;
-		default:
-			roadmap_log (ROADMAP_ERROR, "illegal whence param %d", (int)whence);
-			return -1;
-	}
+    switch (whence) {
+        case ROADMAP_SEEK_START:
+            dwMethod = FILE_BEGIN;
+            break;
+        case ROADMAP_SEEK_CURR:
+            dwMethod = FILE_CURRENT;
+            break;
+        case ROADMAP_SEEK_END:
+            dwMethod = FILE_END;
+            break;
+        default:
+            roadmap_log (ROADMAP_ERROR, "illegal whence param %d", (int)whence);
+            return -1;
+    }
 
-	return (int)SetFilePointer((HANDLE)file, offset, 0, dwMethod);
+    return (int)SetFilePointer((HANDLE)file, offset, 0, dwMethod);
 }
 
 

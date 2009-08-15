@@ -112,7 +112,7 @@ FT_BEGIN_HEADER
   /*    FreeType error code.  0 means success.                             */
   /*                                                                       */
   FT_EXPORT( FT_Error )
-  FT_GetFile_From_Mac_Name( const char*  fontName, 
+  FT_GetFile_From_Mac_Name( const char*  fontName,
                             FSSpec*      pathSpec,
                             FT_Long*     face_index );
 

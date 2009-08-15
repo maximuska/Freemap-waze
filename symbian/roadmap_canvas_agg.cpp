@@ -70,8 +70,8 @@ extern "C" unsigned char *read_png_file(const char* file_name, int *width, int *
 #define ALERT_WIN(x) CEikonEnv::Static()->AlertWin(_L(x));
 #define ALERT_WINBUF(x) CEikonEnv::Static()->AlertWin(x);
 #else
-#define ALERT_WIN(x) 
-#define ALERT_WINBUF(x) 
+#define ALERT_WIN(x)
+#define ALERT_WINBUF(x)
 #endif
 
 #ifdef _SYMBIAN32_MASKED_PNG_
@@ -84,7 +84,7 @@ _LIT(BufData, "x=%d y=%d mode=%d stride=%d bufSize=%d");
 static CRoadmapNativeCanvas* pDSACanvas = NULL;
 static unsigned char* pScreenBuf = NULL;
 
-int roadmap_canvas_agg_to_wchar (const char *text, wchar_t *output, int size) 
+int roadmap_canvas_agg_to_wchar (const char *text, wchar_t *output, int size)
 {
   int length = mbstowcs(output, text, size - 1);
   output[length] = 0;
@@ -93,39 +93,39 @@ int roadmap_canvas_agg_to_wchar (const char *text, wchar_t *output, int size)
 }
 
 agg::rgba8 roadmap_canvas_agg_parse_color (const char *color) {
-	int high, i, low;
-	
-	if (*color == '#') {
-		int r, g, b, a;
-      int count;
-      
-		count = sscanf(color, "#%2x%2x%2x%2x", &r, &g, &b, &a);
+    int high, i, low;
 
-      if (count == 4) {    
+    if (*color == '#') {
+        int r, g, b, a;
+      int count;
+
+        count = sscanf(color, "#%2x%2x%2x%2x", &r, &g, &b, &a);
+
+      if (count == 4) {
          return agg::rgba8(r, g, b, a);
       } else {
          return agg::rgba8(r, g, b);
       }
 
-	} else {
-		/* Do binary search on color table */
-		for (low=(-1), high=sizeof(color_table)/sizeof(color_table[0]);
-		high-low > 1;) {
-			i = (high+low) / 2;
-			if (strcmp(color, color_table[i].name) <= 0) high = i;
-			else low = i;
-		}
-		
-		if (!strcmp(color, color_table[high].name)) {
+    } else {
+        /* Do binary search on color table */
+        for (low=(-1), high=sizeof(color_table)/sizeof(color_table[0]);
+        high-low > 1;) {
+            i = (high+low) / 2;
+            if (strcmp(color, color_table[i].name) <= 0) high = i;
+            else low = i;
+        }
+
+        if (!strcmp(color, color_table[high].name)) {
          return agg::rgba8(color_table[high].r, color_table[high].g,
             color_table[high].b);
-		} else {
+        } else {
          return agg::rgba8(0, 0, 0);
-		}
-	}	
+        }
+    }
 }
 
-void roadmap_canvas_refresh (void) 
+void roadmap_canvas_refresh (void)
 {
    if ( pDSACanvas == NULL )
    {//TODO maybe create it here?
@@ -158,7 +158,7 @@ int translate_native_bpp(TDisplayMode displayMode)
   //* 16 grayscales display mode (4 bpp) */
   case EGray16:  //  fallthrough
   //* Low colour EGA 16 colour display mode (4 bpp) */
-  case EColor16:   
+  case EColor16:
     bpp = 4;
     break;
   //* 256 grayscales display mode (8 bpp) */
@@ -191,11 +191,11 @@ int translate_native_bpp(TDisplayMode displayMode)
     bpp = 0;
     break;
   }
-  
+
   return bpp;
 }
 
-void roadmap_canvas_new (RWindow& aWindow, int initWidth, int initHeight) 
+void roadmap_canvas_new (RWindow& aWindow, int initWidth, int initHeight)
 {
   CWsScreenDevice* pScreenDevice = CEikonEnv::Static()->ScreenDevice();
   if ( pScreenDevice == NULL )
@@ -204,28 +204,28 @@ void roadmap_canvas_new (RWindow& aWindow, int initWidth, int initHeight)
     roadmap_log (ROADMAP_FATAL, "Could not open screen device!");
     return;
   }
-  
+
   TBuf<100> logBuf;
-  
+
   TSize screenSize = pScreenDevice->SizeInPixels();
   TDisplayMode displayMode = pScreenDevice->DisplayMode();
   //CFbsBitmap* pBitmap = new(ELeave)CFbsBitmap();
   //pBitmap->Create(screenSize, displayMode);
   //pScreenDevice->CopyScreenToBitmap(pBitmap); // no need for all this
-  
+
   int stride = screenSize.iWidth * DEFAULT_BPP;//translate_native_bpp(displayMode) / 8;
   int bufSizeInBytes = screenSize.iHeight * stride;
-  logBuf.Format(BufData, 
-      screenSize.iWidth, 
-      screenSize.iHeight, 
+  logBuf.Format(BufData,
+      screenSize.iWidth,
+      screenSize.iHeight,
       (TInt)displayMode,
       stride,
       bufSizeInBytes);
-  ALERT_WINBUF(logBuf);  
+  ALERT_WINBUF(logBuf);
   if ( bufSizeInBytes == 0)
   {
     ALERT_WIN("Screen device returned invalid data!");
-    roadmap_log (ROADMAP_ERROR, "Screen device returned invalid data!");        
+    roadmap_log (ROADMAP_ERROR, "Screen device returned invalid data!");
   }
   ALERT_WIN("alloc buf");
   if ( pScreenBuf == NULL )
@@ -249,14 +249,14 @@ void roadmap_canvas_new (RWindow& aWindow, int initWidth, int initHeight)
     delete pDSACanvas;
     pDSACanvas = NULL;
   }
-  
-  TRAPD (err, pDSACanvas = CRoadmapNativeCanvas::NewL(CEikonEnv::Static()->WsSession(), 
-                                                      *pScreenDevice, 
+
+  TRAPD (err, pDSACanvas = CRoadmapNativeCanvas::NewL(CEikonEnv::Static()->WsSession(),
+                                                      *pScreenDevice,
                                                       aWindow));
   if ( err != KErrNone || pDSACanvas == NULL )
   {
     ALERT_WIN("Could not init direct screen access!");
-    roadmap_log (ROADMAP_ERROR, "Could not init direct screen access!"); 
+    roadmap_log (ROADMAP_ERROR, "Could not init direct screen access!");
     return;
   }
   pDSACanvas->SetBuffer(pScreenBuf, bufSizeInBytes);
@@ -264,11 +264,11 @@ void roadmap_canvas_new (RWindow& aWindow, int initWidth, int initHeight)
   if ( err != KErrNone )
   {
     ALERT_WIN("Could not start direct screen access!");
-    roadmap_log (ROADMAP_ERROR, "Could not start direct screen access!"); 
+    roadmap_log (ROADMAP_ERROR, "Could not start direct screen access!");
     return;
   }
   ALERT_WIN("screen configure done");
-  
+
   (*RoadMapCanvasConfigure) ();
 }
 
@@ -284,7 +284,7 @@ static RoadMapImage load_bmp (const char *full_name) {
    if (pmap_tmp.bpp() != 24) {
       return NULL;
    }
-   
+
    int width = pmap_tmp.width();
    int height = pmap_tmp.height();
    int stride = pmap_tmp.stride();
@@ -296,7 +296,7 @@ static RoadMapImage load_bmp (const char *full_name) {
                                    -pmap_tmp.stride());
 
    RoadMapImage image =  new roadmap_canvas_image();
-   
+
    image->rbuf.attach (buf,
                        width, height,
                        width * 4);
@@ -305,36 +305,36 @@ static RoadMapImage load_bmp (const char *full_name) {
    return image;
 }
 #else
-static RoadMapImage load_bmp (const char *full_name) 
+static RoadMapImage load_bmp (const char *full_name)
 {
   roadmap_log (ROADMAP_WARNING, "Could not load BMP file : %s", full_name);
   return NULL;
 }
 #endif
 
-unsigned char* BmpWithMaskToBuffer( CFbsBitmap* apFrame, 
-                                    CFbsBitmap* apFrameMask, 
+unsigned char* BmpWithMaskToBuffer( CFbsBitmap* apFrame,
+                                    CFbsBitmap* apFrameMask,
                                     int width,
                                     int height,
                                     int stride)
 {
   unsigned char* pBuf = (unsigned char*)malloc(height*stride);
   if ( pBuf == NULL ) { return pBuf;  }
-  
+
   apFrame->LockHeap();
   apFrameMask->LockHeap();
-  
+
   //BGR->RGB conversion
   TUint8* src = (TUint8*)apFrame->DataAddress();
   TInt maskSizeInPixels = apFrameMask->SizeInPixels().iHeight * apFrameMask->SizeInPixels().iWidth;
   TUint8* srcMask = (TUint8*)apFrameMask->DataAddress();
   TUint8* dst = (TUint8*)pBuf;
-  
+
   TInt bpp = translate_native_bpp(apFrame->DisplayMode()) / 8;
 //no need, it's 1 and we don't use it (see below) -->
   //TInt bppMask = translate_native_bpp(apFrameMask->DisplayMode()) / 8;
   //
-  
+
   TInt paddedWidth = (apFrame->DataStride()/bpp);
   if ( paddedWidth > width )
   {
@@ -355,7 +355,7 @@ unsigned char* BmpWithMaskToBuffer( CFbsBitmap* apFrame,
       dst[1] = src[1];
       dst[2] = src[0];
       if ( maskSizeInPixels != 0 )
-      {//TODO ideally a for loop here equal to bppMask, 
+      {//TODO ideally a for loop here equal to bppMask,
         //but actually mask is EGray256 which equals 1 anyway
         dst[3] = *srcMask;
         ++dst;
@@ -365,7 +365,7 @@ unsigned char* BmpWithMaskToBuffer( CFbsBitmap* apFrame,
       src += bpp;
     }
   }
-  
+
   apFrameMask->UnlockHeap();
   apFrame->UnlockHeap();
   return pBuf;
@@ -403,7 +403,7 @@ unsigned char *read_png_file(const char* file_name, int *width, int *height,
 
    /* initialize stuff */
    png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-   
+
    if (!png_ptr) {
       roadmap_log (ROADMAP_ERROR,
                   "[read_png_file] png_create_read_struct failed");
@@ -463,11 +463,11 @@ unsigned char *read_png_file(const char* file_name, int *width, int *height,
    return buf;
 }
 
-#else 
-unsigned char *read_png_file(const char* file_name, 
-                              int &width, 
+#else
+unsigned char *read_png_file(const char* file_name,
+                              int &width,
                               int &height,
-                              int &stride) 
+                              int &stride)
 {
   TFileName filename;
   TBuf8<256> mimeType;
@@ -475,7 +475,7 @@ unsigned char *read_png_file(const char* file_name,
   CImageDecoder::GetMimeTypeFileL(CEikonEnv::Static()->FsSession(), filename, mimeType);
   CImageDecoder* pPngDecoder = NULL;
   TRAPD(err, pPngDecoder = CImageDecoder::FileNewL(
-                                   CEikonEnv::Static()->FsSession(), 
+                                   CEikonEnv::Static()->FsSession(),
                                    filename,
                                    mimeType,
                                    CImageDecoder::EAllowGeneratedMask)); //PngMimeType; use is optional
@@ -486,29 +486,29 @@ unsigned char *read_png_file(const char* file_name,
   }
 
   CFbsBitmap* pFrame = new(ELeave)CFbsBitmap();
-  pFrame->Create( pPngDecoder->FrameInfo(0).iOverallSizeInPixels, 
+  pFrame->Create( pPngDecoder->FrameInfo(0).iOverallSizeInPixels,
                   pPngDecoder->FrameInfo(0).iFrameDisplayMode);
   CRoadmapNativePNG::Decode(pPngDecoder, pFrame, NULL);
-  
+
   TSize bmpSize = pFrame->SizeInPixels();
   height = bmpSize.iHeight;
   width = bmpSize.iWidth;
   stride = pFrame->DataStride();
-  //stride = CFbsBitmap::ScanLineLength(width, pFrame->DisplayMode());  
+  //stride = CFbsBitmap::ScanLineLength(width, pFrame->DisplayMode());
   //stride = bmpSize.iWidth * translate_native_bpp(pFrame->DisplayMode()) / 8;
   int bufSizeInBytes = height * stride;
   if ( bufSizeInBytes == 0)
   {
-    roadmap_log (ROADMAP_ERROR, "Screen device returned invalid data!");        
+    roadmap_log (ROADMAP_ERROR, "Screen device returned invalid data!");
   }
 //  roadmap_log(ROADMAP_ERROR, "h=%d w=%d mode=%d stride=%d bufSize=%d",
 //      height, width, translate_native_bpp(pPngDecoder->FrameInfo(0).iFrameDisplayMode), stride, bufSizeInBytes);
-  
+
   unsigned char* buf = (unsigned char*)malloc(bufSizeInBytes);
   pFrame->LockHeap();
   memcpy(buf, pFrame->DataAddress(), bufSizeInBytes);
   pFrame->UnlockHeap();
-  
+
   delete pFrame;
   delete pPngDecoder;
   return buf;
@@ -552,17 +552,17 @@ RoadMapImage roadmap_canvas_agg_load_image (const char *path,
 
 
 void roadmap_canvas_agg_free_image (RoadMapImage image) {
-   
+
    free (image->rbuf.buf());
    delete image;
 }
 
 /*
 static void roadmap_canvas_convert_points (POINT *winpoints,
-			RoadMapGuiPoint *points, int count)
+            RoadMapGuiPoint *points, int count)
 {
     RoadMapGuiPoint *end = points + count;
-	
+
     while (points < end) {
         winpoints->x = points->x;
         winpoints->y = points->y;
@@ -579,7 +579,7 @@ void select_native_color (COLORREF color, int thickness) {
    static int init;
 
    if (!init) {
-      oldBrush = (HBRUSH) SelectObject(RoadMapDrawingBuffer, 
+      oldBrush = (HBRUSH) SelectObject(RoadMapDrawingBuffer,
             CreateSolidBrush(color));
 
       oldPen = (HPEN) SelectObject(RoadMapDrawingBuffer, CreatePen(PS_SOLID,
@@ -609,38 +609,38 @@ void select_native_color (COLORREF color, int thickness) {
 
 
 void roadmap_canvas_native_draw_multiple_lines (int count, int *lines,
-				RoadMapGuiPoint *points, int r, int g, int b, int thickness)
+                RoadMapGuiPoint *points, int r, int g, int b, int thickness)
 {
-	int i;
-	int count_of_points;
+    int i;
+    int count_of_points;
 
-	POINT winpoints[1024];
+    POINT winpoints[1024];
 
    static int init;
 
    select_native_color (RGB(r, g, b), thickness);
 
-	for (i = 0; i < count; ++i) {
+    for (i = 0; i < count; ++i) {
 
       RoadMapGuiPoint end_points[2];
       int first = 1;
-		
-		count_of_points = *lines;
-		
+
+        count_of_points = *lines;
+
       if (count_of_points < 2) continue;
 
-		while (count_of_points > 1024) {
+        while (count_of_points > 1024) {
 
          if (first) {
             first = 0;
             end_points[0] = *points;
          }
-			roadmap_canvas_convert_points (winpoints, points, 1024);
-			Polyline(RoadMapDrawingBuffer, winpoints, 1024);
-			// We shift by 1023 only, because we must link the lines. 
-			points += 1023;
-			count_of_points -= 1023;
-		}
+            roadmap_canvas_convert_points (winpoints, points, 1024);
+            Polyline(RoadMapDrawingBuffer, winpoints, 1024);
+            // We shift by 1023 only, because we must link the lines.
+            points += 1023;
+            count_of_points -= 1023;
+        }
 
       if (first) {
          first = 0;
@@ -648,8 +648,8 @@ void roadmap_canvas_native_draw_multiple_lines (int count, int *lines,
       }
 
       end_points[1] = points[count_of_points - 1];
-		roadmap_canvas_convert_points (winpoints, points, count_of_points);
-		Polyline(RoadMapDrawingBuffer, winpoints, count_of_points);
+        roadmap_canvas_convert_points (winpoints, points, count_of_points);
+        Polyline(RoadMapDrawingBuffer, winpoints, count_of_points);
 
 #if 0
       if (CurrentPen->thinkness > 5) {
@@ -660,22 +660,22 @@ void roadmap_canvas_native_draw_multiple_lines (int count, int *lines,
          int radius = CurrentPen->thinkness / 2;
 
          Ellipse(RoadMapDrawingBuffer,
-			   end_points[0].x - radius, end_points[0].y - radius,
-			   radius + end_points[0].x + 1,
-			   radius + end_points[0].y + 1);
+               end_points[0].x - radius, end_points[0].y - radius,
+               radius + end_points[0].x + 1,
+               radius + end_points[0].y + 1);
 
          Ellipse(RoadMapDrawingBuffer,
-			   end_points[1].x - radius, end_points[1].y - radius,
-			   radius + end_points[1].x + 1,
-			   radius + end_points[1].y + 1);
+               end_points[1].x - radius, end_points[1].y - radius,
+               radius + end_points[1].x + 1,
+               radius + end_points[1].y + 1);
 
          SelectObject(RoadMapDrawingBuffer, oldPen);
-	   }
+       }
 #endif
 
-		points += count_of_points;
-		lines += 1;
-	}
+        points += count_of_points;
+        lines += 1;
+    }
 
 //   DeleteObject(SelectObject(RoadMapDrawingBuffer, oldPen));
 //   DeleteObject(SelectObject(RoadMapDrawingBuffer, oldBrush));

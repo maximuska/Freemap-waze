@@ -72,7 +72,7 @@ void editor_trkseg_get_time (int trkseg,
 
 
 int editor_trkseg_add (int square,
-							  int line_id,
+                              int line_id,
                        int plugin_id,
                        int p_from,
                        int first_shape,
@@ -84,7 +84,7 @@ int editor_trkseg_add (int square,
    editor_db_trkseg track;
    int id;
 
-	track.square				 = square;
+    track.square                 = square;
    track.line_id            = line_id;
    track.plugin_id          = plugin_id;
    track.point_from         = p_from;
@@ -127,37 +127,37 @@ void editor_trkseg_get_line (int trkseg, int *square, int *line_id, int *plugin_
 
    assert (track != NULL);
 
-	*square = track->square;
+    *square = track->square;
    *line_id = track->line_id;
    *plugin_id = track->plugin_id;
 }
 
 
 int editor_trkseg_get_count (void) {
-   
+
    return editor_db_get_item_count (ActiveTrksegDB);
 }
 
 
 int editor_trkseg_begin_commit (void) {
 
-	return editor_db_begin_commit (ActiveTrksegDB);	
+    return editor_db_begin_commit (ActiveTrksegDB);
 }
 
 
 void editor_trkseg_confirm_commit (int id) {
 
-	editor_db_confirm_commit (ActiveTrksegDB, id);	
+    editor_db_confirm_commit (ActiveTrksegDB, id);
 }
 
 
 int editor_trkseg_item_committed (int item_id) {
 
-	return editor_db_item_committed (ActiveTrksegDB, item_id);	
+    return editor_db_item_committed (ActiveTrksegDB, item_id);
 }
 
 
 int editor_trkseg_items_pending (void) {
 
-	return editor_db_items_pending (ActiveTrksegDB);	
+    return editor_db_items_pending (ActiveTrksegDB);
 }

@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -40,15 +40,15 @@ namespace agg
 
         //--------------------------------------------------------------------
         // Arbitrary quadrangle transformations
-        trans_bilinear(const double* src, const double* dst) 
+        trans_bilinear(const double* src, const double* dst)
         {
             quad_to_quad(src, dst);
         }
 
 
         //--------------------------------------------------------------------
-        // Direct transformations 
-        trans_bilinear(double x1, double y1, double x2, double y2, 
+        // Direct transformations
+        trans_bilinear(double x1, double y1, double x2, double y2,
                        const double* quad)
         {
             rect_to_quad(x1, y1, x2, y2, quad);
@@ -56,8 +56,8 @@ namespace agg
 
 
         //--------------------------------------------------------------------
-        // Reverse transformations 
-        trans_bilinear(const double* quad, 
+        // Reverse transformations
+        trans_bilinear(const double* quad,
                        double x1, double y1, double x2, double y2)
         {
             quad_to_rect(quad, x1, y1, x2, y2);
@@ -90,7 +90,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         // Set the direct transformations, i.e., rectangle -> quadrangle
-        void rect_to_quad(double x1, double y1, double x2, double y2, 
+        void rect_to_quad(double x1, double y1, double x2, double y2,
                           const double* quad)
         {
             double src[8];
@@ -104,7 +104,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         // Set the reverse transformations, i.e., quadrangle -> rectangle
-        void quad_to_rect(const double* quad, 
+        void quad_to_rect(const double* quad,
                           double x1, double y1, double x2, double y2)
         {
             double dst[8];

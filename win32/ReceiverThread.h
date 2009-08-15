@@ -18,8 +18,8 @@
  */
 
 
-#ifndef	__RECEIVERTHREAD_H__
-#define	__RECEIVERTHREAD_H__
+#ifndef __RECEIVERTHREAD_H__
+#define __RECEIVERTHREAD_H__
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -47,7 +47,7 @@ typedef struct tagDataInfo
 
 inline void DataInfo_Init( LPDataInfo pThis)
 {
-   memset( pThis, 0, sizeof(DataInfo)); 
+   memset( pThis, 0, sizeof(DataInfo));
    pThis->socket = -1;
    pThis->iSize  = -1;
 }
@@ -64,13 +64,13 @@ class CReceiverThreadMgr :
 public:
    virtual  void  InitializeData( DataInfo& r)
    { DataInfo_Init( &r);}
-   
+
    virtual  BOOL  DataIsValid( const DataInfo& r)
    { return DataInfo_IsValid( &r);}
-   
+
    virtual  BOOL  CellIsOccupied( const DataInfo& r)
    { return DataIsValid(r);}
-   
+
    virtual  void  HandleTask( DataInfo& r);
 
 public:
@@ -85,4 +85,4 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#endif	//	__RECEIVERTHREAD_H__
+#endif  //  __RECEIVERTHREAD_H__

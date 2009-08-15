@@ -28,12 +28,12 @@
 #include "roadmap.h"
 
 typedef struct{
-	char 			text[50];
-	RoadMapCallback callback; 
+    char            text[50];
+    RoadMapCallback callback;
 }Softkey;
 
 #define SOFT_KEYS_ON_BOTTOM 0
-#define SOFT_KEYS_ON_RIGHT	1
+#define SOFT_KEYS_ON_RIGHT  1
 #define SOFT_KEYS_ON_LEFT   2
 #define SOFT_KEYS_ON_TOP    3
 

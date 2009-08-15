@@ -39,7 +39,7 @@
                                              5   /*   Address name      */ +   \
                                              1   /*   Address delimiter */ +   \
                                              1   /*   Service name      */)
-                                  
+
 #define  WSA_STRING_MAXSIZE               (  WSA_PREFIX_SIZE               +   \
                                              WSA_SERVER_URL_MAXSIZE        +   \
                                              1   /*   Port delimiter    */ +   \

@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -68,7 +68,7 @@ namespace agg
         void hinting(bool h)          { m_hinting = h;           }
         bool create_font(const char* typeface_, glyph_rendering ren_type);
 
-        bool create_font(const char* typeface_, 
+        bool create_font(const char* typeface_,
                          glyph_rendering ren_type,
                          double height_,
                          double width_=0.0,
@@ -182,7 +182,7 @@ namespace agg
 
 
     //------------------------------------------------font_engine_win32_tt_int16
-    // This class uses values of type int16 (10.6 format) for the vector cache. 
+    // This class uses values of type int16 (10.6 format) for the vector cache.
     // The vector cache is compact, but when rendering glyphs of height
     // more that 200 there integer overflow can occur.
     //
@@ -195,13 +195,13 @@ namespace agg
         typedef font_engine_win32_tt_base::scanlines_aa_type  scanlines_aa_type;
         typedef font_engine_win32_tt_base::scanlines_bin_type scanlines_bin_type;
 
-        font_engine_win32_tt_int16(HDC dc, unsigned max_fonts = 32) : 
+        font_engine_win32_tt_int16(HDC dc, unsigned max_fonts = 32) :
             font_engine_win32_tt_base(false, dc, max_fonts) {}
     };
 
     //------------------------------------------------font_engine_win32_tt_int32
-    // This class uses values of type int32 (26.6 format) for the vector cache. 
-    // The vector cache is twice larger than in font_engine_win32_tt_int16, 
+    // This class uses values of type int32 (26.6 format) for the vector cache.
+    // The vector cache is twice larger than in font_engine_win32_tt_int16,
     // but it allows you to render glyphs of very large sizes.
     //
     class font_engine_win32_tt_int32 : public font_engine_win32_tt_base
@@ -213,7 +213,7 @@ namespace agg
         typedef font_engine_win32_tt_base::scanlines_aa_type  scanlines_aa_type;
         typedef font_engine_win32_tt_base::scanlines_bin_type scanlines_bin_type;
 
-        font_engine_win32_tt_int32(HDC dc, unsigned max_fonts = 32) : 
+        font_engine_win32_tt_int32(HDC dc, unsigned max_fonts = 32) :
             font_engine_win32_tt_base(true, dc, max_fonts) {}
     };
 

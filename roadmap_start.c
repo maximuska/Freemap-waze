@@ -53,7 +53,7 @@
 #include "roadmap_canvas.h"
 
 #include "roadmap_preferences.h"
-#include "roadmap_coord.h" 
+#include "roadmap_coord.h"
 #include "roadmap_crossing.h"
 #include "roadmap_sprite.h"
 #include "roadmap_screen_obj.h"
@@ -64,7 +64,7 @@
 #include "roadmap_fuzzy.h"
 #include "roadmap_navigate.h"
 #include "roadmap_label.h"
-#include "roadmap_display.h" 
+#include "roadmap_display.h"
 #include "roadmap_locator.h"
 #include "roadmap_copy.h"
 #include "roadmap_httpcopy.h"
@@ -217,7 +217,7 @@ static void roadmap_start_show_gps (void) {
     roadmap_trip_set_focus ("GPS");
     roadmap_screen_refresh ();
     roadmap_state_refresh ();//Added by AviR
-    
+
 }
 
 static void roadmap_start_hold_map (void) {
@@ -260,42 +260,42 @@ static void roadmap_start_download_map (void) {
 }
 
 static void roadmap_start_create_trip (void) {
-    
+
     roadmap_trip_new ();
 }
 
 static void roadmap_start_open_trip (void) {
-    
+
     roadmap_trip_load (NULL, 0);
 }
 
 static void roadmap_start_save_trip (void) {
-    
+
     roadmap_trip_save (roadmap_trip_current());
 }
 
 static void roadmap_start_save_trip_as (void) {
-    
+
     roadmap_trip_save (NULL);
 }
 
 static void roadmap_start_trip (void) {
-    
+
     roadmap_trip_start ();
 }
 
 static void roadmap_start_trip_resume (void) {
-    
+
     roadmap_trip_resume ();
 }
 
 static void roadmap_start_trip_reverse (void) {
-    
+
     roadmap_trip_reverse ();
 }
 
 static void roadmap_start_navigate (void) {
-    
+
     navigate_main_calc_route ();
 }
 
@@ -325,7 +325,7 @@ static void roadmap_start_set_waypoint (void) {
 }
 
 static void roadmap_start_delete_waypoint (void) {
-    
+
     roadmap_trip_remove_point (NULL);
 }
 
@@ -372,7 +372,7 @@ static void roadmap_start_toggle_download (void) {
 
 
 static void roadmap_start_detect_receiver (void) {
-    
+
     roadmap_gps_detect_receiver ();
 }
 
@@ -444,7 +444,7 @@ RoadMapAction RoadMapStartActions[MAX_ACTIONS + 1] = {
       "Remove all but the 10 most recent addresses", roadmap_start_purge},
 
    {"quit", "Quit", NULL, NULL,
-      "Quit RoadMap", roadmap_confirmed_exit}, 
+      "Quit RoadMap", roadmap_confirmed_exit},
 
    {"zoomin", "Zoom In", "+", NULL,
       "Enlarge the central part of the map", roadmap_screen_zoom_in},
@@ -495,10 +495,10 @@ RoadMapAction RoadMapStartActions[MAX_ACTIONS + 1] = {
 #ifndef SSD
    {"address", "Address...", "Addr", "A",
       "Show a specified address", roadmap_address_location_by_city},
-#else      
+#else
    {"address", "Address...", "Addr", "A",
       "Show a specified address", roadmap_address_history},
-#endif      
+#endif
 
    {"intersection", "Intersection...", "X", NULL,
       "Show a specified street intersection", roadmap_crossing_dialog},
@@ -620,7 +620,7 @@ RoadMapAction RoadMapStartActions[MAX_ACTIONS + 1] = {
 #ifdef IPHONE
    {"toggle_location", "Toggle location mode", NULL, NULL,
       "Enable/Disable location services", roadmap_location_toggle},
-      
+
    {"minimize", "Minimize application", NULL, NULL,
       "Close app window and keep in background", roadmap_main_minimize},
 #endif
@@ -633,10 +633,10 @@ RoadMapAction RoadMapStartActions[MAX_ACTIONS + 1] = {
 
    {"reportpolice", "Report a police", NULL,  NULL,
       "Report a police", add_real_time_alert_for_police},
-      
+
    {"reportaccident", "Report an accident", NULL,  NULL,
       "Report an accident", add_real_time_alert_for_accident},
-   
+
    {"reporttrafficjam", "Report a traffic jam", NULL,  NULL,
       "Report a traffic jam", add_real_time_alert_for_traffic_jam},
 
@@ -655,69 +655,69 @@ RoadMapAction RoadMapStartActions[MAX_ACTIONS + 1] = {
 
    {"real_time_alerts_list", "Real Time Alerts", NULL,  NULL,
       "Real Time Alerts",RealtimeAlertsList},
-      
+
     {"next_real_time_alerts", "Next real time alert", NULL,  NULL,
          "Next real time alert",RTAlerts_Scroll_Next},
 
    {"prev_real_time_alerts", "Previous real time alert", NULL,  NULL,
          "Previous real time alert",RTAlerts_Scroll_Prev},
-         
+
    {"cancel_real_time_scroll", "Cancel real time scroll", NULL,  NULL,
-         "Cancel real time scroll", RTAlerts_Cancel_Scrolling},  
+         "Cancel real time scroll", RTAlerts_Cancel_Scrolling},
 
    {"reportincident", "Report an incident", NULL,  NULL,
       "Report an incident", add_real_time_chit_chat},
-          
+
    {"toggle_navigation_guidance", "Toggle navigation guidance", NULL,  NULL,
          "Toggle navigation guidance", toggle_navigation_guidance},
-         
+
    {"settingsmenu", "Settings menu", NULL, NULL,
             "Settings menu", start_settings_quick_menu},
-            
+
    {"select_car", "Select your car", NULL,  NULL,
-               "Select your car", roadmap_car}, 
- 
+               "Select your car", roadmap_car},
+
    {"send_comment", "Send a comment on alert", NULL,  NULL,
-                           "Send a comment on alert", real_time_post_alert_comment}, 
-            
+                           "Send a comment on alert", real_time_post_alert_comment},
+
    {"left_softkey", "left soft key", NULL,  NULL,
-                           "left soft key", roadmap_softkeys_left_softkey_callback}, 
+                           "left soft key", roadmap_softkeys_left_softkey_callback},
 
    {"right_softkey", "right soft key", NULL,  NULL,
-                           "right soft key", roadmap_softkeys_right_softkey_callback}, 
+                           "right soft key", roadmap_softkeys_right_softkey_callback},
 
    {"zoom", "zoom", NULL,  NULL,
-                     "zoom", start_zoom_side_menu}, 
+                     "zoom", start_zoom_side_menu},
 
    {"rotate", "rotate", NULL,  NULL,
-                     "rotate", start_rotate_side_menu}, 
-                     
+                     "rotate", start_rotate_side_menu},
+
    {"toggle_traffic", "Toggle traffic info", NULL,  NULL,
-                           "Toggle traffic info", RealtimeRoadToggleShowTraffic}, 
+                           "Toggle traffic info", RealtimeRoadToggleShowTraffic},
 
    {"search_menu", "Search menu", NULL,  NULL,
                            "Search menu", roadmap_search_menu},
- 
+
    {"view", "View menu", NULL,  NULL,
                            "View menu", roadmap_view_menu},
- 
+
    {"commute_view", "Commute view", "Commute view", NULL,
       "Commute view", roadmap_view_commute},
-   
+
    {"navigation_view", "Navigation view", "Navigation view", NULL,
       "Navigation view", roadmap_view_navigation},
-   
+
    {"privacy_settings", "Privacy settings", NULL,  NULL,
-                        "Privacy settings", RealtimePrivacySettings}, 
-                     
+                        "Privacy settings", RealtimePrivacySettings},
+
    {"general_settings", "General settings", NULL,  NULL,
-                        "General settings", roadmap_general_settings_show}, 
+                        "General settings", roadmap_general_settings_show},
 
    {"stop_navigate", "Stop navigation", NULL,  NULL,
-                        "Stop navigation", navigate_main_stop_navigation_menu}, 
+                        "Stop navigation", navigate_main_stop_navigation_menu},
 
 #ifdef SSD
-   {"login_details", "Login details", NULL, NULL, 
+   {"login_details", "Login details", NULL, NULL,
                   "Login details", ssd_login_details_dialog_show},
 #endif
 
@@ -726,34 +726,34 @@ RoadMapAction RoadMapStartActions[MAX_ACTIONS + 1] = {
 
    {"search_favorites", "Search favorites", "Search favorites", NULL,
       "Search favorites", search_menu_search_favorites},
-   
+
    {"search_address", "Search address", "Search address", NULL,
       "Search address", search_menu_search_address},
-      
+
    {"show_me", "Me on map", "Me on map", NULL,
-   	"Me on map", show_me_on_map},
+    "Me on map", show_me_on_map},
 
    {"show_shortcuts", "Shortcuts", NULL,  NULL,
-         "Shortcuts", display_shortcuts}, 
+         "Shortcuts", display_shortcuts},
 
    {"recommend_waze", "Recommend Waze to a friend", NULL, NULL,
-   		"Recommend Waze to a friend", RecommentToFriend},
+        "Recommend Waze to a friend", RecommentToFriend},
 
    {"help_menu", "Help menu", NULL, NULL,
-   		"Help", roadmap_help_menu},
-         
+        "Help", roadmap_help_menu},
+
    {"help", "Help", NULL, NULL,
-   		"Help",  roadmap_open_help},
-   		
+        "Help",  roadmap_open_help},
+
    {"navigation_list", "Navigation list", NULL, NULL,
-   		"Navigation list", navigate_main_list},
+        "Navigation list", navigate_main_list},
 
   {"map_updates_menu", "Open map updates menu", NULL, NULL,
       "Open map updates menu", start_map_updates_menu},
 
   {"nav_list_next", "Show next instruction", NULL, NULL,
       "Show next instruction", navigate_main_list_display_next},
-  
+
   {"nav_list_prev", "Show previous instruction", NULL, NULL,
       "how previous instruction", navigate_main_list_display_previous},
 
@@ -1038,23 +1038,23 @@ static char const *RoadMapSettingsMenu[] = {
 #endif
 
 void display_shortcuts(){
-	
+
 #ifdef TOUCH_SCREEN
-	return;
-#endif 	
-	ssd_dialog_hide_all(dec_close);
-	
-	if (roadmap_display_is_sign_active("Shortcuts")){
-		roadmap_display_hide("Shortcuts");
-		roadmap_screen_redraw();
-		return;
-	}
-	if (is_screen_wide())
-		roadmap_activate_image_sign("Shortcuts", "shortcuts_wide");
-	else
-		roadmap_activate_image_sign("Shortcuts", "shortcuts");
-}	
-	
+    return;
+#endif
+    ssd_dialog_hide_all(dec_close);
+
+    if (roadmap_display_is_sign_active("Shortcuts")){
+        roadmap_display_hide("Shortcuts");
+        roadmap_screen_redraw();
+        return;
+    }
+    if (is_screen_wide())
+        roadmap_activate_image_sign("Shortcuts", "shortcuts_wide");
+    else
+        roadmap_activate_image_sign("Shortcuts", "shortcuts");
+}
+
 #ifndef UNDER_CE
 static char const *RoadMapStartKeyBinding[] = {
 
@@ -1120,23 +1120,23 @@ static char const *RoadMapStartKeyBinding[] = {
 
 
 BOOL get_menu_item_names(  const char*          menu_name,
-                           ssd_contextmenu_ptr  parent, 
+                           ssd_contextmenu_ptr  parent,
                            const char*          items[],
                            int*                 count)
 {
    int                  i;
    ssd_contextmenu_ptr  menu  = NULL;
    RoadMapAction*       action= NULL;
-   
+
    if( count)
       (*count) = 0;
-  
+
    if( !parent)
    {
       assert(0);
       return FALSE;
    }
-   
+
    if( menu_name && (*menu_name))
    {
       for( i=0; i<parent->item_count; i++)
@@ -1149,7 +1149,7 @@ BOOL get_menu_item_names(  const char*          menu_name,
                menu = parent->item[i].popup->menu;
                break;
             }
-            
+
             if( get_menu_item_names( menu_name, parent->item[i].popup->menu, items, count))
                return TRUE;
          }
@@ -1159,20 +1159,20 @@ BOOL get_menu_item_names(  const char*          menu_name,
       menu = parent;
 
    if( !menu)
-      return FALSE;      
+      return FALSE;
 
    for( i=0; i<menu->item_count; i++)
    {
       action = (RoadMapAction*)menu->item[i].action;
       assert( action);
-      
+
       items[i] = action->name;
    }
    items[i] = NULL;
-   
+
    if( count)
       (*count) = menu->item_count;
-   
+
    return TRUE;
 }
 
@@ -1193,33 +1193,33 @@ static void roadmap_start_quick_menu (void) {
 
 #ifdef  TOUCH_SCREEN
    int   count;
-#else   
+#else
    int   menu_x;
-#endif   // !TOUCH_SCREEN   
+#endif   // !TOUCH_SCREEN
 
    if( !s_main_menu)
    {
       s_main_menu = roadmap_factory_load_menu("quick.menu", RoadMapStartActions);
-      
+
       if( !s_main_menu)
       {
          assert(0);
          return;
       }
    }
-   
+
 #ifndef  TOUCH_SCREEN
    if  (ssd_widget_rtl (NULL))
-	   menu_x = SSD_X_SCREEN_RIGHT;
-	else
-		menu_x = SSD_X_SCREEN_LEFT;
+       menu_x = SSD_X_SCREEN_RIGHT;
+    else
+        menu_x = SSD_X_SCREEN_LEFT;
 
    ssd_context_menu_show(  menu_x,              // X
                            SSD_Y_SCREEN_BOTTOM, // Y
                            s_main_menu,
                            on_contextmenu_closed,
                            NULL,
-                           dir_default); 
+                           dir_default);
 
 #else
    // TOUCH SCREEN:
@@ -1229,11 +1229,11 @@ static void roadmap_start_quick_menu (void) {
    {
       assert(0);
       return;
-   }      
+   }
 
-   ssd_menu_activate("Main Menu", 
-                     NULL, 
-                     grid_menu_labels, 
+   ssd_menu_activate("Main Menu",
+                     NULL,
+                     grid_menu_labels,
                      NULL,
                      RoadMapStartActions,
                      SSD_CONTAINER_BORDER|SSD_CONTAINER_TITLE|SSD_DIALOG_TRANSPARENT|SSD_ROUNDED_CORNERS|SSD_POINTER_MENU|SSD_HEADER_GRAY);
@@ -1257,78 +1257,78 @@ static void roadmap_start_quick_menu (void) {
 }
 
 void on_closed_alerts_quick_menu (int exit_code, void* context){
-	if ((exit_code == dec_cancel) ||( exit_code == dec_close)){
-		roadmap_trip_restore_focus();   
-	}
+    if ((exit_code == dec_cancel) ||( exit_code == dec_close)){
+        roadmap_trip_restore_focus();
+    }
 }
 
 void start_map_updates_menu(void){
-		ssd_list_menu_activate ("map_updates", "map_updates", RoadMapAlertMenu, NULL,
-   		  				        RoadMapStartActions,
-    							SSD_DIALOG_FLOAT|SSD_DIALOG_TRANSPARENT|SSD_DIALOG_VERTICAL|SSD_BG_IMAGE);
+        ssd_list_menu_activate ("map_updates", "map_updates", RoadMapAlertMenu, NULL,
+                                RoadMapStartActions,
+                                SSD_DIALOG_FLOAT|SSD_DIALOG_TRANSPARENT|SSD_DIALOG_VERTICAL|SSD_BG_IMAGE);
 }
 
 void start_alerts_menu(void){
 
     PluginLine line;
     int direction;
-    RoadMapGpsPosition 			  *CurrentGpsPoint;
-    const RoadMapPosition 		*GpsPosition;
+    RoadMapGpsPosition            *CurrentGpsPoint;
+    const RoadMapPosition       *GpsPosition;
     const char *menu[2] ={"alerts_offline", "alerts"};
-    
+
     int menu_file;
     BOOL has_position = FALSE;
 
-	
-	if (ssd_dialog_is_currently_active()) {
-		if (ssd_dialog_is_currently_vertical()){ 
-			on_closed_alerts_quick_menu(dec_close, NULL);
-			ssd_dialog_hide_current(dec_close);
-			roadmap_screen_refresh ();
-			return; 
-		}
-	}
 
-	CurrentGpsPoint = malloc(sizeof(*CurrentGpsPoint));
-	roadmap_check_allocated(CurrentGpsPoint);
+    if (ssd_dialog_is_currently_active()) {
+        if (ssd_dialog_is_currently_vertical()){
+            on_closed_alerts_quick_menu(dec_close, NULL);
+            ssd_dialog_hide_current(dec_close);
+            roadmap_screen_refresh ();
+            return;
+        }
+    }
 
-	if (roadmap_navigate_get_current
+    CurrentGpsPoint = malloc(sizeof(*CurrentGpsPoint));
+    roadmap_check_allocated(CurrentGpsPoint);
+
+    if (roadmap_navigate_get_current
         (CurrentGpsPoint, &line, &direction) == -1) {
-		BOOL has_reception = (roadmap_gps_reception_state() != GPS_RECEPTION_NONE) && (roadmap_gps_reception_state() != GPS_RECEPTION_NA);
-		GpsPosition = roadmap_trip_get_position ("GPS");
-	    if ((GpsPosition != NULL) && (has_reception)){
+        BOOL has_reception = (roadmap_gps_reception_state() != GPS_RECEPTION_NONE) && (roadmap_gps_reception_state() != GPS_RECEPTION_NA);
+        GpsPosition = roadmap_trip_get_position ("GPS");
+        if ((GpsPosition != NULL) && (has_reception)){
                      CurrentGpsPoint->latitude = GpsPosition->latitude;
                      CurrentGpsPoint->longitude = GpsPosition->longitude;
                      CurrentGpsPoint->speed = 0;
                      CurrentGpsPoint->steering = 0;
                      has_position = TRUE;
-	     } else{
+         } else{
                      free(CurrentGpsPoint);
          }
     }
     else
-    	has_position = TRUE;
-    
+        has_position = TRUE;
+
     if (has_position){
-    	roadmap_trip_set_gps_position ("AlertSelection", "Selection", "new_alert_marker", CurrentGpsPoint);
-    	roadmap_trip_set_focus("AlertSelection"); 
-		roadmap_screen_refresh ();
+        roadmap_trip_set_gps_position ("AlertSelection", "Selection", "new_alert_marker", CurrentGpsPoint);
+        roadmap_trip_set_focus("AlertSelection");
+        roadmap_screen_refresh ();
     }
-    
-    menu_file = RealTimeLoginState();     
+
+    menu_file = RealTimeLoginState();
 #ifdef IPHONE
     if (is_screen_wide() && (menu_file == 1)){
-    	char name[255];
-    	sprintf(name,"%s_wide",menu[menu_file]);
-		ssd_menu_activate (name, menu[menu_file], RoadMapAlertMenu, on_closed_alerts_quick_menu,
-   		  	   	           RoadMapStartActions,SSD_CONTAINER_BORDER|SSD_CONTAINER_TITLE|SSD_DIALOG_TRANSPARENT|SSD_ROUNDED_CORNERS|SSD_POINTER_MENU|SSD_HEADER_GRAY);
-    }   		  	   	          
+        char name[255];
+        sprintf(name,"%s_wide",menu[menu_file]);
+        ssd_menu_activate (name, menu[menu_file], RoadMapAlertMenu, on_closed_alerts_quick_menu,
+                           RoadMapStartActions,SSD_CONTAINER_BORDER|SSD_CONTAINER_TITLE|SSD_DIALOG_TRANSPARENT|SSD_ROUNDED_CORNERS|SSD_POINTER_MENU|SSD_HEADER_GRAY);
+    }
     else
-#endif    
-		ssd_list_menu_activate (menu[menu_file], menu[menu_file], RoadMapAlertMenu, on_closed_alerts_quick_menu,
-   		  				        RoadMapStartActions,
-    							SSD_DIALOG_FLOAT|SSD_DIALOG_TRANSPARENT|SSD_DIALOG_VERTICAL|SSD_BG_IMAGE);
-   												 
+#endif
+        ssd_list_menu_activate (menu[menu_file], menu[menu_file], RoadMapAlertMenu, on_closed_alerts_quick_menu,
+                                RoadMapStartActions,
+                                SSD_DIALOG_FLOAT|SSD_DIALOG_TRANSPARENT|SSD_DIALOG_VERTICAL|SSD_BG_IMAGE);
+
 }
 
 static void start_settings_quick_menu (void) {
@@ -1347,11 +1347,11 @@ static void start_settings_quick_menu (void) {
    {
       assert(0);
       return;
-   }      
+   }
 
-   ssd_menu_activate("Settings menu", 
-                     NULL, 
-                     grid_menu_labels, 
+   ssd_menu_activate("Settings menu",
+                     NULL,
+                     grid_menu_labels,
                      NULL,
                      RoadMapStartActions,
                      SSD_CONTAINER_BORDER|SSD_CONTAINER_TITLE|SSD_DIALOG_TRANSPARENT|SSD_ROUNDED_CORNERS|SSD_POINTER_MENU|SSD_HEADER_GRAY);
@@ -1367,22 +1367,22 @@ static void start_settings_quick_menu (void) {
       const RoadMapGuiPoint *point = roadmap_pointer_position ();
       roadmap_main_popup_menu (QuickMenu, point->x, point->y);
    }
-#endif   
+#endif
 #endif   // TOUCH_SCREEN
 }
 
 
-void start_side_menu (const char           			 *name,
-				      const char           			 *items[],
-            		  const RoadMapAction  *actions,
-            		  int                   flags)
+void start_side_menu (const char                     *name,
+                      const char                     *items[],
+                      const RoadMapAction  *actions,
+                      int                   flags)
 {
    ssd_menu_activate (name, NULL, items, NULL,
           actions,
     SSD_DIALOG_FLOAT|SSD_DIALOG_TRANSPARENT|SSD_DIALOG_VERTICAL|SSD_ALIGN_VCENTER|SSD_ROUNDED_CORNERS|SSD_POINTER_MENU|SSD_HEADER_GRAY|flags);
 }
 
-#ifndef TOUCH_SCREEN	
+#ifndef TOUCH_SCREEN
 static char const *MapOptionsMenu[] = {
    "zoom",
    RoadMapFactorySeparator,
@@ -1396,8 +1396,8 @@ static char const *MapOptionsMenu[] = {
 #endif
 
 void start_map_options_side_menu(){
-#ifndef TOUCH_SCREEN	
-	start_side_menu("Map Options Menu", MapOptionsMenu, RoadMapStartActions,0);
+#ifndef TOUCH_SCREEN
+    start_side_menu("Map Options Menu", MapOptionsMenu, RoadMapStartActions,0);
 #endif
 }
 
@@ -1409,7 +1409,7 @@ static char const *ZoomMenu[] = {
 };
 
 void start_zoom_side_menu(){
-	start_side_menu("Zoom Menu", ZoomMenu, RoadMapStartActions,SSD_BUTTON_NO_TEXT);
+    start_side_menu("Zoom Menu", ZoomMenu, RoadMapStartActions,SSD_BUTTON_NO_TEXT);
 }
 
 static char const *RotateMenu[] = {
@@ -1420,7 +1420,7 @@ static char const *RotateMenu[] = {
 };
 
 void start_rotate_side_menu(){
-	start_side_menu("Rotate Menu", RotateMenu, RoadMapStartActions,SSD_BUTTON_NO_TEXT);
+    start_side_menu("Rotate Menu", RotateMenu, RoadMapStartActions,SSD_BUTTON_NO_TEXT);
 }
 
 #ifdef UNDER_CE
@@ -1624,19 +1624,19 @@ static void roadmap_start_set_timeout (RoadMapCallback callback) {
 
 
 static int roadmap_start_long_click (RoadMapGuiPoint *point) {
-   
+
    RoadMapPosition position;
 
    roadmap_math_to_position (point, &position, 1);
    roadmap_trip_set_point ("Selection", &position);
-   
+
    if (LongClickMenu != NULL) {
       roadmap_main_popup_menu (LongClickMenu, point->x, point->y);
    }
 
    return 1;
 }
- 
+
 
 static void roadmap_start_splash (void) {
 
@@ -1646,13 +1646,13 @@ static void roadmap_start_splash (void) {
 
    height = roadmap_canvas_height ();
    width = roadmap_canvas_width ();
-   
+
    if (height > width)
-   		image = roadmap_canvas_load_image (roadmap_path_user(),
-        				                "skins\\default\\welcome.png");
+        image = roadmap_canvas_load_image (roadmap_path_user(),
+                                        "skins\\default\\welcome.png");
    else
-   		image = roadmap_canvas_load_image (roadmap_path_user(),
-        				                "skins\\default\\welcome_wide.png");
+        image = roadmap_canvas_load_image (roadmap_path_user(),
+                                        "skins\\default\\welcome_wide.png");
 
    if( !image)
       return;
@@ -1718,8 +1718,8 @@ static void roadmap_start_realtime (void) {
 }
 
 void load_resources_on_init(){
-		ssd_menu_load_images("alerts", RoadMapStartActions);
-		roadmap_border_load_images();
+        ssd_menu_load_images("alerts", RoadMapStartActions);
+        roadmap_border_load_images();
 }
 
 static void roadmap_start_window (void) {
@@ -1850,19 +1850,19 @@ int roadmap_start_is_frozen (void) {
 }
 
 static void roadmap_start_set_left_softkey(const char *name, const char*str, RoadMapCallback callback){
-	static Softkey s;
-	strcpy(s.text, str);
-	s.callback = callback;
-	roadmap_softkeys_set_left_soft_key(name, &s);
-	
+    static Softkey s;
+    strcpy(s.text, str);
+    s.callback = callback;
+    roadmap_softkeys_set_left_soft_key(name, &s);
+
 }
 
 static void roadmap_start_set_right_softkey(const char *name, const char *str, RoadMapCallback callback){
-	static Softkey s;
-	strcpy(s.text, str);
-	s.callback = callback;
-	roadmap_softkeys_set_right_soft_key(name, &s);
-	
+    static Softkey s;
+    strcpy(s.text, str);
+    s.callback = callback;
+    roadmap_softkeys_set_right_soft_key(name, &s);
+
 }
 
 void roadmap_start (int argc, char **argv) {
@@ -1945,12 +1945,12 @@ void roadmap_start (int argc, char **argv) {
 
 #if UNDER_CE
    roadmap_start_init_key_cfg ();
-#endif   
+#endif
 
    roadmap_option (argc, argv, roadmap_start_usage);
 
    roadmap_start_set_unit ();
-   
+
    roadmap_math_restore_zoom ();
    roadmap_start_window      ();
    roadmap_factory_keymap (RoadMapStartActions, RoadMapStartKeyBinding);
@@ -1960,7 +1960,7 @@ void roadmap_start (int argc, char **argv) {
    roadmap_screen_set_initial_position ();
 
    roadmap_history_load ();
-   
+
    roadmap_spawn_initialize (argv != NULL ? argv[0] : NULL);
 
    roadmap_driver_activate ();
@@ -1978,8 +1978,8 @@ void roadmap_start (int argc, char **argv) {
     * first
     */
    editor_main_initialize ();
-   
-   
+
+
 
    roadmap_state_add ("navigation_guidance_state", navigation_guidance_state);
    roadmap_state_add ("real_time_state", RealTimeLoginState);
@@ -1991,25 +1991,25 @@ void roadmap_start (int argc, char **argv) {
    roadmap_state_add ("softkeys_state", roadmap_softkeys_orientation);
    roadmap_state_add ("wide_screen", is_screen_wide);
    roadmap_state_add ("navigation_list_state", navigate_main_list_state);
-   
+
    roadmap_start_set_left_softkey("Menu","Menu", roadmap_start_quick_menu );
-   
-   
+
+
    roadmap_bar_initialize();
    roadmap_screen_obj_initialize ();
 
    roadmap_trip_restore_focus ();
-   
-   
+
+
    roadmap_start_set_right_softkey("Report", "Report", start_alerts_menu);
    if (strcmp(roadmap_trip_get_focus_name(), "GPS"))
-   		roadmap_screen_add_focus_on_me_softkey();   
-      
+        roadmap_screen_add_focus_on_me_softkey();
+
    roadmap_gps_open ();
 
    // Set the input mode for the starting screen to the numeric
    roadmap_input_type_set_mode( inputtype_numeric );
-   
+
    if (! roadmap_trip_load (roadmap_trip_current(), 1)) {
       roadmap_start_create_trip ();
    }
@@ -2018,7 +2018,7 @@ void roadmap_start (int argc, char **argv) {
    navigate_main_initialize ();
 
    roadmap_screen_redraw ();
-   
+
    // Start 'realtime':
    roadmap_main_set_periodic(4000, roadmap_start_realtime);
 #ifdef J2ME
@@ -2032,18 +2032,18 @@ void roadmap_start (int argc, char **argv) {
    roadmap_keyboard_register_to_event__key_pressed( on_key_pressed);
 
    roadmap_main_set_periodic (200, roadmap_start_periodic);
-#endif   // TESTING_BUILD   
+#endif   // TESTING_BUILD
 }
 
 
 void roadmap_start_exit (void) {
-    
+
    // Terminate 'realtime' engine:
    Realtime_Terminate();
 
    // Un-register from keyboard callback:
    roadmap_keyboard_unregister_from_event__key_pressed( on_key_pressed);
-   
+
     navigate_main_shutdown ();
     roadmap_main_set_cursor (ROADMAP_CURSOR_WAIT);
     roadmap_plugin_shutdown ();
@@ -2052,7 +2052,7 @@ void roadmap_start_exit (void) {
     roadmap_net_shutdown ();
     roadmap_history_save ();
     roadmap_screen_shutdown ();
-#ifndef __SYMBIAN32__    
+#ifndef __SYMBIAN32__
     roadmap_start_save_trip ();
 #endif
     roadmap_config_save (0);
@@ -2100,10 +2100,10 @@ RoadMapStartSubscriber roadmap_start_subscribe
 int roadmap_start_add_action (const char *name, const char *label_long,
                               const char *label_short, const char *label_terse,
                               const char *tip, RoadMapCallback callback) {
-                    
+
    int i;
    RoadMapAction action;
-   
+
    action.name = name;
    action.label_long = label_long;
    action.label_short = label_short;
@@ -2125,10 +2125,10 @@ int roadmap_start_add_action (const char *name, const char *label_long,
 
    return 0;
 }
- 
+
 
 void roadmap_start_context_menu (const RoadMapGuiPoint *point) {
-   
+
 #ifdef TOUCH_SCREEN
 #ifdef SSD
    int count;
@@ -2143,29 +2143,29 @@ void roadmap_start_context_menu (const RoadMapGuiPoint *point) {
    {
       assert(0);
       return;
-   }      
+   }
 
-   ssd_menu_activate("Context", 
-                     NULL, 
-                     grid_menu_labels, 
+   ssd_menu_activate("Context",
+                     NULL,
+                     grid_menu_labels,
                      NULL,
                      RoadMapStartActions,
                      SSD_CONTAINER_BORDER|SSD_CONTAINER_TITLE|SSD_DIALOG_FLOAT|SSD_ROUNDED_CORNERS|SSD_POINTER_MENU|SSD_HEADER_GRAY);
-#else   
+#else
    if (LongClickMenu == NULL) return;
 
    roadmap_main_popup_menu (LongClickMenu, point->x, point->y);
-#endif   
-#endif   
+#endif
+#endif
 }
- 
+
 
 #ifdef SSD
 void roadmap_start_popup_menu (const char *name,
                                const char *items[],
                                PFN_ON_DIALOG_CLOSED on_dialog_closed,
                                const RoadMapGuiPoint *point) {
-   
+
    int height = roadmap_canvas_height();
    int flags = 0;
 
@@ -2176,7 +2176,7 @@ void roadmap_start_popup_menu (const char *name,
    ssd_menu_activate (name, "", items, on_dialog_closed, RoadMapStartActions,
                       SSD_DIALOG_FLOAT|SSD_CONTAINER_BORDER|SSD_ROUNDED_CORNERS|flags);
 }
-#endif   
+#endif
 
 
 #ifdef SSD
@@ -2185,7 +2185,7 @@ void roadmap_start_hide_menu (const char *name) {
 }
 #endif
 
- 
+
 void roadmap_start_redraw (void) {
    roadmap_screen_redraw ();
 }
@@ -2208,31 +2208,31 @@ static BOOL on_key_pressed( const char* utf8char, uint32_t flags)
 
    if( ssd_dialog_is_currently_active())
       return FALSE;
-   
+
    if( flags & KEYBOARD_VIRTUAL_KEY)
    {
       switch( *utf8char)
       {
          case VK_Back:
             break;   // return TRUE so application will not be closed...
-      
+
          case VK_Arrow_up:
             roadmap_screen_hold ();
             roadmap_screen_move_up();
             break;
-      
+
          case VK_Arrow_down:
             roadmap_screen_hold ();
             roadmap_screen_move_down();
             break;
-      
-         case VK_Arrow_left:            
-            roadmap_screen_hold ();           
+
+         case VK_Arrow_left:
+            roadmap_screen_hold ();
             roadmap_screen_move_left();
             break;
-      
+
          case VK_Arrow_right:
-            roadmap_screen_hold ();             
+            roadmap_screen_hold ();
             roadmap_screen_move_right();
             break;
 
@@ -2243,10 +2243,10 @@ static BOOL on_key_pressed( const char* utf8char, uint32_t flags)
          case VK_Softkey_right:
             roadmap_softkeys_right_softkey_callback();
             break;
-            
+
          default:
             key_handled = FALSE;
-            
+
       }
    }
    else
@@ -2273,22 +2273,22 @@ static BOOL on_key_pressed( const char* utf8char, uint32_t flags)
             case '5':
                roadmap_screen_toggle_view_mode();
                break;
-               
+
             case 's':
             case 'S':
                roadmap_skin_toggle();
                break;
-               
+
             case 'n':
             case 'N':
                roadmap_address_history();
-               break;            
-            
+               break;
+
             case 'h':
             case 'H':
                //show_keyboard_hotkeys_map();
                break;
-               
+
             case 'q':
             case 'Q':
             case '9':
@@ -2306,18 +2306,18 @@ static BOOL on_key_pressed( const char* utf8char, uint32_t flags)
             case '4':
                RTAlerts_Scroll_Prev();
                break;
-               
+
             case 't':
             case 'T':
             case '6':
                RTAlerts_Scroll_Next();
                break;
-               
 
-		    case '7':
-		       start_map_updates_menu();
-		       break;
-		       
+
+            case '7':
+               start_map_updates_menu();
+               break;
+
             case 'y':
             case 'Y':
             case '8':
@@ -2328,7 +2328,7 @@ static BOOL on_key_pressed( const char* utf8char, uint32_t flags)
             case 'Z':
                roadmap_softkeys_right_softkey_callback();
                break;
-            
+
             case '+':
             case '*':
                roadmap_screen_zoom_in();
@@ -2340,7 +2340,7 @@ static BOOL on_key_pressed( const char* utf8char, uint32_t flags)
                break;
 
             case '1':
-               roadmap_screen_hold ();  
+               roadmap_screen_hold ();
                roadmap_screen_toggle_orientation_mode();
                break;
 
@@ -2348,9 +2348,9 @@ static BOOL on_key_pressed( const char* utf8char, uint32_t flags)
                roadmap_skin_toggle();
                break;
 
-			case '3':
-			   toggle_navigation_guidance();
-			   break;
+            case '3':
+               toggle_navigation_guidance();
+               break;
 
             default:
                key_handled = FALSE;
@@ -2359,27 +2359,27 @@ static BOOL on_key_pressed( const char* utf8char, uint32_t flags)
       else
          key_handled = FALSE;
    }
-   
+
    if( key_handled)
       roadmap_screen_redraw();
-   
+
    return key_handled;
 }
 
 const char* roadmap_start_version() {
    static char version[64];
    static int done = 0;
-   
+
    if( done)
       return version;
-      
-   sprintf( version, 
-            "%d.%d.%d.%d", 
+
+   sprintf( version,
+            "%d.%d.%d.%d",
             CLIENT_VERSION_MAJOR,
             CLIENT_VERSION_MINOR,
             CLIENT_VERSION_SUB,
             CLIENT_VERSION_CFG);
-            
+
    done = TRUE;
    return version;
 }

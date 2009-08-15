@@ -33,7 +33,7 @@ typedef struct tagRTSystemMessage
    char* Title;   // Max size: RTNET_SYSTEMMESSAGE_TITLE_MAXSIZE
    char* Text;    // Max size: RTNET_SYSTEMMESSAGE_TEXT_MAXSIZE
 
-}  RTSystemMessage, *LPRTSystemMessage;  
+}  RTSystemMessage, *LPRTSystemMessage;
 
 void RTSystemMessage_Init( LPRTSystemMessage this);
 void RTSystemMessage_Free( LPRTSystemMessage this);

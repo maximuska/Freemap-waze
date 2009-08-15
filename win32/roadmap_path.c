@@ -47,7 +47,7 @@ struct RoadMapPathRecord {
 static RoadMapPathList RoadMapPaths = NULL;
 
 /* The hardcoded path for configuration files (the "config" path).
-*/ 
+*/
 static const char *RoadMapPathConfig[] = {
    "&",
    "\\Program Files\\roadmap",
@@ -57,7 +57,7 @@ static const char *RoadMapPathConfig[] = {
 
 static const char *RoadMapPathConfigPreferred = "\\Storage Card\\roadmap";
 
-/* Skins directories */ 
+/* Skins directories */
 static const char *RoadMapPathSkin[] = {
    "&\\skins\\default\\day",
    "&\\skins\\default",
@@ -138,7 +138,7 @@ static RoadMapPathList roadmap_path_find (const char *name)
 /* Directory path strings operations. -------------------------------------- */
 
 static char *roadmap_path_cat (const char *s1, const char *s2)
-{ 
+{
    char *result = malloc (strlen(s1) + strlen(s2) + 4);
 
    roadmap_check_allocated (result);
@@ -226,7 +226,7 @@ const char *roadmap_path_user (void)
 
 
 const char *roadmap_path_trips (void)
-{   
+{
    static char  RoadMapDefaultTrips[] = "trips";
    static char *RoadMapTrips = NULL;
 

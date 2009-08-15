@@ -27,79 +27,79 @@
 
 // CLASS DECLARATION
 class CFreeMapAppView : public CCoeControl
-	{
-	public: // New methods
+    {
+    public: // New methods
 
-		/**
-		* NewL.
-		* Two-phased constructor.
-		* Create a CFreeMapAppView object, which will draw itself to aRect.
-		* @param aRect The rectangle this view will be drawn to.
-		* @return a pointer to the created instance of CFreeMapAppView.
-		*/
-		static CFreeMapAppView* NewL( const TRect& aRect );
+        /**
+        * NewL.
+        * Two-phased constructor.
+        * Create a CFreeMapAppView object, which will draw itself to aRect.
+        * @param aRect The rectangle this view will be drawn to.
+        * @return a pointer to the created instance of CFreeMapAppView.
+        */
+        static CFreeMapAppView* NewL( const TRect& aRect );
 
-		/**
-		* NewLC.
-		* Two-phased constructor.
-		* Create a CFreeMapAppView object, which will draw itself
-		* to aRect.
-		* @param aRect Rectangle this view will be drawn to.
-		* @return A pointer to the created instance of CFreeMapAppView.
-		*/
-		static CFreeMapAppView* NewLC( const TRect& aRect );
+        /**
+        * NewLC.
+        * Two-phased constructor.
+        * Create a CFreeMapAppView object, which will draw itself
+        * to aRect.
+        * @param aRect Rectangle this view will be drawn to.
+        * @return A pointer to the created instance of CFreeMapAppView.
+        */
+        static CFreeMapAppView* NewLC( const TRect& aRect );
 
-		/**
-		* ~CFreeMapAppView
-		* Virtual Destructor.
-		*/
-		virtual ~CFreeMapAppView();
+        /**
+        * ~CFreeMapAppView
+        * Virtual Destructor.
+        */
+        virtual ~CFreeMapAppView();
 
-	public:  // Functions from base classes
+    public:  // Functions from base classes
 
-		/**
-		* From CCoeControl, Draw
-		* Draw this CFreeMapAppView to the screen.
-		* @param aRect the rectangle of this view that needs updating
-		*/
-		void Draw( const TRect& aRect ) const;
+        /**
+        * From CCoeControl, Draw
+        * Draw this CFreeMapAppView to the screen.
+        * @param aRect the rectangle of this view that needs updating
+        */
+        void Draw( const TRect& aRect ) const;
 
-		/**
-		* From CoeControl, SizeChanged.
-		* Called by framework when the view size is changed.
-		*/
-		virtual void SizeChanged();
-		
-		//  Get the Window (temporary)
-		//  This exposes a protected method...
-		inline RWindow& GetWindow() {  return Window(); }
+        /**
+        * From CoeControl, SizeChanged.
+        * Called by framework when the view size is changed.
+        */
+        virtual void SizeChanged();
 
-		CCoeControl* ComponentControl(TInt /*aIndex*/) const;	
-		TInt CountComponentControls() const;
-		
+        //  Get the Window (temporary)
+        //  This exposes a protected method...
+        inline RWindow& GetWindow() {  return Window(); }
+
+        CCoeControl* ComponentControl(TInt /*aIndex*/) const;
+        TInt CountComponentControls() const;
+
 private: // Constructors
 
-		/**
-		* ConstructL
-		* 2nd phase constructor.
-		* Perform the second phase construction of a
-		* CFreeMapAppView object.
-		* @param aRect The rectangle this view will be drawn to.
-		*/
-		void ConstructL(const TRect& aRect);
+        /**
+        * ConstructL
+        * 2nd phase constructor.
+        * Perform the second phase construction of a
+        * CFreeMapAppView object.
+        * @param aRect The rectangle this view will be drawn to.
+        */
+        void ConstructL(const TRect& aRect);
 
-		/**
-		* CFreeMapAppView.
-		* C++ default constructor.
-		*/
-		CFreeMapAppView();
-		
-		CWsBitmap* iOffScreenBitmap;
-		CFbsBitmapDevice* iOffScreenDevice;
-		CBitmapContext* iOffScreenGc;		
-		
+        /**
+        * CFreeMapAppView.
+        * C++ default constructor.
+        */
+        CFreeMapAppView();
 
-	};
+        CWsBitmap* iOffScreenBitmap;
+        CFbsBitmapDevice* iOffScreenDevice;
+        CBitmapContext* iOffScreenGc;
+
+
+    };
 
 #endif // __FREEMAPAPPVIEW_h__
 

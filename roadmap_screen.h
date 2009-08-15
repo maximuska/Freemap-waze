@@ -102,7 +102,7 @@ void roadmap_screen_draw_line_direction (RoadMapPosition *from,
                                          int last_shape,
                                          RoadMapShapeItr shape_itr,
                                          int width,
-                                         int direction, 
+                                         int direction,
                                          const char *color);
 
 int roadmap_screen_fast_refresh (void);

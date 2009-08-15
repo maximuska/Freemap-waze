@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ namespace agg
         //--------------------------------------------------------------------
         virtual ~ctrl() {}
         ctrl(double x1, double y1, double x2, double y2, bool flip_y) :
-            m_x1(x1), m_y1(y1), m_x2(x2), m_y2(y2), 
+            m_x1(x1), m_y1(y1), m_x2(x2), m_y2(y2),
             m_flip_y(flip_y),
             m_mtx(0)
         {
@@ -89,7 +89,7 @@ namespace agg
 
 
     //--------------------------------------------------------------------
-    template<class Rasterizer, class Scanline, class Renderer, class Ctrl> 
+    template<class Rasterizer, class Scanline, class Renderer, class Ctrl>
     void render_ctrl(Rasterizer& ras, Scanline& sl, Renderer& r, Ctrl& c)
     {
         unsigned i;
@@ -103,7 +103,7 @@ namespace agg
 
 
     //--------------------------------------------------------------------
-    template<class Rasterizer, class Scanline, class Renderer, class Ctrl> 
+    template<class Rasterizer, class Scanline, class Renderer, class Ctrl>
     void render_ctrl_rs(Rasterizer& ras, Scanline& sl, Renderer& r, Ctrl& c)
     {
         unsigned i;

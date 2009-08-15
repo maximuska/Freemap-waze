@@ -557,7 +557,7 @@ FT_BEGIN_HEADER
 
     /* see `ttkern.h' */
     TT_Face_GetKerningFunc       get_kerning;
-    
+
     /* see `ttpost.h' */
     TT_Get_PS_Name_Func          get_psname;
     TT_Free_Table_Func           free_psnames;

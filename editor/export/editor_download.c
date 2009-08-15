@@ -85,7 +85,7 @@ static int editor_download_map (RoadMapDownloadCallbacks *callbacks) {
       }
    }
 #endif
-   
+
 #if 0
    for (i = count-1; i >= 0; --i) {
 

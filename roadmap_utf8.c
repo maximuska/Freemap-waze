@@ -79,7 +79,7 @@ int utf8_strlen (const char* utf8) {
 #endif   // _DEBUG
 
       len++;
-      utf8 += sizeof_current_char;     
+      utf8 += sizeof_current_char;
    }
 
    return len;
@@ -152,50 +152,50 @@ const char *utf8_get_next_char (const char *s, char *c, int size) {
 // Returns a pointer to the next character of the string.
 const char *utf8_get_next_wchar (const char *s, unsigned int *ch) {
 
-	char c[7]; // Max size of one utf character + null
-	const unsigned char *source = (unsigned char *)c;
-	const char *ret = utf8_get_next_char(s, c, sizeof(c));
+    char c[7]; // Max size of one utf character + null
+    const unsigned char *source = (unsigned char *)c;
+    const char *ret = utf8_get_next_char(s, c, sizeof(c));
 
-	*ch = 0;
+    *ch = 0;
 
-	switch (strlen(c)) {
-	    case 6: *ch += *source++; *ch <<= 6;
-	    case 5: *ch += *source++; *ch <<= 6;
-	    case 4: *ch += *source++; *ch <<= 6;
-	    case 3: *ch += *source++; *ch <<= 6;
-	    case 2: *ch += *source++; *ch <<= 6;
-	    case 1: *ch += *source++;
-	}
-	*ch -= offsetsFromUTF8[strlen(c) - 1];
+    switch (strlen(c)) {
+        case 6: *ch += *source++; *ch <<= 6;
+        case 5: *ch += *source++; *ch <<= 6;
+        case 4: *ch += *source++; *ch <<= 6;
+        case 3: *ch += *source++; *ch <<= 6;
+        case 2: *ch += *source++; *ch <<= 6;
+        case 1: *ch += *source++;
+    }
+    *ch -= offsetsFromUTF8[strlen(c) - 1];
 
-	return ret;
+    return ret;
 }
 
 #ifdef WIN32
 char* utf8_from_utf16( const unsigned short* utf16, BOOL single_character)
 {
-   const unsigned short*   w; 
+   const unsigned short*   w;
    unsigned short          buffer[2];
    const unsigned short*   input = utf16;
    unsigned char*          output= NULL;
    int                     i     = 0;
    int                     len   = 0;
-   
+
    if( single_character)
    {
       buffer[0] = (short)utf16;
       buffer[1] = L'\0';
-      
+
       input = buffer;
    }
 
    for ( w = input; *w; w++ )
    {
-      if ( *w < 0x0080) 
+      if ( *w < 0x0080)
          len++;
-      else if ( *w < 0x0800 ) 
+      else if ( *w < 0x0800 )
          len += 2;
-      else 
+      else
          len += 3;
    }
 
@@ -237,7 +237,7 @@ void utf8_free_char_array( char** array, int size)
    int i;
    for( i=0; i<size; i++)
       FREE(array[i])
-      
+
    FREE(array);
 }
 
@@ -246,12 +246,12 @@ char** utf8_to_char_array( const char* utf8, int* count)
    int      sizeof_current_char;
    int      index;
    char**   array;
-   
+
    (*count) = utf8_strlen(utf8);
-   
+
    if( !(*count))
       return NULL;
-      
+
    array = (char**)malloc( sizeof(char*) * (*count));
    if( !array)
    {
@@ -259,12 +259,12 @@ char** utf8_to_char_array( const char* utf8, int* count)
       (*count) = 0;
       return NULL;
    }
-   
+
    index = 0;
    while( *utf8)
    {
       sizeof_current_char = 0;
-      
+
       if ((unsigned)(*utf8) < 0x80)
          sizeof_current_char = 1;         // binary:  0xxxxxxx
       else if (0 == (0x20 & (*utf8)))
@@ -285,18 +285,18 @@ char** utf8_to_char_array( const char* utf8, int* count)
          (*count) = 0;
          return NULL;
       }
-      
+
       array[index] = (char*)malloc(sizeof_current_char+1);
       assert(array[index]);
       strncpy( array[index], utf8, sizeof_current_char);
       array[index][sizeof_current_char] = '\0';
-      
+
       index++;
-      utf8 += sizeof_current_char;     
+      utf8 += sizeof_current_char;
    }
-   
+
    assert( index == (*count));
-   
-   return array;   
+
+   return array;
 }
 

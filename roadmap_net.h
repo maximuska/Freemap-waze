@@ -55,7 +55,7 @@ typedef int RoadMapSocket; /* UNIX style. */
 typedef enum tag_network_error
 {
    neterr_success,
-   
+
    neterr_general_error,
    neterr_invalid_arg,
    neterr_unknown_protocol,
@@ -68,13 +68,13 @@ typedef enum tag_network_error
 typedef void (*RoadMapNetConnectCallback) (RoadMapSocket socket, void *context, network_error err);
 
 RoadMapSocket roadmap_net_connect(  const char*    protocol,
-                                    const char*    name, 
+                                    const char*    name,
                                     int            default_port,
                                     network_error* err); // Optional, can be NULL
 
 // A-syncronious receive:
 int roadmap_net_connect_async (const char *protocol,
-                                const char *name, 
+                                const char *name,
                                 int default_port,
                                 RoadMapNetConnectCallback callback,
                                 void *context);

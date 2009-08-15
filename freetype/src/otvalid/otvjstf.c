@@ -69,7 +69,7 @@
     table_size = 20;
 
     valid->extra1 = gsub_lookup_count;
-    
+
     OTV_OPTIONAL_OFFSET( ShrinkageEnableGSUB );
     OTV_SIZE_CHECK( ShrinkageEnableGSUB );
     if ( ShrinkageEnableGSUB )

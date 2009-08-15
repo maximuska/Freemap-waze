@@ -1,6 +1,6 @@
 /* RoadmapNativeNet.h - Symbian network implementation for Roadmap
- *  This is an abstract interface to the network functionality. 
- * 
+ *  This is an abstract interface to the network functionality.
+ *
  * LICENSE:
  *
  *   Copyright 2008 Giant Steps Ltd.
@@ -38,7 +38,7 @@ extern "C" {
 #include <es_enum.h>
 #include <commdbconnpref.h>
 
-typedef enum 
+typedef enum
 {
   ESockTypeInvalid = -1,
   ESockTypeTcp,
@@ -53,12 +53,12 @@ class CRoadMapNativeNet;
 
 class CDialogTimer : public CTimer
 {
-public: 
+public:
   virtual ~CDialogTimer();
   static CDialogTimer* NewL();
   void ConstructL();
   void Start();
-  
+
 protected:
   CDialogTimer(TInt aPriority);
   void RunL();
@@ -75,30 +75,30 @@ protected:
 
 class CRoadMapNativeNet
 {
-public: 
+public:
   virtual void OpenL(ENativeSockType aSockType) = 0;
 //  virtual void ConnectL(TInetAddr& addr) = 0;
-  virtual void ConnectL(const TDesC& aHostname, int aPort) = 0;   
-  
+  virtual void ConnectL(const TDesC& aHostname, int aPort) = 0;
+
   virtual int Read(void *data, int length) = 0;
   virtual int Write(const void *data, int length) = 0;
   virtual void Close() = 0;
-  
+
   virtual void StartPolling(void* apInputCallback, void* apIO) = 0;
-  virtual void StopPolling() = 0;  
-  
+  virtual void StopPolling() = 0;
+
   static void SetChosenAP( TUint32 val ) { CRoadMapNativeNet::m_ChosenAP = val; }
   static int GetChosenAP() { return m_ChosenAP; }
-  
+
   void StartL();
-  static void Shutdown();  
-  
+  static void Shutdown();
+
   inline bool IsHttp()  { return (m_isHttp==1);  }
-  
+
   virtual ~CRoadMapNativeNet();
-  
-protected: 
-  void ConstructL(RoadMapNetConnectCallback apCallback, void* apContext); 
+
+protected:
+  void ConstructL(RoadMapNetConnectCallback apCallback, void* apContext);
   CRoadMapNativeNet(const char *apHostname, int aPort);
   void StartConnectionL();
   void InternalStartConnectionL();
@@ -107,40 +107,40 @@ protected:
   virtual TInt ConnAsyncStart() = 0;
   virtual void OpenSession() = 0;
   void UpdateIAPid();
-  bool FindExistingConnection();  
+  bool FindExistingConnection();
   bool OfflineProfileSwitch();
-  
+
   static RSocketServ* m_pSocketServer;
   static RConnection* m_pConnection;
-  static bool m_isConnectionOpen;  
+  static bool m_isConnectionOpen;
   static TUint32 m_ChosenAP;
   int m_LastProfileId;
   CRepository* m_pRepository;
-  
+
   RoadMapNetConnectCallback m_pConnectCallback;
   void*                     m_context;
   const char*               m_hostname;
   int                       m_port;
-  
+
   CDialogTimer* m_pDialogTimer;
-  
+
   int m_isHttp; //  =1 if this is an http protocol
 };
 
 /*
 class CRoadMapNativeNet : public CRoadMapNativeNet, public TSocketConnection
 {
-public: 
+public:
   virtual void OpenL(ENativeSockType aSockType, RoadMapNetConnectCallback apCallback, void *context) = 0;
   virtual void ConnectL(TInetAddr& addr) = 0;
-  virtual void ConnectL(const TDesC& aHostname, int aPort) = 0;   
-  
+  virtual void ConnectL(const TDesC& aHostname, int aPort) = 0;
+
   virtual int Read(void *data, int length) = 0;
   virtual int Write(const void *data, int length) = 0;
   virtual void Close() = 0;
-  
+
   virtual void StartPolling(void* apInputCallback, void* apIO) = 0;
-  virtual void StopPolling() = 0;   
+  virtual void StopPolling() = 0;
 };
 */
 #endif  //  _ROADMAP_NATIVE_NET__H_

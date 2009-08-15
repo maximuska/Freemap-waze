@@ -66,7 +66,7 @@ void editor_main_check_map (void) {
       roadmap_messagebox ("Error.", "Can't load map data.");
       //return;
    }
-   
+
    editor_db_activate (fips);
 }
 

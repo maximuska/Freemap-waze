@@ -44,29 +44,29 @@
 typedef struct {
    const char     *image_file;
    int                 min_screen_width;
-   int 						start_y_pos;
+   int                      start_y_pos;
    RoadMapGuiPoint instruction_pos;
    RoadMapGuiPoint exit_pos;
    RoadMapGuiRect  distance_rect;
    RoadMapGuiPoint distance_value_pos;
    RoadMapGuiPoint distance_unit_pos;
-   int				   street_line1_pos;
-   int				   street_line2_pos;
+   int                 street_line1_pos;
+   int                 street_line2_pos;
    int             street_start;
    int             street_width;
-   
+
    RoadMapGuiRect  speed_rect;
    RoadMapGuiPoint speed_pos;
    RoadMapGuiPoint speed_unit_pos;
-      
+
    RoadMapGuiRect  distance_to_destination_rect;
    RoadMapGuiPoint distance_to_destination_pos;
-	RoadMapGuiPoint distance_to_destination_unit_pos;
+    RoadMapGuiPoint distance_to_destination_unit_pos;
 
    RoadMapGuiRect  time_to_destination_rect;
    RoadMapGuiPoint time_to_destination_pos;
-	
-   
+
+
 } NavigateBarPanel;
 
 #define  NAV_BAR_TEXT_COLOR                   ("#d7ff00")
@@ -77,16 +77,16 @@ typedef struct {
 #define NAV_BAR_SPEED_COLOR                   ("#000000")
 
 static NavigateBarPanel NavigateBarDefaultPanels[] = {
-#ifndef IPHONE 
+#ifndef IPHONE
 //   {"nav_panel_wide400", 400,0, {0, 19}, {25, 31}, {43, 20, 95, 55}, {52, 25}, {48, 46}, 39,-1, 90, 300, {330, 0, 400, 37}, {356, 8}, {357, 32}, {600, 0, 600, 30}, {600, 600}, {600, 600}, {600, 0, 60, 22}, {600,600} },
 
    {"nav_panel_wide", 320,0, {0, 19}, {25, 31}, {43, 20, 95, 55}, {52, 25}, {48, 46}, 39,-1, 72, 245, {270, 0, 320, 37}, {276, 8}, {277, 32}, {400, 0, 400, 30}, {400, 400}, {400, 400}, {400, 0, 400, 22}, {400,400} },
-   	
+
    {"nav_panel", 240, 21, {6, 23}, {31, 35}, {0, 54, 78, 89}, {32, 60}, {10, 70}, 48, -1, 74, 165, {190, 8, 240, 41}, {196, 12}, {195, 36}, {129, 66, 200, 83}, {188, 72}, {140, 72}, {87, 66, 130, 83}, {88, 70} },
 #else
    {"nav_panel_wide", 400,0, {0, 19}, {25, 31}, {63, 20, 120, 55}, {72, 25}, {68, 46}, 39,-1, 72, 405, {430, 0, 480, 37}, {436, 6}, {437, 30}, {700, 0, 700, 29}, {700, 700}, {700, 700}, {700, 0, 700, 22}, {700,700} },
 
-   {"nav_panel", 240, 40, {6, 28}, {31, 40}, {0, 59, 78, 94}, {32, 65}, {10, 75}, 50, -1, 74, 240, {270, 8, 325, 41}, {271, 13}, {279, 38}, {129, 71, 210, 88}, {207, 75}, {140, 75}, {87, 71, 130, 88}, {88, 75} },  
+   {"nav_panel", 240, 40, {6, 28}, {31, 40}, {0, 59, 78, 94}, {32, 65}, {10, 75}, 50, -1, 74, 240, {270, 8, 325, 41}, {271, 13}, {279, 38}, {129, 71, 210, 88}, {207, 75}, {140, 75}, {87, 71, 130, 88}, {88, 75} },
 
    {"nav_panel", 240, 21, {6, 33}, {31, 40}, {0, 64, 78, 99}, {32, 70}, {10, 80}, 48, -1, 74, 225, {250, 8, 300, 41}, {256, 12}, {255, 36}, {129, 66, 200, 83}, {188, 70}, {140, 70}, {87, 66, 130, 83}, {88, 70} },
  #endif
@@ -199,10 +199,10 @@ static int navigate_bar_align_text (char *text, char **line1, char **line2,
 void navigate_bar_resize(void){
    int i;
    int width;
-   
+
    width = roadmap_canvas_width ();
-	height = roadmap_canvas_height();
-	
+    height = roadmap_canvas_height();
+
    for (i=0;
        (unsigned)i<
         sizeof(NavigateBarDefaultPanels)/sizeof(NavigateBarDefaultPanels[0]);
@@ -232,30 +232,30 @@ void navigate_bar_resize(void){
    if (!NavigateBarBG || !NavigateBarImage) return;
 
    roadmap_canvas_image_set_mutable (NavigateBarImage);
-   
+
    NavigateBarLocation.x = 0;
    NavigateBarLocation.y = height - roadmap_canvas_image_height(NavigateBarBG) - NavigatePanel->start_y_pos ;
-   
+
 }
 
 static void navigate_bar_after_refresh (void) {
 
-	int new_height;
-	
-	
+    int new_height;
+
+
    if (NavigateBarEnabled) {
-		new_height = roadmap_canvas_height();
-		if (new_height != height){
-   			navigate_bar_resize();
-   			navigate_bar_set_instruction(NavigateBarCurrentInstr);
-   			navigate_bar_set_street(NavigateBarCurrentStreet);
-   			navigate_bar_set_distance(NavigateBarCurrentDistance);
-   			roadmap_screen_refresh();
-		}
-		navigate_bar_set_speed();
-	    navigate_bar_set_distance_to_destination();
-	    navigate_bar_set_time_to_destination();
-		
+        new_height = roadmap_canvas_height();
+        if (new_height != height){
+            navigate_bar_resize();
+            navigate_bar_set_instruction(NavigateBarCurrentInstr);
+            navigate_bar_set_street(NavigateBarCurrentStreet);
+            navigate_bar_set_distance(NavigateBarCurrentDistance);
+            roadmap_screen_refresh();
+        }
+        navigate_bar_set_speed();
+        navigate_bar_set_distance_to_destination();
+        navigate_bar_set_time_to_destination();
+
       navigate_bar_draw ();
    }
 
@@ -270,13 +270,13 @@ void navigate_bar_initialize (void) {
 
    int i;
    int width;
-   
+
 
    if (NavigateBarInitialized) return;
-      
+
    width = roadmap_canvas_width ();
-	height = roadmap_canvas_height();
-	
+    height = roadmap_canvas_height();
+
    for (i=0;
        (unsigned)i<
         sizeof(NavigateBarDefaultPanels)/sizeof(NavigateBarDefaultPanels[0]);
@@ -314,13 +314,13 @@ void navigate_bar_initialize (void) {
 
       if (!NavigateDirections[i]) goto error;
    }
-      
+
 
    NavigateBarLocation.x = 0;
    NavigateBarLocation.y = height - roadmap_canvas_image_height(NavigateBarBG) - NavigatePanel->start_y_pos;
 
    NavigateBarInitialized = 1;
-   navigate_prev_after_refresh = 
+   navigate_prev_after_refresh =
       roadmap_screen_subscribe_after_refresh (navigate_bar_after_refresh);
 
    return;
@@ -328,16 +328,16 @@ void navigate_bar_initialize (void) {
 error:
    NavigateBarInitialized = -1;
 }
- 
+
 
 void navigate_bar_set_instruction (enum NavigateInstr instr) {
 
- 
+
    RoadMapGuiPoint pos0 = {0,0};
    RoadMapGuiPoint pos = NavigatePanel->instruction_pos;
 
    if (NavigateBarInitialized != 1) return;
-   
+
    roadmap_canvas_copy_image (NavigateBarImage, &pos0, NULL, NavigateBarBG,
                               CANVAS_COPY_NORMAL);
 
@@ -352,15 +352,15 @@ void navigate_bar_set_instruction (enum NavigateInstr instr) {
 
 void navigate_bar_set_exit (int exit) {
 
-	char text[3];
-	
-	if (exit < 0 || exit > 9) return; 
-	
-	sprintf (text, "%d", exit);
-	
-	roadmap_canvas_create_pen ("nav_bar_pen");
-  	roadmap_canvas_set_foreground(NAV_BAR_TEXT_COLOR);
-	
+    char text[3];
+
+    if (exit < 0 || exit > 9) return;
+
+    sprintf (text, "%d", exit);
+
+    roadmap_canvas_create_pen ("nav_bar_pen");
+    roadmap_canvas_set_foreground(NAV_BAR_TEXT_COLOR);
+
    roadmap_canvas_draw_image_text
       (NavigateBarImage, &NavigatePanel->exit_pos, 20, text);
 }
@@ -374,11 +374,11 @@ void navigate_bar_set_distance (int distance) {
    RoadMapGuiPoint position = {0, 0};
    RoadMapPen nav_bar_pen;
    int font_size = 22;
-   
+
    #ifdef IPHONE
-   	font_size = 16;
+    font_size = 16;
    #endif
-   
+
    if (NavigateBarInitialized != 1) return;
 
    NavigateBarCurrentDistance = distance;
@@ -395,9 +395,9 @@ void navigate_bar_set_distance (int distance) {
 
       int tenths = roadmap_math_to_trip_distance_tenths(distance);
       if (distance_far < 100)
-      	snprintf (str, sizeof(str), "%d.%d", distance_far, tenths % 10);
+        snprintf (str, sizeof(str), "%d.%d", distance_far, tenths % 10);
       else
-      	snprintf (str, sizeof(str), "%d", distance_far);	
+        snprintf (str, sizeof(str), "%d", distance_far);
       snprintf (unit_str, sizeof(unit_str), "%s", roadmap_lang_get(roadmap_math_trip_unit()));
    } else {
 
@@ -406,9 +406,9 @@ void navigate_bar_set_distance (int distance) {
                 roadmap_lang_get(roadmap_math_distance_unit()));
    };
 
-	nav_bar_pen = roadmap_canvas_create_pen ("nav_bar_pen");
-  	roadmap_canvas_set_foreground(NAV_BAR_TEXT_COLOR);
-	
+    nav_bar_pen = roadmap_canvas_create_pen ("nav_bar_pen");
+    roadmap_canvas_set_foreground(NAV_BAR_TEXT_COLOR);
+
    position = NavigatePanel->distance_value_pos;
    roadmap_canvas_draw_image_text
       (NavigateBarImage, &NavigatePanel->distance_value_pos, font_size, str);
@@ -438,10 +438,10 @@ void navigate_bar_set_street (const char *street) {
    if (NavigateBarInitialized != 1) return;
 
    if (street == NULL)
-   	return;
-   	
+    return;
+
    NavigateBarCurrentStreet = strdup(street);
-   
+
    text = strdup(street);
 
    size = NORMAL_SIZE;
@@ -450,12 +450,12 @@ void navigate_bar_set_street (const char *street) {
 
    if ((num_lines < 0)  || ((num_lines>1) && (NavigatePanel->street_line2_pos == -1))){
       /* Try again with a smaller font size */
-	  text = strdup(street);
+      text = strdup(street);
       size = SMALL_SIZE;
       num_lines = navigate_bar_align_text (text, &line1, &line2, size);
    }
 
-   
+
    /* Cut some text until it fits */
    while ((num_lines < 0) || ((num_lines > 1) && (NavigatePanel->street_line2_pos == -1))) {
 
@@ -475,39 +475,39 @@ void navigate_bar_set_street (const char *street) {
       num_lines = navigate_bar_align_text (text, &line1, &line2, size);
    }
 
-	if (NavigatePanel->street_line2_pos == -1){
-   	/* Cut some text until it fits */
-   	while (num_lines > 1) {
+    if (NavigatePanel->street_line2_pos == -1){
+    /* Cut some text until it fits */
+    while (num_lines > 1) {
 
-      	char *end = text + strlen(text) - 1;
+        char *end = text + strlen(text) - 1;
 
-      	while ((end > text) && (*end != ' ')) end--;
+        while ((end > text) && (*end != ' ')) end--;
 
-      	if (end == text) {
+        if (end == text) {
 
-         		roadmap_log (ROADMAP_ERROR, "Can't align street in nav bar: %s",
-                      	street);
+                roadmap_log (ROADMAP_ERROR, "Can't align street in nav bar: %s",
+                        street);
 
-		         free(text);
-      		   return;
-      	}
+                 free(text);
+               return;
+        }
 
-      	*end = '\0';
-      	num_lines = navigate_bar_align_text (text, &line1, &line2, size);
-   	}
-	}
+        *end = '\0';
+        num_lines = navigate_bar_align_text (text, &line1, &line2, size);
+    }
+    }
 
    for (i=0; i < num_lines; i++) {
 
       char *line;
       RoadMapGuiPoint position;
-      
+
       position.x = NavigatePanel->street_start;
       position.y = NavigatePanel->street_line1_pos;
-       
-		if ((num_lines == 1) && (NavigatePanel->street_line2_pos != -1)){
-			position.y = (NavigatePanel->street_line1_pos + NavigatePanel->street_line2_pos) / 2;
-		}
+
+        if ((num_lines == 1) && (NavigatePanel->street_line2_pos != -1)){
+            position.y = (NavigatePanel->street_line1_pos + NavigatePanel->street_line2_pos) / 2;
+        }
 
       if (i ==0 ) {
          line = line1;
@@ -520,14 +520,14 @@ void navigate_bar_set_street (const char *street) {
 #endif
       }
 
-      	roadmap_canvas_get_text_extents
-         	(line, size, &width, &ascent, &descent, NULL);
-      
-      	position.x = NavigatePanel->street_width - width + NavigatePanel->street_start;
-		
-   		nav_bar_pen = roadmap_canvas_create_pen ("nav_bar_pen");
-  	   	roadmap_canvas_set_foreground(NAV_BAR_TEXT_COLOR);
-      	roadmap_canvas_draw_image_text (NavigateBarImage, &position, size, line);
+        roadmap_canvas_get_text_extents
+            (line, size, &width, &ascent, &descent, NULL);
+
+        position.x = NavigatePanel->street_width - width + NavigatePanel->street_start;
+
+        nav_bar_pen = roadmap_canvas_create_pen ("nav_bar_pen");
+        roadmap_canvas_set_foreground(NAV_BAR_TEXT_COLOR);
+        roadmap_canvas_draw_image_text (NavigateBarImage, &position, size, line);
    }
 }
 
@@ -548,7 +548,7 @@ void navigate_bar_set_mode (int mode) {
 //      roadmap_screen_obj_offset (-x_offset, -y_offset);
 //      roadmap_screen_move_center (y_offset / 2);
 //   }
-   
+
    NavigateBarEnabled = mode;
 }
 
@@ -568,21 +568,21 @@ void navigate_bar_set_time_to_destination () {
    RoadMapPen nav_bar_pen;
 
    if (NavigateBarInitialized != 1) return;
-  
-  	if (!roadmap_message_format (text, sizeof(text), "%A|%T"))
-  		return;
-  	
-  	nav_bar_pen = roadmap_canvas_create_pen ("nav_bar_pen");
 
-  	roadmap_canvas_set_foreground(NAV_BAR_TIME_TO_DESTINATION_COLOR);
-  	
+    if (!roadmap_message_format (text, sizeof(text), "%A|%T"))
+        return;
+
+    nav_bar_pen = roadmap_canvas_create_pen ("nav_bar_pen");
+
+    roadmap_canvas_set_foreground(NAV_BAR_TIME_TO_DESTINATION_COLOR);
+
    /* erase the old distance */
    roadmap_canvas_copy_image (NavigateBarImage, &position,
                               &NavigatePanel->time_to_destination_rect,
                               NavigateBarBG,
                               CANVAS_COPY_NORMAL);
 
-	
+
 
    roadmap_canvas_draw_image_text
       (NavigateBarImage, &NavigatePanel->time_to_destination_pos, 14, text);
@@ -599,17 +599,17 @@ void navigate_bar_set_distance_to_destination () {
    RoadMapPen nav_bar_pen;
    char * pch;
    int width, ascent, descent;
-   
+
    if (NavigateBarInitialized != 1) return;
 
-	if (!roadmap_message_format (distance, sizeof(distance), "%D (%W)|%D"))
-		return;
-	
-	pch = strtok (distance," ,.");
+    if (!roadmap_message_format (distance, sizeof(distance), "%D (%W)|%D"))
+        return;
+
+    pch = strtok (distance," ,.");
    sprintf(text, "%s", pch);
-	roadmap_canvas_get_text_extents
+    roadmap_canvas_get_text_extents
          (text, 18, &width, &ascent, &descent, NULL);
-  
+
    /* erase the old distance */
    roadmap_canvas_copy_image (NavigateBarImage, &position,
                               &NavigatePanel->distance_to_destination_rect,
@@ -619,17 +619,17 @@ void navigate_bar_set_distance_to_destination () {
 
    nav_bar_pen = roadmap_canvas_create_pen ("nav_bar_pen");
 
-  	roadmap_canvas_set_foreground(NAV_BAR_DIST_TO_DESTINATION_COLOR);
+    roadmap_canvas_set_foreground(NAV_BAR_DIST_TO_DESTINATION_COLOR);
 
    position.x = NavigatePanel->distance_to_destination_pos.x - width;
-	position.y = NavigatePanel->distance_to_destination_pos.y;
+    position.y = NavigatePanel->distance_to_destination_pos.y;
    roadmap_canvas_draw_image_text
       (NavigateBarImage, &position, 14, text);
 
   pch = strtok (NULL," ,.");
   sprintf(text, "%s",pch);
-	
-   
+
+
   roadmap_canvas_draw_image_text
       (NavigateBarImage, &NavigatePanel->distance_to_destination_unit_pos, 14, text);
 
@@ -644,18 +644,18 @@ void navigate_bar_set_speed () {
    RoadMapPen nav_bar_pen;
    int speed;
    int font_size = 24;
-   
+
    #ifdef IPHONE
-   	font_size = 20;
+    font_size = 20;
    #endif
 
    if (NavigateBarInitialized != 1) return;
-  
+
   roadmap_navigate_get_current (&pos, NULL, NULL);
   speed = pos.speed;
-  
+
   if (speed == -1) return;
-  
+
    /* erase the old distance */
    roadmap_canvas_copy_image (NavigateBarImage, &position,
                               &NavigatePanel->speed_rect,
@@ -665,7 +665,7 @@ void navigate_bar_set_speed () {
    snprintf (str, sizeof(str), "%3d", roadmap_math_to_speed_unit(speed));
 
    nav_bar_pen = roadmap_canvas_create_pen ("nav_bar_pen");
-  	roadmap_canvas_set_foreground(NAV_BAR_SPEED_COLOR);
+    roadmap_canvas_set_foreground(NAV_BAR_SPEED_COLOR);
 
    roadmap_canvas_draw_image_text
       (NavigateBarImage, &NavigatePanel->speed_pos, font_size, str);

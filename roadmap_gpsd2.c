@@ -312,7 +312,7 @@ int roadmap_gpsd2_decode (void *user_context,
             switch (roadmap_input_split (argument[0], ' ', tuple, 5)) {
 
                case 1:
-                  
+
                   satellite_count = roadmap_gpsd2_decode_numeric(tuple[0]);
                   break;
 

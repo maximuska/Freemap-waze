@@ -1,4 +1,4 @@
-/* symbian_input_mon.h - AO to invoke callback on changes in input. 
+/* symbian_input_mon.h - AO to invoke callback on changes in input.
  *
  * LICENSE:
  *

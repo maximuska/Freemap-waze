@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -239,15 +239,15 @@ namespace agg
             m_x2_lr(line_lr(x2)),
             m_y2_lr(line_lr(y2)),
             m_ver(abs(m_x2_lr - m_x1_lr) < abs(m_y2_lr - m_y1_lr)),
-            m_len(m_ver ? abs(m_y2_lr - m_y1_lr) : 
+            m_len(m_ver ? abs(m_y2_lr - m_y1_lr) :
                           abs(m_x2_lr - m_x1_lr)),
             m_inc(m_ver ? ((y2 > y1) ? 1 : -1) : ((x2 > x1) ? 1 : -1)),
-            m_interpolator(m_ver ? x1 : y1, 
-                           m_ver ? x2 : y2, 
+            m_interpolator(m_ver ? x1 : y1,
+                           m_ver ? x2 : y2,
                            m_len)
         {
         }
-    
+
         //--------------------------------------------------------------------
         bool     is_ver() const { return m_ver; }
         unsigned len()    const { return m_len; }

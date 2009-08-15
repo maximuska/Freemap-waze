@@ -5,29 +5,29 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 //
-// Adaptation for 32-bit screen coordinates has been sponsored by 
+// Adaptation for 32-bit screen coordinates has been sponsored by
 // Liberty Technology Systems, Inc., visit http://lib-sys.com
 //
 // Liberty Technology Systems, Inc. is the provider of
 // PostScript and PDF technology for software developers.
-// 
+//
 //----------------------------------------------------------------------------
 
 #ifndef AGG_SCANLINE_STORAGE_AA_INCLUDED
@@ -77,7 +77,7 @@ namespace agg
         }
 
         //---------------------------------------------------------------
-        const scanline_cell_storage<T>& 
+        const scanline_cell_storage<T>&
         operator = (const scanline_cell_storage<T>& v)
         {
             remove_all();
@@ -322,8 +322,8 @@ namespace agg
                 sp.x         = span_iterator->x;
                 sp.len       = span_iterator->len;
                 int len      = abs(int(sp.len));
-                sp.covers_id = 
-                    m_covers.add_cells(span_iterator->covers, 
+                sp.covers_id =
+                    m_covers.add_cells(span_iterator->covers,
                                        unsigned(len));
                 m_spans.add(sp);
                 int x1 = sp.x;
@@ -463,7 +463,7 @@ namespace agg
             for(i = 0; i < m_scanlines.size(); ++i)
             {
                 const scanline_data& sl_this = m_scanlines[i];
-                
+
                 int8u* size_ptr = data;
                 data += sizeof(int32);  // Reserve space for scanline size in bytes
 
@@ -562,7 +562,7 @@ namespace agg
                 {
                     int32    x;
                     int32    len; // If negative, it's a solid span, "covers" is valid
-                    const T* covers; 
+                    const T* covers;
                 };
 
                 const_iterator() : m_ptr(0) {}
@@ -578,11 +578,11 @@ namespace agg
 
                 void operator ++ ()
                 {
-                    if(m_span.len < 0) 
+                    if(m_span.len < 0)
                     {
                         m_ptr += sizeof(T);
                     }
-                    else 
+                    else
                     {
                         m_ptr += m_span.len * sizeof(T);
                     }
@@ -720,7 +720,7 @@ namespace agg
             ((int8u*)&val)[3] = *m_ptr++;
             return val;
         }
-        
+
     public:
         // Iterate scanlines interface
         //--------------------------------------------------------------------
@@ -729,7 +729,7 @@ namespace agg
             m_ptr = m_data;
             if(m_ptr < m_end)
             {
-                m_min_x = read_int32() + m_dx; 
+                m_min_x = read_int32() + m_dx;
                 m_min_y = read_int32() + m_dy;
                 m_max_x = read_int32() + m_dx;
                 m_max_y = read_int32() + m_dy;

@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -34,7 +34,7 @@ namespace agg
 
     //======================================================vcgen_smooth_poly1
     //
-    // See Implementation agg_vcgen_smooth_poly1.cpp 
+    // See Implementation agg_vcgen_smooth_poly1.cpp
     // Smooth polygon generator
     //
     //------------------------------------------------------------------------
@@ -73,8 +73,8 @@ namespace agg
         vcgen_smooth_poly1(const vcgen_smooth_poly1&);
         const vcgen_smooth_poly1& operator = (const vcgen_smooth_poly1&);
 
-        void calculate(const vertex_dist& v0, 
-                       const vertex_dist& v1, 
+        void calculate(const vertex_dist& v0,
+                       const vertex_dist& v1,
                        const vertex_dist& v2,
                        const vertex_dist& v3);
 

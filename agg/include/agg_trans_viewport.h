@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 //
@@ -50,7 +50,7 @@ namespace agg
     {
     public:
         //-------------------------------------------------------------------
-        trans_viewport() : 
+        trans_viewport() :
             m_world_x1(0.0),
             m_world_y1(0.0),
             m_world_x2(1.0),
@@ -74,8 +74,8 @@ namespace agg
         {}
 
         //-------------------------------------------------------------------
-        void preserve_aspect_ratio(double alignx, 
-                                   double aligny, 
+        void preserve_aspect_ratio(double alignx,
+                                   double aligny,
                                    aspect_ratio_e aspect)
         {
             m_align_x = alignx;
@@ -123,7 +123,7 @@ namespace agg
         }
 
         //-------------------------------------------------------------------
-        void world_viewport_actual(double* x1, double* y1, 
+        void world_viewport_actual(double* x1, double* y1,
                                    double* x2, double* y2) const
         {
             *x1 = m_wx1;
@@ -211,7 +211,7 @@ namespace agg
 
         void serialize(int8u* ptr) const
         {
-            memcpy(ptr, this, sizeof(*this)); 
+            memcpy(ptr, this, sizeof(*this));
         }
 
         void deserialize(const int8u* ptr)

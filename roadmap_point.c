@@ -67,18 +67,18 @@ static void *roadmap_point_map (const roadmap_db_data_file *file) {
    context->type = "RoadMapPointContext";
 
    if (!roadmap_db_get_data (file,
-   								  model__tile_point_data,
-   								  sizeof (RoadMapPoint),
-   								  (void**)&(context->Point),
-   								  &(context->PointCount))) {
+                                  model__tile_point_data,
+                                  sizeof (RoadMapPoint),
+                                  (void**)&(context->Point),
+                                  &(context->PointCount))) {
       roadmap_log (ROADMAP_FATAL, "invalid point/data structure");
    }
 
    if (!roadmap_db_get_data (file,
-   								  model__tile_point_id,
-   								  sizeof (int),
-   								  (void**)&(context->PointID),
-   								  &(context->PointIDCount))) {
+                                  model__tile_point_id,
+                                  sizeof (int),
+                                  (void**)&(context->PointID),
+                                  &(context->PointIDCount))) {
       roadmap_log (ROADMAP_FATAL, "invalid point/id structure");
    }
 
@@ -129,7 +129,7 @@ void roadmap_point_position (int point, RoadMapPosition *position) {
 
 #ifdef DEBUG
    if (point_id < 0 || point_id >= RoadMapPointActive->PointCount) {
-    		roadmap_log (ROADMAP_FATAL, "invalid point index %d", point_id);      
+            roadmap_log (ROADMAP_FATAL, "invalid point index %d", point_id);
    }
 #endif
 
@@ -137,7 +137,7 @@ void roadmap_point_position (int point, RoadMapPosition *position) {
 
       square = point_square;
       roadmap_square_min (point_square, &square_position);
-	   scale_factor = roadmap_square_current_scale_factor ();
+       scale_factor = roadmap_square_current_scale_factor ();
    }
 
    Point = RoadMapPointActive->Point + point_id;

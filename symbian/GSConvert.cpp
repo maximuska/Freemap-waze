@@ -51,7 +51,7 @@ void GSConvert::CharPtrToTDes8(const char* p, TDes8& des8)
 
 void GSConvert::TDes16ToCharPtr(const TDes16& des16, char** p, bool shouldAlloc)
 {
-  int len = des16.Length(); 
+  int len = des16.Length();
   HBufC8 *pBuf8 = HBufC8::NewL(len); //TODO TRAPD
   pBuf8->Des().Copy(des16);
   if ( shouldAlloc == true )

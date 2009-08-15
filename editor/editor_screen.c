@@ -22,7 +22,7 @@
  *
  * SYNOPSYS:
  *
- *   See editor_screen.h 
+ *   See editor_screen.h
  */
 
 #include <stdio.h>
@@ -101,7 +101,7 @@ static RoadMapConfigDescriptor ShowCandidateRoads =
                   ROADMAP_CONFIG_ITEM("Record", "Show unmatched roads");
 
 static   RoadMapPosition position;
-   
+
 static editor_pen EditorPens[MAX_LAYERS][MAX_PEN_LAYERS][MAX_ROAD_STATES];
 static editor_pen EditorTrackPens[MAX_PEN_LAYERS];
 
@@ -114,11 +114,11 @@ static char const *PopupMenuItems[] = {
 
 #if EDITOR_ALLOW_LINE_DELETION
    "deleteroads",
-#endif   
+#endif
    "setasdeparture",
    "setasdestination",
    "properties",
-  
+
    NULL,
 };
 #endif
@@ -126,7 +126,7 @@ static char const *PopupMenuItems[] = {
 
 static RoadMapScreenSubscriber screen_prev_after_refresh = NULL;
 
- 
+
 static void editor_screen_update_segments (void) {
 
    if (select_count) {
@@ -138,7 +138,7 @@ static void editor_screen_update_segments (void) {
 static void editor_screen_delete_segments (void) {
 
    int i;
-   
+
    for (i=0; i<select_count; i++) {
 
       SelectedLine *line = &SelectedLines[i];
@@ -158,14 +158,14 @@ static void editor_screen_delete_segments (void) {
          int line_id = roadmap_plugin_get_line_id (&line->line);
          int square = roadmap_plugin_get_square (&line->line);
 
-			roadmap_square_set_current (square);
+            roadmap_square_set_current (square);
          editor_override_line_set_flag (line_id, ED_LINE_DELETED);
 
       } else if (roadmap_plugin_get_id (&line->line) == EditorPluginID) {
 
          editor_line_set_flag
             (roadmap_plugin_get_line_id (&line->line),
-	          ED_LINE_DELETED);
+              ED_LINE_DELETED);
       }
    }
 
@@ -184,19 +184,19 @@ void report_accident_at_screen_point(void){
    RoadMapPosition lineFrom, lineTo;
    PluginLine line;
    int iDirection = RT_ALERT_MY_DIRECTION;
-    
+
    gpsPos.latitude = position.latitude;
    gpsPos.longitude = position.longitude;
    gpsPos.altitude = 1000;
    gpsPos.speed =60;
-    
+
    gpsPos.steering = -1;
-       
+
    roadmap_navigate_retrieve_line
          (&position, 0, 7, &line, &distance, LAYER_ALL_ROADS);
    roadmap_line_from (line.line_id, &lineFrom);
    roadmap_line_to (line.line_id, &lineTo);
-   
+
    gpsPos.steering = roadmap_math_azymuth (&lineFrom, &lineTo);
 
    if (gpsPos.steering < 0) gpsPos.steering += 360;
@@ -206,7 +206,7 @@ void report_accident_at_screen_point(void){
 
 
 void report_accident_opposite_side_at_screen_point(void){
-	
+
    RoadMapGpsPosition gpsPos;
    int distance;
 
@@ -236,7 +236,7 @@ void report_accident_opposite_side_at_screen_point(void){
 }
 
 
- 
+
 
 #ifdef SSD
 static void popup_menu_callback (int ret, void *context) {
@@ -275,29 +275,29 @@ static void editor_screen_select_line (const PluginLine *line) {
 
 static int editor_screen_line_iter_cb (const PluginLine *line, void *context, int flags) {
 
-  	editor_screen_select_line (line);
-  	return 0;
+    editor_screen_select_line (line);
+    return 0;
 }
 
 
 static int editor_screen_short_click (RoadMapGuiPoint *point) {
-    
+
    int AlertId;
    int scale;
 
    roadmap_math_to_position (point, &position, 1);
-   
+
    scale = roadmap_math_get_scale(0)/200;
    AlertId = RTAlerts_Alert_near_position(position, scale);
    if (AlertId != -1)
    {
-   	if ((RTAlerts_State() == STATE_SCROLLING) && (RTAlerts_Get_Current_Alert_Id() == AlertId))
-   		RealtimeAlertCommentsList(AlertId);
-   	else
-   		RTAlerts_Popup_By_Id_No_Center(AlertId);
-   	return 1;
-   }   
-   
+    if ((RTAlerts_State() == STATE_SCROLLING) && (RTAlerts_Get_Current_Alert_Id() == AlertId))
+        RealtimeAlertCommentsList(AlertId);
+    else
+        RTAlerts_Popup_By_Id_No_Center(AlertId);
+    return 1;
+   }
+
    return 0;
 }
 
@@ -311,65 +311,65 @@ static int editor_screen_long_click (RoadMapGuiPoint *point) {
    RoadMapPosition to;
 
    roadmap_math_to_position (point, &position, 1);
-   
+
    scale = roadmap_math_get_scale(0)/200;
-   
+
    if (roadmap_navigate_retrieve_line
          (&position, 0, 7, &line, &distance, LAYER_ALL_ROADS) == -1) {
-       
+
       roadmap_display_hide ("Selected Street");
       roadmap_trip_set_point ("Selection", &position);
-#ifdef SSD      
+#ifdef SSD
       roadmap_start_hide_menu ("Editor Menu");
-#endif      
+#endif
       editor_screen_reset_selected ();
       roadmap_screen_redraw ();
       return 1;
    }
 
    roadmap_trip_set_point ("Selection", &position);
-      
+
    roadmap_display_activate ("Selected Street", &line, &position, &street);
 
    editor_screen_select_line (&line);
-   
+
    if (line.plugin_id == ROADMAP_PLUGIN_ID) {
-		orig_square = roadmap_square_active ();
-	
-		roadmap_street_extend_line_ends (&line, &from, &to, FLAG_EXTEND_BOTH, editor_screen_line_iter_cb, NULL);
-		roadmap_display_update_points ("Selected Street", &from, &to);
-		
+        orig_square = roadmap_square_active ();
+
+        roadmap_street_extend_line_ends (&line, &from, &to, FLAG_EXTEND_BOTH, editor_screen_line_iter_cb, NULL);
+        roadmap_display_update_points ("Selected Street", &from, &to);
+
 #if 0
 {
-		int curr_scale;
-   	RoadMapStreetProperties props;
-   	char name[512];
-		
-		/*
-		 * select the same line in other scales
-		 */
-		roadmap_square_set_current (orig_square);
-	   roadmap_street_get_properties (line.line_id, &props);
-	   strncpy_safe (name, roadmap_street_get_full_name (&props), 512);
-		for (curr_scale = roadmap_square_get_num_scales () - 1; curr_scale > 0; curr_scale--) {
-			 
-			if (roadmap_navigate_retrieve_line_force_name 
-				 (&position, curr_scale, 7, &line, &distance, LAYER_ALL_ROADS, orig_square, name, 
-				  roadmap_line_route_get_direction (line.line_id, ROUTE_DIRECTION_ANY), 
-				  0, 0, &from, &to) != -1) {
-				 	
-				editor_screen_select_line (&line);
-				roadmap_street_extend_line_ends (&line, &from, &to, FLAG_EXTEND_BOTH, editor_screen_line_iter_cb, NULL);
-			}
-		}
+        int curr_scale;
+    RoadMapStreetProperties props;
+    char name[512];
+
+        /*
+         * select the same line in other scales
+         */
+        roadmap_square_set_current (orig_square);
+       roadmap_street_get_properties (line.line_id, &props);
+       strncpy_safe (name, roadmap_street_get_full_name (&props), 512);
+        for (curr_scale = roadmap_square_get_num_scales () - 1; curr_scale > 0; curr_scale--) {
+
+            if (roadmap_navigate_retrieve_line_force_name
+                 (&position, curr_scale, 7, &line, &distance, LAYER_ALL_ROADS, orig_square, name,
+                  roadmap_line_route_get_direction (line.line_id, ROUTE_DIRECTION_ANY),
+                  0, 0, &from, &to) != -1) {
+
+                editor_screen_select_line (&line);
+                roadmap_street_extend_line_ends (&line, &from, &to, FLAG_EXTEND_BOTH, editor_screen_line_iter_cb, NULL);
+            }
+        }
 }
-#endif	
-	
-	}
+#endif
+
+    }
 #ifdef SSD
    roadmap_start_popup_menu ("Editor Menu", PopupMenuItems,
                              popup_menu_callback, point);
-#endif			     
+#endif
    roadmap_screen_redraw ();
 
    return 1;
@@ -381,7 +381,7 @@ static int editor_screen_long_click (RoadMapGuiPoint *point) {
  * should be removed.
  */
 void editor_screen_adjust_layer (int layer, int thickness, int pen_count) {
-    
+
    int i;
    int j;
 
@@ -391,9 +391,9 @@ void editor_screen_adjust_layer (int layer, int thickness, int pen_count) {
    if (thickness < 1) thickness = 1;
    if ((pen_count > 1) && (thickness < 3)) {
       pen_count = 1;
-   } 
+   }
 
-   for (i=0; i<MAX_PEN_LAYERS; i++) 
+   for (i=0; i<MAX_PEN_LAYERS; i++)
       for (j=0; j<MAX_ROAD_STATES; j++) {
 
          editor_pen *pen = &EditorPens[layer][i][j];
@@ -439,9 +439,9 @@ static int editor_screen_get_road_state (int line, int cfcc,
    int has_route = 0;
 
    if (plugin_id == ROADMAP_PLUGIN_ID) {
-      
+
       if (roadmap_locator_activate (fips) >= 0) {
-         
+
          RoadMapStreetProperties properties;
 
          roadmap_street_get_properties (line, &properties);
@@ -456,9 +456,9 @@ static int editor_screen_get_road_state (int line, int cfcc,
             has_route = 1;
 
          } else if (editor_db_activate (fips) != -1) {
-            
+
             int direction = ROUTE_DIRECTION_NONE;
-            editor_override_line_get_direction (line, &direction); 
+            editor_override_line_get_direction (line, &direction);
 
             if (direction != ROUTE_DIRECTION_NONE) {
                has_route = 1;
@@ -469,10 +469,10 @@ static int editor_screen_get_road_state (int line, int cfcc,
    } else {
 
       if (editor_db_activate (fips) != -1) {
-      
-      	int street = -1;
-      	int direction = ROUTE_DIRECTION_NONE;
-      	
+
+        int street = -1;
+        int direction = ROUTE_DIRECTION_NONE;
+
          editor_line_get_street (line, &street);
          if (street != -1) {
             has_street = 1;
@@ -525,7 +525,7 @@ int editor_screen_override_pen (int line,
 
       road_state = SELECTED_STATE;
    } else {
-      
+
       if (!roadmap_screen_fast_refresh() && (pen_type > 0)) {
          road_state = editor_screen_get_road_state (line, cfcc, 0, fips);
       } else {
@@ -536,7 +536,7 @@ int editor_screen_override_pen (int line,
    if (road_state != NO_ROAD_STATE) {
 
       if (pen_type > 1) return 0;
-      
+
       pen = &EditorPens[cfcc][pen_type][road_state];
       if (!pen->in_use) {
          *override_pen = NULL;
@@ -547,7 +547,7 @@ int editor_screen_override_pen (int line,
 
       return 0;
    }
-   
+
    if (ActiveDB != -1) {
       //TODO check roadmap route data
       route = editor_override_line_get_direction (line, &direction);
@@ -597,7 +597,7 @@ static char *editor_screen_get_pen_color (int pen_type, int road_state) {
    }
 
    switch (road_state) {
-      
+
    case SELECTED_STATE:       return "black";
    case NO_DATA_STATE:        return "dark red";
    case MISSING_NAME_STATE:   return "red";
@@ -614,9 +614,9 @@ static void editor_screen_draw_markers (void) {
    RoadMapArea screen;
    int count;
    int i;
-   RoadMapPen pen; 
+   RoadMapPen pen;
    int steering;
-   RoadMapPosition pos;      
+   RoadMapPosition pos;
    RoadMapGuiPoint screen_point;
    RoadMapGuiPoint icon_screen_point;
    const char* icon;
@@ -625,7 +625,7 @@ static void editor_screen_draw_markers (void) {
    if (editor_db_activate(fips) == -1) return;
 
    count = editor_marker_count ();
-   
+
    roadmap_math_screen_edges (&screen);
 
    for (i=0; i<count; i++) {
@@ -644,19 +644,19 @@ static void editor_screen_draw_markers (void) {
             if (*icon) {
                RoadMapImage image =      (RoadMapImage) roadmap_res_get
                   (RES_BITMAP, RES_SKIN, icon);
-               if (image != NULL){   
-                  	icon_screen_point.x = screen_point.x - 8; //roadmap_canvas_image_width(image) ;
-                  	icon_screen_point.y = screen_point.y - roadmap_canvas_image_height (image)  + 5;
-               		roadmap_canvas_draw_image (image, &icon_screen_point,
-                     									                      0, IMAGE_NORMAL);
+               if (image != NULL){
+                    icon_screen_point.x = screen_point.x - 8; //roadmap_canvas_image_width(image) ;
+                    icon_screen_point.y = screen_point.y - roadmap_canvas_image_height (image)  + 5;
+                    roadmap_canvas_draw_image (image, &icon_screen_point,
+                                                                              0, IMAGE_NORMAL);
                }
-	            else
-   	             roadmap_sprite_draw ("marker", &screen_point, steering);
+                else
+                 roadmap_sprite_draw ("marker", &screen_point, steering);
             }
             else{
                 roadmap_sprite_draw ("marker", &screen_point, steering);
             }
-            
+
          }
          else{
                 roadmap_sprite_draw ("marker", &screen_point, steering);
@@ -706,14 +706,14 @@ static void editor_screen_draw_lines
    count = editor_line_get_count ();
 
    for (line=0; line<count; line++) {
-      
+
       editor_line_get (line, &from, &to, &trkseg, &cfcc, &flag);
       if (cfcc < min_cfcc) continue;
 
       if (flag & ED_LINE_DELETED) continue;
 
       if (editor_is_enabled () ) {
-         
+
          int is_selected = 0;
 
          for (j=0; j<select_count; j++) {
@@ -721,12 +721,12 @@ static void editor_screen_draw_lines
             if ((line == SelectedLines[j].line.line_id) &&
                 (SelectedLines[j].line.plugin_id == EditorPluginID)  &&
                 (fips == SelectedLines[j].line.fips)) {
-            
+
                is_selected = 1;
                break;
             }
          }
-      
+
          if (is_selected) {
 
             road_state = SELECTED_STATE;
@@ -734,7 +734,7 @@ static void editor_screen_draw_lines
 
             road_state = MISSING_ROUTE_STATE;
          } else {
-      
+
             road_state = editor_screen_get_road_state (line, cfcc, 1, fips);
          }
 
@@ -752,7 +752,7 @@ static void editor_screen_draw_lines
 
          pen = EditorPens[cfcc][pen_type][road_state].pen;
       }
-         
+
       if (pen == NULL) continue;
 
       editor_trkseg_get (trkseg, &j, &first_shape, &last_shape, NULL);
@@ -765,14 +765,14 @@ static void editor_screen_draw_lines
 
       if ((EditorPens[cfcc][pen_type][0].thickness > 20) &&
          (pen_type == 1)) {
-      
+
          int direction;
 
          route = editor_line_get_direction (line, &direction);
-      
+
          if (route != -1) {
 
-            if (direction > 0) { 
+            if (direction > 0) {
                roadmap_screen_draw_line_direction
                   (&from, &to, &trk_from_pos, first_shape, last_shape,
                    editor_shape_position,
@@ -797,7 +797,7 @@ static void editor_screen_repaint_lines (int fips, int pen_type) {
    roadmap_log_push ("editor_screen_repaint_square");
 
    count = roadmap_layer_visible_lines (layers, 256, pen_type);
-   
+
    for (i = 0; i < count; ++i) {
         if (min_category > layers[i]) min_category = layers[i];
    }
@@ -807,7 +807,7 @@ static void editor_screen_repaint_lines (int fips, int pen_type) {
    roadmap_log_pop ();
 }
 
-   
+
 void editor_screen_repaint (int max_pen) {
 
    int k;
@@ -837,7 +837,7 @@ void editor_screen_repaint (int max_pen) {
    for (k=0; k<select_count; k++) {
 
       if (SelectedLines[k].line.plugin_id == ROADMAP_PLUGIN_ID /*&&
-      	 roadmap_square_at_current_scale (SelectedLines[k].line.square)*/) {
+         roadmap_square_at_current_scale (SelectedLines[k].line.square)*/) {
 
          RoadMapPosition from;
          RoadMapPosition to;
@@ -893,7 +893,7 @@ void editor_screen_reset_selected (void) {
 
 
 void editor_screen_initialize (void) {
-    
+
    int i;
    int j;
    int k;
@@ -904,8 +904,8 @@ void editor_screen_initialize (void) {
 
    /* FIXME should only create pens for road class */
 
-   for (i=1; i<MAX_LAYERS; ++i) 
-      for (j=0; j<MAX_PEN_LAYERS; j++) 
+   for (i=1; i<MAX_LAYERS; ++i)
+      for (j=0; j<MAX_PEN_LAYERS; j++)
          for (k=0; k<MAX_ROAD_STATES; k++) {
 
             editor_pen *pen = &EditorPens[i][j][k];
@@ -933,7 +933,7 @@ void editor_screen_initialize (void) {
       NULL, "Delete selected roads",
       editor_screen_delete_segments);
 
-   screen_prev_after_refresh = 
+   screen_prev_after_refresh =
       roadmap_screen_subscribe_after_refresh (editor_screen_after_refresh);
 }
 

@@ -73,11 +73,11 @@ BOOL  roadmap_device_events_init()
                      (free_array_item)device_event_info_free,
                      (copy_array_item)device_event_info_copy,
                      (are_same_items) device_event_info_are_identical);
-                     
+
    if( roadmap_device_events_os_init())
       return TRUE;
-   
-   // Else:   
+
+   // Else:
    cyclic_array_free(&EQC);
    return FALSE;
 }
@@ -95,14 +95,14 @@ BOOL roadmap_device_events_register(device_event_handler handler,
 
    new_handler.handler = handler;
    new_handler.context = context;
-   
+
    return cyclic_array_push_last( &EQC, &new_handler);
 }
 
 void roadmap_device_events_unregister( device_event_handler handler)
 {
    device_event_info handler_to_remove;
-   
+
    handler_to_remove.handler = handler;
    cyclic_array_remove_same_item( &EQC, &handler_to_remove);
 }
@@ -116,7 +116,7 @@ void roadmap_device_event_notification( device_event event)
    for( i=0; i<cyclic_array_size(&EQC); i++)
    {
       device_event_info_ptr handler = (device_event_info_ptr)cyclic_array_get_item( &EQC, i);
-      
+
       assert(handler);
       handler->handler( event, handler->context);
    }

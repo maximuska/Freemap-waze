@@ -1,4 +1,4 @@
-/* symbian_input_mon.cpp - AO to invoke callback on changes in input. 
+/* symbian_input_mon.cpp - AO to invoke callback on changes in input.
  *
  * LICENSE:
  *
@@ -30,10 +30,10 @@
 #include "symbian_input_mon.h"
 
 
-CIOMonitor::CIOMonitor() 
+CIOMonitor::CIOMonitor()
   : CActive(EPriorityNormal)
 {
-  
+
 }
 
 CIOMonitor::~CIOMonitor()
@@ -41,19 +41,19 @@ CIOMonitor::~CIOMonitor()
 
 }
 
-void CIOMonitor::ConstructL(RoadMapIO* apIO, void* apParam) 
+void CIOMonitor::ConstructL(RoadMapIO* apIO, void* apParam)
 {
   m_pData = (roadmap_main_io*)apParam;
   m_pIO = m_pData->io;
 
   switch (apIO->subsystem)
-  {//TODO perhaps do a factory here instead... 
+  {//TODO perhaps do a factory here instead...
   case ROADMAP_IO_SERIAL:
   case ROADMAP_IO_NET:
   case ROADMAP_IO_FILE:
     break;
   }
-  
+
 //TODO DEBUG  CActiveScheduler::Add(this);
 //TODO DEBUG  SetActive();
 }
@@ -71,16 +71,16 @@ void CIOMonitor::RunL()
 {
   if(m_pData->is_valid && (m_pIO->subsystem != ROADMAP_IO_INVALID))
   {
-    // Send a message to main window so it can read. 
+    // Send a message to main window so it can read.
     //  Use a TRequestStatus or a TCallback
     //SendMessage(RoadMapMainWindow, WM_USER_READ, (WPARAM)data, 1);
   }
-  
-  if (m_pData->is_valid) 
+
+  if (m_pData->is_valid)
   {
     m_pData->is_valid = 0;
-  } 
-  else 
+  }
+  else
   {
     free (m_pData);
     m_pData = NULL;

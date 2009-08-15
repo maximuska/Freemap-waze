@@ -26,14 +26,14 @@
 
 #include "roadmap_types.h"
 
-#define EDITOR_DB_MARKERS		1
-#define EDITOR_DB_DICTIONARY	2
-#define EDITOR_DB_SHAPES		3
-#define EDITOR_DB_POINTS		4
-#define EDITOR_DB_TRKSEGS		5
-#define EDITOR_DB_STREETS		6
-#define EDITOR_DB_LINES			7
-#define EDITOR_DB_OVERRIDES	8
+#define EDITOR_DB_MARKERS       1
+#define EDITOR_DB_DICTIONARY    2
+#define EDITOR_DB_SHAPES        3
+#define EDITOR_DB_POINTS        4
+#define EDITOR_DB_TRKSEGS       5
+#define EDITOR_DB_STREETS       6
+#define EDITOR_DB_LINES         7
+#define EDITOR_DB_OVERRIDES 8
 
 typedef struct editor_db_section_s {
    unsigned int type_id;

@@ -41,121 +41,121 @@ class CBackLightTimer;
 * from the handler class
 */
 class CFreeMapAppUi : public CAknAppUi
-	{
-	public: // Constructors and destructor
+    {
+    public: // Constructors and destructor
 
-		/**
-		* ConstructL.
-		* 2nd phase constructor.
-		*/
-		void ConstructL();
+        /**
+        * ConstructL.
+        * 2nd phase constructor.
+        */
+        void ConstructL();
 
-		/**
-		* CFreeMapAppUi.
-		* C++ default constructor. This needs to be public due to
-		* the way the framework constructs the AppUi
-		*/
-		CFreeMapAppUi();
+        /**
+        * CFreeMapAppUi.
+        * C++ default constructor. This needs to be public due to
+        * the way the framework constructs the AppUi
+        */
+        CFreeMapAppUi();
 
-		
-		/** 
-		 * Initialization of the qwerty mapping
-		 */
-		void InitQwertyMappingsL();
-		
-		/**
-		 * Keyboard mapping data for scan code - call InitQwertyMappingsL first !
-		 */
-		TBool  GetUnicodeForScanCodeL( TInt aScanCode, TUint16 &aUnicodeOut ) const;
 
-		/**
-		 * Keyboard mapping data for scan code - call InitQwertyMappingsL first !
-		 */
-		void SetBackLiteOn( TBool aValue );
-		/**
-		 * Input capabilities override
-		 */
-		virtual TCoeInputCapabilities InputCapabilities() const;
-		/**
-		 * Set the input capabilities
-		 */
-		void SetInputCapabilities( TUint aCapabilities );
-		/**
-		* ~CFreeMapAppUi.
-		* Virtual Destructor.
-		*/
-		virtual ~CFreeMapAppUi();
+        /**
+         * Initialization of the qwerty mapping
+         */
+        void InitQwertyMappingsL();
 
-	protected:
-		
-		
-	private:  // Functions from base classes
+        /**
+         * Keyboard mapping data for scan code - call InitQwertyMappingsL first !
+         */
+        TBool  GetUnicodeForScanCodeL( TInt aScanCode, TUint16 &aUnicodeOut ) const;
 
-		/**
-		* From CEikAppUi, HandleCommandL.
-		* Takes care of command handling.
-		* @param aCommand Command to be handled.
-		*/
-		void HandleCommandL( TInt aCommand );
+        /**
+         * Keyboard mapping data for scan code - call InitQwertyMappingsL first !
+         */
+        void SetBackLiteOn( TBool aValue );
+        /**
+         * Input capabilities override
+         */
+        virtual TCoeInputCapabilities InputCapabilities() const;
+        /**
+         * Set the input capabilities
+         */
+        void SetInputCapabilities( TUint aCapabilities );
+        /**
+        * ~CFreeMapAppUi.
+        * Virtual Destructor.
+        */
+        virtual ~CFreeMapAppUi();
 
-		TKeyResponse HandleKeyEventL(const TKeyEvent& aKeyEvent,TEventCode aType);
-		
-		/**
-		*  HandleStatusPaneSizeChange.
-		*  Called by the framework when the application status pane
-		*  size is changed.
-		*/
-		void HandleStatusPaneSizeChange();
-		
-		void HandleRotationChange(bool bInitOnly);
-		
-		//  Handle resource change
-		//  It is used to handle changes in Orientation. 
-		void HandleResourceChangeL(TInt aType);
-		
-		/**
-		*  From CCoeAppUi, HelpContextL.
-		*  Provides help context for the application.
- 		*  size is changed.
-		*/
-	 	CArrayFix<TCoeHelpContext>* HelpContextL() const;
+    protected:
 
-	private: // Data
 
-		/**
-		* The application view
-		* Owned by CFreeMapAppUi
-		*/
-		CFreeMapAppView* iAppView;
-		
-		//CFbsBitGc::TGraphicsOrientation m_Orientation; 
-		TSize m_ScreenSize;
-		
-		CStartTimer* m_pStartTimer;
-		
-		CBackLightTimer* m_pBLTimer; 
-		
-		/* Qwerty mappings for the keyboard translation */
-		/* TODO :: Initialize list of the available languages */
-		CPtiQwertyKeyMappings* m_pQwertyKeyMappings;
-		CPtiEngine* m_pPtiEngine;
-		
-		/* Input mode constraint */
-		TUint	m_InputCapabilities;
-		
-	};
+    private:  // Functions from base classes
+
+        /**
+        * From CEikAppUi, HandleCommandL.
+        * Takes care of command handling.
+        * @param aCommand Command to be handled.
+        */
+        void HandleCommandL( TInt aCommand );
+
+        TKeyResponse HandleKeyEventL(const TKeyEvent& aKeyEvent,TEventCode aType);
+
+        /**
+        *  HandleStatusPaneSizeChange.
+        *  Called by the framework when the application status pane
+        *  size is changed.
+        */
+        void HandleStatusPaneSizeChange();
+
+        void HandleRotationChange(bool bInitOnly);
+
+        //  Handle resource change
+        //  It is used to handle changes in Orientation.
+        void HandleResourceChangeL(TInt aType);
+
+        /**
+        *  From CCoeAppUi, HelpContextL.
+        *  Provides help context for the application.
+        *  size is changed.
+        */
+        CArrayFix<TCoeHelpContext>* HelpContextL() const;
+
+    private: // Data
+
+        /**
+        * The application view
+        * Owned by CFreeMapAppUi
+        */
+        CFreeMapAppView* iAppView;
+
+        //CFbsBitGc::TGraphicsOrientation m_Orientation;
+        TSize m_ScreenSize;
+
+        CStartTimer* m_pStartTimer;
+
+        CBackLightTimer* m_pBLTimer;
+
+        /* Qwerty mappings for the keyboard translation */
+        /* TODO :: Initialize list of the available languages */
+        CPtiQwertyKeyMappings* m_pQwertyKeyMappings;
+        CPtiEngine* m_pPtiEngine;
+
+        /* Input mode constraint */
+        TUint   m_InputCapabilities;
+
+    };
 
 #endif // __FREEMAPAPPUI_h__
 
 
 class CStartTimer : public CTimer
 {
-public: 
+public:
   virtual ~CStartTimer();
   static CStartTimer* NewL();
   void ConstructL();
   void Start();
-  
+
 protected:
   CStartTimer(TInt aPriority);
   void RunL();
@@ -177,32 +177,32 @@ protected:
 */
 class CBackLightTimer : public CTimer
 {
-	public: 
-		static CBackLightTimer* NewL( TBool aEnable );
-		void ConstructL();
-		void Start();
-		
-		void SetBLDisableInterval( TInt aValue );
-		TInt GetBLDisableInterval( void ) const;
-		
-		void SetBLEnable( TBool aValue );
-		TBool GetBLEnable( void ) const;
-		
-		virtual ~CBackLightTimer();
-		
-		
-	protected:
-		
-		CBackLightTimer( TInt aPriority, TBool aEnable  );
-		virtual void RunL( void );
-		virtual void DoCancel( void );
-		virtual TInt RunError( TInt aError );
+    public:
+        static CBackLightTimer* NewL( TBool aEnable );
+        void ConstructL();
+        void Start();
 
-	private:
-		
-		TTimeIntervalMicroSeconds32 iInterval;
-		TBool	iEnable;
-		
+        void SetBLDisableInterval( TInt aValue );
+        TInt GetBLDisableInterval( void ) const;
+
+        void SetBLEnable( TBool aValue );
+        TBool GetBLEnable( void ) const;
+
+        virtual ~CBackLightTimer();
+
+
+    protected:
+
+        CBackLightTimer( TInt aPriority, TBool aEnable  );
+        virtual void RunL( void );
+        virtual void DoCancel( void );
+        virtual TInt RunError( TInt aError );
+
+    private:
+
+        TTimeIntervalMicroSeconds32 iInterval;
+        TBool   iEnable;
+
 };
 
 

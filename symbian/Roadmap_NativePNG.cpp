@@ -77,14 +77,14 @@ void CRoadmapNativePNG::RunL()
   {
 //    roadmap_log (ROADMAP_ERROR, "\r\nin RunL\r\n");
 //    CActiveScheduler::Stop();
-  }  
+  }
   else
   {
 //    roadmap_log (ROADMAP_ERROR, "error in NativePNG %d", iStatus);
 //    CActiveScheduler::Stop();
   }
 }
-  
+
 void CRoadmapNativePNG::DoCancel()
 {
 //   CActiveScheduler::Stop();

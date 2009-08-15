@@ -24,11 +24,11 @@
 
 #ifndef __SSD_CONFIRM_DIALOG_H_
 #define __SSD_CONFIRM_DIALOG_H_
-  
-  
-  
+
+
+
 typedef void(*ConfirmDialogCallback)(int exit_code, void *context);
-  
+
 void ssd_confirm_dialog (const char *title, const char *text, BOOL default_yes,  ConfirmDialogCallback callback, void *context);
 
 #endif // __SSD_CONFIRM_DIALOG_H_

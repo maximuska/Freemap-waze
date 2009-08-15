@@ -22,14 +22,14 @@
  *
  */
 
-#ifndef	__REALTIME_OFFLINE_H__
-#define	__REALTIME_OFFLINE_H__
+#ifndef __REALTIME_OFFLINE_H__
+#define __REALTIME_OFFLINE_H__
 
 #include "roadmap.h"
 
-void		Realtime_OfflineOpen (const char *path, const char *filename);
-void		Realtime_OfflineClose (void);
-void		Realtime_OfflineWrite (const char *packet);
-void 		Realtime_OfflineWriteServerCookie (const char *cookie);
+void        Realtime_OfflineOpen (const char *path, const char *filename);
+void        Realtime_OfflineClose (void);
+void        Realtime_OfflineWrite (const char *packet);
+void        Realtime_OfflineWriteServerCookie (const char *cookie);
 
-#endif	//	__REALTIME_OFFLINE_H__
+#endif  //  __REALTIME_OFFLINE_H__

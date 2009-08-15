@@ -125,7 +125,7 @@ BOOL is_white_space( unsigned char key)
       case '\r': return TRUE;
       case '\n': return TRUE;
    }
-   
+
    return FALSE;
 }
 
@@ -136,7 +136,7 @@ BOOL is_alphabetic( unsigned char key)
 {
    return ( (('a'<=key) && (key <= 'z'))  ||
             (('A'<=key) && (key <= 'Z')));
-}            
+}
 
 BOOL is_valid_nonalphabetic_char( char ch, unsigned short input_type)
 {
@@ -148,36 +148,36 @@ BOOL is_valid_nonalphabetic_char( char ch, unsigned short input_type)
 
    if( (inputtype_punctuation & input_type) && is_punctuation( ch))
       return TRUE;
-      
+
    if( (inputtype_symbols     & input_type) && is_symbol( ch))
       return TRUE;
-      
+
    return FALSE;
-}      
+}
 
 BOOL is_valid_key( const char* utf8char, uint16_t input_type)
 {
    BOOL latin_alphabethic;
-   
+
    if( !utf8char || !(*utf8char))
    {
       assert(0);
       return FALSE;
    }
-   
+
    latin_alphabethic = ('\0' != utf8char[1]);
 
    if( inputtype_binary == input_type)
       return TRUE;
-      
+
    // Searching for alpha-bet?
    if( (inputtype_alphabetic & input_type) && (latin_alphabethic || is_alphabetic( *utf8char)))
       return TRUE;
-   
+
    if( latin_alphabethic)
       return FALSE;  // All other tests should fail...
-      
+
    return is_valid_nonalphabetic_char( utf8char[0], input_type);
-}      
+}
 
 

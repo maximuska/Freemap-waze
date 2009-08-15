@@ -38,7 +38,7 @@ extern "C"   {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL  WSA_IsValid(   const char* szWebServiceAddress);
 
-BOOL  WSA_ExtractParams(   
+BOOL  WSA_ExtractParams(
             const char* szWebServiceAddress, //   IN        -   Web service full address (http://...)
             char*       pServerURL,          //   OUT,OPT   -   Server URL[:Port]
             int*        pServerPort,         //   OUT,OPT   -   Server Port

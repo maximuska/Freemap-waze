@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -58,7 +58,7 @@ namespace agg
         if(m_status == 0)
         {
             cmd = m_stroke.vertex(x, y);
-            if(!is_stop(cmd)) 
+            if(!is_stop(cmd))
             {
                 transform_xy(x, y);
                 return cmd;
@@ -68,7 +68,7 @@ namespace agg
             ++m_status;
         }
         cmd = m_ellipse.vertex(x, y);
-        if(!is_stop(cmd)) 
+        if(!is_stop(cmd))
         {
             transform_xy(x, y);
             return cmd;
@@ -78,7 +78,7 @@ namespace agg
         m_ellipse.init(xn(m_status), yn(m_status), r, r, 32);
         ++m_status;
         cmd = m_ellipse.vertex(x, y);
-        if(!is_stop(cmd)) 
+        if(!is_stop(cmd))
         {
             transform_xy(x, y);
         }
@@ -244,7 +244,7 @@ namespace agg
     }
 
 
-    //======= Crossings Multiply algorithm of InsideTest ======================== 
+    //======= Crossings Multiply algorithm of InsideTest ========================
     //
     // By Eric Haines, 3D/Eye Inc, erich@eye.com
     //
@@ -294,7 +294,7 @@ namespace agg
         vty1 = yn(0);
 
         inside_flag = 0;
-        for (j = 1; j <= m_num_points; ++j) 
+        for (j = 1; j <= m_num_points; ++j)
         {
             yflag1 = (vty1 >= ty);
             // Check if endpoints straddle (are on opposite sides) of X axis
@@ -307,7 +307,7 @@ namespace agg
             // will cross quadrants and so have to have the X intersection computed
             // anyway).  I credit Joseph Samosky with inspiring me to try dropping
             // the "both left or both right" part of my code.
-            if (yflag0 != yflag1) 
+            if (yflag0 != yflag1)
             {
                 // Check intersection of pgon segment with +X ray.
                 // Note if >= point's X; if so, the ray hits it.
@@ -316,7 +316,7 @@ namespace agg
                 // by Joseph Samosky's and Mark Haigh-Hutchinson's different
                 // polygon inclusion tests.
                 if ( ((vty1-ty) * (vtx0-vtx1) >=
-                      (vtx1-tx) * (vty0-vty1)) == yflag1 ) 
+                      (vtx1-tx) * (vty0-vty1)) == yflag1 )
                 {
                     inside_flag ^= 1;
                 }

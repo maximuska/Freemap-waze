@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -30,8 +30,8 @@ namespace agg
 {
 
     //------------------------------------------------------------------------
-    cbox_ctrl_impl::cbox_ctrl_impl(double x, double y, 
-                                   const char* l, 
+    cbox_ctrl_impl::cbox_ctrl_impl(double x, double y,
+                                   const char* l,
                                    bool flip_y) :
         ctrl(x, y, x + 9.0 * 1.5, y + 9.0 * 1.5, flip_y),
         m_text_thickness(1.5),
@@ -47,8 +47,8 @@ namespace agg
     //------------------------------------------------------------------------
     void cbox_ctrl_impl::text_size(double h, double w)
     {
-        m_text_width = w; 
-        m_text_height = h; 
+        m_text_width = w;
+        m_text_height = h;
     }
 
     //------------------------------------------------------------------------
@@ -113,22 +113,22 @@ namespace agg
         default:
         case 0:                 // Border
             m_vertex = 0;
-            m_vx[0] = m_x1; 
+            m_vx[0] = m_x1;
             m_vy[0] = m_y1;
             m_vx[1] = m_x2;
             m_vy[1] = m_y1;
             m_vx[2] = m_x2;
             m_vy[2] = m_y2;
-            m_vx[3] = m_x1; 
+            m_vx[3] = m_x1;
             m_vy[3] = m_y2;
-            m_vx[4] = m_x1 + m_text_thickness; 
-            m_vy[4] = m_y1 + m_text_thickness; 
-            m_vx[5] = m_x1 + m_text_thickness; 
+            m_vx[4] = m_x1 + m_text_thickness;
+            m_vy[4] = m_y1 + m_text_thickness;
+            m_vx[5] = m_x1 + m_text_thickness;
             m_vy[5] = m_y2 - m_text_thickness;
             m_vx[6] = m_x2 - m_text_thickness;
             m_vy[6] = m_y2 - m_text_thickness;
             m_vx[7] = m_x2 - m_text_thickness;
-            m_vy[7] = m_y1 + m_text_thickness; 
+            m_vy[7] = m_y1 + m_text_thickness;
             break;
 
         case 1:                 // Text

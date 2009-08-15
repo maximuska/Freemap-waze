@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -52,7 +52,7 @@ namespace agg
             m_ren.attach(pixf);
             reset_clipping(true);
         }
-          
+
         //--------------------------------------------------------------------
         const pixfmt_type& ren() const { return m_ren.ren();  }
         pixfmt_type& ren() { return m_ren.ren();  }
@@ -76,7 +76,7 @@ namespace agg
         int           bounding_ymax()     const { return m_bounds.y2; }
 
         //--------------------------------------------------------------------
-        void first_clip_box() 
+        void first_clip_box()
         {
             m_curr_cb = 0;
             if(m_clip.size())
@@ -87,15 +87,15 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        bool next_clip_box() 
-        { 
+        bool next_clip_box()
+        {
             if(++m_curr_cb < m_clip.size())
             {
                 const rect_i& cb = m_clip[m_curr_cb];
                 m_ren.clip_box_naked(cb.x1, cb.y1, cb.x2, cb.y2);
                 return true;
             }
-            return false; 
+            return false;
         }
 
         //--------------------------------------------------------------------
@@ -106,11 +106,11 @@ namespace agg
             m_curr_cb = 0;
             m_bounds = m_ren.clip_box();
         }
-        
+
         //--------------------------------------------------------------------
         void add_clip_box(int x1, int y1, int x2, int y2)
         {
-            rect_i cb(x1, y1, x2, y2); 
+            rect_i cb(x1, y1, x2, y2);
             cb.normalize();
             if(cb.clip(rect_i(0, 0, width() - 1, height() - 1)))
             {
@@ -127,7 +127,7 @@ namespace agg
         {
             m_ren.clear(c);
         }
-          
+
         //--------------------------------------------------------------------
         void copy_pixel(int x, int y, const color_type& c)
         {
@@ -196,7 +196,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void blend_hline(int x1, int y, int x2, 
+        void blend_hline(int x1, int y, int x2,
                          const color_type& c, cover_type cover)
         {
             first_clip_box();
@@ -208,7 +208,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void blend_vline(int x, int y1, int y2, 
+        void blend_vline(int x, int y1, int y2,
                          const color_type& c, cover_type cover)
         {
             first_clip_box();
@@ -231,7 +231,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void blend_bar(int x1, int y1, int x2, int y2, 
+        void blend_bar(int x1, int y1, int x2, int y2,
                        const color_type& c, cover_type cover)
         {
             first_clip_box();
@@ -243,7 +243,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void blend_solid_hspan(int x, int y, int len, 
+        void blend_solid_hspan(int x, int y, int len,
                                const color_type& c, const cover_type* covers)
         {
             first_clip_box();
@@ -255,7 +255,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void blend_solid_vspan(int x, int y, int len, 
+        void blend_solid_vspan(int x, int y, int len,
                                const color_type& c, const cover_type* covers)
         {
             first_clip_box();
@@ -279,8 +279,8 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void blend_color_hspan(int x, int y, int len, 
-                               const color_type* colors, 
+        void blend_color_hspan(int x, int y, int len,
+                               const color_type* colors,
                                const cover_type* covers,
                                cover_type cover = cover_full)
         {
@@ -293,8 +293,8 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void blend_color_vspan(int x, int y, int len, 
-                               const color_type* colors, 
+        void blend_color_vspan(int x, int y, int len,
+                               const color_type* colors,
                                const cover_type* covers,
                                cover_type cover = cover_full)
         {
@@ -307,9 +307,9 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void copy_from(const rendering_buffer& from, 
-                       const rect_i* rc=0, 
-                       int x_to=0, 
+        void copy_from(const rendering_buffer& from,
+                       const rect_i* rc=0,
+                       int x_to=0,
                        int y_to=0)
         {
             first_clip_box();
@@ -322,9 +322,9 @@ namespace agg
 
         //--------------------------------------------------------------------
         template<class SrcPixelFormatRenderer>
-        void blend_from(const SrcPixelFormatRenderer& src, 
-                        const rect_i* rect_src_ptr = 0, 
-                        int dx = 0, 
+        void blend_from(const SrcPixelFormatRenderer& src,
+                        const rect_i* rect_src_ptr = 0,
+                        int dx = 0,
                         int dy = 0,
                         cover_type cover = cover_full)
         {
@@ -336,10 +336,10 @@ namespace agg
             while(next_clip_box());
         }
 
-        
+
     private:
         renderer_mclip(const renderer_mclip<PixelFormat>&);
-        const renderer_mclip<PixelFormat>& 
+        const renderer_mclip<PixelFormat>&
             operator = (const renderer_mclip<PixelFormat>&);
 
         base_ren_type          m_ren;

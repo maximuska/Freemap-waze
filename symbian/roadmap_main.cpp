@@ -59,7 +59,7 @@ extern "C" {
 #include "../editor/editor_main.h"
 }
 
-int USING_PHONE_KEYPAD = 0; 
+int USING_PHONE_KEYPAD = 0;
 
 //#include "symbian_input_mon.h"
 #include "roadmap_canvas_agg.h"
@@ -72,15 +72,15 @@ int USING_PHONE_KEYPAD = 0;
 #define ROADMAP_MAX_TIMER 16
 #define ROADMAP_MAX_IO 16
 struct roadmap_main_timer {
-	CPeriodic *periodic;
-	RoadMapCallback callback;
+    CPeriodic *periodic;
+    RoadMapCallback callback;
 };
 static struct roadmap_main_timer RoadMapMainPeriodicTimer[ROADMAP_MAX_TIMER];
 
 static roadmap_main_io *RoadMapMainIo[ROADMAP_MAX_IO];
 
 // varibles used across this module
-static RoadMapKeyInput	RoadMapMainInput = NULL;
+static RoadMapKeyInput  RoadMapMainInput = NULL;
 static CFreeMapAppView *View;
 static CBitmapContext *Gc;
 
@@ -98,115 +98,115 @@ extern "C" {
 }
 
 extern "C" {
-	
-	void roadmap_main_configure (CBitmapContext *gc, CFreeMapAppView *view) {
-		Gc = gc;
-		View = view;
-	}
-	
-	void roadmap_main_toggle_full_screen (void)
-	{
-	}
 
-	void roadmap_main_new (const char */*title*/, int /*width*/, int /*height*/)
-	{
-	  roadmap_canvas_new(View->GetWindow(), 0, 0);
-	  
-	  editor_main_set (1);
+    void roadmap_main_configure (CBitmapContext *gc, CFreeMapAppView *view) {
+        Gc = gc;
+        View = view;
+    }
+
+    void roadmap_main_toggle_full_screen (void)
+    {
+    }
+
+    void roadmap_main_new (const char */*title*/, int /*width*/, int /*height*/)
+    {
+      roadmap_canvas_new(View->GetWindow(), 0, 0);
+
+      editor_main_set (1);
   }
-	
-	void roadmap_main_set_keyboard
-      (struct RoadMapFactoryKeyMap */*bindings*/, RoadMapKeyInput callback)
-	{
-		RoadMapMainInput = callback;
-	}
 
-TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType) 
+    void roadmap_main_set_keyboard
+      (struct RoadMapFactoryKeyMap */*bindings*/, RoadMapKeyInput callback)
+    {
+        RoadMapMainInput = callback;
+    }
+
+TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType)
 {
-	char regular_key[2];
-	EVirtualKey vk      = VK_None;
-	const char* pCode;
-  
-	if ( aType != EEventKey ) { return EKeyWasNotConsumed;  }
-  
-	if ( code == EStdKeyDevice3 )
-	{//handle center key here because it's not virtual
-		regular_key[0] = ENTER_KEY;
-		regular_key[1] = '\0';
-		roadmap_keyboard_handler__key_pressed( regular_key, KEYBOARD_ASCII );
-		return EKeyWasConsumed;
-	}
-	if ( code == EStdKeyBackspace)
-	{
-  		regular_key[0] = BACKSPACE;
-  		regular_key[1] = '\0';
-  		roadmap_keyboard_handler__key_pressed( regular_key, KEYBOARD_ASCII );
-  		return EKeyWasConsumed;
-	}
-  
-	// Virtual keys first
-	switch(code)
-	{
-		case EStdKeyDevice0        : vk = VK_Softkey_left;   break;
-		case EStdKeyDevice1        : vk = VK_Softkey_right;  break;
-		case EStdKeyUpArrow        : vk = VK_Arrow_up;       break;
-		case EStdKeyDownArrow      : vk = VK_Arrow_down;     break;
-		case EStdKeyLeftArrow      : vk = VK_Arrow_left;     break;
-		case EStdKeyRightArrow     : vk = VK_Arrow_right;    break;
-		case EStdKeyNo             : roadmap_main_exit();     return EKeyWasConsumed;
-		default:
-			break;
-	}
-	// Handle virtual key if necessary
-	if( vk != VK_None ) 
-	{
-		regular_key[0] = ( char ) ( vk & 0xFF );
-		regular_key[1] = '\0';
-		if ( roadmap_keyboard_handler__key_pressed( regular_key, KEYBOARD_VIRTUAL_KEY ) )
-		{
-			return EKeyWasConsumed;
-		}
-	}
-	#ifndef __WINS__
-	// Conversions for the not standard codes
-	switch( code )
-	{
-		case 133		 	: /* This is star in Samsung's Symbian... */
-		   code = '*';        break;
-		case EStdKeyHash  	: code = '#';        break;
-		default				: break;
-	}
-	#endif
-	// Regular keys - phone or qwerty 
-	if ( USING_PHONE_KEYPAD  )
-	{
-		regular_key[0] = ( char ) ( code & 0xFF );
-		regular_key[1] = '\0';
-		pCode =  regular_key;
-	}
-	else
-	{	// Qwerty keyboard
-		TUint16 qwertyCode = code;
-		TUint32 qwertyCodeNullEnd = 0;
-		CFreeMapAppUi* pAppUi = static_cast<CFreeMapAppUi*>( CEikonEnv::Static()->EikAppUi() );
-		// AGA DEBUG
-		roadmap_log ( ROADMAP_ERROR, "AGA DEBUG# ScanCode : %d. Event : %d", code, aType );
-		
-		pAppUi->GetUnicodeForScanCodeL( code, qwertyCode );
-		// Little endian: first byte = first char, null terminated
-		qwertyCodeNullEnd = qwertyCode & 0xFFFF; 
-		pCode =  reinterpret_cast<const char*>( &qwertyCodeNullEnd );		
-	}
-	// Handle regular keys. pCode - pointer to the null terminated bytes
-	// of the utf character
-	if( roadmap_keyboard_handler__key_pressed( pCode, KEYBOARD_ASCII)) 
-	{
-		return EKeyWasConsumed;
-	}
-	else 
-	{
-		return EKeyWasNotConsumed;
-	}
+    char regular_key[2];
+    EVirtualKey vk      = VK_None;
+    const char* pCode;
+
+    if ( aType != EEventKey ) { return EKeyWasNotConsumed;  }
+
+    if ( code == EStdKeyDevice3 )
+    {//handle center key here because it's not virtual
+        regular_key[0] = ENTER_KEY;
+        regular_key[1] = '\0';
+        roadmap_keyboard_handler__key_pressed( regular_key, KEYBOARD_ASCII );
+        return EKeyWasConsumed;
+    }
+    if ( code == EStdKeyBackspace)
+    {
+        regular_key[0] = BACKSPACE;
+        regular_key[1] = '\0';
+        roadmap_keyboard_handler__key_pressed( regular_key, KEYBOARD_ASCII );
+        return EKeyWasConsumed;
+    }
+
+    // Virtual keys first
+    switch(code)
+    {
+        case EStdKeyDevice0        : vk = VK_Softkey_left;   break;
+        case EStdKeyDevice1        : vk = VK_Softkey_right;  break;
+        case EStdKeyUpArrow        : vk = VK_Arrow_up;       break;
+        case EStdKeyDownArrow      : vk = VK_Arrow_down;     break;
+        case EStdKeyLeftArrow      : vk = VK_Arrow_left;     break;
+        case EStdKeyRightArrow     : vk = VK_Arrow_right;    break;
+        case EStdKeyNo             : roadmap_main_exit();     return EKeyWasConsumed;
+        default:
+            break;
+    }
+    // Handle virtual key if necessary
+    if( vk != VK_None )
+    {
+        regular_key[0] = ( char ) ( vk & 0xFF );
+        regular_key[1] = '\0';
+        if ( roadmap_keyboard_handler__key_pressed( regular_key, KEYBOARD_VIRTUAL_KEY ) )
+        {
+            return EKeyWasConsumed;
+        }
+    }
+    #ifndef __WINS__
+    // Conversions for the not standard codes
+    switch( code )
+    {
+        case 133            : /* This is star in Samsung's Symbian... */
+           code = '*';        break;
+        case EStdKeyHash    : code = '#';        break;
+        default             : break;
+    }
+    #endif
+    // Regular keys - phone or qwerty
+    if ( USING_PHONE_KEYPAD  )
+    {
+        regular_key[0] = ( char ) ( code & 0xFF );
+        regular_key[1] = '\0';
+        pCode =  regular_key;
+    }
+    else
+    {   // Qwerty keyboard
+        TUint16 qwertyCode = code;
+        TUint32 qwertyCodeNullEnd = 0;
+        CFreeMapAppUi* pAppUi = static_cast<CFreeMapAppUi*>( CEikonEnv::Static()->EikAppUi() );
+        // AGA DEBUG
+        roadmap_log ( ROADMAP_ERROR, "AGA DEBUG# ScanCode : %d. Event : %d", code, aType );
+
+        pAppUi->GetUnicodeForScanCodeL( code, qwertyCode );
+        // Little endian: first byte = first char, null terminated
+        qwertyCodeNullEnd = qwertyCode & 0xFFFF;
+        pCode =  reinterpret_cast<const char*>( &qwertyCodeNullEnd );
+    }
+    // Handle regular keys. pCode - pointer to the null terminated bytes
+    // of the utf character
+    if( roadmap_keyboard_handler__key_pressed( pCode, KEYBOARD_ASCII))
+    {
+        return EKeyWasConsumed;
+    }
+    else
+    {
+        return EKeyWasNotConsumed;
+    }
 }
 
    RoadMapMenu roadmap_main_new_menu (void)
@@ -215,60 +215,60 @@ TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType)
    return NULL;
    }
 
-   
-	void roadmap_main_add_menu (RoadMapMenu menu, const char *label)
-	{
-	}
-	
-	
-	void roadmap_main_add_menu_item (RoadMapMenu menu, const char *label,
+
+    void roadmap_main_add_menu (RoadMapMenu menu, const char *label)
+    {
+    }
+
+
+    void roadmap_main_add_menu_item (RoadMapMenu menu, const char *label,
       const char *tip, RoadMapCallback callback)
-	{
-	}
-	
+    {
+    }
+
    void roadmap_main_popup_menu (RoadMapMenu menu, int x, int y) {
 
    }
 
-	void roadmap_main_add_separator (RoadMapMenu menu)
-	{
-		roadmap_main_add_menu_item (menu, NULL, NULL, NULL);
-	}
-	
-	void roadmap_main_add_tool (const char *label,
-		const char *icon,
-		const char *tip,
-		RoadMapCallback callback)
-	{
-	}
-	
-	
-	void roadmap_main_add_tool_space (void)
-	{
-	}
-	
-	
-	void roadmap_main_add_canvas (void)
-	{
+    void roadmap_main_add_separator (RoadMapMenu menu)
+    {
+        roadmap_main_add_menu_item (menu, NULL, NULL, NULL);
+    }
 
-	}
-	
-	
-	void roadmap_main_add_status (void)
-	{
-		//TODO: do we need this?
-	}
-	
-	
-	void roadmap_main_show (void)
-	{
-	}
-	
-	
-	void roadmap_main_set_input (RoadMapIO *io, RoadMapInput callback)
-	{
+    void roadmap_main_add_tool (const char *label,
+        const char *icon,
+        const char *tip,
+        RoadMapCallback callback)
+    {
+    }
+
+
+    void roadmap_main_add_tool_space (void)
+    {
+    }
+
+
+    void roadmap_main_add_canvas (void)
+    {
+
+    }
+
+
+    void roadmap_main_add_status (void)
+    {
+        //TODO: do we need this?
+    }
+
+
+    void roadmap_main_show (void)
+    {
+    }
+
+
+    void roadmap_main_set_input (RoadMapIO *io, RoadMapInput callback)
+    {
       int i;
-      
+
       for (i = 0; i < ROADMAP_MAX_IO; ++i) {
          if (RoadMapMainIo[i] == NULL) {
             RoadMapMainIo[i] = (roadmap_main_io *) malloc (sizeof(roadmap_main_io));
@@ -278,29 +278,29 @@ TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType)
             break;
          }
       }
-      
+
       if (i == ROADMAP_MAX_IO) {
          roadmap_log (ROADMAP_FATAL, "Too many set input calls");
          return;
       }
-      
+
      if ( io == NULL || callback == NULL )  return;
-     if ( io->subsystem != ROADMAP_IO_NET ) return; 
-     
+     if ( io->subsystem != ROADMAP_IO_NET ) return;
+
      CRoadMapNativeNet* net = (CRoadMapNativeNet*)(io->os.socket);
      if ( net == NULL ) return;
-     
+
      net->StartPolling((void*)callback, (void*)RoadMapMainIo[i]);
    }
-   
-   
+
+
    void roadmap_main_remove_input (RoadMapIO *io)
    {
     if ( io == NULL )  return;
-    if ( io->subsystem != ROADMAP_IO_NET ) return; 
+    if ( io->subsystem != ROADMAP_IO_NET ) return;
 
     int i;
-    
+
     for (i = 0; i < ROADMAP_MAX_IO; ++i) {
        if (RoadMapMainIo[i] && RoadMapMainIo[i]->io == io) {
 
@@ -320,27 +320,27 @@ TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType)
 
     net->StopPolling();
    }
-   
+
    static int roadmap_main_timeout (TAny *ptr)
-   {     
+   {
       RoadMapCallback callback = (RoadMapCallback) ptr;
-         
+
       if (callback != NULL) {
         if (global_FreeMapLock() != 0) return 0;
          (*callback) ();
          global_FreeMapUnlock();
       }
-      
+
       return 0;
    }
-   
+
    void roadmap_main_set_periodic (int interval, RoadMapCallback callback)
    {
       int index;
       struct roadmap_main_timer *timer = NULL;
-      
+
       for (index = 0; index < ROADMAP_MAX_TIMER; ++index) {
-         
+
          if (RoadMapMainPeriodicTimer[index].callback == callback) {
             return;
          }
@@ -350,60 +350,60 @@ TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType)
             }
          }
       }
-      
+
       if (timer == NULL) {
          roadmap_log (ROADMAP_FATAL, "Timer table saturated");
       }
-      
+
       timer->callback = callback;
-      
+
       TRAPD(err, timer->periodic = CPeriodic::NewL(CActive::EPriorityStandard));
       if ( err != KErrNone )
       {
         roadmap_log(ROADMAP_FATAL, "Could not instantiate timer!");
         return;
       }
-      
+
       interval *= 1000;
-      
+
       timer->periodic->Start(interval, interval, TCallBack(roadmap_main_timeout, (TAny *)timer->callback));
-      
+
    }
-   
-   
+
+
    void roadmap_main_remove_periodic (RoadMapCallback callback)
    {
       int index;
-      
+
       for (index = 0; index < ROADMAP_MAX_TIMER; ++index) {
-         
+
          if (RoadMapMainPeriodicTimer[index].callback == callback) {
-            
+
             RoadMapMainPeriodicTimer[index].callback = NULL;
             RoadMapMainPeriodicTimer[index].periodic->Cancel();
             delete (RoadMapMainPeriodicTimer[index].periodic);
-            
+
             return;
          }
       }
-      
+
       roadmap_log (ROADMAP_ERROR, "timer 0x%08x not found", callback);
    }
-   
-   
+
+
    void roadmap_main_set_status (const char *text) {}
-   
-   void roadmap_main_flush (void) 
+
+   void roadmap_main_flush (void)
     {
        CEikonEnv::Static()->Flush();
     }
-	
-	
-	void roadmap_main_exit (void)
-	{
-		roadmap_start_exit ();
-		((CAknAppUi*)CEikonEnv::Static()->EikAppUi())->Exit();
-	}
+
+
+    void roadmap_main_exit (void)
+    {
+        roadmap_start_exit ();
+        ((CAknAppUi*)CEikonEnv::Static()->EikAppUi())->Exit();
+    }
 
    void roadmap_main_set_cursor (int cursor)
    {
@@ -418,36 +418,36 @@ TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType)
          break;
       }
    }
-   
+
    int roadmap_softkeys_orientation(){
-   	return AknLayoutUtils::CbaLocation();
+    return AknLayoutUtils::CbaLocation();
    }
 
    void roadmap_internet_open_browser (char *url) {
-   	  RApaLsSession apaLsSession;
-   	  const TUid KOSSBrowserUidValue = {0x10008D39}; // 0x1020724D for S60 3rd Ed
-   	  TUid id(KOSSBrowserUidValue);
-   	  TApaTaskList taskList(CEikonEnv::Static()->WsSession());
-   	  TApaTask task = taskList.FindApp(id);
-   	  if(task.Exists())
-   		  {
-   		  task.BringToForeground();
-   		  task.SendMessage(TUid::Uid(0), TPtrC8((TUint8 *)url,strlen(url))); // UID not used
-   		  }
-   	  else
-   		  {
-   		  if(!apaLsSession.Handle())
-   			  {
-   			  User::LeaveIfError(apaLsSession.Connect());
-   			  }
-   		  TThreadId thread;
-   		  
-   		  TBuf16<128> buf;
-   		  buf.Copy(TPtrC8((TUint8 *)url,strlen(url)));
-   		   		  
-   		  User::LeaveIfError(apaLsSession.StartDocument(buf, KOSSBrowserUidValue, thread));
-   		  apaLsSession.Close();   
-   		  }
+      RApaLsSession apaLsSession;
+      const TUid KOSSBrowserUidValue = {0x10008D39}; // 0x1020724D for S60 3rd Ed
+      TUid id(KOSSBrowserUidValue);
+      TApaTaskList taskList(CEikonEnv::Static()->WsSession());
+      TApaTask task = taskList.FindApp(id);
+      if(task.Exists())
+          {
+          task.BringToForeground();
+          task.SendMessage(TUid::Uid(0), TPtrC8((TUint8 *)url,strlen(url))); // UID not used
+          }
+      else
+          {
+          if(!apaLsSession.Handle())
+              {
+              User::LeaveIfError(apaLsSession.Connect());
+              }
+          TThreadId thread;
+
+          TBuf16<128> buf;
+          buf.Copy(TPtrC8((TUint8 *)url,strlen(url)));
+
+          User::LeaveIfError(apaLsSession.StartDocument(buf, KOSSBrowserUidValue, thread));
+          apaLsSession.Close();
+          }
    }
 
 } // extern "C"

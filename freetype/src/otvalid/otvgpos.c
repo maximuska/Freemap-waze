@@ -88,8 +88,8 @@
           OTV_SIZE_CHECK( anchor_offset );
           if ( anchor_offset )
             otv_Anchor_validate( table + anchor_offset, valid );
-        }        
-        else  
+        }
+        else
           otv_Anchor_validate( table + anchor_offset, valid );
       }
 
@@ -130,7 +130,7 @@
     otv_MarkArray_validate( table + Array1, valid );
 
     valid->nesting_level++;
-    func          = valid->func[valid->nesting_level];    
+    func          = valid->func[valid->nesting_level];
     valid->extra1 = ClassCount;
 
     func( table + Array2, valid );

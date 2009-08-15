@@ -23,7 +23,7 @@
  * NOTE:
  * This file implements all the "dynamic" editor functionality.
  * The code here is experimental and needs to be reorganized.
- * 
+ *
  * SYNOPSYS:
  *
  *   See editor_track_unknown.h
@@ -118,7 +118,7 @@ static int find_line_break (int last_point,
    int max_point_azymuth = 0;
    int max_azymuth_point = -1;
    int current_azymuth;
-   
+
    if ((current_point - last_point + 1) > MAX_TURN_POINTS) return 0;
 
    j=0;
@@ -127,7 +127,7 @@ static int find_line_break (int last_point,
       int diff;
       int prev_azymuth;
 
-      current_azymuth = 
+      current_azymuth =
          roadmap_math_azymuth
             (track_point_pos (i),
              track_point_pos (i+1));
@@ -139,13 +139,13 @@ static int find_line_break (int last_point,
       }
 
       if (i == last_point) {
-	      prev_azymuth = last_azymuth;
-		} else {
-	      prev_azymuth = 
-   	      roadmap_math_azymuth
-      	      (track_point_pos (i-1),
-         	    track_point_pos (i));
-		}
+          prev_azymuth = last_azymuth;
+        } else {
+          prev_azymuth =
+          roadmap_math_azymuth
+              (track_point_pos (i-1),
+                track_point_pos (i));
+        }
 
       diff = roadmap_math_delta_direction (prev_azymuth, current_azymuth);
       pairs[j].index = i;
@@ -171,7 +171,7 @@ static int find_line_break (int last_point,
       j=1;
 
       while ((100 * angle_sum / max_azymuth_diff) < 70) {
-         
+
          assert (j<(current_point-last_point+1));
          if (j>=(current_point-last_point+1)) break;
 
@@ -218,7 +218,7 @@ static int is_roundabout (int first_point, int last_point) {
 
    middle.longitude /= (last_point - first_point);
    middle.latitude /= (last_point - first_point);
-    
+
    /* Fix the end of the segment before the roundabout */
 
    GpsPoints[first_point-1].longitude = middle.longitude;
@@ -260,7 +260,7 @@ static int detect_turn(int point_id,
              (track_point_pos (point_id - 1),
               track_point_pos (point_id)),
              last_straight_azymuth) > 60)) {
-      
+
       new_segment[0].type = road_type;
       new_segment[0].point_id = point_id - 1;
 
@@ -306,7 +306,7 @@ static int detect_turn(int point_id,
 
       last_straight_line_point = point_id - middle2;
       last_straight_azymuth = this_straight_azymuth;
-     
+
       assert (middle1 > 0);
       if (middle1 > 0) {
          new_segment[0].type = road_type;
@@ -348,7 +348,7 @@ static int detect_loop(int point_id,
       //GpsPoints[point_id].latitude = intersection.latitude;
 
       if (is_roundabout (loop_start_point, point_id)) {
-         
+
          new_segment[0].type = road_type;
          new_segment[0].point_id = loop_start_point;
 
@@ -377,7 +377,7 @@ static int detect_road_segment (int point_id,
                                 int point_type) {
 
    int count;
-   
+
    int road_type = TRACK_ROAD_REG;
    if (point_type & POINT_GAP) {
       road_type = TRACK_ROAD_CONNECTION;
@@ -404,7 +404,7 @@ int editor_track_unknown_locate_point (int point_id,
    RoadMapTracking nominated;
    int found;
    int count;
-   
+
    if (point_type & POINT_UNKNOWN) {
       /* this point is already known to be unknown */
       return detect_road_segment
@@ -421,7 +421,7 @@ int editor_track_unknown_locate_point (int point_id,
          confirmed_street->valid) {
 
       /* we found an existing road, let's close the new road */
-      
+
       /* delay ending the line until we find the best location to end it */
       if (roadmap_fuzzy_is_good (best) &&
                ( !confirmed_street->valid ||
@@ -435,11 +435,11 @@ int editor_track_unknown_locate_point (int point_id,
          confirmed_street->entry_fuzzyfied = best;
          confirmed_street->cur_fuzzyfied = best;
 
-/*         
+/*
          if (!roadmap_fuzzy_is_certain (best)) {
             return 0;
          }
-*/         
+*/
          if (confirmed_line->distance > editor_track_point_distance ()) {
             return 0;
          }

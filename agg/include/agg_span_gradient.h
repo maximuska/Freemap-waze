@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -48,7 +48,7 @@ namespace agg
     //==========================================================span_gradient
     template<class ColorT,
              class Interpolator,
-             class GradientF, 
+             class GradientF,
              class ColorF>
     class span_gradient
     {
@@ -58,7 +58,7 @@ namespace agg
 
         enum downscale_shift_e
         {
-            downscale_shift = interpolator_type::subpixel_shift - 
+            downscale_shift = interpolator_type::subpixel_shift -
                               gradient_subpixel_shift
         };
 
@@ -69,7 +69,7 @@ namespace agg
         span_gradient(interpolator_type& inter,
                       const GradientF& gradient_function,
                       const ColorF& color_function,
-                      double d1, double d2) : 
+                      double d1, double d2) :
             m_interpolator(&inter),
             m_gradient_function(&gradient_function),
             m_color_function(&color_function),
@@ -96,14 +96,14 @@ namespace agg
 
         //--------------------------------------------------------------------
         void generate(color_type* span, int x, int y, unsigned len)
-        {   
+        {
             int dd = m_d2 - m_d1;
             if(dd < 1) dd = 1;
             m_interpolator->begin(x+0.5, y+0.5, len);
             do
             {
                 m_interpolator->coordinates(&x, &y);
-                int d = m_gradient_function->calculate(x >> downscale_shift, 
+                int d = m_gradient_function->calculate(x >> downscale_shift,
                                                        y >> downscale_shift, m_d2);
                 d = ((d - m_d1) * (int)m_color_function->size()) / dd;
                 if(d < 0) d = 0;
@@ -126,18 +126,18 @@ namespace agg
 
 
     //=====================================================gradient_linear_color
-    template<class ColorT> 
+    template<class ColorT>
     struct gradient_linear_color
     {
         typedef ColorT color_type;
 
         gradient_linear_color() {}
-        gradient_linear_color(const color_type& c1, const color_type& c2, 
+        gradient_linear_color(const color_type& c1, const color_type& c2,
                               unsigned size = 256) :
             m_c1(c1), m_c2(c2), m_size(size) {}
 
         unsigned size() const { return m_size; }
-        color_type operator [] (unsigned v) const 
+        color_type operator [] (unsigned v) const
         {
             return m_c1.gradient(m_c2, double(v) / double(m_size - 1));
         }
@@ -196,18 +196,18 @@ namespace agg
     {
     public:
         //---------------------------------------------------------------------
-        gradient_radial_focus() : 
-            m_r(100 * gradient_subpixel_scale), 
-            m_fx(0), 
+        gradient_radial_focus() :
+            m_r(100 * gradient_subpixel_scale),
+            m_fx(0),
             m_fy(0)
         {
             update_values();
         }
 
         //---------------------------------------------------------------------
-        gradient_radial_focus(double r, double fx, double fy) : 
-            m_r (iround(r  * gradient_subpixel_scale)), 
-            m_fx(iround(fx * gradient_subpixel_scale)), 
+        gradient_radial_focus(double r, double fx, double fy) :
+            m_r (iround(r  * gradient_subpixel_scale)),
+            m_fx(iround(fx * gradient_subpixel_scale)),
             m_fy(iround(fy * gradient_subpixel_scale))
         {
             update_values();
@@ -291,11 +291,11 @@ namespace agg
     class gradient_diamond
     {
     public:
-        static AGG_INLINE int calculate(int x, int y, int) 
-        { 
+        static AGG_INLINE int calculate(int x, int y, int)
+        {
             int ax = abs(x);
             int ay = abs(y);
-            return ax > ay ? ax : ay; 
+            return ax > ay ? ax : ay;
         }
     };
 
@@ -303,9 +303,9 @@ namespace agg
     class gradient_xy
     {
     public:
-        static AGG_INLINE int calculate(int x, int y, int d) 
-        { 
-            return abs(x) * abs(y) / d; 
+        static AGG_INLINE int calculate(int x, int y, int d)
+        {
+            return abs(x) * abs(y) / d;
         }
     };
 
@@ -313,9 +313,9 @@ namespace agg
     class gradient_sqrt_xy
     {
     public:
-        static AGG_INLINE int calculate(int x, int y, int) 
-        { 
-            return fast_sqrt(abs(x) * abs(y)); 
+        static AGG_INLINE int calculate(int x, int y, int)
+        {
+            return fast_sqrt(abs(x) * abs(y));
         }
     };
 
@@ -323,8 +323,8 @@ namespace agg
     class gradient_conic
     {
     public:
-        static AGG_INLINE int calculate(int x, int y, int d) 
-        { 
+        static AGG_INLINE int calculate(int x, int y, int d)
+        {
             return uround(fabs(atan2(double(y), double(x))) * double(d) / pi);
         }
     };
@@ -333,7 +333,7 @@ namespace agg
     template<class GradientF> class gradient_repeat_adaptor
     {
     public:
-        gradient_repeat_adaptor(const GradientF& gradient) : 
+        gradient_repeat_adaptor(const GradientF& gradient) :
             m_gradient(&gradient) {}
 
         AGG_INLINE int calculate(int x, int y, int d) const
@@ -351,7 +351,7 @@ namespace agg
     template<class GradientF> class gradient_reflect_adaptor
     {
     public:
-        gradient_reflect_adaptor(const GradientF& gradient) : 
+        gradient_reflect_adaptor(const GradientF& gradient) :
             m_gradient(&gradient) {}
 
         AGG_INLINE int calculate(int x, int y, int d) const

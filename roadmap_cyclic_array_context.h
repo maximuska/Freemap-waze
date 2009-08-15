@@ -19,8 +19,8 @@
  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef	__ROADMAP_CYCLIC_ARRAY_CONTEXT_H__
-#define	__ROADMAP_CYCLIC_ARRAY_CONTEXT_H__
+#ifndef __ROADMAP_CYCLIC_ARRAY_CONTEXT_H__
+#define __ROADMAP_CYCLIC_ARRAY_CONTEXT_H__
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -43,4 +43,4 @@ typedef struct tag_cyclic_array_context
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-#endif	//	__ROADMAP_CYCLIC_ARRAY_CONTEXT_H__
+#endif  //  __ROADMAP_CYCLIC_ARRAY_CONTEXT_H__

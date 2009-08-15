@@ -31,11 +31,11 @@
 
 
 char *roadmap_time_get_hours_minutes (time_t gmt) {
-    
+
     static char image[16];
-    
+
     struct tm *tm;
-    
+
     tm = localtime (&gmt);
     snprintf (image, sizeof(image), "%2d:%02d", tm->tm_hour, tm->tm_min);
 

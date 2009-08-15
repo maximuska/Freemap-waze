@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -35,19 +35,19 @@ namespace agg
     class ellipse
     {
     public:
-        ellipse() : 
-            m_x(0.0), m_y(0.0), m_rx(1.0), m_ry(1.0), m_scale(1.0), 
+        ellipse() :
+            m_x(0.0), m_y(0.0), m_rx(1.0), m_ry(1.0), m_scale(1.0),
             m_num(4), m_step(0), m_cw(false) {}
 
-        ellipse(double x, double y, double rx, double ry, 
+        ellipse(double x, double y, double rx, double ry,
                 unsigned num_steps=0, bool cw=false) :
-            m_x(x), m_y(y), m_rx(rx), m_ry(ry), m_scale(1.0), 
-            m_num(num_steps), m_step(0), m_cw(cw) 
+            m_x(x), m_y(y), m_rx(rx), m_ry(ry), m_scale(1.0),
+            m_num(num_steps), m_step(0), m_cw(cw)
         {
             if(m_num == 0) calc_num_steps();
         }
 
-        void init(double x, double y, double rx, double ry, 
+        void init(double x, double y, double rx, double ry,
                   unsigned num_steps=0, bool cw=false);
 
         void approximation_scale(double scale);
@@ -68,7 +68,7 @@ namespace agg
     };
 
     //------------------------------------------------------------------------
-    inline void ellipse::init(double x, double y, double rx, double ry, 
+    inline void ellipse::init(double x, double y, double rx, double ry,
                               unsigned num_steps, bool cw)
     {
         m_x = x;
@@ -83,7 +83,7 @@ namespace agg
 
     //------------------------------------------------------------------------
     inline void ellipse::approximation_scale(double scale)
-    {   
+    {
         m_scale = scale;
         calc_num_steps();
     }
@@ -105,7 +105,7 @@ namespace agg
     //------------------------------------------------------------------------
     inline unsigned ellipse::vertex(double* x, double* y)
     {
-        if(m_step == m_num) 
+        if(m_step == m_num)
         {
             ++m_step;
             return path_cmd_end_poly | path_flags_close | path_flags_ccw;

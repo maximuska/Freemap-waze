@@ -26,9 +26,9 @@
 //  Generic namespace for conversion methods
 class GSConvert
 {
-public:   
+public:
   //  if len > 0 then we use it;
-  //  if it's 0 (default) then get length from the ptr 
+  //  if it's 0 (default) then get length from the ptr
   static void CharPtrToTDes16(const char* p, TDes16& des16, int len = 0);
   static void CharPtrToTDes8(const char* p, TDes8& des8);
   //  we usually want to alloc the buffer ourselves

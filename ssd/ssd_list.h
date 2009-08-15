@@ -24,7 +24,7 @@
 
 #ifndef __SSD_WIDGET_ICON_LIST_H_
 #define __SSD_WIDGET_ICON_LIST_H_
-  
+
 #include "ssd/ssd_widget.h"
 typedef int (*SsdIconListCallback) (SsdWidget widget, const char *new_value, const void *value);
 typedef int (*SsdIconListDeleteCallback) (SsdWidget widget, const char *new_value, const void *value);
@@ -36,7 +36,7 @@ SsdWidget ssd_list_new( const char*             name,
                         int                     flags,
                         PFN_WIDGET_ONKEYPRESSED on_unhandled_key_press);
 
-void ssd_list_populate (SsdWidget list, int count, const char **labels, 
+void ssd_list_populate (SsdWidget list, int count, const char **labels,
                         const void **values, const char **icons, const int *flags, SsdIconListCallback callback, SsdIconListDeleteCallback del_callback, BOOL add_next_button);
 
 SsdWidget   ssd_list_get_first_item(SsdWidget  list);

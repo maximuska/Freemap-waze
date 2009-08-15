@@ -51,7 +51,7 @@ typedef struct {  /* table line */
 typedef struct { /* tables bysquare1 and bysquare2 */
 
    unsigned short next[ROADMAP_CATEGORY_RANGE + 1];
-   
+
    unsigned short num_roundabout;
    unsigned short first_broken[ROADMAP_DIRECTION_COUNT * 2 + 1];
 } RoadMapLineBySquare;

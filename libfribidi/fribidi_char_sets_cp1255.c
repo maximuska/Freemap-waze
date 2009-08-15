@@ -1,24 +1,24 @@
 /* FriBidi - Library of BiDi algorithm
  * Copyright (C) 1999,2000 Dov Grobgeld, and
- * Copyright (C) 2001,2002 Behdad Esfahbod. 
- * 
- * This library is free software; you can redistribute it and/or 
- * modify it under the terms of the GNU Lesser General Public 
- * License as published by the Free Software Foundation; either 
- * version 2.1 of the License, or (at your option) any later version. 
- * 
- * This library is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
- * Lesser General Public License for more details. 
- * 
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library, in a file named COPYING; if not, write to the 
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330, 
- * Boston, MA 02111-1307, USA  
- * 
- * For licensing issues, contact <dov@imagic.weizmann.ac.il> and 
- * <fwpg@sharif.edu>. 
+ * Copyright (C) 2001,2002 Behdad Esfahbod.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library, in a file named COPYING; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA
+ *
+ * For licensing issues, contact <dov@imagic.weizmann.ac.il> and
+ * <fwpg@sharif.edu>.
  */
 
 #include "fribidi_config.h"
@@ -41,7 +41,7 @@
 #define UNI_DOUBLE_VAV 0x05F0
 #define UNI_GERSHAYIM 0x05F4
 
-FriBidiChar fribidi_cp1255_to_unicode_tab[] = {	/* 0x80-0xBF */
+FriBidiChar fribidi_cp1255_to_unicode_tab[] = { /* 0x80-0xBF */
   0x20AC, 0x81, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021,
   0x02C6, 0x2030, 0x8a, 0x2039, 0x8c, 0x8d, 0x8e, 0x8f,
   0x90, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014,

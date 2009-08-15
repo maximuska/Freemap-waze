@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -36,15 +36,15 @@ namespace agg
     {
         static unsigned calculate(const int8u* p) { return *p; }
     };
-    
+
 
     //=====================================================rgb_to_gray_mask_u8
     template<unsigned R, unsigned G, unsigned B>
     struct rgb_to_gray_mask_u8
     {
-        static unsigned calculate(const int8u* p) 
-        { 
-            return (p[R]*77 + p[G]*150 + p[B]*29) >> 8; 
+        static unsigned calculate(const int8u* p)
+        {
+            return (p[R]*77 + p[G]*150 + p[B]*29) >> 8;
         }
     };
 
@@ -56,7 +56,7 @@ namespace agg
         typedef int8u cover_type;
         typedef alpha_mask_u8<Step, Offset, MaskF> self_type;
         enum cover_scale_e
-        { 
+        {
             cover_shift = 8,
             cover_none  = 0,
             cover_full  = 255
@@ -70,12 +70,12 @@ namespace agg
         MaskF& mask_function() { return m_mask_function; }
         const MaskF& mask_function() const { return m_mask_function; }
 
-        
+
         //--------------------------------------------------------------------
         cover_type pixel(int x, int y) const
         {
-            if(x >= 0 && y >= 0 && 
-               x < (int)m_rbuf->width() && 
+            if(x >= 0 && y >= 0 &&
+               x < (int)m_rbuf->width() &&
                y < (int)m_rbuf->height())
             {
                 return (cover_type)m_mask_function.calculate(
@@ -87,13 +87,13 @@ namespace agg
         //--------------------------------------------------------------------
         cover_type combine_pixel(int x, int y, cover_type val) const
         {
-            if(x >= 0 && y >= 0 && 
-               x < (int)m_rbuf->width() && 
+            if(x >= 0 && y >= 0 &&
+               x < (int)m_rbuf->width() &&
                y < (int)m_rbuf->height())
             {
-                return (cover_type)((cover_full + val * 
+                return (cover_type)((cover_full + val *
                                      m_mask_function.calculate(
-                                        m_rbuf->row_ptr(y) + x * Step + Offset)) >> 
+                                        m_rbuf->row_ptr(y) + x * Step + Offset)) >>
                                      cover_shift);
             }
             return 0;
@@ -118,7 +118,7 @@ namespace agg
             if(x < 0)
             {
                 count += x;
-                if(count <= 0) 
+                if(count <= 0)
                 {
                     memset(dst, 0, num_pix * sizeof(cover_type));
                     return;
@@ -132,7 +132,7 @@ namespace agg
             {
                 int rest = x + count - xmax - 1;
                 count -= rest;
-                if(count <= 0) 
+                if(count <= 0)
                 {
                     memset(dst, 0, num_pix * sizeof(cover_type));
                     return;
@@ -168,7 +168,7 @@ namespace agg
             if(x < 0)
             {
                 count += x;
-                if(count <= 0) 
+                if(count <= 0)
                 {
                     memset(dst, 0, num_pix * sizeof(cover_type));
                     return;
@@ -182,7 +182,7 @@ namespace agg
             {
                 int rest = x + count - xmax - 1;
                 count -= rest;
-                if(count <= 0) 
+                if(count <= 0)
                 {
                     memset(dst, 0, num_pix * sizeof(cover_type));
                     return;
@@ -193,8 +193,8 @@ namespace agg
             const int8u* mask = m_rbuf->row_ptr(y) + x * Step + Offset;
             do
             {
-                *covers = (cover_type)((cover_full + (*covers) * 
-                                       m_mask_function.calculate(mask)) >> 
+                *covers = (cover_type)((cover_full + (*covers) *
+                                       m_mask_function.calculate(mask)) >>
                                        cover_shift);
                 ++covers;
                 mask += Step;
@@ -220,7 +220,7 @@ namespace agg
             if(y < 0)
             {
                 count += y;
-                if(count <= 0) 
+                if(count <= 0)
                 {
                     memset(dst, 0, num_pix * sizeof(cover_type));
                     return;
@@ -234,7 +234,7 @@ namespace agg
             {
                 int rest = y + count - ymax - 1;
                 count -= rest;
-                if(count <= 0) 
+                if(count <= 0)
                 {
                     memset(dst, 0, num_pix * sizeof(cover_type));
                     return;
@@ -269,7 +269,7 @@ namespace agg
             if(y < 0)
             {
                 count += y;
-                if(count <= 0) 
+                if(count <= 0)
                 {
                     memset(dst, 0, num_pix * sizeof(cover_type));
                     return;
@@ -283,7 +283,7 @@ namespace agg
             {
                 int rest = y + count - ymax - 1;
                 count -= rest;
-                if(count <= 0) 
+                if(count <= 0)
                 {
                     memset(dst, 0, num_pix * sizeof(cover_type));
                     return;
@@ -294,8 +294,8 @@ namespace agg
             const int8u* mask = m_rbuf->row_ptr(y) + x * Step + Offset;
             do
             {
-                *covers = (cover_type)((cover_full + (*covers) * 
-                                       m_mask_function.calculate(mask)) >> 
+                *covers = (cover_type)((cover_full + (*covers) *
+                                       m_mask_function.calculate(mask)) >>
                                        cover_shift);
                 ++covers;
                 mask += m_rbuf->stride();
@@ -311,7 +311,7 @@ namespace agg
         rendering_buffer* m_rbuf;
         MaskF             m_mask_function;
     };
-    
+
 
     typedef alpha_mask_u8<1, 0> alpha_mask_gray8;   //----alpha_mask_gray8
 
@@ -360,7 +360,7 @@ namespace agg
         typedef int8u cover_type;
         typedef amask_no_clip_u8<Step, Offset, MaskF> self_type;
         enum cover_scale_e
-        { 
+        {
             cover_shift = 8,
             cover_none  = 0,
             cover_full  = 255
@@ -382,13 +382,13 @@ namespace agg
                                    m_rbuf->row_ptr(y) + x * Step + Offset);
         }
 
-        
+
         //--------------------------------------------------------------------
         cover_type combine_pixel(int x, int y, cover_type val) const
         {
-            return (cover_type)((cover_full + val * 
+            return (cover_type)((cover_full + val *
                                  m_mask_function.calculate(
-                                    m_rbuf->row_ptr(y) + x * Step + Offset)) >> 
+                                    m_rbuf->row_ptr(y) + x * Step + Offset)) >>
                                  cover_shift);
         }
 
@@ -413,8 +413,8 @@ namespace agg
             const int8u* mask = m_rbuf->row_ptr(y) + x * Step + Offset;
             do
             {
-                *dst = (cover_type)((cover_full + (*dst) * 
-                                    m_mask_function.calculate(mask)) >> 
+                *dst = (cover_type)((cover_full + (*dst) *
+                                    m_mask_function.calculate(mask)) >>
                                     cover_shift);
                 ++dst;
                 mask += Step;
@@ -442,8 +442,8 @@ namespace agg
             const int8u* mask = m_rbuf->row_ptr(y) + x * Step + Offset;
             do
             {
-                *dst = (cover_type)((cover_full + (*dst) * 
-                                    m_mask_function.calculate(mask)) >> 
+                *dst = (cover_type)((cover_full + (*dst) *
+                                    m_mask_function.calculate(mask)) >>
                                     cover_shift);
                 ++dst;
                 mask += m_rbuf->stride();
@@ -458,7 +458,7 @@ namespace agg
         rendering_buffer* m_rbuf;
         MaskF             m_mask_function;
     };
-    
+
 
     typedef amask_no_clip_u8<1, 0> amask_no_clip_gray8;   //----amask_no_clip_gray8
 

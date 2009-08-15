@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -52,10 +52,10 @@ namespace agg
 
         void border_thickness(double t, double extra=0.0);
         void resize(double x1, double y1, double x2, double y2);
-        
+
         double min_delta() const { return m_min_d; }
         void min_delta(double d) { m_min_d = d; }
-        
+
         double value1() const { return m_value1; }
         void value1(double value);
 
@@ -119,14 +119,14 @@ namespace agg
             m_colors[3] = &m_pointers_color;
             m_colors[4] = &m_slider_color;
         }
-          
+
 
         void background_color(const ColorT& c) { m_background_color = c; }
         void border_color(const ColorT& c)     { m_border_color = c; }
         void pointers_color(const ColorT& c)   { m_pointers_color = c; }
         void slider_color(const ColorT& c)     { m_slider_color = c; }
 
-        const ColorT& color(unsigned i) const { return *m_colors[i]; } 
+        const ColorT& color(unsigned i) const { return *m_colors[i]; }
 
     private:
         scale_ctrl(const scale_ctrl<ColorT>&);

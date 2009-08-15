@@ -42,7 +42,7 @@ typedef struct {
 
    int type;
    int point_id;
-   
+
 } TrackNewSegment;
 
 #define TRACK_ROAD_REG        1
@@ -53,8 +53,8 @@ typedef struct {
 #define POINT_UNKNOWN         0x1
 #define POINT_GAP             0x2
 
-#define POINT_STATUS_IGNORE	0
-#define POINT_STATUS_SAVE		1
+#define POINT_STATUS_IGNORE 0
+#define POINT_STATUS_SAVE       1
 
 void editor_track_initialize (void);
 int editor_track_point_distance (void);

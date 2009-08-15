@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: fibpriv.h,v 1.2 2007/04/13 09:04:33 eshabtai Exp $
+ *  $Id: fibpriv.h,v 1.2 2007/04/13 09:04:33 eshabtai Exp $
  *
  */
 
@@ -40,18 +40,18 @@ struct fibheap_el;
  * global heap operations
  */
 struct fibheap {
-	int	(*fh_cmp_fnct)(void *, void *);
-	int	fh_n;
-	int	fh_Dl;
-	struct	fibheap_el **fh_cons;
-	struct	fibheap_el *fh_min;
-	struct	fibheap_el *fh_root;
-	void	*fh_neginf;
-	int	fh_keys		: 1;
+    int (*fh_cmp_fnct)(void *, void *);
+    int fh_n;
+    int fh_Dl;
+    struct  fibheap_el **fh_cons;
+    struct  fibheap_el *fh_min;
+    struct  fibheap_el *fh_root;
+    void    *fh_neginf;
+    int fh_keys     : 1;
 #ifdef FH_STATS
-	int	fh_maxn;
-	int	fh_ninserts;
-	int	fh_nextracts;
+    int fh_maxn;
+    int fh_ninserts;
+    int fh_nextracts;
 #endif
 };
 
@@ -60,16 +60,16 @@ static void fh_insertrootlist(struct fibheap *, struct fibheap_el *);
 static void fh_removerootlist(struct fibheap *, struct fibheap_el *);
 static void fh_consolidate(struct fibheap *);
 static void fh_heaplink(struct fibheap *h, struct fibheap_el *y,
-			struct fibheap_el *x);
+            struct fibheap_el *x);
 static void fh_cut(struct fibheap *, struct fibheap_el *, struct fibheap_el *);
 static void fh_cascading_cut(struct fibheap *, struct fibheap_el *);
 static struct fibheap_el *fh_extractminel(struct fibheap *);
 static void fh_checkcons(struct fibheap *h);
 static void fh_destroyheap(struct fibheap *h);
 static int fh_compare(struct fibheap *h, struct fibheap_el *a,
-			struct fibheap_el *b);
+            struct fibheap_el *b);
 static int fh_comparedata(struct fibheap *h, int key, void *data,
-			struct fibheap_el *b);
+            struct fibheap_el *b);
 static void fh_insertel(struct fibheap *h, struct fibheap_el *x);
 static void fh_deleteel(struct fibheap *h, struct fibheap_el *x);
 
@@ -77,14 +77,14 @@ static void fh_deleteel(struct fibheap *h, struct fibheap_el *x);
  * specific node operations
  */
 struct fibheap_el {
-	int	fhe_degree;
-	int	fhe_mark;
-	struct	fibheap_el *fhe_p;
-	struct	fibheap_el *fhe_child;
-	struct	fibheap_el *fhe_left;
-	struct	fibheap_el *fhe_right;
-	int	fhe_key;
-	void	*fhe_data;
+    int fhe_degree;
+    int fhe_mark;
+    struct  fibheap_el *fhe_p;
+    struct  fibheap_el *fhe_child;
+    struct  fibheap_el *fhe_left;
+    struct  fibheap_el *fhe_right;
+    int fhe_key;
+    void    *fhe_data;
 };
 
 static struct fibheap_el *fhe_newelem(void);
@@ -92,7 +92,7 @@ static void fhe_initelem(struct fibheap_el *);
 static void fhe_insertafter(struct fibheap_el *a, struct fibheap_el *b);
 static inline void fhe_insertbefore(struct fibheap_el *a, struct fibheap_el *b);
 static struct fibheap_el *fhe_remove(struct fibheap_el *a);
-#define	fhe_destroy(x)	free((x))
+#define fhe_destroy(x)  free((x))
 
 /*
  * general functions

@@ -29,47 +29,47 @@
 #include "roadmap_sound.h"
 #include "roadmap_plugin.h"
 
-typedef int 		(*roadmap_alerts_count)  (void);
-typedef int 		(*roadmap_alerts_get_alert_id) (int alert);
-typedef void  	(*roadmap_alerts_get_position)(int alert, RoadMapPosition *position, int *steering) ;
+typedef int         (*roadmap_alerts_count)  (void);
+typedef int         (*roadmap_alerts_get_alert_id) (int alert);
+typedef void    (*roadmap_alerts_get_position)(int alert, RoadMapPosition *position, int *steering) ;
 typedef unsigned int (*roadmap_alerts_get_speed)(int alert);
 typedef const char * (*roadmap_alerts_get_map_icon)(int alertId);
 typedef const char * (*roadmap_alerts_get_alert_icon)(int alertId);
 typedef const char * (*roadmap_alerts_get_warning_icon)(int alertId);
 typedef int  (*roadmap_alerts_get_distance)(int alert);
 typedef RoadMapSoundList (*roadmap_alerts_get_sound)(int alertId);
-typedef int  		(*roadmap_alerts_is_alertable)(int alert);
+typedef int         (*roadmap_alerts_is_alertable)(int alert);
 typedef const char * (*roadmap_alerts_get_string)(int alertId);
-typedef int  		(*roadmap_alerts_is_cancelable)(int alert);
-typedef int  		(*roadmap_alerts_cancel)(int alert) ;
+typedef int         (*roadmap_alerts_is_cancelable)(int alert);
+typedef int         (*roadmap_alerts_cancel)(int alert) ;
 
 
 typedef struct {
    char *name;
-   roadmap_alerts_count    					count;
-   roadmap_alerts_get_alert_id 				get_id;
-   roadmap_alerts_get_position  			get_position;
-   roadmap_alerts_get_speed					get_speed;
-   roadmap_alerts_get_map_icon    			get_map_icon;
-   roadmap_alerts_get_alert_icon    		get_alert_icon;
-   roadmap_alerts_get_warning_icon		    get_warning_icon;
-   roadmap_alerts_get_distance				get_distance;
-   roadmap_alerts_get_sound					get_sound;
-   roadmap_alerts_is_alertable				is_alertable;
-   roadmap_alerts_get_string				get_string;
-   roadmap_alerts_is_cancelable			    is_cancelable;
-   roadmap_alerts_cancel					cancel;   
+   roadmap_alerts_count                     count;
+   roadmap_alerts_get_alert_id              get_id;
+   roadmap_alerts_get_position              get_position;
+   roadmap_alerts_get_speed                 get_speed;
+   roadmap_alerts_get_map_icon              get_map_icon;
+   roadmap_alerts_get_alert_icon            get_alert_icon;
+   roadmap_alerts_get_warning_icon          get_warning_icon;
+   roadmap_alerts_get_distance              get_distance;
+   roadmap_alerts_get_sound                 get_sound;
+   roadmap_alerts_is_alertable              is_alertable;
+   roadmap_alerts_get_string                get_string;
+   roadmap_alerts_is_cancelable             is_cancelable;
+   roadmap_alerts_cancel                    cancel;
 } roadmap_alert_providor;
 
 typedef struct {
-	roadmap_alert_providor	*providor[20];
-	int									count;
-}	roadmap_alert_providors;
+    roadmap_alert_providor  *providor[20];
+    int                                 count;
+}   roadmap_alert_providors;
 
-void 		roadmap_alerter_initialize(void) ;
-int 		roadmap_alerter_get_active_alert_id();
-void 		roadmap_alerter_register(roadmap_alert_providor *providor);
-void 		roadmap_alerter_check(const RoadMapGpsPosition *gps_position, const PluginLine *line);
-void 		roadmap_alerter_display();
+void        roadmap_alerter_initialize(void) ;
+int         roadmap_alerter_get_active_alert_id();
+void        roadmap_alerter_register(roadmap_alert_providor *providor);
+void        roadmap_alerter_check(const RoadMapGpsPosition *gps_position, const PluginLine *line);
+void        roadmap_alerter_display();
 
 #endif //_ROADMAP_ALERTS__H_

@@ -29,16 +29,16 @@
 
 
 // input flags
-#define NEW_ROUTE 					1
-#define RECALC_ROUTE 				2
-#define USE_LAST_RESULTS 			4
+#define NEW_ROUTE                   1
+#define RECALC_ROUTE                2
+#define USE_LAST_RESULTS            4
 #define ALLOW_DESTINATION_CHANGE 8
-#define ALLOW_ALTERNATE_SOURCE	16
+#define ALLOW_ALTERNATE_SOURCE  16
 
 // output flags
-#define CHANGED_DEPARTURE			256			
-#define CHANGED_DESTINATION		128 
-#define GRAPH_IGNORE_TURNS 		64
+#define CHANGED_DEPARTURE           256
+#define CHANGED_DESTINATION     128
+#define GRAPH_IGNORE_TURNS      64
 
 int navigate_route_reload_data (void);
 int navigate_route_load_data   (void);

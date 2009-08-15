@@ -22,28 +22,28 @@
 
 #include "ssd/ssd_combobox.h"
 
-void ssd_combobox_dialog_show(const char*                title, 
-                              int                        count, 
+void ssd_combobox_dialog_show(const char*                title,
+                              int                        count,
                               const char**               labels,
                               const void**                values,
-                              const char**						icons,
+                              const char**                      icons,
                               PFN_ON_INPUT_CHANGED       on_text_changed,
                               PFN_ON_INPUT_DIALOG_CLOSED on_combobox_closed,
                               SsdIconListCallback  on_list_selection,
                               unsigned short             input_type,   //   txttyp_<xxx> combination from 'roadmap_text.h'
                               void*                      context,
-                              const char*            left_softkey_text, 
-            						SsdSoftKeyCallback		left_softkey_callback );
+                              const char*            left_softkey_text,
+                                    SsdSoftKeyCallback      left_softkey_callback );
 
 void ssd_combobox_dialog_update_list(
-                              int                        count, 
+                              int                        count,
                               const char**               labels,
                               const void**                values,
-                              const char**						icons);
+                              const char**                      icons);
 
 SsdWidget   ssd_combobox_dialog_get_textbox();
 void*       ssd_combobox_dialog_get_context();
-SsdWidget   ssd_combobox_dialog_get_list();                              
+SsdWidget   ssd_combobox_dialog_get_list();
 const char* ssd_combobox_dialog_get_text();
 void        ssd_combobox_dialog_set_text(const char* text);
 

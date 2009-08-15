@@ -524,35 +524,35 @@ const char *roadmap_path_search_icon (const char *name)
 
 
 int roadmap_construct_res_path(
-		/* IN/OUT */	char* out_path,
-		/* IN */   		size_t out_sz,
-		/* IN */   		const char *filename,
-		/* IN */   		const char *suffix,
-		/* IN */   		const char* prefix )
+        /* IN/OUT */    char* out_path,
+        /* IN */        size_t out_sz,
+        /* IN */        const char *filename,
+        /* IN */        const char *suffix,
+        /* IN */        const char* prefix )
 {
-	/* The path prefix searched for public resources sub-folders */
-	const char *RoadMapPathPubResources[] = {
-		"C:\\Data\\Freemap", // Internal memory goes first to save power.
-		"E:\\Data\\Freemap",
-		roadmap_path_user()  // Private dir goes last to allow users to override resources easily
-	};
+    /* The path prefix searched for public resources sub-folders */
+    const char *RoadMapPathPubResources[] = {
+        "C:\\Data\\Freemap", // Internal memory goes first to save power.
+        "E:\\Data\\Freemap",
+        roadmap_path_user()  // Private dir goes last to allow users to override resources easily
+    };
 
-	if( out_path == NULL or filename == NULL )
-		return KErrArgument;
-	if( suffix == NULL ) suffix = "";
-	if( prefix == NULL ) prefix = "";
+    if( out_path == NULL or filename == NULL )
+        return KErrArgument;
+    if( suffix == NULL ) suffix = "";
+    if( prefix == NULL ) prefix = "";
 
-	for( TUint i = 0; i < sizeof(RoadMapPathPubResources)/sizeof(char*); ++i ) {
-		snprintf( out_path, out_sz, "%s\\%s%s%s",
-				  RoadMapPathPubResources[i],
-				  prefix,
-				  filename,
-				  suffix );
-		if( roadmap_file_exists( NULL, out_path ) )
-			return KErrNone;
-	}
+    for( TUint i = 0; i < sizeof(RoadMapPathPubResources)/sizeof(char*); ++i ) {
+        snprintf( out_path, out_sz, "%s\\%s%s%s",
+                  RoadMapPathPubResources[i],
+                  prefix,
+                  filename,
+                  suffix );
+        if( roadmap_file_exists( NULL, out_path ) )
+            return KErrNone;
+    }
 
-	return KErrNotFound;
+    return KErrNotFound;
 }
 
 

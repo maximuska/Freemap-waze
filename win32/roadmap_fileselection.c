@@ -35,52 +35,52 @@
 
 
 void roadmap_fileselection_new (const char *title,
-								const char *filter,
-								const char *path,
-								const char *mode,
-								RoadMapFileCallback callback)
+                                const char *filter,
+                                const char *path,
+                                const char *mode,
+                                RoadMapFileCallback callback)
 {
-	WCHAR filename[MAX_PATH] = {0};
-	WCHAR strFilter[MAX_PATH] = {0};
-	LPWSTR fltr = NULL;
-	LPWSTR title_unicode = ConvertToWideChar(title, CP_UTF8);
-	BOOL res;
+    WCHAR filename[MAX_PATH] = {0};
+    WCHAR strFilter[MAX_PATH] = {0};
+    LPWSTR fltr = NULL;
+    LPWSTR title_unicode = ConvertToWideChar(title, CP_UTF8);
+    BOOL res;
 
-	OPENFILENAME ofn;
-	memset(&ofn, 0, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = NULL;
-	ofn.lpstrFile = filename;
-	ofn.nMaxFile = sizeof(filename) / sizeof(filename[0]);
-	ofn.Flags = OFN_EXPLORER;
-	ofn.lpstrTitle = title_unicode;
-	if (filter != NULL) {
-		fltr = ConvertToWideChar(filter, CP_UTF8);
-		_snwprintf(strFilter, sizeof(strFilter)/sizeof(strFilter[0]),
-						TEXT("*.%s|*.%s\0"), fltr, fltr);
+    OPENFILENAME ofn;
+    memset(&ofn, 0, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = NULL;
+    ofn.lpstrFile = filename;
+    ofn.nMaxFile = sizeof(filename) / sizeof(filename[0]);
+    ofn.Flags = OFN_EXPLORER;
+    ofn.lpstrTitle = title_unicode;
+    if (filter != NULL) {
+        fltr = ConvertToWideChar(filter, CP_UTF8);
+        _snwprintf(strFilter, sizeof(strFilter)/sizeof(strFilter[0]),
+                        TEXT("*.%s|*.%s\0"), fltr, fltr);
       strFilter[wcslen(fltr)+2] = 0;
       ofn.lpstrDefExt = fltr;
-		ofn.lpstrFilter = strFilter;
-	} else {
-		ofn.lpstrFilter = TEXT("*.*\0*.*\0");
-	}
+        ofn.lpstrFilter = strFilter;
+    } else {
+        ofn.lpstrFilter = TEXT("*.*\0*.*\0");
+    }
 
-	if (strchr(mode, 'r') != NULL) {
-		ofn.Flags |= OFN_FILEMUSTEXIST;
-		res = GetOpenFileName(&ofn);
+    if (strchr(mode, 'r') != NULL) {
+        ofn.Flags |= OFN_FILEMUSTEXIST;
+        res = GetOpenFileName(&ofn);
 
-	} else {
-		ofn.Flags |= OFN_OVERWRITEPROMPT;
-		res = GetSaveFileName(&ofn);
-	}
+    } else {
+        ofn.Flags |= OFN_OVERWRITEPROMPT;
+        res = GetSaveFileName(&ofn);
+    }
 
-	free((char*)ofn.lpstrTitle);
+    free((char*)ofn.lpstrTitle);
    if (fltr) free(fltr);
 
-	if (res) {
-		char *name = ConvertToMultiByte(filename, CP_UTF8);
-		(*callback)(name, mode);
-		free(name);
-	}
+    if (res) {
+        char *name = ConvertToMultiByte(filename, CP_UTF8);
+        (*callback)(name, mode);
+        free(name);
+    }
 }
 

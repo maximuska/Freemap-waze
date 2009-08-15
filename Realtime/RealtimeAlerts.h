@@ -23,42 +23,42 @@
  *
  */
 
-#ifndef	__REALTIME_ALERT_H__
-#define	__REALTIME_ALERT_H__
+#ifndef __REALTIME_ALERT_H__
+#define __REALTIME_ALERT_H__
 
 #include "../roadmap_sound.h"
 
 // Alerts types
-#define RT_ALERT_TYPE_CHIT_CHAT			    0
-#define RT_ALERT_TYPE_POLICE				1
-#define RT_ALERT_TYPE_ACCIDENT 				2
-#define RT_ALERT_TYPE_TRAFFIC_JAM			3
-#define RT_ALERT_TYPE_TRAFFIC_INFO			4
-#define RT_ALERT_TYPE_HAZARD				5
-#define RT_ALERT_TYPE_OTHER				    6
-#define RT_ALERT_TYPE_CONSTRUCTION			7 
-#define RT_ALERTS_LAST_KNOWN_STATE			7
+#define RT_ALERT_TYPE_CHIT_CHAT             0
+#define RT_ALERT_TYPE_POLICE                1
+#define RT_ALERT_TYPE_ACCIDENT              2
+#define RT_ALERT_TYPE_TRAFFIC_JAM           3
+#define RT_ALERT_TYPE_TRAFFIC_INFO          4
+#define RT_ALERT_TYPE_HAZARD                5
+#define RT_ALERT_TYPE_OTHER                 6
+#define RT_ALERT_TYPE_CONSTRUCTION          7
+#define RT_ALERTS_LAST_KNOWN_STATE          7
 
 //Alerts direction
-#define RT_ALERT_BOTH_DIRECTIONS 			0
-#define RT_ALERT_MY_DIRECTION	 	   		1
-#define RT_ALERT_OPPSOITE_DIRECTION 		2
+#define RT_ALERT_BOTH_DIRECTIONS            0
+#define RT_ALERT_MY_DIRECTION               1
+#define RT_ALERT_OPPSOITE_DIRECTION         2
 
-#define	RT_MAXIMUM_ALERT_COUNT              500
+#define RT_MAXIMUM_ALERT_COUNT              500
 #define RT_ALERT_LOCATION_MAX_SIZE          150
 #define RT_ALERT_DESCRIPTION_MAXSIZE        150
-#define RT_ALERT_USERNM_MAXSIZE 			50
+#define RT_ALERT_USERNM_MAXSIZE             50
 
 #define REROUTE_MIN_DISTANCE 30000
 
-#define STATE_NONE		   -1 	
+#define STATE_NONE         -1
 #define STATE_OLD          1
 #define STATE_NEW          2
 #define STATE_NEW_COMMENT  3
 #define STATE_SCROLLING    4
 #ifdef _WIN32
 #define NEW_LINE "\r\n"
-#else 
+#else
 #define NEW_LINE "\n"
 #endif
 
@@ -73,19 +73,19 @@ typedef enum alert_sort_method
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//	Comment
+//  Comment
 typedef struct
 {
-    int iID; //	Comment ID (within the server)
+    int iID; // Comment ID (within the server)
     int iAlertId; //  Alert Type
     long long i64ReportTime; // The time the comment was posted
-    char sPostedBy [RT_ALERT_USERNM_MAXSIZE+1]; // The User who posted the comment	
-    char sDescription [RT_ALERT_DESCRIPTION_MAXSIZE+1]; // The comment 	
+    char sPostedBy [RT_ALERT_USERNM_MAXSIZE+1]; // The User who posted the comment
+    char sDescription [RT_ALERT_DESCRIPTION_MAXSIZE+1]; // The comment
     BOOL bCommentByMe;
 } RTAlertComment;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//	Comments List 
+//  Comments List
 typedef struct RTAlertCommentsEntry_s
 {
     struct RTAlertCommentsEntry_s *next;
@@ -94,25 +94,25 @@ typedef struct RTAlertCommentsEntry_s
 } RTAlertCommentsEntry;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//	Alert 
+//  Alert
 typedef struct
 {
-    int iID; //	Alert ID (within the server)
+    int iID; // Alert ID (within the server)
     int iType; //  Alert Type
     int iDirection; //  0 – node's direction, 1 – segment direction, 2 – opposite direction
-    int iLongitude; //	Alert location:	Longtitue
-    int iLatitude; //	Alert location:	Latitude
-    int iAzymuth; //	Alert Azimuth
+    int iLongitude; //  Alert location: Longtitue
+    int iLatitude; //   Alert location: Latitude
+    int iAzymuth; //    Alert Azimuth
     int iSpeed; // Alowed speed to alert
-    char sReportedBy [RT_ALERT_USERNM_MAXSIZE+1]; // The User who reported the alert	
+    char sReportedBy [RT_ALERT_USERNM_MAXSIZE+1]; // The User who reported the alert
     long long i64ReportTime; // The time the alert was reported
     int iNode1; // Alert's segment
     int iNode2; // Alert's segment
-    char sDescription [RT_ALERT_DESCRIPTION_MAXSIZE+1]; // Alert's description 	
+    char sDescription [RT_ALERT_DESCRIPTION_MAXSIZE+1]; // Alert's description
     char sLocationStr[RT_ALERT_LOCATION_MAX_SIZE+1]; //alert location
     int iDistance;
     int iLineId;
-    int	 iSquare;
+    int  iSquare;
     int iNumComments;
     BOOL bAlertByMe;
     RTAlertCommentsEntry *Comment;
@@ -120,7 +120,7 @@ typedef struct
 } RTAlert;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//	Runtime Alert Table 
+//  Runtime Alert Table
 typedef struct
 {
     RTAlert *alert[RT_MAXIMUM_ALERT_COUNT];
@@ -202,4 +202,4 @@ int RTAlerts_ScrollState(void);
 int RTAlerts_Is_Cancelable(int alertId);
 int Rtalerts_Delete(int alertId);
 
-#endif	//	__REALTIME_ALERT_H__
+#endif  //  __REALTIME_ALERT_H__

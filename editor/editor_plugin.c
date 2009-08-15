@@ -10,7 +10,7 @@
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
  *   (at your option) any later version.
- * 
+ *
  *   RoadMap is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -21,7 +21,7 @@
  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * SYNOPSYS:
- * 
+ *
  *   See editor_plugin.h
  */
 
@@ -58,7 +58,7 @@ static int editor_plugin_override_line (int line, int cfcc, int fips) {
    if (!EditorPluginOverrideStatus) return 0;
 
    editor_override_line_get_flags (line, &flags);
-   
+
    if (flags & ED_LINE_DELETED) {
       return 1;
    }
@@ -69,7 +69,7 @@ static int editor_plugin_override_line (int line, int cfcc, int fips) {
 
 
 static int editor_plugin_activate_db (const PluginLine *line) {
-   
+
    return editor_db_activate (roadmap_plugin_get_fips (line));
 }
 
@@ -112,7 +112,7 @@ static const char *editor_plugin_street_full_name (const PluginLine *line) {
    int line_id = roadmap_plugin_get_line_id (line);
 
    if (editor_line_get_street (line_id, &street_id) == -1) {
-   	return NULL;
+    return NULL;
    }
 
    return editor_street_get_full_name (street_id);
@@ -123,7 +123,7 @@ static void editor_plugin_street_properties
 
    int street_id;
    int line_id = roadmap_plugin_get_line_id (line);
-	int rc;
+    int rc;
 
    rc = editor_line_get_street (line_id, &street_id);
    assert (rc >= 0);
@@ -139,11 +139,11 @@ static void editor_plugin_street_properties
 
 static int editor_plugin_get_direction (PluginLine *line, int who) {
 
-	int direction;
+    int direction;
    int rc = editor_line_get_direction (line->line_id, &direction);
 
    if (rc) return 0;
-   
+
    return direction & who;
 }
 
@@ -162,9 +162,9 @@ static RoadMapPluginHooks editor_plugin_hooks = {
       &editor_street_get_distance,
 #if EDITOR_ALLOW_LINE_DELETION
       &editor_plugin_override_line,
-#else      
+#else
       NULL,
-#endif      
+#endif
       NULL /*&editor_screen_override_pen*/,
       &editor_screen_repaint,
       &editor_plugin_get_street,

@@ -35,7 +35,7 @@ typedef int RoadMapPipe; /* UNIX style. */
 typedef void (*RoadMapFeedbackHandler) (void *data);
 
 struct roadmap_spawn_feedback {
-    
+
     RoadMapListItem link;
     int child;
 
@@ -44,7 +44,7 @@ struct roadmap_spawn_feedback {
 };
 
 typedef struct roadmap_spawn_feedback RoadMapFeedback;
-    
+
 
 void roadmap_spawn_initialize (const char *argv0);
 

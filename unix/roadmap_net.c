@@ -69,7 +69,7 @@ static const char* GetProxyAddress() {
 static void connect_callback (RoadMapIO *io) {
 
    RoadMapNetData *data = io->context;
-	RoadMapSocket s;
+    RoadMapSocket s;
 
    if (*data->packet) {
       if( -1 == roadmap_net_send(io->os.socket, data->packet,
@@ -84,9 +84,9 @@ static void connect_callback (RoadMapIO *io) {
    roadmap_main_remove_input(io);
 
    if (s == -1)
-   	 (*data->callback) (s, data->context, neterr_general_error);
+     (*data->callback) (s, data->context, neterr_general_error);
    else
-   	(*data->callback) (s, data->context, neterr_success);
+    (*data->callback) (s, data->context, neterr_success);
    free(data);
 }
 
@@ -105,7 +105,7 @@ static RoadMapSocket create_socket (const char *protocol,
       initialized = 1;
       roadmap_net_mon_start ();
    }
-      
+
    roadmap_net_mon_connect ();
 
    addr->sin_family = AF_INET;
@@ -234,7 +234,7 @@ static int create_async_connection (RoadMapIO *io, struct sockaddr *addr) {
 #endif
 
 
-int roadmap_net_connect_internal (const char *protocol, const char *name, 
+int roadmap_net_connect_internal (const char *protocol, const char *name,
                                   int default_port,
                                   int async,
                                   RoadMapNetConnectCallback callback,
@@ -261,7 +261,7 @@ int roadmap_net_connect_internal (const char *protocol, const char *name,
       }
    } else {
       // HTTP Connection, using system configuration for Proxy
-   
+
       if (!strcmp(protocol, "http_post")) req_type = "POST";
 
       if( !WSA_ExtractParams( name,          //   IN        -   Web service full address (http://...)
@@ -272,15 +272,15 @@ int roadmap_net_connect_internal (const char *protocol, const char *name,
          roadmap_log( ROADMAP_ERROR, "roadmap_net_connect(HTTP) - Failed to extract information from '%s'", name);
          return -1;
       }
-      
+
       if (proxy_address) {
          int   proxy_port  = server_port;
          char* port_offset = strchr(proxy_address, ':');
          if (port_offset) proxy_port = atoi(port_offset + 1);
 
          res_socket = create_socket("tcp", proxy_address, proxy_port, &addr);
-         
-         sprintf(packet, 
+
+         sprintf(packet,
                  "%s %s HTTP/1.0\r\n"
                  "Host: %s\r\n"
                  "User-Agent: FreeMap/%s\r\n",
@@ -288,8 +288,8 @@ int roadmap_net_connect_internal (const char *protocol, const char *name,
       } else {
 
          res_socket = create_socket("tcp", server_url, server_port, &addr);
-      
-         sprintf(packet, 
+
+         sprintf(packet,
                   "%s %s HTTP/1.0\r\n"
                   "Host: %s\r\n"
                   "User-Agent: FreeMap/%s\r\n",
@@ -323,7 +323,7 @@ int roadmap_net_connect_internal (const char *protocol, const char *name,
          roadmap_net_close(res_socket);
          return -1;
       }
- 
+
    } else {
 
       /* Blocking connect */
@@ -342,26 +342,26 @@ int roadmap_net_connect_internal (const char *protocol, const char *name,
    }
 
    return res_socket;
-}                   
+}
 
 
-int roadmap_net_connect (const char *protocol, const char *name, 
+int roadmap_net_connect (const char *protocol, const char *name,
                          int default_port,
                          network_error* err) {
-                         	 
+
    if (err != NULL)
- 	(*err) = neterr_success;                     	
+    (*err) = neterr_success;
 
    RoadMapSocket s = roadmap_net_connect_internal(protocol, name,
                                                    default_port, 0, NULL, NULL);
-                                                   
+
    if ((s == -1) && (err != NULL))
-   	(*err) = neterr_general_error;                                                   
+    (*err) = neterr_general_error;
    return s;
 }
 
 
-int roadmap_net_connect_async (const char *protocol, const char *name, 
+int roadmap_net_connect_async (const char *protocol, const char *name,
                                 int default_port,
                                 RoadMapNetConnectCallback callback,
                                 void *context) {
@@ -465,7 +465,7 @@ int roadmap_net_unique_id (unsigned char *buffer, unsigned int size) {
    time_t tm;
 
    time(&tm);
-      
+
    MD5Init (&context);
    MD5Update (&context, (unsigned char *)&tm, sizeof(tm));
    MD5Final (digest, &context);

@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -44,10 +44,10 @@ namespace agg
     public:
         platform_specific(pix_format_e format, bool flip_y);
         ~platform_specific();
-        
+
         void caption(const char* capt);
         void put_image(const rendering_buffer* src);
-       
+
         pix_format_e         m_format;
         pix_format_e         m_sys_format;
         int                  m_byte_order;
@@ -66,7 +66,7 @@ namespace agg
         unsigned char*       m_buf_window;
         unsigned char*       m_buf_img[platform_support::max_images];
         unsigned             m_keymap[256];
-       
+
         bool m_update_flag;
         bool m_resize_flag;
         bool m_initialized;
@@ -94,8 +94,8 @@ namespace agg
         m_close_atom(0),
 
         m_buf_window(0),
-        
-        m_update_flag(true), 
+
+        m_update_flag(true),
         m_resize_flag(true),
         m_initialized(false)
         //m_wait_mode(true)
@@ -123,7 +123,7 @@ namespace agg
         m_keymap[XK_KP_9&0xFF] = key_kp9;
 
         m_keymap[XK_KP_Insert&0xFF]    = key_kp0;
-        m_keymap[XK_KP_End&0xFF]       = key_kp1;   
+        m_keymap[XK_KP_End&0xFF]       = key_kp1;
         m_keymap[XK_KP_Down&0xFF]      = key_kp2;
         m_keymap[XK_KP_Page_Down&0xFF] = key_kp3;
         m_keymap[XK_KP_Left&0xFF]      = key_kp4;
@@ -217,36 +217,36 @@ namespace agg
         XSetWMIconName(m_display, m_window, &tp);
     }
 
-    
+
     //------------------------------------------------------------------------
     void platform_specific::put_image(const rendering_buffer* src)
-    {    
+    {
         if(m_ximg_window == 0) return;
         m_ximg_window->data = (char*)m_buf_window;
-        
+
         if(m_format == m_sys_format)
         {
-            XPutImage(m_display, 
-                      m_window, 
-                      m_gc, 
-                      m_ximg_window, 
+            XPutImage(m_display,
+                      m_window,
+                      m_gc,
+                      m_ximg_window,
                       0, 0, 0, 0,
-                      src->width(), 
+                      src->width(),
                       src->height());
         }
         else
         {
             int row_len = src->width() * m_sys_bpp / 8;
-            unsigned char* buf_tmp = 
+            unsigned char* buf_tmp =
                 new unsigned char[row_len * src->height()];
-            
+
             rendering_buffer rbuf_tmp;
-            rbuf_tmp.attach(buf_tmp, 
-                            src->width(), 
-                            src->height(), 
+            rbuf_tmp.attach(buf_tmp,
+                            src->width(),
+                            src->height(),
                             m_flip_y ? -row_len : row_len);
 
-            switch(m_sys_format)            
+            switch(m_sys_format)
             {
                 default: break;
                 case pix_format_rgb555:
@@ -263,7 +263,7 @@ namespace agg
                         case pix_format_abgr32: color_conv(&rbuf_tmp, src, color_conv_abgr32_to_rgb555()); break;
                     }
                     break;
-                    
+
                 case pix_format_rgb565:
                     switch(m_format)
                     {
@@ -278,7 +278,7 @@ namespace agg
                         case pix_format_abgr32: color_conv(&rbuf_tmp, src, color_conv_abgr32_to_rgb565()); break;
                     }
                     break;
-                    
+
                 case pix_format_rgba32:
                     switch(m_format)
                     {
@@ -293,7 +293,7 @@ namespace agg
                         case pix_format_abgr32: color_conv(&rbuf_tmp, src, color_conv_abgr32_to_rgba32()); break;
                     }
                     break;
-                    
+
                 case pix_format_abgr32:
                     switch(m_format)
                     {
@@ -308,7 +308,7 @@ namespace agg
                         case pix_format_bgra32: color_conv(&rbuf_tmp, src, color_conv_bgra32_to_abgr32()); break;
                     }
                     break;
-                    
+
                 case pix_format_argb32:
                     switch(m_format)
                     {
@@ -323,7 +323,7 @@ namespace agg
                         case pix_format_bgra32: color_conv(&rbuf_tmp, src, color_conv_bgra32_to_argb32()); break;
                     }
                     break;
-                    
+
                 case pix_format_bgra32:
                     switch(m_format)
                     {
@@ -339,20 +339,20 @@ namespace agg
                     }
                     break;
             }
-            
+
             m_ximg_window->data = (char*)buf_tmp;
-            XPutImage(m_display, 
-                      m_window, 
-                      m_gc, 
-                      m_ximg_window, 
+            XPutImage(m_display,
+                      m_window,
+                      m_gc,
+                      m_ximg_window,
                       0, 0, 0, 0,
-                      src->width(), 
+                      src->width(),
                       src->height());
-            
+
             delete [] buf_tmp;
         }
     }
-    
+
 
     //------------------------------------------------------------------------
     platform_support::platform_support(pix_format_e format, bool flip_y) :
@@ -386,10 +386,10 @@ namespace agg
         }
     }
 
-   
+
     //------------------------------------------------------------------------
     enum xevent_mask_e
-    { 
+    {
         xevent_mask =
             PointerMotionMask|
             ButtonPressMask|
@@ -404,48 +404,48 @@ namespace agg
     bool platform_support::init(unsigned width, unsigned height, unsigned flags)
     {
         m_window_flags = flags;
-        
+
         m_specific->m_display = XOpenDisplay(NULL);
-        if(m_specific->m_display == 0) 
+        if(m_specific->m_display == 0)
         {
             fprintf(stderr, "Unable to open DISPLAY!\n");
             return false;
         }
-        
+
         m_specific->m_screen = XDefaultScreen(m_specific->m_display);
-        m_specific->m_depth  = XDefaultDepth(m_specific->m_display, 
+        m_specific->m_depth  = XDefaultDepth(m_specific->m_display,
                                              m_specific->m_screen);
-        m_specific->m_visual = XDefaultVisual(m_specific->m_display, 
+        m_specific->m_visual = XDefaultVisual(m_specific->m_display,
                                               m_specific->m_screen);
         unsigned long r_mask = m_specific->m_visual->red_mask;
         unsigned long g_mask = m_specific->m_visual->green_mask;
         unsigned long b_mask = m_specific->m_visual->blue_mask;
-                
+
 //printf("depth=%d, red=%08x, green=%08x, blue=%08x\n",
 //       m_specific->m_depth,
 //       m_specific->m_visual->red_mask,
 //       m_specific->m_visual->green_mask,
 //       m_specific->m_visual->blue_mask);
-           
+
 
 //         // NOT COMPLETED YET!
 //         // Try to find an appropriate Visual if the default doesn't fit.
 //         if(m_specific->m_depth < 15 ||
 //            r_mask == 0 || g_mask == 0 || b_mask == 0)
 //         {
-//             
-//             // This is an attempt to find an appropriate Visual if         
+//
+//             // This is an attempt to find an appropriate Visual if
 //             // the default one doesn't match the minumum requirements
 //             static int depth[] = { 32, 24, 16, 15 };
 //             int i;
 //             for(int i = 0; i < 4; i++)
 //             {
 //                 XVisualInfo vi;
-//                 if(XMatchVisualInfo(m_specific->m_display, 
-//                                     m_specific->m_screen, 
-//                                     depth[i], 
-//                                     TrueColor, 
-//                                     &vi)) 
+//                 if(XMatchVisualInfo(m_specific->m_display,
+//                                     m_specific->m_screen,
+//                                     depth[i],
+//                                     TrueColor,
+//                                     &vi))
 //                 {
 // //                     printf("TrueColor  depth=%d, red=%08x, green=%08x, blue=%08x, bits=%d\n",
 // //                         vi.depth,
@@ -460,11 +460,11 @@ namespace agg
 //                     b_mask = m_specific->m_visual->blue_mask;
 //                     break;
 //                 }
-//                 if(XMatchVisualInfo(m_specific->m_display, 
-//                                     m_specific->m_screen, 
-//                                     depth[i], 
-//                                     DirectColor, 
-//                                     &vi)) 
+//                 if(XMatchVisualInfo(m_specific->m_display,
+//                                     m_specific->m_screen,
+//                                     depth[i],
+//                                     DirectColor,
+//                                     &vi))
 //                 {
 // //                     printf("DirectColor depth=%d, red=%08x, green=%08x, blue=%08x, bits=%d\n",
 // //                         vi.depth,
@@ -491,11 +491,11 @@ namespace agg
             XCloseDisplay(m_specific->m_display);
             return false;
         }
-        
+
         int t = 1;
         int hw_byte_order = LSBFirst;
         if(*(char*)&t == 0) hw_byte_order = MSBFirst;
-        
+
         // Perceive SYS-format by mask
         switch(m_specific->m_depth)
         {
@@ -507,7 +507,7 @@ namespace agg
                     m_specific->m_byte_order = hw_byte_order;
                 }
                 break;
-                
+
             case 16:
                 m_specific->m_sys_bpp = 16;
                 if(r_mask == 0xF800 && g_mask == 0x7E0 && b_mask == 0x1F)
@@ -516,7 +516,7 @@ namespace agg
                     m_specific->m_byte_order = hw_byte_order;
                 }
                 break;
-                
+
             case 24:
             case 32:
                 m_specific->m_sys_bpp = 32;
@@ -530,22 +530,22 @@ namespace agg
                                 m_specific->m_sys_format = pix_format_rgba32;
                                 m_specific->m_byte_order = LSBFirst;
                                 break;
-                                
+
                             case pix_format_abgr32:
                                 m_specific->m_sys_format = pix_format_abgr32;
                                 m_specific->m_byte_order = MSBFirst;
                                 break;
 
-                            default:                            
+                            default:
                                 m_specific->m_byte_order = hw_byte_order;
-                                m_specific->m_sys_format = 
+                                m_specific->m_sys_format =
                                     (hw_byte_order == LSBFirst) ?
                                     pix_format_rgba32 :
                                     pix_format_abgr32;
                                 break;
                         }
                     }
-                    
+
                     if(r_mask == 0xFF0000 && b_mask == 0xFF)
                     {
                         switch(m_specific->m_format)
@@ -554,15 +554,15 @@ namespace agg
                                 m_specific->m_sys_format = pix_format_argb32;
                                 m_specific->m_byte_order = MSBFirst;
                                 break;
-                                
+
                             case pix_format_bgra32:
                                 m_specific->m_sys_format = pix_format_bgra32;
                                 m_specific->m_byte_order = LSBFirst;
                                 break;
 
-                            default:                            
+                            default:
                                 m_specific->m_byte_order = hw_byte_order;
-                                m_specific->m_sys_format = 
+                                m_specific->m_sys_format =
                                     (hw_byte_order == MSBFirst) ?
                                     pix_format_argb32 :
                                     pix_format_bgra32;
@@ -572,7 +572,7 @@ namespace agg
                 }
                 break;
         }
-        
+
         if(m_specific->m_sys_format == pix_format_undefined)
         {
             fprintf(stderr,
@@ -581,67 +581,67 @@ namespace agg
             XCloseDisplay(m_specific->m_display);
             return false;
         }
-                
-        
-        
-        memset(&m_specific->m_window_attributes, 
-               0, 
-               sizeof(m_specific->m_window_attributes)); 
-        
-        m_specific->m_window_attributes.border_pixel = 
+
+
+
+        memset(&m_specific->m_window_attributes,
+               0,
+               sizeof(m_specific->m_window_attributes));
+
+        m_specific->m_window_attributes.border_pixel =
             XBlackPixel(m_specific->m_display, m_specific->m_screen);
 
-        m_specific->m_window_attributes.background_pixel = 
+        m_specific->m_window_attributes.background_pixel =
             XWhitePixel(m_specific->m_display, m_specific->m_screen);
 
         m_specific->m_window_attributes.override_redirect = 0;
 
         unsigned long window_mask = CWBackPixel | CWBorderPixel;
 
-        m_specific->m_window = 
-            XCreateWindow(m_specific->m_display, 
-                          XDefaultRootWindow(m_specific->m_display), 
+        m_specific->m_window =
+            XCreateWindow(m_specific->m_display,
+                          XDefaultRootWindow(m_specific->m_display),
                           0, 0,
                           width,
                           height,
-                          0, 
-                          m_specific->m_depth, 
-                          InputOutput, 
+                          0,
+                          m_specific->m_depth,
+                          InputOutput,
                           CopyFromParent,
                           window_mask,
                           &m_specific->m_window_attributes);
 
 
-        m_specific->m_gc = XCreateGC(m_specific->m_display, 
-                                     m_specific->m_window, 
-                                     0, 0); 
-        m_specific->m_buf_window = 
+        m_specific->m_gc = XCreateGC(m_specific->m_display,
+                                     m_specific->m_window,
+                                     0, 0);
+        m_specific->m_buf_window =
             new unsigned char[width * height * (m_bpp / 8)];
 
         memset(m_specific->m_buf_window, 255, width * height * (m_bpp / 8));
-        
+
         m_rbuf_window.attach(m_specific->m_buf_window,
                              width,
                              height,
                              m_flip_y ? -width * (m_bpp / 8) : width * (m_bpp / 8));
-            
-        m_specific->m_ximg_window = 
-            XCreateImage(m_specific->m_display, 
-                         m_specific->m_visual, //CopyFromParent, 
-                         m_specific->m_depth, 
-                         ZPixmap, 
+
+        m_specific->m_ximg_window =
+            XCreateImage(m_specific->m_display,
+                         m_specific->m_visual, //CopyFromParent,
+                         m_specific->m_depth,
+                         ZPixmap,
                          0,
-                         (char*)m_specific->m_buf_window, 
+                         (char*)m_specific->m_buf_window,
                          width,
-                         height, 
+                         height,
                          m_specific->m_sys_bpp,
                          width * (m_specific->m_sys_bpp / 8));
         m_specific->m_ximg_window->byte_order = m_specific->m_byte_order;
 
-        m_specific->caption(m_caption); 
+        m_specific->caption(m_caption);
         m_initial_width = width;
         m_initial_height = height;
-        
+
         if(!m_specific->m_initialized)
         {
             on_init();
@@ -653,7 +653,7 @@ namespace agg
         m_specific->m_update_flag = true;
 
         XSizeHints *hints = XAllocSizeHints();
-        if(hints) 
+        if(hints)
         {
             if(flags & window_resize)
             {
@@ -671,29 +671,29 @@ namespace agg
             }
             hints->flags = PMaxSize | PMinSize;
 
-            XSetWMNormalHints(m_specific->m_display, 
-                              m_specific->m_window, 
+            XSetWMNormalHints(m_specific->m_display,
+                              m_specific->m_window,
                               hints);
 
             XFree(hints);
         }
 
 
-        XMapWindow(m_specific->m_display, 
+        XMapWindow(m_specific->m_display,
                    m_specific->m_window);
 
-        XSelectInput(m_specific->m_display, 
-                     m_specific->m_window, 
+        XSelectInput(m_specific->m_display,
+                     m_specific->m_window,
                      xevent_mask);
 
-        
-        m_specific->m_close_atom = XInternAtom(m_specific->m_display, 
-                                               "WM_DELETE_WINDOW", 
+
+        m_specific->m_close_atom = XInternAtom(m_specific->m_display,
+                                               "WM_DELETE_WINDOW",
                                                false);
 
-        XSetWMProtocols(m_specific->m_display, 
-                        m_specific->m_window, 
-                        &m_specific->m_close_atom, 
+        XSetWMProtocols(m_specific->m_display,
+                        m_specific->m_window,
+                        &m_specific->m_close_atom,
                         1);
 
         return true;
@@ -705,9 +705,9 @@ namespace agg
     void platform_support::update_window()
     {
         m_specific->put_image(&m_rbuf_window);
-        
-        // When m_wait_mode is true we can discard all the events 
-        // came while the image is being drawn. In this case 
+
+        // When m_wait_mode is true we can discard all the events
+        // came while the image is being drawn. In this case
         // the X server does not accumulate mouse motion events.
         // When m_wait_mode is false, i.e. we have some idle drawing
         // we cannot afford to miss any events
@@ -719,7 +719,7 @@ namespace agg
     int platform_support::run()
     {
         XFlush(m_specific->m_display);
-        
+
         bool quit = false;
         unsigned flags;
         int cur_x;
@@ -745,7 +745,7 @@ namespace agg
 
             XEvent x_event;
             XNextEvent(m_specific->m_display, &x_event);
-            
+
             // In the Idle mode discard all intermediate MotionNotify events
             if(!m_wait_mode && x_event.type == MotionNotify)
             {
@@ -759,9 +759,9 @@ namespace agg
                 x_event = te;
             }
 
-            switch(x_event.type) 
+            switch(x_event.type)
             {
-            case ConfigureNotify: 
+            case ConfigureNotify:
                 {
                     if(x_event.xconfigure.width  != int(m_rbuf_window.width()) ||
                        x_event.xconfigure.height != int(m_rbuf_window.height()))
@@ -773,25 +773,25 @@ namespace agg
                         m_specific->m_ximg_window->data = 0;
                         XDestroyImage(m_specific->m_ximg_window);
 
-                        m_specific->m_buf_window = 
+                        m_specific->m_buf_window =
                             new unsigned char[width * height * (m_bpp / 8)];
 
                         m_rbuf_window.attach(m_specific->m_buf_window,
                                              width,
                                              height,
-                                             m_flip_y ? 
-                                             -width * (m_bpp / 8) : 
+                                             m_flip_y ?
+                                             -width * (m_bpp / 8) :
                                              width * (m_bpp / 8));
-            
-                        m_specific->m_ximg_window = 
-                            XCreateImage(m_specific->m_display, 
-                                         m_specific->m_visual, //CopyFromParent, 
-                                         m_specific->m_depth, 
-                                         ZPixmap, 
+
+                        m_specific->m_ximg_window =
+                            XCreateImage(m_specific->m_display,
+                                         m_specific->m_visual, //CopyFromParent,
+                                         m_specific->m_depth,
+                                         ZPixmap,
                                          0,
-                                         (char*)m_specific->m_buf_window, 
+                                         (char*)m_specific->m_buf_window,
                                          width,
-                                         height, 
+                                         height,
                                          m_specific->m_sys_bpp,
                                          width * (m_specific->m_sys_bpp / 8));
                         m_specific->m_ximg_window->byte_order = m_specific->m_byte_order;
@@ -842,7 +842,7 @@ namespace agg
                         down = true;
                         break;
 
-                    case key_f2:                        
+                    case key_f2:
                         copy_window_to_img(max_images - 1);
                         save_img(max_images - 1, "screenshot");
                         break;
@@ -855,8 +855,8 @@ namespace agg
                     }
                     else
                     {
-                        on_key(x_event.xkey.x, 
-                               m_flip_y ? 
+                        on_key(x_event.xkey.x,
+                               m_flip_y ?
                                    m_rbuf_window.height() - x_event.xkey.y :
                                    x_event.xkey.y,
                                m_specific->m_keymap[key & 0xFF],
@@ -911,7 +911,7 @@ namespace agg
                 }
                 break;
 
-                
+
             case MotionNotify:
                 {
                     flags = 0;
@@ -938,7 +938,7 @@ namespace agg
                     }
                 }
                 break;
-                
+
             case ButtonRelease:
                 {
                     flags = 0;
@@ -974,14 +974,14 @@ namespace agg
                     quit = true;
                 }
                 break;
-            }           
+            }
         }
 
 
         unsigned i = platform_support::max_images;
         while(i--)
         {
-            if(m_specific->m_buf_img[i]) 
+            if(m_specific->m_buf_img[i])
             {
                 delete [] m_specific->m_buf_img[i];
             }
@@ -993,7 +993,7 @@ namespace agg
         XFreeGC(m_specific->m_display, m_specific->m_gc);
         XDestroyWindow(m_specific->m_display, m_specific->m_window);
         XCloseDisplay(m_specific->m_display);
-        
+
         return 0;
     }
 
@@ -1020,7 +1020,7 @@ namespace agg
             {
                 strcat(buf, ".ppm");
             }
-            
+
             FILE* fd = fopen(buf, "rb");
             if(fd == 0) return false;
 
@@ -1030,22 +1030,22 @@ namespace agg
                 return false;
             }
             buf[len] = 0;
-            
+
             if(buf[0] != 'P' && buf[1] != '6')
             {
                 fclose(fd);
                 return false;
             }
-            
+
             char* ptr = buf + 2;
-            
+
             while(*ptr && !isdigit(*ptr)) ptr++;
             if(*ptr == 0)
             {
                 fclose(fd);
                 return false;
             }
-            
+
             unsigned width = atoi(ptr);
             if(width == 0 || width > 4096)
             {
@@ -1080,10 +1080,10 @@ namespace agg
             }
             ptr++;
             fseek(fd, long(ptr - buf), SEEK_SET);
-            
+
             create_img(idx, width, height);
             bool ret = true;
-            
+
             if(m_format == pix_format_rgb24)
             {
                 fread(m_specific->m_buf_img[idx], 1, width * height * 3, fd);
@@ -1098,45 +1098,45 @@ namespace agg
                                 m_flip_y ?
                                   -width * 3 :
                                    width * 3);
-                
+
                 fread(buf_img, 1, width * height * 3, fd);
-                
+
                 switch(m_format)
                 {
                     case pix_format_rgb555:
                         color_conv(m_rbuf_img+idx, &rbuf_img, color_conv_rgb24_to_rgb555());
                         break;
-                        
+
                     case pix_format_rgb565:
                         color_conv(m_rbuf_img+idx, &rbuf_img, color_conv_rgb24_to_rgb565());
                         break;
-                        
+
                     case pix_format_bgr24:
                         color_conv(m_rbuf_img+idx, &rbuf_img, color_conv_rgb24_to_bgr24());
                         break;
-                        
+
                     case pix_format_rgba32:
                         color_conv(m_rbuf_img+idx, &rbuf_img, color_conv_rgb24_to_rgba32());
                         break;
-                        
+
                     case pix_format_argb32:
                         color_conv(m_rbuf_img+idx, &rbuf_img, color_conv_rgb24_to_argb32());
                         break;
-                        
+
                     case pix_format_bgra32:
                         color_conv(m_rbuf_img+idx, &rbuf_img, color_conv_rgb24_to_bgra32());
                         break;
-                        
+
                     case pix_format_abgr32:
                         color_conv(m_rbuf_img+idx, &rbuf_img, color_conv_rgb24_to_abgr32());
                         break;
-                        
+
                     default:
                         ret = false;
                 }
                 delete [] buf_img;
             }
-                        
+
             fclose(fd);
             return ret;
         }
@@ -1158,16 +1158,16 @@ namespace agg
             {
                 strcat(buf, ".ppm");
             }
-            
+
             FILE* fd = fopen(buf, "wb");
             if(fd == 0) return false;
-            
+
             unsigned w = rbuf_img(idx).width();
             unsigned h = rbuf_img(idx).height();
-            
+
             fprintf(fd, "P6\n%d %d\n255\n", w, h);
-                
-            unsigned y; 
+
+            unsigned y;
             unsigned char* tmp_buf = new unsigned char [w * 3];
             for(y = 0; y < rbuf_img(idx).height(); y++)
             {
@@ -1178,31 +1178,31 @@ namespace agg
                     case pix_format_rgb555:
                         color_conv_row(tmp_buf, src, w, color_conv_rgb555_to_rgb24());
                         break;
-                        
+
                     case pix_format_rgb565:
                         color_conv_row(tmp_buf, src, w, color_conv_rgb565_to_rgb24());
                         break;
-                        
+
                     case pix_format_bgr24:
                         color_conv_row(tmp_buf, src, w, color_conv_bgr24_to_rgb24());
                         break;
-                        
+
                     case pix_format_rgb24:
                         color_conv_row(tmp_buf, src, w, color_conv_rgb24_to_rgb24());
                         break;
-                       
+
                     case pix_format_rgba32:
                         color_conv_row(tmp_buf, src, w, color_conv_rgba32_to_rgb24());
                         break;
-                        
+
                     case pix_format_argb32:
                         color_conv_row(tmp_buf, src, w, color_conv_argb32_to_rgb24());
                         break;
-                        
+
                     case pix_format_bgra32:
                         color_conv_row(tmp_buf, src, w, color_conv_bgra32_to_rgb24());
                         break;
-                        
+
                     case pix_format_abgr32:
                         color_conv_row(tmp_buf, src, w, color_conv_abgr32_to_rgb24());
                         break;
@@ -1226,14 +1226,14 @@ namespace agg
             if(width  == 0) width  = rbuf_window().width();
             if(height == 0) height = rbuf_window().height();
             delete [] m_specific->m_buf_img[idx];
-            m_specific->m_buf_img[idx] = 
+            m_specific->m_buf_img[idx] =
                 new unsigned char[width * height * (m_bpp / 8)];
 
             m_rbuf_img[idx].attach(m_specific->m_buf_img[idx],
                                    width,
                                    height,
-                                   m_flip_y ? 
-                                       -width * (m_bpp / 8) : 
+                                   m_flip_y ?
+                                       -width * (m_bpp / 8) :
                                         width * (m_bpp / 8));
             return true;
         }

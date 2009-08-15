@@ -5,7 +5,7 @@
  *   Copyright 2006 Ehud Shabtai
  *
  *   This code was mostly taken from UMN Mapserver
- *   
+ *
  *   This file is part of RoadMap.
  *
  *   RoadMap is free software; you can redistribute it and/or modify

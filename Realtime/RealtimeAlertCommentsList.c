@@ -52,10 +52,10 @@
 #include "RealtimeAlertCommentsList.h"
 
 #define MAX_COMMENTS_ENTRIES 100
-static   BOOL                 	g_context_menu_is_active= FALSE;
+static   BOOL                   g_context_menu_is_active= FALSE;
 
 // Context menu:
-static ssd_cm_item      context_menu_items[] = 
+static ssd_cm_item      context_menu_items[] =
 {
    SSD_CM_INIT_ITEM  ( "Show on map",  rtcl_cm_show),
    SSD_CM_INIT_ITEM  ( "Post Comment", rtcl_cm_add_comments),
@@ -63,7 +63,7 @@ static ssd_cm_item      context_menu_items[] =
 };
 static ssd_contextmenu  context_menu = SSD_CM_INIT_MENU( context_menu_items);
 
-typedef struct 
+typedef struct
 {
 
     const char *title;
@@ -82,57 +82,57 @@ static int g_Alert_Id;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static void on_option_show(){
-	 ssd_generic_list_dialog_hide_all();
+     ssd_generic_list_dialog_hide_all();
     RTAlerts_Popup_By_Id(g_Alert_Id);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static void on_option_add_comment(){
-	 real_time_post_alert_comment_by_id(g_Alert_Id);
+     real_time_post_alert_comment_by_id(g_Alert_Id);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static void on_option_selected(  BOOL              made_selection,
                                  ssd_cm_item_ptr   item,
-                                 void*             context)                                  
+                                 void*             context)
 {
    real_time_list_context_menu_items   selection;
    int                                 exit_code = dec_ok;
-   
+
    g_context_menu_is_active = FALSE;
-   
+
    if( !made_selection)
-      return;  
-   
+      return;
+
    selection = (real_time_list_context_menu_items)item->id;
 
    switch( selection)
    {
       case rtcl_cm_show:
-      	on_option_show();
+        on_option_show();
          break;
-         
+
       case rtcl_cm_add_comments:
          on_option_add_comment();
          break;
-         
-         
+
+
       case rtcl_cm_exit:
          exit_code = dec_cancel;
-      	ssd_dialog_hide_all( exit_code);   
-      	roadmap_screen_refresh ();
+        ssd_dialog_hide_all( exit_code);
+        roadmap_screen_refresh ();
          break;
 
       default:
          break;
    }
-}                           
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 static int on_options(SsdWidget widget, const char *new_value, void *context)
 {
-	int   menu_x;
+    int   menu_x;
 
    if(g_context_menu_is_active)
    {
@@ -141,17 +141,17 @@ static int on_options(SsdWidget widget, const char *new_value, void *context)
    }
 
    if  (ssd_widget_rtl (NULL))
-	   menu_x = SSD_X_SCREEN_RIGHT;
-	else
-		menu_x = SSD_X_SCREEN_LEFT;
-		
+       menu_x = SSD_X_SCREEN_RIGHT;
+    else
+        menu_x = SSD_X_SCREEN_LEFT;
+
    ssd_context_menu_show(  menu_x,   // X
                            SSD_Y_SCREEN_BOTTOM, // Y
                            &context_menu,
                            on_option_selected,
                            NULL,
-                           dir_default); 
- 
+                           dir_default);
+
    g_context_menu_is_active = TRUE;
 
    return 0;
@@ -182,7 +182,7 @@ int RealtimeAlertCommentsList(int iAlertId)
     static void *values[MAX_COMMENTS_ENTRIES];
     static void *icons[MAX_COMMENTS_ENTRIES];
     static int  flags[MAX_COMMENTS_ENTRIES];
-    
+
     int iNumberOfComments = -1;
     int iCount = 0;
     RTAlert *alert;
@@ -360,9 +360,9 @@ int RealtimeAlertCommentsList(int iAlertId)
     }
 
 #ifdef IPHONE
-	height = 90;
+    height = 90;
 #else
-	height = 65;
+    height = 65;
 #endif
 
     ssd_generic_icon_list_dialog_show(roadmap_lang_get("Real Time Alerts Comments"),
@@ -370,6 +370,6 @@ int RealtimeAlertCommentsList(int iAlertId)
             (const char **)icons, (const int*)&flags,RealtimeAlertCommetsListCallBack, NULL,  &context,
             roadmap_lang_get("Options"), on_options, height, SSD_HEADER_GREEN, FALSE);
 
-	return 0;
+    return 0;
 }
 

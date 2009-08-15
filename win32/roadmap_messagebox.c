@@ -35,18 +35,18 @@
 void roadmap_messagebox (const char *title, const char *text)
 {
 #ifdef _UNICODE
-	LPWSTR u_title, u_text;
+    LPWSTR u_title, u_text;
    title = roadmap_lang_get (title);
    text  = roadmap_lang_get (text);
-	u_title = ConvertToWideChar(title, CP_UTF8);
-	u_text = ConvertToWideChar(text, CP_UTF8);
-	MessageBox(GetActiveWindow(), u_text, u_title, MB_OK);
-	free(u_title);
-	free(u_text);
+    u_title = ConvertToWideChar(title, CP_UTF8);
+    u_text = ConvertToWideChar(text, CP_UTF8);
+    MessageBox(GetActiveWindow(), u_text, u_title, MB_OK);
+    free(u_title);
+    free(u_text);
 #else
    title = roadmap_lang_get (title);
    text  = roadmap_lang_get (text);
-	MessageBox(GetActiveWindow(), text, title, MB_OK);
+    MessageBox(GetActiveWindow(), text, title, MB_OK);
 #endif
 }
 

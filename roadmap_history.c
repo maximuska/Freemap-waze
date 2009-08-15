@@ -61,7 +61,7 @@ static struct roadmap_history_log_entry *RoadMapOldest = NULL;
 
  void roadmap_history_remove_entry
                (struct roadmap_history_log_entry *entry) {
-                   
+
     if (entry->after != NULL) {
         entry->after->before = entry->before;
     } else {
@@ -70,7 +70,7 @@ static struct roadmap_history_log_entry *RoadMapOldest = NULL;
         }
         RoadMapLatest = entry->before;
     }
-    
+
     if (entry->before != NULL) {
         entry->before->after = entry->after;
     } else {
@@ -79,7 +79,7 @@ static struct roadmap_history_log_entry *RoadMapOldest = NULL;
         }
         RoadMapOldest = entry->after;
     }
-    
+
     RoadMapHistoryCount -= 1;
     RoadMapHistoryChanged = 1;
 }
@@ -90,19 +90,19 @@ static void roadmap_history_add_entry (char category, const char *data) {
    struct roadmap_history_log_entry *entry = NULL;
 
    if (RoadMapLatest != NULL) {
-       
+
       if ((RoadMapLatest->category == category) &&
           (strcasecmp (data, RoadMapLatest->data) == 0)) {
          return; /* Same entry as before. */
       }
-      
+
       for (entry = RoadMapLatest->before;
            entry != NULL;
            entry = entry->before) {
-               
+
         if ((entry->category == category) &&
             (strcasecmp (data, entry->data) == 0)) {
-            
+
             roadmap_history_remove_entry (entry);
             break;
         }
@@ -110,7 +110,7 @@ static void roadmap_history_add_entry (char category, const char *data) {
    }
 
    if (entry == NULL) {
-       
+
        entry = malloc (strlen(data) +
                        sizeof(struct roadmap_history_log_entry));
        roadmap_check_allocated(entry);
@@ -134,12 +134,12 @@ static void roadmap_history_add_entry (char category, const char *data) {
 
    if (RoadMapHistoryCount >
        roadmap_config_get_integer(&RoadMapConfigHistoryDepth)) {
-           
+
       entry = RoadMapOldest;
       roadmap_history_remove_entry (entry);
       free (entry);
    }
-   
+
    RoadMapHistoryChanged = 1;
 }
 
@@ -380,6 +380,6 @@ void roadmap_history_save (void) {
 
  void roadmap_history_delete_entry  (void* cursor)
 {
-	struct roadmap_history_log_entry *entry = cursor;
-	roadmap_history_remove_entry(entry);
+    struct roadmap_history_log_entry *entry = cursor;
+    roadmap_history_remove_entry(entry);
 }

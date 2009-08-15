@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -49,8 +49,8 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    void bezier_ctrl_impl::curve(double x1, double y1, 
-                                 double x2, double y2, 
+    void bezier_ctrl_impl::curve(double x1, double y1,
+                                 double x2, double y2,
                                  double x3, double y3,
                                  double x4, double y4)
     {
@@ -85,7 +85,7 @@ namespace agg
         {
         default:
         case 0:                 // Control line 1
-            m_curve.init(m_poly.xn(0),  m_poly.yn(0), 
+            m_curve.init(m_poly.xn(0),  m_poly.yn(0),
                         (m_poly.xn(0) + m_poly.xn(1)) * 0.5,
                         (m_poly.yn(0) + m_poly.yn(1)) * 0.5,
                         (m_poly.xn(0) + m_poly.xn(1)) * 0.5,
@@ -95,7 +95,7 @@ namespace agg
             break;
 
         case 1:                 // Control line 2
-            m_curve.init(m_poly.xn(2),  m_poly.yn(2), 
+            m_curve.init(m_poly.xn(2),  m_poly.yn(2),
                         (m_poly.xn(2) + m_poly.xn(3)) * 0.5,
                         (m_poly.yn(2) + m_poly.yn(3)) * 0.5,
                         (m_poly.xn(2) + m_poly.xn(3)) * 0.5,
@@ -105,7 +105,7 @@ namespace agg
             break;
 
         case 2:                 // Curve itself
-            m_curve.init(m_poly.xn(0), m_poly.yn(0), 
+            m_curve.init(m_poly.xn(0), m_poly.yn(0),
                          m_poly.xn(1), m_poly.yn(1),
                          m_poly.xn(2), m_poly.yn(2),
                          m_poly.xn(3), m_poly.yn(3));
@@ -224,8 +224,8 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    void curve3_ctrl_impl::curve(double x1, double y1, 
-                                 double x2, double y2, 
+    void curve3_ctrl_impl::curve(double x1, double y1,
+                                 double x2, double y2,
                                  double x3, double y3)
     {
         m_poly.xn(0) = x1;
@@ -255,7 +255,7 @@ namespace agg
         {
         default:
         case 0:                 // Control line
-            m_curve.init(m_poly.xn(0),  m_poly.yn(0), 
+            m_curve.init(m_poly.xn(0),  m_poly.yn(0),
                         (m_poly.xn(0) + m_poly.xn(1)) * 0.5,
                         (m_poly.yn(0) + m_poly.yn(1)) * 0.5,
                          m_poly.xn(1),  m_poly.yn(1));
@@ -263,7 +263,7 @@ namespace agg
             break;
 
         case 1:                 // Control line 2
-            m_curve.init(m_poly.xn(1),  m_poly.yn(1), 
+            m_curve.init(m_poly.xn(1),  m_poly.yn(1),
                         (m_poly.xn(1) + m_poly.xn(2)) * 0.5,
                         (m_poly.yn(1) + m_poly.yn(2)) * 0.5,
                          m_poly.xn(2),  m_poly.yn(2));
@@ -271,7 +271,7 @@ namespace agg
             break;
 
         case 2:                 // Curve itself
-            m_curve.init(m_poly.xn(0), m_poly.yn(0), 
+            m_curve.init(m_poly.xn(0), m_poly.yn(0),
                          m_poly.xn(1), m_poly.yn(1),
                          m_poly.xn(2), m_poly.yn(2));
             m_stroke.rewind(0);

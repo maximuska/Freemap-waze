@@ -101,9 +101,9 @@ void roadmap_log_reset_stack (void) {
 
 
 void roadmap_log_save_all (void) {
-    
+
     int i;
-    
+
     for (i = 0; RoadMapMessageHead[i].level > 0; ++i) {
         RoadMapMessageHead[i].save_to_file = 1;
     }
@@ -111,9 +111,9 @@ void roadmap_log_save_all (void) {
 
 
 void roadmap_log_save_none (void) {
-    
+
     int i;
-    
+
     for (i = 0; RoadMapMessageHead[i].level > 0; ++i) {
         RoadMapMessageHead[i].save_to_file = 0;
     }
@@ -139,7 +139,7 @@ static void roadmap_log_one (struct roadmap_message_descriptor *category,
 #ifdef J2ME
    fprintf (file, "%d %c%s %s, line %d ",
          time(NULL), saved, category->prefix, source, line);
-         
+
 #elif defined (__SYMBIAN32__)
    time_t now;
    struct tm *tms;
@@ -175,7 +175,7 @@ static void roadmap_log_one (struct roadmap_message_descriptor *category,
       fprintf (file, "(%s): ", RoadMapLogStack[RoadMapLogStackCursor-1]);
    }
 
-#ifdef _DEBUG   
+#ifdef _DEBUG
    if( format && (*format) && ('\n' == format[strlen(format)-1]))
       assert(0);  // Please remove '\n' from logged message end...
 #endif   // _DEBUG
@@ -200,12 +200,12 @@ static void roadmap_log_one (struct roadmap_message_descriptor *category,
       char msg[256];
 #ifdef   FREEZE_ON_FATAL_ERROR
       const char* title = "Fatal Error - Process awaits debugger";
-      
+
 #else
       const char* title = "Fatal Error";
-      
+
 #endif   // FREEZE_ON_FATAL_ERROR
-         
+
       vsprintf(msg, format, ap);
       sprintf (str, "%c%s %s, line %d %s",
          saved, category->prefix, source, line, msg);
@@ -247,7 +247,7 @@ void roadmap_log (int level, char *source, int line, char *format, ...) {
 #if defined (WINSCW)
          file = roadmap_file_fopen ("C:\\", "waze_log.txt", "w");
 #else
-         file = roadmap_file_fopen ("E:\\", "waze_log.txt", "w");         
+         file = roadmap_file_fopen ("E:\\", "waze_log.txt", "w");
 #endif
 #elif !defined (J2ME)
          file = roadmap_file_fopen (roadmap_path_user(), "postmortem", "sa");
@@ -283,17 +283,17 @@ void roadmap_log (int level, char *source, int line, char *format, ...) {
    {
       int beep_times =   20;
       int sleep_time = 1000;
-   
+
       do
       {
          Sleep( sleep_time);
-      
+
          if( beep_times)
          {
             fprintf( file, ">>> FATAL ERROR - WAITING FOR PROCESS TO BE ATTACHED BY A DEBUGGER...\r\n");
             MessageBeep(MB_OK);
             beep_times--;
-            
+
             if(!beep_times)
                sleep_time = 5000;
          }

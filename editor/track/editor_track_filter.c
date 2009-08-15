@@ -23,7 +23,7 @@
  * NOTE:
  * This file implements all the "dynamic" editor functionality.
  * The code here is experimental and needs to be reorganized.
- * 
+ *
  * SYNOPSYS:
  *
  *   See editor_track_filter.h
@@ -90,7 +90,7 @@ int editor_track_filter_add (GPSFilter *filter,
                              const RoadMapGpsPosition* gps_position) {
 
    int azymuth;
-   
+
    if (filter->first_point) {
 
       filter->first_point = 0;
@@ -101,7 +101,7 @@ int editor_track_filter_add (GPSFilter *filter,
       filter->normalized_gps_point = *gps_position;
       return 0;
    }
-   
+
    if (gps_time > filter->last_gps_time + filter->timeout ||
       gps_time < filter->last_gps_time - filter->timeout) {
       editor_track_filter_reset (filter);
@@ -125,7 +125,7 @@ int editor_track_filter_add (GPSFilter *filter,
    if ((roadmap_math_distance
             ((RoadMapPosition *) &filter->last_gps_point,
               (RoadMapPosition*) gps_position) >= filter->max_distance) ||
-         
+
          (gps_time < filter->last_gps_move_time) ||
          ((gps_time - filter->last_gps_move_time) > filter->max_stand_time)) {
 
@@ -140,7 +140,7 @@ int editor_track_filter_add (GPSFilter *filter,
    filter->normalized_gps_point.longitude =
          (filter->normalized_gps_point.longitude +
           gps_position->longitude) / 2;
-            
+
    filter->normalized_gps_point.latitude =
          (filter->normalized_gps_point.latitude +
          gps_position->latitude) / 2;
@@ -182,14 +182,14 @@ const RoadMapGpsPosition *editor_track_filter_get (GPSFilter *filter) {
             interpolated_point.longitude =
                (interpolated_point.longitude +
                 filter->last_gps_point.longitude) / 2;
-            
+
             interpolated_point.latitude =
                (interpolated_point.latitude +
                filter->last_gps_point.latitude) / 2;
       }
 
       filter->last_gps_point = interpolated_point;
-      
+
       return &filter->last_gps_point;
    }
 
@@ -199,11 +199,11 @@ const RoadMapGpsPosition *editor_track_filter_get (GPSFilter *filter) {
 
 int editor_track_filter_get_current (const GPSFilter *filter, RoadMapPosition *pos, time_t *time) {
 
-	if (filter->first_point) return 0;
+    if (filter->first_point) return 0;
 
-	pos->longitude = filter->normalized_gps_point.longitude;
-	pos->latitude = filter->normalized_gps_point.latitude;
-	*time = filter->last_gps_time;
-	return 1;	
+    pos->longitude = filter->normalized_gps_point.longitude;
+    pos->latitude = filter->normalized_gps_point.latitude;
+    *time = filter->last_gps_time;
+    return 1;
 }
 

@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -59,7 +59,7 @@ namespace agg
 
         // Allocate and clear the buffer
         //--------------------------------------------------------------------
-        rendering_buffer_dynarow(unsigned width, unsigned height, 
+        rendering_buffer_dynarow(unsigned width, unsigned height,
                                  unsigned byte_width) :
             m_rows(height),
             m_width(width),
@@ -74,7 +74,7 @@ namespace agg
         void init(unsigned width, unsigned height, unsigned byte_width)
         {
             unsigned i;
-            for(i = 0; i < m_height; ++i) 
+            for(i = 0; i < m_height; ++i)
             {
                 pod_allocator<int8u>::deallocate((int8u*)m_rows[i].ptr, m_byte_width);
             }
@@ -93,7 +93,7 @@ namespace agg
         unsigned height()     const { return m_height; }
         unsigned byte_width() const { return m_byte_width; }
 
-        // The main function used for rendering. Returns pointer to the 
+        // The main function used for rendering. Returns pointer to the
         // pre-allocated span. Memory for the row is allocated as needed.
         //--------------------------------------------------------------------
         int8u* row_ptr(int x, int y, unsigned len)

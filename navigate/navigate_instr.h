@@ -40,6 +40,6 @@ int navigate_instr_prepare_segments (NavigateSegment *segments,
 
 void navigate_instr_calc_cross_time (NavigateSegment *segments,
                                      int count);
-                                     
+
 #endif // INCLUDE__NAVIGATE_INSTR__H
 

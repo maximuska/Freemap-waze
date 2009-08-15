@@ -24,16 +24,16 @@
 
 #ifndef __SSD_WIDGET_CONTAINER_H_
 #define __SSD_WIDGET_CONTAINER_H_
-  
+
 #include "ssd_widget.h"
 
 void ssd_container_get_visible_dimentions(
-                     SsdWidget         this, 
+                     SsdWidget         this,
                      RoadMapGuiPoint*  position,
                      SsdSize*          size);
 
 void ssd_container_get_zero_offset(
-                     SsdWidget         this, 
+                     SsdWidget         this,
                      int*              zero_offset_x,
                      int*              zero_offset_y);
 

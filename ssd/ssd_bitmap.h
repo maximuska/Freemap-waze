@@ -24,12 +24,12 @@
 
 #ifndef __SSD_WIDGET_BITMAP_H__
 #define __SSD_WIDGET_BITMAP_H__
-  
+
 #include "roadmap_canvas.h"
 #include "ssd_widget.h"
 
-SsdWidget ssd_bitmap_new(  const char *name, 
-                           const char *bitmap, 
+SsdWidget ssd_bitmap_new(  const char *name,
+                           const char *bitmap,
                            int         flags);
 
 void ssd_bitmap_splash(const char *bitmap, int seconds);

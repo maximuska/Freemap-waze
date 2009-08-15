@@ -29,8 +29,8 @@
 #include "roadmap_dbread.h"
 
 typedef enum {
-	SEG_ROAD,
-	SEG_ROUNDABOUT
+    SEG_ROAD,
+    SEG_ROUNDABOUT
 } SegmentContext;
 
 int  roadmap_line_in_square (int square, int cfcc, int *first, int *last);

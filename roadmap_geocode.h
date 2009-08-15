@@ -50,16 +50,16 @@
 
 typedef enum tag_roadmap_geocode_error{
 
-	geo_error_none,
-	geo_error_general,
-	geo_error_no_map,
-	geo_error_no_address,
-	geo_error_no_state,
-	geo_error_no_city,
-	geo_error_no_street,
-	geo_error_no_house_number
-	
-}	roadmap_geocode_error;
+    geo_error_none,
+    geo_error_general,
+    geo_error_no_map,
+    geo_error_no_address,
+    geo_error_no_state,
+    geo_error_no_city,
+    geo_error_no_street,
+    geo_error_no_house_number
+
+}   roadmap_geocode_error;
 
 typedef struct {
 

@@ -24,7 +24,7 @@
  * SYNOPSYS:
  *
  *   See add_alert.h
- */ 
+ */
 
 #include <string.h>
 #include <stdlib.h>
@@ -62,13 +62,13 @@
 
 #include "ssd/ssd_menu.h"
 
-#include "Realtime/Realtime.h" 
-#include "Realtime/RealtimeAlerts.h" 
+#include "Realtime/Realtime.h"
+#include "Realtime/RealtimeAlerts.h"
 
 #ifdef _WIN32
-	#define NEW_LINE "\r\n"
-#else 
-	#define NEW_LINE "\n"
+    #define NEW_LINE "\r\n"
+#else
+    #define NEW_LINE "\n"
 #endif
 
 static void alert_get_city_street(PluginLine *line, const char **city_name, const char **street_name);
@@ -90,143 +90,143 @@ static void alert_get_city_street(PluginLine *line, const char **city_name, cons
 #define CITY_PREFIX   "City"
 
 
-static int extract_field(const char *note, const char *field_name, 
-						 char *field, int size) {
+static int extract_field(const char *note, const char *field_name,
+                         char *field, int size) {
 
-	const char *lang_field_name = roadmap_lang_get (field_name);
+    const char *lang_field_name = roadmap_lang_get (field_name);
 
-	/* Save space for string termination */
-	size--;
+    /* Save space for string termination */
+    size--;
 
-	while (*note) {
-		if (!strncmp (field_name, note, strlen(field_name)) ||
-			!strncmp (lang_field_name, note, strlen(lang_field_name))) {
+    while (*note) {
+        if (!strncmp (field_name, note, strlen(field_name)) ||
+            !strncmp (lang_field_name, note, strlen(lang_field_name))) {
 
-			const char *end;
+            const char *end;
 
-			while (*note && (*note != ':'))	note++;
-			if (!*note)	break;
-			note++;
+            while (*note && (*note != ':')) note++;
+            if (!*note) break;
+            note++;
 
-			while (*note && (*note == ' '))	note++;
+            while (*note && (*note == ' ')) note++;
 
-			end = note;
+            end = note;
 
-			while (*end && (*end != NEW_LINE[0])) end++;
+            while (*end && (*end != NEW_LINE[0])) end++;
 
-			if (note == end) {
-				field[0] = '\0';
-				return 0;
-			}
+            if (note == end) {
+                field[0] = '\0';
+                return 0;
+            }
 
-			if ((end - note) < size) size = end - note;
-			strncpy(field, note, size);
-			field[size] = '\0';
+            if ((end - note) < size) size = end - note;
+            strncpy(field, note, size);
+            field[size] = '\0';
 
-			return 0;
-		}
+            return 0;
+        }
 
-		while (*note && (*note != NEW_LINE[strlen(NEW_LINE)-1])) note++;
-		if (*note) note++;
-	}
+        while (*note && (*note != NEW_LINE[strlen(NEW_LINE)-1])) note++;
+        if (*note) note++;
+    }
 
-	return -1;
+    return -1;
 }
 
 static int add_alert_export(int marker,
-						  const char **name,
-						  const char **description,
-						  const char  *keys[ED_MARKER_MAX_ATTRS],
-						  char        *values[ED_MARKER_MAX_ATTRS],
-						  int         *count) {
+                          const char **name,
+                          const char **description,
+                          const char  *keys[ED_MARKER_MAX_ATTRS],
+                          char        *values[ED_MARKER_MAX_ATTRS],
+                          int         *count) {
 
-	char field[255];
-	const char *note = editor_marker_note (marker);
-	*count = 0;
-	*description = NULL;
+    char field[255];
+    const char *note = editor_marker_note (marker);
+    *count = 0;
+    *description = NULL;
 
-	if (extract_field (note, STREET_PREFIX, field, sizeof(field)) != -1) {
-		keys[*count] = "street";
-		values[*count] = strdup(field);
-		(*count)++;
-	}
+    if (extract_field (note, STREET_PREFIX, field, sizeof(field)) != -1) {
+        keys[*count] = "street";
+        values[*count] = strdup(field);
+        (*count)++;
+    }
 
-	if (extract_field (note, CITY_PREFIX, field, sizeof(field)) != -1) {
-		keys[*count] = "city";
-		values[*count] = strdup(field);
-		(*count)++;
-	}
+    if (extract_field (note, CITY_PREFIX, field, sizeof(field)) != -1) {
+        keys[*count] = "city";
+        values[*count] = strdup(field);
+        (*count)++;
+    }
 
-	if (extract_field (note, ALERT_CATEGORY_PREFIX, field, sizeof(field)) != -1) {
-		keys[*count] = "category";
-		values[*count] = strdup(field);
-		(*count)++;
-	}
+    if (extract_field (note, ALERT_CATEGORY_PREFIX, field, sizeof(field)) != -1) {
+        keys[*count] = "category";
+        values[*count] = strdup(field);
+        (*count)++;
+    }
 
 
-	if (extract_field (note, NUMBER, field, sizeof(field)) != -1) {
-		if (atoi(field) <= 0) {
-			roadmap_log (ROADMAP_ERROR, "Add Point of Interest - POI Street address is invalid.");
-			return -1;
-		} else {
-			keys[*count] = "number";
-			values[*count] = strdup(field);
-			(*count)++;
-		}
-	}
+    if (extract_field (note, NUMBER, field, sizeof(field)) != -1) {
+        if (atoi(field) <= 0) {
+            roadmap_log (ROADMAP_ERROR, "Add Point of Interest - POI Street address is invalid.");
+            return -1;
+        } else {
+            keys[*count] = "number";
+            values[*count] = strdup(field);
+            (*count)++;
+        }
+    }
 
-	if (extract_field (note, ALERT_NAME_PREFIX, field, sizeof(field)) != -1) {
-		*name = strdup(field);
-	} else {
-		*name ="";
-	}
+    if (extract_field (note, ALERT_NAME_PREFIX, field, sizeof(field)) != -1) {
+        *name = strdup(field);
+    } else {
+        *name ="";
+    }
 
-	if (extract_field (note, ALERT_DESCRIPTION_PREFIX, field, sizeof(field)) != -1) {
-		*description = strdup(field);
-	} else {
-		*description = "";
+    if (extract_field (note, ALERT_DESCRIPTION_PREFIX, field, sizeof(field)) != -1) {
+        *description = strdup(field);
+    } else {
+        *description = "";
 
-	}
+    }
 
-	
-	return 0;
+
+    return 0;
 }
 
 static int add_alert_verify(int marker,
-						  unsigned char *flags,
-						  const char **note) {
+                          unsigned char *flags,
+                          const char **note) {
 
-	return 0;
+    return 0;
 
 }
 
 static int remove_alert_export(int marker,
-						  const char **name,
-						  const char **description,
-						  const char  *keys[ED_MARKER_MAX_ATTRS],
-						  char        *values[ED_MARKER_MAX_ATTRS],
-						  int         *count) {
+                          const char **name,
+                          const char **description,
+                          const char  *keys[ED_MARKER_MAX_ATTRS],
+                          char        *values[ED_MARKER_MAX_ATTRS],
+                          int         *count) {
 
-	char field[255];
-	const char *note = editor_marker_note (marker);
-	*count = 0;
-	
-	*description = "";
-	
-	if (extract_field (note, ALERT_CATEGORY_PREFIX, field, sizeof(field)) != -1) {
-		keys[*count] = "category";
-		values[*count] = strdup(field);
-		(*count)++;
-	}
-	
-	return 0;
+    char field[255];
+    const char *note = editor_marker_note (marker);
+    *count = 0;
+
+    *description = "";
+
+    if (extract_field (note, ALERT_CATEGORY_PREFIX, field, sizeof(field)) != -1) {
+        keys[*count] = "category";
+        values[*count] = strdup(field);
+        (*count)++;
+    }
+
+    return 0;
 }
 
 static int remove_alert_verify(int marker,
-						  unsigned char *flags,
-						  const char **note) {
+                          unsigned char *flags,
+                          const char **note) {
 
-	return 0;
+    return 0;
 
 }
 
@@ -234,58 +234,58 @@ static int RemoveAlertMarkerType;
 static int AddAlertMarkerType;
 
 static EditorMarkerType AddAlertMarker = {
-	"Add Alert",
-	add_alert_export,
-	add_alert_verify
+    "Add Alert",
+    add_alert_export,
+    add_alert_verify
 };
 
 static EditorMarkerType RemoveAlertMarker = {
-	"Remove Alert",
-	remove_alert_export,
-	remove_alert_verify
+    "Remove Alert",
+    remove_alert_export,
+    remove_alert_verify
 };
 
 void remove_alert(RoadMapPosition * FixedPosition, int direction, const char *category){
-	char note[500];
-	int fips;
+    char note[500];
+    int fips;
 
 
-	note[0] = 0;
+    note[0] = 0;
 
-	if (roadmap_county_by_position (FixedPosition, &fips, 1) < 1) {
-		roadmap_messagebox ("Error", "Can't locate county");
-		return;
-	}
+    if (roadmap_county_by_position (FixedPosition, &fips, 1) < 1) {
+        roadmap_messagebox ("Error", "Can't locate county");
+        return;
+    }
 
-	if (category && *category) {
+    if (category && *category) {
 
-		snprintf(note + strlen(note), sizeof(note) - strlen(note),
-				 "%s: %s%s", roadmap_lang_get (ALERT_CATEGORY_PREFIX), (char *)category,
-				 NEW_LINE);
-	}
+        snprintf(note + strlen(note), sizeof(note) - strlen(note),
+                 "%s: %s%s", roadmap_lang_get (ALERT_CATEGORY_PREFIX), (char *)category,
+                 NEW_LINE);
+    }
 
-	if (editor_db_activate (fips) == -1) {
+    if (editor_db_activate (fips) == -1) {
 
-		editor_db_create (fips);
+        editor_db_create (fips);
 
-		if (editor_db_activate (fips) == -1) {
+        if (editor_db_activate (fips) == -1) {
 
-			roadmap_messagebox ("Error", "Cannot remove speed cam");
-			return;
-		}
-	}
+            roadmap_messagebox ("Error", "Cannot remove speed cam");
+            return;
+        }
+    }
 
-	if (editor_marker_add (FixedPosition->longitude,
-						   FixedPosition->latitude,
-						   direction,
-						   time(NULL),
-						   RemoveAlertMarkerType,
-						   ED_MARKER_UPLOAD, note, NULL) == -1) {
+    if (editor_marker_add (FixedPosition->longitude,
+                           FixedPosition->latitude,
+                           direction,
+                           time(NULL),
+                           RemoveAlertMarkerType,
+                           ED_MARKER_UPLOAD, note, NULL) == -1) {
 
-		roadmap_messagebox ("Error", "Can't save marker.");
-	} else {
-		editor_report_markers ();
-	}
+        roadmap_messagebox ("Error", "Can't save marker.");
+    } else {
+        editor_report_markers ();
+    }
 
 }
 
@@ -293,92 +293,92 @@ void remove_alert(RoadMapPosition * FixedPosition, int direction, const char *ca
 void add_alert (RoadMapPosition * FixedPosition, int direction,  const char * name, const char * description, const char *category, const char *number,
               const char *city, const char *street, const char *icon) {
 
-	char note[500];
-	int fips;
+    char note[500];
+    int fips;
 
 
-	note[0] = 0;
+    note[0] = 0;
 
-	if (roadmap_county_by_position (FixedPosition, &fips, 1) < 1) {
-		roadmap_messagebox ("Error", "Can't locate county");
-		return;
-	}
+    if (roadmap_county_by_position (FixedPosition, &fips, 1) < 1) {
+        roadmap_messagebox ("Error", "Can't locate county");
+        return;
+    }
 
-	if (editor_db_activate (fips) == -1) {
+    if (editor_db_activate (fips) == -1) {
 
-		editor_db_create (fips);
+        editor_db_create (fips);
 
-		if (editor_db_activate (fips) == -1) {
+        if (editor_db_activate (fips) == -1) {
 
-			roadmap_messagebox ("Error", "Cannot add camera");
-			return;
-		}
-	}
+            roadmap_messagebox ("Error", "Cannot add camera");
+            return;
+        }
+    }
 
-	if (street && *street) {
-		snprintf(note, sizeof(note), "%s: %s%s",
-				 roadmap_lang_get (STREET_PREFIX), (char *)street,
-				 NEW_LINE);
-	}
+    if (street && *street) {
+        snprintf(note, sizeof(note), "%s: %s%s",
+                 roadmap_lang_get (STREET_PREFIX), (char *)street,
+                 NEW_LINE);
+    }
 
-	if (city && *city) {
-		snprintf(note + strlen(note), sizeof(note) - strlen(note),
-				 "%s: %s%s", roadmap_lang_get (CITY_PREFIX), (char *)city,
-				 NEW_LINE);
-	}
+    if (city && *city) {
+        snprintf(note + strlen(note), sizeof(note) - strlen(note),
+                 "%s: %s%s", roadmap_lang_get (CITY_PREFIX), (char *)city,
+                 NEW_LINE);
+    }
 
-	if (name && *name) {
+    if (name && *name) {
 
-		snprintf(note + strlen(note), sizeof(note) - strlen(note),
-				 "%s: %s%s", roadmap_lang_get (ALERT_NAME_PREFIX), (char *)name,
-				 NEW_LINE);
-	}
+        snprintf(note + strlen(note), sizeof(note) - strlen(note),
+                 "%s: %s%s", roadmap_lang_get (ALERT_NAME_PREFIX), (char *)name,
+                 NEW_LINE);
+    }
 
-	if (description && *description) {
+    if (description && *description) {
 
-		snprintf(note + strlen(note), sizeof(note) - strlen(note),
-				 "%s: %s%s", roadmap_lang_get (ALERT_DESCRIPTION_PREFIX), (char *)description,
-				 NEW_LINE);
-	}
+        snprintf(note + strlen(note), sizeof(note) - strlen(note),
+                 "%s: %s%s", roadmap_lang_get (ALERT_DESCRIPTION_PREFIX), (char *)description,
+                 NEW_LINE);
+    }
 
-	if (category && *category) {
+    if (category && *category) {
 
-		snprintf(note + strlen(note), sizeof(note) - strlen(note),
-				 "%s: %s%s", roadmap_lang_get (ALERT_CATEGORY_PREFIX), (char *)category,
-				 NEW_LINE);
-	}
-
-
-	if (number && *number) {
-
-		snprintf(note + strlen(note), sizeof(note) - strlen(note),
-				 "%s: %s%s", roadmap_lang_get (NUMBER), number,
-				 NEW_LINE);
-	}
+        snprintf(note + strlen(note), sizeof(note) - strlen(note),
+                 "%s: %s%s", roadmap_lang_get (ALERT_CATEGORY_PREFIX), (char *)category,
+                 NEW_LINE);
+    }
 
 
-	if (editor_marker_add (FixedPosition->longitude,
-						   FixedPosition->latitude,
-						   direction,
-						   time(NULL),
-						   AddAlertMarkerType,
-						   ED_MARKER_UPLOAD, note, icon) == -1) {
+    if (number && *number) {
 
-		roadmap_messagebox ("Error", "Can't save marker.");
-	} else {
-		editor_report_markers ();
-	}
+        snprintf(note + strlen(note), sizeof(note) - strlen(note),
+                 "%s: %s%s", roadmap_lang_get (NUMBER), number,
+                 NEW_LINE);
+    }
+
+
+    if (editor_marker_add (FixedPosition->longitude,
+                           FixedPosition->latitude,
+                           direction,
+                           time(NULL),
+                           AddAlertMarkerType,
+                           ED_MARKER_UPLOAD, note, icon) == -1) {
+
+        roadmap_messagebox ("Error", "Can't save marker.");
+    } else {
+        editor_report_markers ();
+    }
 }
 
 void add_alert_initialize(void) {
-	AddAlertMarkerType = editor_marker_reg_type (&AddAlertMarker);
-	RemoveAlertMarkerType = editor_marker_reg_type (&RemoveAlertMarker);
+    AddAlertMarkerType = editor_marker_reg_type (&AddAlertMarker);
+    RemoveAlertMarkerType = editor_marker_reg_type (&RemoveAlertMarker);
 }
 
- 
+
 
 static void add_speed_cam(int direction){
- 
+
 
     const char *street;
     const char *city;
@@ -392,60 +392,60 @@ static void add_speed_cam(int direction){
     int steering;
     int cfcc;
     char *speed;
-    
+
     CurrentGpsPoint = (RoadMapGpsPosition *)roadmap_trip_get_gps_position("AlertSelection");
-    
+
     CurrentGpsPoint = (RoadMapGpsPosition *)roadmap_trip_get_gps_position("AlertSelection");
-    
+
     CurrentFixedPosition.longitude = CurrentGpsPoint->longitude;
     CurrentFixedPosition.latitude = CurrentGpsPoint->latitude;
-   
+
     layers_count = roadmap_layer_all_roads(layers, 128);
     count = roadmap_street_get_closest(&CurrentFixedPosition, 0, layers, layers_count,
             &neighbours[0], 1);
-            
+
     if (count == -1) {
         return;
     }
     line = neighbours[0].line;
-   
-    cfcc = roadmap_line_cfcc (line.line_id);
-	switch (cfcc) {
-	case ROADMAP_ROAD_FREEWAY:
-	case ROADMAP_ROAD_PRIMARY:
-		speed = "90";
-		break;
-	case ROADMAP_ROAD_SECONDARY:
-		speed = "70";
-		break;
-	case ROADMAP_ROAD_MAIN:
-		speed = "60";
-		break;
-	default:
-		speed = "50";
-	}
 
-	steering = CurrentGpsPoint->steering; 
-	alert_get_city_street(&line, &city, &street);
-	
-	if (direction == OPPOSITE_DIRECTION){
+    cfcc = roadmap_line_cfcc (line.line_id);
+    switch (cfcc) {
+    case ROADMAP_ROAD_FREEWAY:
+    case ROADMAP_ROAD_PRIMARY:
+        speed = "90";
+        break;
+    case ROADMAP_ROAD_SECONDARY:
+        speed = "70";
+        break;
+    case ROADMAP_ROAD_MAIN:
+        speed = "60";
+        break;
+    default:
+        speed = "50";
+    }
+
+    steering = CurrentGpsPoint->steering;
+    alert_get_city_street(&line, &city, &street);
+
+    if (direction == OPPOSITE_DIRECTION){
         steering = CurrentGpsPoint->steering + 180;
         while (steering > 360)
             steering -= 360;
-	}
+    }
 
-	add_alert(&CurrentFixedPosition,steering, "", speed, roadmap_lang_get("Speed Cam"), "", city, street, SPEED_CAM_NEW_ICON);
-	roadmap_trip_restore_focus();   
-	ssd_dialog_hide_all(dec_ok);
+    add_alert(&CurrentFixedPosition,steering, "", speed, roadmap_lang_get("Speed Cam"), "", city, street, SPEED_CAM_NEW_ICON);
+    roadmap_trip_restore_focus();
+    ssd_dialog_hide_all(dec_ok);
 }
 
 
 void add_speed_cam_my_direction(void){
-	add_speed_cam(MY_DIRECTION);
+    add_speed_cam(MY_DIRECTION);
 }
 
 void add_speed_cam_opposite_direction(void){
-	add_speed_cam(OPPOSITE_DIRECTION);
+    add_speed_cam(OPPOSITE_DIRECTION);
 }
 
 static char const *DirectionQuickMenu[] = {
@@ -459,12 +459,12 @@ static char const *DirectionQuickMenu[] = {
 
 /**
  * Starts the Direction menu
- * @param actions - list of actions 
+ * @param actions - list of actions
  * @return void
  */
 void  add_speed_cam_alert(){
    RoadMapGpsPosition *CurrentGpsPoint;
-   
+
    RoadMapAction SpeedCamActions[2] = {
 
    {"mydirection", "My direction", "My direction", NULL,
@@ -473,27 +473,27 @@ void  add_speed_cam_alert(){
    {"oppositedirection", "Opposite direction", "Opposite direction", NULL,
       "Opposite direction", add_speed_cam_opposite_direction}
    };
-   
+
    if (!roadmap_gps_have_reception()) {
-      	roadmap_messagebox("Error", "No GPS reception!");
-      	return;
+        roadmap_messagebox("Error", "No GPS reception!");
+        return;
    }
-   
+
    CurrentGpsPoint = (RoadMapGpsPosition *)roadmap_trip_get_gps_position("AlertSelection");
    if ((CurrentGpsPoint == NULL) || (CurrentGpsPoint->latitude <= 0) || (CurrentGpsPoint->longitude <= 0)) {
- 		roadmap_messagebox ("Error", "Can't find current street.");
- 		return;
+        roadmap_messagebox ("Error", "Can't find current street.");
+        return;
    }
-	
+
    ssd_list_menu_activate ("speed_cam_direction_menu", NULL, DirectionQuickMenu, NULL, &SpeedCamActions[0],
-       					   SSD_DIALOG_FLOAT|SSD_DIALOG_TRANSPARENT|SSD_DIALOG_VERTICAL|SSD_ALIGN_VCENTER|SSD_BG_IMAGE);
-	
+                           SSD_DIALOG_FLOAT|SSD_DIALOG_TRANSPARENT|SSD_DIALOG_VERTICAL|SSD_ALIGN_VCENTER|SSD_BG_IMAGE);
+
 }
 
 void add_red_light_cam_alert(void){
-    
-	const char *street;
-	const char *city;
+
+    const char *street;
+    const char *city;
    PluginLine line;
     RoadMapGpsPosition *CurrentGpsPoint;
     RoadMapPosition    CurrentFixedPosition;
@@ -501,72 +501,72 @@ void add_red_light_cam_alert(void){
     int layers_count;
     RoadMapNeighbour neighbours[5];
     int count;
-    
+
     CurrentGpsPoint = (RoadMapGpsPosition *)roadmap_trip_get_gps_position("AlertSelection");
     CurrentFixedPosition.longitude = CurrentGpsPoint->longitude;
     CurrentFixedPosition.latitude = CurrentGpsPoint->latitude;
-   
+
     layers_count = roadmap_layer_all_roads(layers, 128);
     count = roadmap_street_get_closest(&CurrentFixedPosition, 0, layers, layers_count,
             &neighbours[0], 1);
-            
+
     if (count == -1) {
         return;
     }
    line = neighbours[0].line;
    alert_get_city_street(&line, &city, &street);
-	add_alert(&CurrentFixedPosition,CurrentGpsPoint->steering, "",  "", roadmap_lang_get("Red Light Cam"), "", city, street, RED_LIGHT_NEW_ICON);
+    add_alert(&CurrentFixedPosition,CurrentGpsPoint->steering, "",  "", roadmap_lang_get("Red Light Cam"), "", city, street, RED_LIGHT_NEW_ICON);
 }
 
 static void alert_get_city_street(PluginLine *line, const char **city_name, const char **street_name){
 
-	if (line->plugin_id == EditorPluginID) {
+    if (line->plugin_id == EditorPluginID) {
 #if 0
-		EditorStreetProperties properties;
+        EditorStreetProperties properties;
 
-		if (editor_db_activate (line->fips) == -1) return ;
+        if (editor_db_activate (line->fips) == -1) return ;
 
-		editor_street_get_properties (line->line_id, &properties);
+        editor_street_get_properties (line->line_id, &properties);
 
-		*street_name = editor_street_get_street_name (&properties);
+        *street_name = editor_street_get_street_name (&properties);
 
-		*city_name = editor_street_get_street_city
-					 (&properties, ED_STREET_LEFT_SIDE);
+        *city_name = editor_street_get_street_city
+                     (&properties, ED_STREET_LEFT_SIDE);
 #endif
 
-	} else {
-		RoadMapStreetProperties properties;
+    } else {
+        RoadMapStreetProperties properties;
 
-		if (roadmap_locator_activate (line->fips) < 0) {
-			*city_name = "";
-			*street_name = "";
-			return ;
-		}
+        if (roadmap_locator_activate (line->fips) < 0) {
+            *city_name = "";
+            *street_name = "";
+            return ;
+        }
 
-		roadmap_street_get_properties (line->line_id, &properties);
+        roadmap_street_get_properties (line->line_id, &properties);
 
-		*street_name = roadmap_street_get_street_name (&properties);
+        *street_name = roadmap_street_get_street_name (&properties);
 
-		*city_name = roadmap_street_get_street_city
-					 (&properties, ROADMAP_STREET_LEFT_SIDE);
+        *city_name = roadmap_street_get_street_city
+                     (&properties, ROADMAP_STREET_LEFT_SIDE);
 
-	}
+    }
 }
 
 void request_speed_cam_delete(){
     RoadMapGpsPosition *CurrentGpsPoint;
     RoadMapPosition    CurrentFixedPosition;
     int steering;
-    
+
     CurrentGpsPoint = (RoadMapGpsPosition *)roadmap_trip_get_gps_position("AlertSelection");
-    
+
     CurrentFixedPosition.longitude = CurrentGpsPoint->longitude;
     CurrentFixedPosition.latitude = CurrentGpsPoint->latitude;
-   
-	steering = CurrentGpsPoint->steering; 
 
-	remove_alert(&CurrentFixedPosition,steering,roadmap_lang_get("Speed Cam"));
-	roadmap_trip_restore_focus();   
-	ssd_dialog_hide_all(dec_ok);
-	
+    steering = CurrentGpsPoint->steering;
+
+    remove_alert(&CurrentFixedPosition,steering,roadmap_lang_get("Speed Cam"));
+    roadmap_trip_restore_focus();
+    ssd_dialog_hide_all(dec_ok);
+
 }

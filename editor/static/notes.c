@@ -67,11 +67,11 @@ static int note_export(int marker,
                        const char  *keys[ED_MARKER_MAX_ATTRS],
                        char        *values[ED_MARKER_MAX_ATTRS],
                        int         *count) {
-   
+
    *count = 0;
    *name = NULL;
    *description = editor_marker_note (marker);
-   
+
    return 0;
 }
 
@@ -122,7 +122,7 @@ static void notes_dialog_save (const char *name, void *context) {
 
       roadmap_messagebox ("Error", "Can't save note.");
    } else {
-		editor_report_markers ();
+        editor_report_markers ();
    }
 
    roadmap_trip_remove_point ("New note");
@@ -198,7 +198,7 @@ static void notes_add(int mode, RoadMapPosition *point) {
    if (point) {
       pos.longitude = point->longitude;
       pos.latitude  = point->latitude;
-      
+
    } else {
       const char *focus = roadmap_trip_get_focus_name ();
 
@@ -229,7 +229,7 @@ static void notes_add(int mode, RoadMapPosition *point) {
    }
 
    if (mode == NOTES_MODE_EDIT) {
-      
+
       notes_add_dialog (&pos);
       return;
    }
@@ -259,7 +259,7 @@ static void notes_add(int mode, RoadMapPosition *point) {
          break;
    }
 
-	editor_report_markers ();
+    editor_report_markers ();
 }
 
 

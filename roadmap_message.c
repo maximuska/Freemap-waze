@@ -60,16 +60,16 @@ int roadmap_message_format (char *text, int length, const char *format) {
     char *f;
     char *p = text;
     char *end = text + length - 1;
-    
+
     while (*format) {
-        
+
         if (*format == '%') {
-            
+
             format += 1;
             if (*format <= 0) {
                 break;
             }
-            
+
             f = RoadMapMessageParameters[(int)(*(format++))];
             if (f != NULL) {
                 while (*f && p < end) {
@@ -77,7 +77,7 @@ int roadmap_message_format (char *text, int length, const char *format) {
                 }
             } else {
                 format = strchr (format, '|');
-                
+
                 if (format == NULL) {
                     return 0; /* Cannot build the string. */
                 }
@@ -86,14 +86,14 @@ int roadmap_message_format (char *text, int length, const char *format) {
             }
 
         } else if (*format == '|') {
-            
+
             break; /* We completed this alternative successfully. */
-            
+
         } else {
 
             *(p++) = *(format++);
         }
-        
+
         if (p >= end) {
             break;
         }
@@ -106,19 +106,19 @@ int roadmap_message_format (char *text, int length, const char *format) {
 
 
 void roadmap_message_set (char parameter, const char *format, ...) {
-    
+
     va_list ap;
     char    value[256];
-    
+
     if (parameter <= 0) {
         roadmap_log( ROADMAP_ERROR, "invalid parameter code %d",  parameter);
         return;
     }
-    
+
     va_start(ap, format);
     vsnprintf(value, sizeof(value), format, ap);
     va_end(ap);
-    
+
     if (RoadMapMessageParameters[(int)parameter] != NULL) {
         free (RoadMapMessageParameters[(int)parameter]);
     }
@@ -131,14 +131,14 @@ void roadmap_message_set (char parameter, const char *format, ...) {
 
 
 void roadmap_message_unset (char parameter) {
-    
+
     if (parameter <= 0) {
         roadmap_log (ROADMAP_ERROR,
                      "invalid parameter code %d",
                      parameter);
         return;
     }
-    
+
     if (RoadMapMessageParameters[(int)parameter] != NULL) {
         free (RoadMapMessageParameters[(int)parameter]);
         RoadMapMessageParameters[(int)parameter] = NULL;
@@ -147,13 +147,13 @@ void roadmap_message_unset (char parameter) {
 
 
 int roadmap_message_is_set (char parameter) {
-    
+
     if (parameter <= 0) {
         roadmap_log (ROADMAP_ERROR,
                      "invalid parameter code %d",
                      parameter);
         return 0;
     }
-    
+
     return RoadMapMessageParameters[(int)parameter] != NULL;
 }

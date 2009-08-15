@@ -32,9 +32,9 @@
 BOOL SN_IsValid( const char* szWebServiceAddress)
 { return WSA_ExtractParams( szWebServiceAddress, NULL, NULL, NULL);}
 
-/*   
+/*
 
-Method:   
+Method:
    BOOL WSA_ExtractParams(...)
 
 Abstract:
@@ -50,18 +50,18 @@ Abstract:
 
 Return result:
    TRUE:    Method succeeded;
-            Service full name 'szWebServiceAddress' was found valid; 
+            Service full name 'szWebServiceAddress' was found valid;
             If output parameters were supplied, they contain the parameters value.
 
-   FALSE:   Method failed; 
+   FALSE:   Method failed;
             Service name 'szWebServiceAddress' contains invalid value.
-   
+
 Assumption:
-   If the OPTIONAL buffers 'pServerURL' and 'pServiceName' were supplied, their sizes 
-   must be at least 'WSA_SERVER_URL_MAXSIZE+1' and 'WSA_SERVICE_NAME_MAXSIZE+1', 
+   If the OPTIONAL buffers 'pServerURL' and 'pServiceName' were supplied, their sizes
+   must be at least 'WSA_SERVER_URL_MAXSIZE+1' and 'WSA_SERVICE_NAME_MAXSIZE+1',
    correspondingly.                                                   */
 
-BOOL   WSA_ExtractParams(   
+BOOL   WSA_ExtractParams(
          const char* szWebServiceAddress, //   IN     -  Web service full address (http://...)
          char*       pServerURL,          //   OUT,OPT-  Server URL[:Port]
          int*        pServerPort,         //   OUT,OPT-  Server Port
@@ -74,33 +74,33 @@ BOOL   WSA_ExtractParams(
    char*    pWebSvc  = NULL;
    int      iPort    = WSA_SERVER_DEFAULT_PORT;
    char     Copy[WSA_STRING_MAXSIZE+1];
-   
+
    //   Verify sizes are ok:
-   if( !szWebServiceAddress                              || 
-      !(*szWebServiceAddress)                            || 
+   if( !szWebServiceAddress                              ||
+      !(*szWebServiceAddress)                            ||
       (strlen(szWebServiceAddress)< WSA_STRING_MINSIZE)  ||
       (WSA_STRING_MAXSIZE < strlen(szWebServiceAddress)))
       return FALSE;
-   
+
    //   Copy of service-name:
    for( i=0; i<strlen(szWebServiceAddress); i++)
       Copy[i] = szWebServiceAddress[i];
    Copy[i] = '\0';
-   
+
    //   Search for 'http://':
    if( 0 != strncasecmp( (const char*)Copy, WSA_PREFIX, WSA_PREFIX_SIZE))
       return FALSE;
 
    //   Server URL:
    pSrvURL = (Copy + WSA_PREFIX_SIZE);
-   
+
    //   Do we have a port number?
    pTmp = strchr( pSrvURL, WSA_SERVER_PORT_DELIMITER);
    if( pTmp)
    {
       //   Service-port found
       pSrvPrt = pTmp + 1;
-      
+
       //   Reset 'tmp'
       pTmp = pSrvPrt;
    }
@@ -111,7 +111,7 @@ BOOL   WSA_ExtractParams(
    pTmp = strchr( pTmp, WSA_SERVER_URL_DELIMITER);
    if( !pTmp)
       return FALSE;   //   Address termination delimiter was not found
-   
+
    //   Next value is service-name
    pWebSvc = pTmp + 1;
    (*pTmp) = '\0';      //   Terminate last value (port-number, or server URL)
@@ -167,14 +167,14 @@ void  WSA_RemovePortNumberFromURL(
       szInput = (szPortOffset_begin + 1);
 
    }  while( *szInput);
-   
+
    if( !(*szInput))
       return;
 
    szPortOffset_end  = strchr( szPortOffset_begin, '/');
    if( !szPortOffset_end)
       szPortOffset_end  = strchr( szPortOffset_begin, '\\');
-   
+
    if( !szPortOffset_end)
    {
       (*szPortOffset_begin) = '\0';

@@ -24,17 +24,17 @@
 
 #ifndef __SSD_CHECKBOX_H_
 #define __SSD_CHECKBOX_H_
-  
+
 #include "ssd_widget.h"
 
 #define CHECKBOX_STYLE_DEFAULT 0
 #define CHECKBOX_STYLE_ROUNDED 1
 
-SsdWidget ssd_checkbox_new (const char *name, 
-							BOOL Selected,
-                          	int flags,
-                          	SsdCallback callback,
-                          	int style);
+SsdWidget ssd_checkbox_new (const char *name,
+                            BOOL Selected,
+                            int flags,
+                            SsdCallback callback,
+                            int style);
 
 
 #endif // __SSD_CHECKBOX_H_

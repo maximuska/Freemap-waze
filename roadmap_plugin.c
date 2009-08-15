@@ -58,7 +58,7 @@ int roadmap_plugin_register (RoadMapPluginHooks *hook) {
 
    int i;
    for (i=1; i<MAX_PLUGINS; i++) {
-      
+
       if (hooks[i] == NULL) {
          hooks[i] = hook;
          PluginCount++;
@@ -76,9 +76,9 @@ int i;
 
    hooks[plugin_id] = NULL;
    for (i=plugin_id; i<MAX_PLUGINS-1; i++) {
-   		hooks[i] = hooks[i+1];
-   }   
-  
+        hooks[i] = hooks[i+1];
+   }
+
   PluginCount--;
 }
 
@@ -89,7 +89,7 @@ int roadmap_plugin_same_line (const PluginLine *line1,
    if ((line1 == NULL) || (line2 == NULL)) return 0;
 
    return ( (line1->plugin_id == line2->plugin_id) &&
-            ((line1->plugin_id != ROADMAP_PLUGIN_ID) || 
+            ((line1->plugin_id != ROADMAP_PLUGIN_ID) ||
              (line1->square == line2->square)) &&
             (line1->line_id == line2->line_id) &&
             (line1->fips == line2->fips) );
@@ -124,7 +124,7 @@ int roadmap_plugin_get_fips (const PluginLine *line) {
 int roadmap_plugin_get_line_id (const PluginLine *line) {
 
    if (line->plugin_id == ROADMAP_PLUGIN_ID) {
-   	roadmap_square_set_current(line->square);
+    roadmap_square_set_current(line->square);
    }
    return line->line_id;
 }
@@ -203,7 +203,7 @@ int roadmap_plugin_get_distance
 
    if (line->plugin_id == ROADMAP_PLUGIN_ID) {
 
-		roadmap_square_set_current (line->square);
+        roadmap_square_set_current (line->square);
       return roadmap_street_get_distance
                      (point,
                       line->line_id,
@@ -227,7 +227,7 @@ int roadmap_plugin_get_distance
       return 0;
    }
 }
-      
+
 
 void roadmap_plugin_get_line_points (const PluginLine *line,
                                      RoadMapPosition  *from_pos,
@@ -245,7 +245,7 @@ void roadmap_plugin_get_line_points (const PluginLine *line,
       *shape_itr = &roadmap_shape_get_position;
    } else {
       RoadMapPluginHooks *hooks = get_hooks (line->plugin_id);
-      
+
       if (hooks == NULL) {
          roadmap_log (ROADMAP_ERROR, "plugin id:%d is missing.",
                line->plugin_id);
@@ -263,7 +263,7 @@ void roadmap_plugin_get_line_points (const PluginLine *line,
       } else {
 #else
          {
-#endif   
+#endif
          *first_shape = *last_shape = -1;
          *shape_itr   = NULL;
       }
@@ -277,11 +277,11 @@ void roadmap_plugin_line_from (const PluginLine *line, RoadMapPosition *pos) {
 
    if (line->plugin_id == ROADMAP_PLUGIN_ID) {
 
-	   roadmap_square_set_current (line->square);
+       roadmap_square_set_current (line->square);
       roadmap_line_from (line->line_id, pos);
    } else {
       RoadMapPluginHooks *hooks = get_hooks (line->plugin_id);
-      
+
       if (hooks == NULL) {
          roadmap_log (ROADMAP_ERROR, "plugin id:%d is missing.",
                line->plugin_id);
@@ -306,11 +306,11 @@ void roadmap_plugin_line_to (const PluginLine *line, RoadMapPosition *pos) {
 
    if (line->plugin_id == ROADMAP_PLUGIN_ID) {
 
-   	roadmap_square_set_current (line->square);
+    roadmap_square_set_current (line->square);
       roadmap_line_to (line->line_id, pos);
    } else {
       RoadMapPluginHooks *hooks = get_hooks (line->plugin_id);
-      
+
       if (hooks == NULL) {
          roadmap_log (ROADMAP_ERROR, "plugin id:%d is missing.",
                line->plugin_id);
@@ -333,7 +333,7 @@ void roadmap_plugin_line_to (const PluginLine *line, RoadMapPosition *pos) {
 
 int roadmap_plugin_override_line (int line, int cfcc, int fips) {
 
-	int i;
+    int i;
 
 #ifdef __SYMBIAN32__
   return 0;
@@ -342,7 +342,7 @@ int roadmap_plugin_override_line (int line, int cfcc, int fips) {
 #else
    //return 0;
 //   return hooks[1]->override_line (line, cfcc, fips);
-#endif   
+#endif
 //#if 0
       for (i=1; i<=PluginCount; i++) {
 
@@ -358,7 +358,7 @@ int roadmap_plugin_override_line (int line, int cfcc, int fips) {
    }
 
    return 0;
-//#endif   
+//#endif
 }
 
 
@@ -415,7 +415,7 @@ void roadmap_plugin_get_street (const PluginLine *line, PluginStreet *street) {
 
       RoadMapStreetProperties properties;
 
-		roadmap_square_set_current (line->square);
+        roadmap_square_set_current (line->square);
       roadmap_street_get_properties (line->line_id, &properties);
       street->plugin_id = ROADMAP_PLUGIN_ID;
       street->street_id = properties.street;
@@ -478,12 +478,12 @@ const char *roadmap_plugin_street_full_name (const PluginLine *line) {
 void roadmap_plugin_get_street_properties (const PluginLine *line,
                                            PluginStreetProperties *props,
                                            int type) {
-   
+
    if (line->plugin_id == ROADMAP_PLUGIN_ID) {
 
       RoadMapStreetProperties rm_properties;
 
-	   roadmap_square_set_current (line->square);
+       roadmap_square_set_current (line->square);
 
       if (type == PLUGIN_STREET_ONLY) {
          roadmap_street_get_street (line->line_id, &rm_properties);
@@ -588,10 +588,10 @@ int roadmap_plugin_get_closest
 
 
 int roadmap_plugin_get_direction (PluginLine *line, int who) {
-   
+
    if (line->plugin_id == ROADMAP_PLUGIN_ID) {
 
-		roadmap_square_set_current (line->square);
+        roadmap_square_set_current (line->square);
       return roadmap_line_route_get_direction (line->line_id, who);
 
    } else {
@@ -626,7 +626,7 @@ int roadmap_plugin_calc_length (const RoadMapPosition *position,
 
    roadmap_plugin_get_line_points (line, &line_from_pos, &line_to_pos,
                                   &first_shape, &last_shape, &shape_itr);
-                                    
+
    return roadmap_math_calc_line_length (position, &line_from_pos, &line_to_pos,
                                          first_shape, last_shape, shape_itr,
                                          total_length);
@@ -652,33 +652,33 @@ void roadmap_plugin_shutdown (void) {
 
 static int check_same_line (const PluginLine *line, void *context, int extend_flags) {
 
-	PluginLine *comp_line = (PluginLine *)context;
-		
-	if (line->square == comp_line->square &&
-		 line->line_id == comp_line->line_id) {
-		 	
-		 comp_line->plugin_id = 1;
-	}
-	
-	return comp_line->plugin_id;
+    PluginLine *comp_line = (PluginLine *)context;
+
+    if (line->square == comp_line->square &&
+         line->line_id == comp_line->line_id) {
+
+         comp_line->plugin_id = 1;
+    }
+
+    return comp_line->plugin_id;
 }
 
 
 int roadmap_plugin_same_db_line (const PluginLine *line1,
-                              	const PluginLine *line2) {
-	
-	PluginLine temp_line;
-	
-	if (roadmap_plugin_same_line (line1, line2)) return 1;
-	
-	if (line1->plugin_id != ROADMAP_PLUGIN_ID ||
-		 line1->plugin_id != line2->plugin_id) {
-		return 0;
-	} 
-                              		
-	temp_line = *line2;
-	temp_line.plugin_id = 0; // using this for count
-	
-	roadmap_street_extend_line_ends (line1, NULL, NULL, FLAG_EXTEND_BOTH, check_same_line, &temp_line);
-	return temp_line.plugin_id;
+                                const PluginLine *line2) {
+
+    PluginLine temp_line;
+
+    if (roadmap_plugin_same_line (line1, line2)) return 1;
+
+    if (line1->plugin_id != ROADMAP_PLUGIN_ID ||
+         line1->plugin_id != line2->plugin_id) {
+        return 0;
+    }
+
+    temp_line = *line2;
+    temp_line.plugin_id = 0; // using this for count
+
+    roadmap_street_extend_line_ends (line1, NULL, NULL, FLAG_EXTEND_BOTH, check_same_line, &temp_line);
+    return temp_line.plugin_id;
 }

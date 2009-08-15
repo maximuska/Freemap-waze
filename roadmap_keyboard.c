@@ -37,7 +37,7 @@ static   int               gs_CB_OnKeyPressed_count = 0;
 BOOL roadmap_keyboard_handler__key_pressed( const char* utf8char, uint32_t flags)
 {
    int i;
-   
+
    for( i=0; i<gs_CB_OnKeyPressed_count; i++)
       if( gs_CB_OnKeyPressed[i]( utf8char, flags))
          return TRUE;
@@ -48,18 +48,18 @@ BOOL roadmap_keyboard_handler__key_pressed( const char* utf8char, uint32_t flags
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL roadmap_keyboard_register_to_event__general(   
+BOOL roadmap_keyboard_register_to_event__general(
                      void*   Callbacks[],      //   Callbacks array
                      int*   pCallbacksCount,   //   Current size of array
                      void*   pfnNewCallback)   //   New callback
 {
    if( !Callbacks || !pCallbacksCount || !pfnNewCallback)
       return FALSE;   //   Invalid parameters
-   
+
    //   Verify we are not already registered:
    if( (*pCallbacksCount))
    {
-      int   i; 
+      int   i;
       for( i=0; i<(*pCallbacksCount); i++)
          if( Callbacks[i] == pfnNewCallback)
             return FALSE;   //   Callback already included in our array
@@ -71,27 +71,27 @@ BOOL roadmap_keyboard_register_to_event__general(
       Callbacks[(*pCallbacksCount)++] = pfnNewCallback;
       return TRUE;
    }
-   
+
    //   Maximum count exeeded...
    return FALSE;
 }
 
-BOOL roadmap_keyboard_unregister_from_event__general(   
+BOOL roadmap_keyboard_unregister_from_event__general(
                      void*   Callbacks[],      //   Callbacks array
                      int*   pCallbacksCount,   //   Current size of array
                      void*   pfnCallback)      //   Callback to remove
 {
    BOOL bFound = FALSE;
-   
+
    if( !Callbacks || !pCallbacksCount || !(*pCallbacksCount) || !pfnCallback)
       return FALSE;   //   Invalid parameters...
-   
+
    if( Callbacks[(*pCallbacksCount)-1] == pfnCallback)
       bFound = TRUE;
    else
    {
-      int   i; 
-      
+      int   i;
+
       //   Remove event and shift all higher events one position back:
       for( i=0; i<((*pCallbacksCount)-1); i++)
       {
@@ -107,13 +107,13 @@ BOOL roadmap_keyboard_unregister_from_event__general(
          }
       }
    }
-   
+
    if( bFound)
    {
       (*pCallbacksCount)--;
       Callbacks[(*pCallbacksCount)] = NULL;
    }
-   
+
    return bFound;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -122,7 +122,7 @@ BOOL roadmap_keyboard_unregister_from_event__general(
 /////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL roadmap_keyboard_register_to_event__key_pressed( PFN_ONKEYPRESSED pfnOnKeyPressed)
 {
-   return roadmap_keyboard_register_to_event__general( 
+   return roadmap_keyboard_register_to_event__general(
                   (void*)gs_CB_OnKeyPressed, //   Callbacks array
                   &gs_CB_OnKeyPressed_count, //   Current size of array
                   (void*)pfnOnKeyPressed);   //   New callback
@@ -130,7 +130,7 @@ BOOL roadmap_keyboard_register_to_event__key_pressed( PFN_ONKEYPRESSED pfnOnKeyP
 
 BOOL roadmap_keyboard_unregister_from_event__key_pressed( PFN_ONKEYPRESSED pfnOnKeyPressed)
 {
-   return roadmap_keyboard_unregister_from_event__general( 
+   return roadmap_keyboard_unregister_from_event__general(
                   (void*)gs_CB_OnKeyPressed, //   Callbacks array
                   &gs_CB_OnKeyPressed_count, //   Current size of array
                   (void*)pfnOnKeyPressed);   //   Callback to remove

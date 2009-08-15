@@ -24,11 +24,11 @@
 
 class CEException {
 public:
-	static bool writeException(TCHAR *path, EXCEPTION_POINTERS *exceptionPointers);
+    static bool writeException(TCHAR *path, EXCEPTION_POINTERS *exceptionPointers);
 private:
-	static void writeString(HANDLE file, char *data);
-	static void writeBreak(HANDLE file);
-	static void dumpContext(HANDLE file, HANDLE hProcess, CONTEXT *context);
-	static void dumpException(HANDLE file, EXCEPTION_RECORD *exceptionRecord);
+    static void writeString(HANDLE file, char *data);
+    static void writeBreak(HANDLE file);
+    static void dumpContext(HANDLE file, HANDLE hProcess, CONTEXT *context);
+    static void dumpException(HANDLE file, EXCEPTION_RECORD *exceptionRecord);
 
 };

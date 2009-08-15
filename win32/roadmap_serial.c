@@ -51,13 +51,13 @@ static BOOL CALLBACK list_port_callback(LPVOID pCallbackValue,
 
 
 RoadMapSerial roadmap_serial_open(const char *name, const char *mode,
-		int baud_rate)
+        int baud_rate)
 {
 
    Win32SerialConn *conn = malloc (sizeof(Win32SerialConn));
 
    if (conn == NULL) return NULL;
-   
+
    memset( conn, 0, sizeof(Win32SerialConn));
 
    strncpy_safe (conn->name, name, sizeof(conn->name));
@@ -137,7 +137,7 @@ int roadmap_serial_write (RoadMapSerial serial, const void *data, int length)
 const int *roadmap_serial_enumerate (void)
 {
    if (!serial_ports[0]) {
-      
+
       ListPorts (&list_port_callback, NULL);
    }
 
@@ -147,7 +147,7 @@ const int *roadmap_serial_enumerate (void)
 
 const char **roadmap_serial_get_speeds (void)
 {
-   static const char *serial_speeds[MAX_SERIAL_SPEEDS] = 
+   static const char *serial_speeds[MAX_SERIAL_SPEEDS] =
                {"4800", "9600", "19200", "38400", "57600", NULL};
 
    return serial_speeds;

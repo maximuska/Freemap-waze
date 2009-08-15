@@ -425,13 +425,13 @@ FT_BEGIN_HEADER
   *
   * @enum:
   *   FT_Orientation
-  *  
+  *
   * @description:
   *   A list of values used to describe an outline's contour orientation.
   *
   *   The TrueType and Postscript specifications use different conventions
   *   to determine whether outline contours should be filled or unfilled.
-  *   
+  *
   * @values:
   *   FT_ORIENTATION_TRUETYPE ::
   *     According to the TrueType specification, clockwise contours must
@@ -457,7 +457,7 @@ FT_BEGIN_HEADER
     FT_ORIENTATION_POSTSCRIPT = 1,
     FT_ORIENTATION_FILL_RIGHT = FT_ORIENTATION_TRUETYPE,
     FT_ORIENTATION_FILL_LEFT  = FT_ORIENTATION_POSTSCRIPT
-  
+
   } FT_Orientation;
 
 
@@ -465,7 +465,7 @@ FT_BEGIN_HEADER
   *
   * @function:
   *   FT_Outline_Get_Orientation
-  *  
+  *
   * @description:
   *   This function analyzes a glyph outline and tries to compute its
   *   fill orientation (see @FT_Orientation).  This is done by computing

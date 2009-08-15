@@ -24,8 +24,8 @@
  */
 
 
-#ifndef	__REALTIME_ALERTS_LIST_H__
-#define	__REALTIME_ALERTS_LIST_H__
+#ifndef __REALTIME_ALERTS_LIST_H__
+#define __REALTIME_ALERTS_LIST_H__
 
 #define MAX_ALERTS_ENTRIES 100
 #define ALERTS_LIST_TITLE "Real Time Alerts"
@@ -38,10 +38,10 @@ typedef enum real_time_list_context_menu_items
    rtl_cm_view_comments,
    rtl_cm_add_comments,
    rtl_cm_sort_proximity,
-   rtl_cm_sort_recency,      
+   rtl_cm_sort_recency,
    rtl_cm_exit,
    rtl_cm_cancel,
-   
+
    rtl_cm__count,
    rtl_cm__invalid
 
@@ -54,7 +54,7 @@ typedef enum tabs_real_time_list
    tab_police,
    tab_traffic_jam,
    tab_accidents,
-   tab_chit_chat,      
+   tab_chit_chat,
 
    tab__count,
    tab_invalid__invalid
@@ -62,16 +62,16 @@ typedef enum tabs_real_time_list
 }  real_time_tabs;
 
 typedef struct AlertList_s{
-	 char *labels[MAX_ALERTS_ENTRIES];
+     char *labels[MAX_ALERTS_ENTRIES];
      char *values[MAX_ALERTS_ENTRIES];
      char *icons[MAX_ALERTS_ENTRIES];
-	 int type[MAX_ALERTS_ENTRIES];
-	 int iDistnace[MAX_ALERTS_ENTRIES];
-	 int iCount;
+     int type[MAX_ALERTS_ENTRIES];
+     int iDistnace[MAX_ALERTS_ENTRIES];
+     int iCount;
 }AlertList;
 
 
-void RealtimeAlertsList (void); 
+void RealtimeAlertsList (void);
 
 
 #endif //__REALTIME_ALERTS_LIST_H__

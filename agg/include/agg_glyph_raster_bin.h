@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -73,7 +73,7 @@ namespace agg
             while(*str)
             {
                 unsigned glyph = *str;
-                const int8u* bits = m_font + 4 + num_chars * 2 + 
+                const int8u* bits = m_font + 4 + num_chars * 2 +
                                     value(m_font + 4 + (glyph - start_char) * 2);
                 w += *bits;
                 ++str;
@@ -87,7 +87,7 @@ namespace agg
             unsigned start_char = m_font[2];
             unsigned num_chars = m_font[3];
 
-            m_bits = m_font + 4 + num_chars * 2 + 
+            m_bits = m_font + 4 + num_chars * 2 +
                      value(m_font + 4 + (glyph - start_char) * 2);
 
             m_glyph_width = *m_bits++;
@@ -105,7 +105,7 @@ namespace agg
                 r->y1 = int(y) - m_font[1] + 1;
                 r->y2 = r->y1 + m_font[0] - 1;
             }
-            r->dx = m_glyph_width; 
+            r->dx = m_glyph_width;
             r->dy = 0;
         }
 

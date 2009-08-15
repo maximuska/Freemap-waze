@@ -45,7 +45,7 @@
 //
 //   Remarks:   The integer value does not have to be NULL terminated
 //
-const char*   ReadInt64FromString(   
+const char*   ReadInt64FromString(
       const char* szStr,               //   [in]      Source string
       const char* szValueTermination,  //   [in,opt]  Characters that terminate the integer value
       const char* szAllowedPadding,    //   [in,opt]  Characters allowed within the integer value
@@ -55,7 +55,7 @@ const char*   ReadInt64FromString(
    BOOL  bMinus = FALSE;
 
    (*pValue) = 0;
-   
+
    while( (*szStr) && (!szValueTermination || (NULL == strchr( szValueTermination, (*szStr)))))
    {
       if( ('0' <= (*szStr)) && ((*szStr) <= '9'))
@@ -70,20 +70,20 @@ const char*   ReadInt64FromString(
          if( !szAllowedPadding || (NULL == strchr( szAllowedPadding, (*szStr))))
             return NULL;
       }
-      
+
       szStr++;
    }
-   
+
    if( bMinus)
       (*pValue) *= -1;
-   
+
    if( szValueTermination && (DO_NOT_TRIM != iTrimCount))
       return EatChars( szStr, szValueTermination, iTrimCount);
-   
+
    return szStr;
 }
 
-const char*   ReadIntFromString(   
+const char*   ReadIntFromString(
    const char* szStr,               //   [in]      Source string
    const char* szValueTermination,  //   [in,opt]  Characters that terminate the integer value
    const char* szAllowedPadding,    //   [in,opt]  Characters allowed within the integer value
@@ -91,7 +91,7 @@ const char*   ReadIntFromString(
    int         iTrimCount)          //   [in]      TRIM_ALL_CHARS, DO_NOT_TRIM, or 'n'
 {
    long long i64Val;
-   const char*   pRes = ReadInt64FromString(   
+   const char*   pRes = ReadInt64FromString(
                szStr,               //   [in]      Source string
                szValueTermination,  //   [in,opt]  Characters that terminate the integer value
                szAllowedPadding,    //   [in,opt]  Characters allowed within the integer value
@@ -99,8 +99,8 @@ const char*   ReadIntFromString(
                iTrimCount);         //   [in]      TRIM_ALL_CHARS, DO_NOT_TRIM, or 'n'
 
    (*pValue) = (int)i64Val;
-   return pRes;                           
-}                           
+   return pRes;
+}
 
 ////////////////////////////////////
 //   Method:   ReadDoubleFromString
@@ -120,7 +120,7 @@ const char*   ReadIntFromString(
 //
 //   Remarks:   The double value does not have to be NULL terminated
 //
-const char*   ReadDoubleFromString(   
+const char*   ReadDoubleFromString(
                   const char* szStr,               //   [in]      Source string
                   const char* szValueTermination,  //   [in,opt]  Value termination
                   const char* szAllowedPadding,    //   [in,opt]  Allowed padding
@@ -131,13 +131,13 @@ const char*   ReadDoubleFromString(
    char  sDouble[STRING_DOUBLE_MAXSIZE+1];
 
    (*pValue) = 0.F;
-   
+
    memset( sDouble, 0, sizeof(sDouble));
-   
+
    while( szStr[i] && (!szValueTermination || (NULL == strchr( szValueTermination, szStr[i]))))
    {
       char ch = szStr[i];
-   
+
       if( STRING_DOUBLE_MAXSIZE < i)
          return NULL;
 
@@ -148,18 +148,18 @@ const char*   ReadDoubleFromString(
          if( !szAllowedPadding || (NULL == strchr( szAllowedPadding, ch)))
             return NULL;
       }
-      
+
       i++;
    }
-   
+
    if( !i)
       return NULL;
-      
+
    (*pValue) = atof(sDouble);
-   
+
    if( szValueTermination && (DO_NOT_TRIM != iTrimCount))
       return EatChars( szStr + i, szValueTermination, iTrimCount);
-   
+
    return szStr + i;
 }
 
@@ -179,17 +179,17 @@ const char*   ReadDoubleFromString(
 //      o   szChars  - [out]     Array of one or more chars to terminate the copy operation
 //      o   bTrimEnd - [in]      Remove additional termination chars from 'szSrc'
 //
-//   Remarks:  
+//   Remarks:
 //       If the string to be copied exceeds the size of the output buffer then NULL
 //       is returned.
 //       Output buffer (szDst) can be NULL, if only the size is needed.
 //       Note about 'pDstSize':
 //          On entry, pDstSize will hold the size of the buffer. Note that this size must
 //          be big enough to contain the terminating null.
-//          On exit, pDstSize will hold the size of the extracted string. Note that this 
+//          On exit, pDstSize will hold the size of the extracted string. Note that this
 //          size DOES NOT include the terminating null.
 //
-const char*   ExtractString(   
+const char*   ExtractString(
             const char* szSrc,      // [in]      Source string
             char*       szDst,      // [out,opt] Output buffer
             int*        pDstSize,   // [in,out]  Buffer size / Size of extracted string
@@ -200,14 +200,14 @@ const char*   ExtractString(
 
    if( !szSrc || !pDstSize || !(*pDstSize) || !szChars || !(*szChars))
       return NULL;
-   
+
    if(szDst)
       szDst[i] = '\0';
    while( szSrc[i] && (NULL == strchr( szChars, szSrc[i])))
    {
       if( (*pDstSize) <= (i+1))
          return NULL;
-      
+
       if(szDst)
       {
          szDst[i] = szSrc[i];
@@ -217,9 +217,9 @@ const char*   ExtractString(
       else
          i++;
    }
-   
+
    (*pDstSize) = i;
-   
+
    if( DO_NOT_TRIM != iTrimCount)
       return EatChars( szSrc + i, szChars, iTrimCount);
 
@@ -232,12 +232,12 @@ const char*   ExtractString(
 // Abstract:   Same as 'ExtractString' (see documentation above), with a single difference:
 //             Supporting escape sequences chars ('\,', '\r', '\n', '\t'...)
 //
-// Details:    If the escape sequence tag '\' will be encountered then current char will be 
-//             ignored, and the following char will be treated as the escape-squence 
+// Details:    If the escape sequence tag '\' will be encountered then current char will be
+//             ignored, and the following char will be treated as the escape-squence
 //             value ('\r' for 'r', etc).
-//             Note that a delimiter character will not be used as a delimiter if it is 
+//             Note that a delimiter character will not be used as a delimiter if it is
 //             proceeded with the escape sequence tag.
-const char* ExtractNetworkString(   
+const char* ExtractNetworkString(
             const char* szSrc,      // [in]     Source string
             char*       szDst,      // [out,opt]Output buffer
             int*        pDstSize,   // [in,out] Buffer size / Size of extracted string
@@ -250,7 +250,7 @@ const char* ExtractNetworkString(
 
    if( !szSrc || !pDstSize || !(*pDstSize) || !szChars || !(*szChars))
       return NULL;
-   
+
    if(szDst) szDst[0] = '\0';
    while( szSrc[iSrc])
    {
@@ -290,12 +290,12 @@ const char* ExtractNetworkString(
          {
             iSrc--;
             break;
-      	}
+        }
       }
 
       if( (*pDstSize) <= (iDst+1))
          return NULL;
-      
+
       if(szDst)
       {
          szDst[iDst++]  = ch;
@@ -304,9 +304,9 @@ const char* ExtractNetworkString(
       else
          iDst++;
    }
-   
+
    (*pDstSize) = iDst;
-   
+
    if( DO_NOT_TRIM != iTrimCount)
       return EatChars( szSrc + iSrc, szChars, iTrimCount);
 
@@ -327,7 +327,7 @@ const char* ExtractNetworkString(
 //      o   szDst    - [opt]  Output buffer
 //      o   iDstSize - [in]   Size of output buffer
 //
-BOOL PackNetworkString( 
+BOOL PackNetworkString(
             const char* szSrc,      //   [in]   Source string
             char*       szDst,      //   [out]  Output buffer
             int         iDstSize)   //   [in]   Output buffer size
@@ -338,14 +338,14 @@ BOOL PackNetworkString(
 
    if( !szSrc || !szDst || !iDstSize || (szSrc == szDst))
       return FALSE;
-   
+
    if( iDstSize)
       (*szDst) = '\0';
 
    while( szSrc[iSrc])
    {
       char chSrc = szSrc[iSrc++];
-      
+
       switch( chSrc)
       {
          case '\r':
@@ -395,7 +395,7 @@ BOOL PackNetworkString(
 //   Method:      EatChars
 //
 //   Abstract:   Consume chars 'szChars' from the beginning of source string 'szStr'.
-//            For any character in the beginnig of the string 'szStr', which also apears 
+//            For any character in the beginnig of the string 'szStr', which also apears
 //            in the set 'szChars', the string (szStr) is prgressed one character forward.
 //
 //   Return:      Return the first character in 'szStr', which does not apear in 'szChars'.
@@ -413,7 +413,7 @@ const char*   EatChars(
 {
    if( !szStr)
       return NULL;
-   
+
    if( !(*szStr) || !szChars || !(*szChars) || (DO_NOT_TRIM == count))
       return szStr;
 
@@ -424,8 +424,8 @@ const char*   EatChars(
       if( TRIM_ALL_CHARS != count)
          count--;
    }
-         
-   
+
+
    return szStr;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -433,8 +433,8 @@ const char*   EatChars(
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Link two strings by prefixing 'szOriginal' with 'szPrefix'
-// 
-// Link method:   
+//
+// Link method:
 //    Shift original string n chars to the right, and copy the prefix to the original offset
 //    location.
 //
@@ -452,8 +452,8 @@ char* AppendPrefix_ShiftOriginalRight( const char* szPrefix, char* szOriginal)
 }
 
 // Link two strings by prefixing 'szOriginal' with 'szPrefix'
-// 
-// Link method:   
+//
+// Link method:
 //    Copy prefix to the left of the original string, at offset MINUS n (szOriginal[-n]), where
 //    'n' is the size of 'szPrefix'.
 //    Original string is not moved.
@@ -524,7 +524,7 @@ BOOL  InsertString_AfterTag(  const char* szSrc,      // [in]  Source string
       //   Copy-3:   Insertion
       strncpy( szDst+iFoundOffset+iTagSize, szStr, iStrSize);
    }
-   
+
 
    return TRUE;
 }
@@ -581,7 +581,7 @@ BOOL  InsertString_BeforeTag( const char* szSrc,      // [in]  Source string
       //   Copy-3:   Insertion
       strncpy( szDst+iFoundOffset, szStr, iStrSize);
    }
-   
+
 
    return TRUE;
 }

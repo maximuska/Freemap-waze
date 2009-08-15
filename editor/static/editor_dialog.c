@@ -133,28 +133,28 @@ static void editor_segments_apply (const char *name, void *context) {
 #ifdef SSD
    long type = (long) ssd_dialog_get_data ("Road type");
    int cfcc = type + ROADMAP_ROAD_FIRST;
-   
+
    char *street_type = (char *) ssd_dialog_get_value ("Street type");
-   
+
    char *street_name = (char *) ssd_dialog_get_value ("Name");
-   
+
    char *t2s = (char *) ssd_dialog_get_value ("Text to Speech");
-   
+
    char *city = (char *) ssd_dialog_get_value ("City");
-#else   
+#else
    int type = (int) roadmap_dialog_get_data ("General", "Road type");
    int cfcc = type + ROADMAP_ROAD_FIRST;
    int direction = (int) roadmap_dialog_get_data ("General", "Direction");
-   
+
    char *street_type =
       (char *) roadmap_dialog_get_data ("General", "Street type");
-   
+
    char *street_name =
       (char *) roadmap_dialog_get_data ("General", "Name");
-   
+
    char *t2s =
       (char *) roadmap_dialog_get_data ("General", "Text to Speech");
-   
+
 /*   char *street_range =
       (char *) roadmap_dialog_get_data ("General", "Street range"); */
 
@@ -166,28 +166,28 @@ static void editor_segments_apply (const char *name, void *context) {
 #endif
 
    int street_id = editor_street_create (street_name, street_type, "", "", city, t2s);
-	
+
    for (i=0; i<selected_lines->count; i++) {
 
       SelectedLine *line = &selected_lines->lines[i];
 
       if (line->line.plugin_id != EditorPluginID) {
 
-			if (roadmap_square_scale (line->line.square) == 0 &&
-				 !roadmap_street_line_has_predecessor (&line->line)) {
-			
-				line->line.cfcc = cfcc;
-				editor_line_copy (&line->line, street_id);	
-			}
-			roadmap_square_set_current (line->line.square);
-			editor_override_line_set_flag (line->line.line_id, ED_LINE_DELETED);
+            if (roadmap_square_scale (line->line.square) == 0 &&
+                 !roadmap_street_line_has_predecessor (&line->line)) {
+
+                line->line.cfcc = cfcc;
+                editor_line_copy (&line->line, street_id);
+            }
+            roadmap_square_set_current (line->line.square);
+            editor_override_line_set_flag (line->line.line_id, ED_LINE_DELETED);
       } else {
-      
-      	editor_line_modify_properties (line->line.line_id, cfcc, ED_LINE_DIRTY);
-      	editor_line_set_street (line->line.line_id, street_id);	
+
+        editor_line_modify_properties (line->line.line_id, cfcc, ED_LINE_DIRTY);
+        editor_line_set_street (line->line.line_id, street_id);
       }
 
-      
+
    }
 
    editor_screen_reset_selected ();
@@ -341,11 +341,11 @@ static void activate_dialog (const char *name,
          { "Unknown", "With road", "Against road", "Both directions"};
       int direction_values[] = {0, 1, 2, 3};
       */
-      
+
       roadmap_dialog_new_label ("Info", "Length");
       roadmap_dialog_new_label ("Info", "Time");
 
-#if 0      
+#if 0
       roadmap_dialog_new_entry ("Right", "Street range", NULL);
       roadmap_dialog_new_entry ("Right", "City", NULL);
       roadmap_dialog_new_entry ("Right", "Zip code", NULL);
@@ -415,7 +415,7 @@ static void decode_range (char *street_range,
       street_range[i] = '\0';
       i++;
    }
- 
+
    if (num_ranges == 4) {
       *from1 = atoi (ranges[0]);
       *to1   = atoi (ranges[1]);
@@ -456,7 +456,7 @@ static const char *editor_segments_find_city
    if (plugin_id == EditorPluginID) {
       editor_line_get (line, &point, NULL, NULL, NULL, NULL);
    } else {
-   	roadmap_square_set_current (square);
+    roadmap_square_set_current (square);
       roadmap_line_from (line, &point);
    }
 
@@ -477,23 +477,23 @@ static const char *editor_segments_find_city
    for (i = 0; i < count; ++i) {
 
       const char *city;
-      
+
       if (roadmap_plugin_get_id (&neighbours[i].line) == EditorPluginID) {
          int street_id = -1;
 
-			editor_line_get_street 
+            editor_line_get_street
             (roadmap_plugin_get_line_id (&neighbours[i].line),
              &street_id);
 
          city =
             editor_street_get_street_city
                (street_id);
-         
+
       } else if (roadmap_plugin_get_id (&neighbours[i].line) ==
             ROADMAP_PLUGIN_ID) {
          RoadMapStreetProperties properties;
 
-			roadmap_square_set_current (roadmap_plugin_get_square (&neighbours[i].line));
+            roadmap_square_set_current (roadmap_plugin_get_square (&neighbours[i].line));
          roadmap_street_get_properties
             (roadmap_plugin_get_line_id (&neighbours[i].line),
              &properties);
@@ -528,7 +528,7 @@ void editor_segments_fill_dialog (SelectedLine *lines, int lines_count) {
 
    strcpy (street_name, "");
    for (i=0; i<lines_count; i++) {
-      
+
       const char *this_name = "";
       const char *this_type = "";
       const char *this_t2s = "";
@@ -538,16 +538,16 @@ void editor_segments_fill_dialog (SelectedLine *lines, int lines_count) {
          if (editor_db_activate (lines[i].line.fips) != -1) {
 
             int street_id = -1;
-            
+
             editor_line_get_street (lines[i].line.line_id, &street_id);
 
             this_name = editor_street_get_street_fename (street_id);
             this_type = editor_street_get_street_fetype (street_id);
             this_t2s = editor_street_get_street_t2s (street_id);
             this_city = editor_street_get_street_city (street_id);
-				//editor_line_get_direction (lines[i].line.line_id, &this_direction);
+                //editor_line_get_direction (lines[i].line.line_id, &this_direction);
          }
-      } else { 
+      } else {
 
          RoadMapStreetProperties properties;
 
@@ -557,7 +557,7 @@ void editor_segments_fill_dialog (SelectedLine *lines, int lines_count) {
 
          roadmap_square_set_current (lines[i].line.square);
          roadmap_street_get_properties (lines[i].line.line_id, &properties);
-    
+
          this_name = roadmap_street_get_street_name (&properties);
          this_type = roadmap_street_get_street_fetype (&properties);
          this_t2s = roadmap_street_get_street_t2s (&properties);
@@ -565,7 +565,7 @@ void editor_segments_fill_dialog (SelectedLine *lines, int lines_count) {
          this_city = roadmap_street_get_street_city
                (&properties, ROADMAP_STREET_LEFT_SIDE);
 /*
-			if (!editor_override_line_get_direction (lines[0].line.line_id, &this_direction)) {
+            if (!editor_override_line_get_direction (lines[0].line.line_id, &this_direction)) {
 
             this_direction =
                roadmap_line_route_get_direction
@@ -574,7 +574,7 @@ void editor_segments_fill_dialog (SelectedLine *lines, int lines_count) {
                   (lines[i].line.line_id,
                    &this_speed_limit, &this_speed_limit);
          }
-*/         
+*/
       }
 
       if (same_street) {
@@ -607,15 +607,15 @@ void editor_segments_fill_dialog (SelectedLine *lines, int lines_count) {
                city = "";
             }
          }
-      } 
-      
+      }
+
       if (lines[i].line.cfcc < cfcc) {
          cfcc = lines[i].line.cfcc;
       }
    }
 
    if (same_city && !strlen(city)) {
-      
+
       city = editor_segments_find_city
              (lines[0].line.line_id, lines[0].line.plugin_id, lines[0].line.square);
    }
@@ -669,12 +669,12 @@ void editor_segments_properties (SelectedLine *lines, int lines_count) {
 
          line_length = editor_line_length (line->line.line_id);
          time = editor_line_get_cross_time (line->line.line_id, 1);
-         
+
       } else  {
          LineRouteTime from_cross_time;
          LineRouteTime to_cross_time;
 
-	      roadmap_square_set_current (line->line.square);
+          roadmap_square_set_current (line->line.square);
          line_length = roadmap_line_length (line->line.line_id);
          if (roadmap_line_speed_get_cross_times
                (line->line.line_id, &from_cross_time, &to_cross_time) == -1) {
@@ -711,15 +711,15 @@ void editor_segments_properties (SelectedLine *lines, int lines_count) {
    } else {
       ssd_dialog_set_value ("Speed", "");
    }
-#endif   
+#endif
 
    snprintf (str, sizeof(str), "%d %s",
              total_length, roadmap_lang_get("meters"));
 #ifdef SSD
    ssd_dialog_set_value ("Length", str);
-#else   
+#else
    roadmap_dialog_set_data ("Info", "Length", str);
-#endif   
+#endif
 
    snprintf (str, sizeof(str), "%d %s",
              total_time, roadmap_lang_get("seconds"));
@@ -727,8 +727,8 @@ void editor_segments_properties (SelectedLine *lines, int lines_count) {
 #ifdef SSD
    ssd_dialog_set_value ("Time", str);
    ssd_dialog_draw ();
-#else   
+#else
    roadmap_dialog_set_data ("Info", "Time", str);
-#endif   
+#endif
 }
 

@@ -26,17 +26,17 @@
 
 enum {
 
-	model__county_global_first,
-	
-	model__county_global_data				= model__county_global_first,
-	model__county_global_scale,
-	model__county_global_grid,
-	model__county_global_bitmask,
-	
-	model__county_global_last				= model__county_global_bitmask,
-	
-	
-	model__county
+    model__county_global_first,
+
+    model__county_global_data               = model__county_global_first,
+    model__county_global_scale,
+    model__county_global_grid,
+    model__county_global_bitmask,
+
+    model__county_global_last               = model__county_global_bitmask,
+
+
+    model__county
 };
 
 

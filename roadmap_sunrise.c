@@ -160,7 +160,7 @@ static time_t roadmap_sunrise_getriseorset
                       + curtime.tm_mday - 730531;
    utold = PI;
    utnew = 0;
-   
+
    sinalt = -0.0174456; /* tbd: sets according to position->altitude. */
 
    roadmap_lat  = LU_TO_DEG(position->latitude);

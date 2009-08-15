@@ -45,7 +45,7 @@
 
 #define  KEY_EQUALS_CHAR(_char_)          \
    ((KEYBOARD_ASCII&flags) &&  (_char_==(*utf8char)))
-   
+
 #define  KEY_EQUALS_VCHAR(_char_)         \
    ((KEYBOARD_VIRTUAL_KEY&flags) &&  (_char_==(*utf8char)))
 

@@ -289,7 +289,7 @@ int roadmap_preferences_use_keyboard (void) {
 
 
 void roadmap_preferences_edit (void) {
-    
+
     roadmap_preferences_show ("preferences", "Preferences");
 }
 

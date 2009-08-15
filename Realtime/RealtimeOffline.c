@@ -29,89 +29,89 @@
 #include "roadmap_dbread.h"
 #include <string.h>
 
-static RoadMapFile	OfflineFile = ROADMAP_INVALID_FILE;
-static const char 	*OfflineFileName = NULL;
+static RoadMapFile  OfflineFile = ROADMAP_INVALID_FILE;
+static const char   *OfflineFileName = NULL;
 
 
-static const char						*gs_OfflinePrefix[] = {
-	"Auth",
-	"GPSPath",
-	"GPSDisconnect",
-	"NodePath",
-	"SubmitMarker",
-	"SubmitSegment",
-	"CreateNewRoads"
+static const char                       *gs_OfflinePrefix[] = {
+    "Auth",
+    "GPSPath",
+    "GPSDisconnect",
+    "NodePath",
+    "SubmitMarker",
+    "SubmitSegment",
+    "CreateNewRoads"
 };
 
-#define NUM_OFFLINE_PREFIX		((int)(sizeof (gs_OfflinePrefix) / sizeof (gs_OfflinePrefix[0])))
+#define NUM_OFFLINE_PREFIX      ((int)(sizeof (gs_OfflinePrefix) / sizeof (gs_OfflinePrefix[0])))
 
-void		Realtime_OfflineOpen (const char *path, const char *filename) {
+void        Realtime_OfflineOpen (const char *path, const char *filename) {
 
-	Realtime_OfflineClose ();
+    Realtime_OfflineClose ();
 
-	if (path) {
-		OfflineFileName = roadmap_path_join (path, filename);
-	} else {
-		OfflineFileName = roadmap_path_join (roadmap_db_map_path(), filename);
-	}
+    if (path) {
+        OfflineFileName = roadmap_path_join (path, filename);
+    } else {
+        OfflineFileName = roadmap_path_join (roadmap_db_map_path(), filename);
+    }
 }
 
 
 static void Realtime_OfflineOpenFile (void) {
-	
-	if (OfflineFileName && !ROADMAP_FILE_IS_VALID (OfflineFile)) {
-		
-		OfflineFile = roadmap_file_open (OfflineFileName, "a");
-		if (ROADMAP_FILE_IS_VALID (OfflineFile)) {
-			RealTime_Auth ();
-		}
-	}
+
+    if (OfflineFileName && !ROADMAP_FILE_IS_VALID (OfflineFile)) {
+
+        OfflineFile = roadmap_file_open (OfflineFileName, "a");
+        if (ROADMAP_FILE_IS_VALID (OfflineFile)) {
+            RealTime_Auth ();
+        }
+    }
 }
 
 
-void		Realtime_OfflineClose (void) {
+void        Realtime_OfflineClose (void) {
 
-	if (ROADMAP_FILE_IS_VALID (OfflineFile)) {
-		roadmap_file_close (OfflineFile);
-	}
-	OfflineFile = ROADMAP_INVALID_FILE;
-	
-	if (OfflineFileName) {
-		roadmap_path_free (OfflineFileName);
-		OfflineFileName = NULL;
-	}
+    if (ROADMAP_FILE_IS_VALID (OfflineFile)) {
+        roadmap_file_close (OfflineFile);
+    }
+    OfflineFile = ROADMAP_INVALID_FILE;
+
+    if (OfflineFileName) {
+        roadmap_path_free (OfflineFileName);
+        OfflineFileName = NULL;
+    }
 }
 
 
-static void	Realtime_OfflineWriteLine (const char *line, int len) {
+static void Realtime_OfflineWriteLine (const char *line, int len) {
 
-	int i;
-	
-	for (i = 0; i < NUM_OFFLINE_PREFIX; i++) {
-		if (strncmp (line, gs_OfflinePrefix[i], strlen (gs_OfflinePrefix[i])) == 0) {
-		
-			Realtime_OfflineOpenFile ();
-			if (!ROADMAP_FILE_IS_VALID (OfflineFile)) return;
-			roadmap_file_write (OfflineFile, line, len);
-			roadmap_file_write (OfflineFile, "\n", 1);
-		} 
-	}
+    int i;
+
+    for (i = 0; i < NUM_OFFLINE_PREFIX; i++) {
+        if (strncmp (line, gs_OfflinePrefix[i], strlen (gs_OfflinePrefix[i])) == 0) {
+
+            Realtime_OfflineOpenFile ();
+            if (!ROADMAP_FILE_IS_VALID (OfflineFile)) return;
+            roadmap_file_write (OfflineFile, line, len);
+            roadmap_file_write (OfflineFile, "\n", 1);
+        }
+    }
 }
 
 
-void		Realtime_OfflineWrite (const char *packet) {
+void        Realtime_OfflineWrite (const char *packet) {
 
-	const char *newline;
-	
-	newline = strchr (packet, '\n');
-	
-	while (newline) {
-		Realtime_OfflineWriteLine (packet, newline - packet);
-		packet += newline - packet + 1;
-		newline = strchr (packet, '\n');
-	}
-	
-	if (strlen (packet)) {
-		Realtime_OfflineWriteLine (packet, strlen (packet));
-	}
+    const char *newline;
+
+    newline = strchr (packet, '\n');
+
+    while (newline) {
+        Realtime_OfflineWriteLine (packet, newline - packet);
+        packet += newline - packet + 1;
+        newline = strchr (packet, '\n');
+    }
+
+    if (strlen (packet)) {
+        Realtime_OfflineWriteLine (packet, strlen (packet));
+    }
 }

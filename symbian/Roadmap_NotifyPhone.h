@@ -4,7 +4,7 @@
  *
  *   Copyright 2008 Giant Steps Ltd.
  *   Copyright 2008 Ehud Shabtai
- * 
+ *
  *   This file is part of RoadMap.
  *
  *   RoadMap is free software; you can redistribute it and/or modify
@@ -37,16 +37,16 @@ class CRoadmapNotifyPhone : public CActive
 public:
   CRoadmapNotifyPhone();
   virtual ~CRoadmapNotifyPhone();
-  
+
   static CRoadmapNotifyPhone* NewL(void* apSmsReceivedCallback);
-  
-private: 
+
+private:
   void ConstructL(void* apCallAnsweredCallback);
   void RunL();
   void DoCancel();
-  
+
   void StartListening();
-  
+
   CTelephony* m_Telephony;
   CTelephony::TCallStatusV1 m_CurrStatus;
   CTelephony::TCallStatusV1Pckg m_CurrStatusPckg;

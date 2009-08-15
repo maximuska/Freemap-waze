@@ -48,11 +48,11 @@ public:
   //  ctor/dtor
   CRoadMapNativeFile();
   virtual ~CRoadMapNativeFile();
-  void CRoadMapNativeFile::ConstructL(TFileName &fileName, 
+  void CRoadMapNativeFile::ConstructL(TFileName &fileName,
                                       CRoadMapNativeFile::EFileOp fileOp,
                                       TInt &aErrorCode);
-  
-  static CRoadMapNativeFile* NewL(TFileName &fileName, 
+
+  static CRoadMapNativeFile* NewL(TFileName &fileName,
                                   CRoadMapNativeFile::EFileOp fileOp,
                                   TInt &aErrorCode);
   static CRoadMapNativeFile* NewLC( TFileName &fileName,
@@ -64,7 +64,7 @@ public:
   int GetSize(int& fileSize);
   int SetSize(int fileSize);
   int Seek(TSeek method, int pos);
-  
+
 private:
   RFs iSession;
   RFile iFile;

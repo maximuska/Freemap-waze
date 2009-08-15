@@ -60,7 +60,7 @@ static RoadMapConfigDescriptor RoadMapConfigMapCache =
                         ROADMAP_CONFIG_ITEM("Map", "Cache");
 
 
-static int roadmap_option_verbose = DEFAULT_LOG_LEVEL; 
+static int roadmap_option_verbose = DEFAULT_LOG_LEVEL;
 
 static int roadmap_option_no_area = 0;
 static int roadmap_option_square  = 0;
@@ -76,7 +76,7 @@ static RoadMapUsage RoadMapOptionUsage = NULL;
 static const char *roadmap_option_get_geometry (const char *name) {
 
     RoadMapConfigDescriptor descriptor;
-    
+
     descriptor.category = "Geometry";
     descriptor.name = name;
     descriptor.reference = NULL;
@@ -128,7 +128,7 @@ int roadmap_option_cache (void) {
 int roadmap_option_width (const char *name) {
 
     const char *option = roadmap_option_get_geometry (name);
-    
+
     if (option == NULL || option[0] == 0) {
         return 300;
     }
@@ -193,14 +193,14 @@ static void roadmap_option_set_geometry2 (const char *value) {
     RoadMapConfigDescriptor descriptor;
 
     strncpy_safe (buffer, value, sizeof(buffer));
-          
+
     geometry = strchr (buffer, '=');
     if (geometry == NULL) {
         roadmap_log (ROADMAP_FATAL,
                      "%s: invalid geometry option syntax", value);
     }
     *(geometry++) = 0;
-         
+
     for (p = strchr(buffer, '-'); p != NULL; p =strchr(p, '-')) {
         *p = ' ';
     }
@@ -280,17 +280,17 @@ static void roadmap_option_usage (const char *value);
 typedef void (*roadmap_option_handler) (const char *value);
 
 struct roadmap_option_descriptor {
-    
+
     const char *name;
     const char *format;
-    
+
     roadmap_option_handler handler;
-    
+
     const char *help;
 };
 
 static struct roadmap_option_descriptor RoadMapOptionMap[] = {
-    
+
     {"--location=", "LONGITUDE,LATITUDE", roadmap_option_set_location,
         "Set the location point (see menu entry Screen/Show Location..)"},
 
@@ -386,7 +386,7 @@ void roadmap_option (int argc, char **argv, RoadMapUsage usage) {
     for (i = 1; i < argc; i++) {
 
         compare = 1; /* Different. */
-        
+
         for (option = RoadMapOptionMap; option->name != NULL; ++option) {
 
             if (option->format[0] == 0) {
@@ -405,7 +405,7 @@ void roadmap_option (int argc, char **argv, RoadMapUsage usage) {
                 break;
             }
         }
-        
+
         if (compare != 0) {
             roadmap_log (ROADMAP_FATAL, "illegal option %s", argv[i]);
         }

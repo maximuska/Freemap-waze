@@ -268,7 +268,7 @@ int roadmap_turns_find_restriction (int node, int from_line, int to_line) {
 
    /* no U turns */
    if (from_line == to_line) return 1;
-   
+
    square = roadmap_square_active ();
 
    if (square != cache_square) {
@@ -279,7 +279,7 @@ int roadmap_turns_find_restriction (int node, int from_line, int to_line) {
    }
 
    if (cache_first < 0) return 0;
-   
+
    i = roadmap_turns_of_node (node, cache_first, cache_last, &first_turn, &last_turn);
 
    if (!i) return 0;

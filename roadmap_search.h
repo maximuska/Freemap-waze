@@ -37,7 +37,7 @@ typedef enum search_menu_context_menu_items
    search_menu_exit,
    search_menu_cancel,
    search_menu_add_to_favorites,
-   
+
    search_menu__count,
    search_menu__invalid
 

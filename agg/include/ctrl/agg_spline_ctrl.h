@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -38,13 +38,13 @@ namespace agg
 {
 
     //------------------------------------------------------------------------
-    // Class that can be used to create an interactive control to set up 
+    // Class that can be used to create an interactive control to set up
     // gamma arrays.
     //------------------------------------------------------------------------
     class spline_ctrl_impl : public ctrl
     {
     public:
-        spline_ctrl_impl(double x1, double y1, double x2, double y2, 
+        spline_ctrl_impl(double x1, double y1, double x2, double y2,
                          unsigned num_pnt, bool flip_y=false);
 
         // Set other parameters
@@ -119,7 +119,7 @@ namespace agg
     template<class ColorT> class spline_ctrl : public spline_ctrl_impl
     {
     public:
-        spline_ctrl(double x1, double y1, double x2, double y2, 
+        spline_ctrl(double x1, double y1, double x2, double y2,
                     unsigned num_pnt, bool flip_y=false) :
             spline_ctrl_impl(x1, y1, x2, y2, num_pnt, flip_y),
             m_background_color(rgba(1.0, 1.0, 0.9)),
@@ -141,7 +141,7 @@ namespace agg
         void curve_color(const ColorT& c)        { m_curve_color = c; }
         void inactive_pnt_color(const ColorT& c) { m_inactive_pnt_color = c; }
         void active_pnt_color(const ColorT& c)   { m_active_pnt_color = c; }
-        const ColorT& color(unsigned i) const { return *m_colors[i]; } 
+        const ColorT& color(unsigned i) const { return *m_colors[i]; }
 
     private:
         spline_ctrl(const spline_ctrl<ColorT>&);

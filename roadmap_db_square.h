@@ -74,15 +74,15 @@ typedef struct {
    int count_longitude;
    int count_latitude;
 
-	int scale_factor;
+    int scale_factor;
 } RoadMapScale;
 
 typedef struct {
-	
-	char		name[8];
-	int		offset;
-	int		compressed_size;
-	int		raw_size;
+
+    char        name[8];
+    int     offset;
+    int     compressed_size;
+    int     raw_size;
 } RoadMapSquareIndex;
 
 #endif // _ROADMAP_DB_SQUARE__H_

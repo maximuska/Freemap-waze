@@ -1,21 +1,21 @@
 /* FriBidi - Library of BiDi algorithm
  * Copyright (C) 2001,2002 Behdad Esfahbod.
- * 
+ *
  * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public  
+ * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,  
- * but WITHOUT ANY WARRANTY; without even the implied warranty of   
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License  
+ *
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this library, in a file named COPYING; if not, write to the
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA
- * 
+ *
  * For licensing issues, contact <fwpg@sharif.edu>.
  */
 
@@ -55,7 +55,7 @@ fribidi_list_append (FriBidiList *list, void *data)
 
 FriBidiMemChunk *
 fribidi_mem_chunk_new (const char *name,
-		       int atom_size, unsigned long area_size, int type)
+               int atom_size, unsigned long area_size, int type)
 {
   FriBidiMemChunk *m = (FriBidiMemChunk *) malloc (sizeof (FriBidiMemChunk));
 
@@ -85,13 +85,13 @@ fribidi_mem_chunk_alloc (FriBidiMemChunk *mem_chunk)
   if (mem_chunk->type == FRIBIDI_ALLOC_ONLY)
     {
       if (mem_chunk->empty_size < mem_chunk->atom_size)
-	{
-	  mem_chunk->chunk = malloc (mem_chunk->area_size);
-	  mem_chunk->empty_size = mem_chunk->area_size;
-	}
+    {
+      mem_chunk->chunk = malloc (mem_chunk->area_size);
+      mem_chunk->empty_size = mem_chunk->area_size;
+    }
       m = mem_chunk->chunk;
       mem_chunk->chunk = (void *)
-	((char *) mem_chunk->chunk + mem_chunk->atom_size);
+    ((char *) mem_chunk->chunk + mem_chunk->atom_size);
       mem_chunk->empty_size -= mem_chunk->atom_size;
     }
   else

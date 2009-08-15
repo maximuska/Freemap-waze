@@ -83,7 +83,7 @@ static const char *RoadMapPathSkinPreferred = "~/"HOME_PREFIX"/skins";
 /* The hardcoded path for configuration files (the "config" path).
  * (Note that the user directory (~/.waze) does not appear here
  * as it is implicitely used by the callers--see above.)
- */ 
+ */
 static const char *RoadMapPathConfig[] = {
 #ifdef QWS
    /* This is for the Sharp Zaurus PDA.. */
@@ -198,7 +198,7 @@ static RoadMapPathList roadmap_path_find (const char *name) {
 /* Directory path strings operations. -------------------------------------- */
 
 static char *roadmap_path_cat (const char *s1, const char *s2) {
-    
+
     char *result = malloc (strlen(s1) + strlen(s2) + 4);
 
     roadmap_check_allocated (result);
@@ -206,7 +206,7 @@ static char *roadmap_path_cat (const char *s1, const char *s2) {
     strcpy (result, s1);
     strcat (result, "/");
     strcat (result, s2);
-    
+
     return result;
 }
 
@@ -295,24 +295,24 @@ const char *roadmap_path_user (void) {
 
 
 const char *roadmap_path_trips (void) {
-    
+
     static char  RoadMapDefaultTrips[] = HOME_PREFIX"/trips";
     static char *RoadMapTrips = NULL;
-    
+
     if (RoadMapTrips == NULL) {
-        
+
         RoadMapTrips = getenv("ROADMAP_TRIPS");
-        
+
         if (RoadMapTrips == NULL) {
             RoadMapTrips =
                roadmap_path_cat (roadmap_path_home(), RoadMapDefaultTrips);
         }
-        
+
         mkdir (RoadMapTrips, 0770);
     }
     return RoadMapTrips;
 }
-            
+
 
 static char *roadmap_path_expand (const char *item, size_t length) {
 
@@ -529,7 +529,7 @@ char **roadmap_path_list (const char *path, const char *extension) {
       if (entry->d_name[0] == '.') continue;
 
       if (length > 0) {
-         
+
          match = entry->d_name + strlen(entry->d_name) - length;
 
          if (! strcmp (match, extension)) {

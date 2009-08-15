@@ -68,7 +68,7 @@ typedef void (*RoadMapShapeItr) (int shape, RoadMapPosition *position);
 #define ROADMAP_ROAD_STREET      7
 #define ROADMAP_ROAD_PEDESTRIAN  8
 #define ROADMAP_ROAD_4X4         9
-#define ROADMAP_ROAD_TRAIL      10 
+#define ROADMAP_ROAD_TRAIL      10
 #define ROADMAP_ROAD_WALKWAY    11
 
 #define ROADMAP_ROAD_LAST       11
@@ -102,15 +102,15 @@ typedef void (*RoadMapShapeItr) (int shape, RoadMapPosition *position);
 
 /* flags for fake (on tile border) points */
 
-#define POINT_FAKE_FLAG				0x8000
-#define POINT_REAL_MASK				0x7FFF
+#define POINT_FAKE_FLAG             0x8000
+#define POINT_REAL_MASK             0x7FFF
 
 enum {
-	ROADMAP_DIRECTION_EAST,
-	ROADMAP_DIRECTION_NORTH,
-	ROADMAP_DIRECTION_WEST,
-	ROADMAP_DIRECTION_SOUTH,
-	ROADMAP_DIRECTION_COUNT
+    ROADMAP_DIRECTION_EAST,
+    ROADMAP_DIRECTION_NORTH,
+    ROADMAP_DIRECTION_WEST,
+    ROADMAP_DIRECTION_SOUTH,
+    ROADMAP_DIRECTION_COUNT
 };
 
 #endif // INCLUDED__ROADMAP_TYPES__H

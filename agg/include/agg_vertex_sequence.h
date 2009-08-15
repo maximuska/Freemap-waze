@@ -5,20 +5,20 @@
 // Contact: mcseem@antigrain.com
 //          mcseemagg@yahoo.com
 //          http://antigrain.com
-// 
+//
 // AGG is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // AGG is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with AGG; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 // MA 02110-1301, USA.
 //----------------------------------------------------------------------------
 
@@ -33,17 +33,17 @@ namespace agg
 {
 
     //----------------------------------------------------------vertex_sequence
-    // Modified agg::pod_bvector. The data is interpreted as a sequence 
+    // Modified agg::pod_bvector. The data is interpreted as a sequence
     // of vertices. It means that the type T must expose:
     //
     // bool T::operator() (const T& val)
-    // 
+    //
     // that is called every time new vertex is being added. The main purpose
-    // of this operator is the possibility to calculate some values during 
+    // of this operator is the possibility to calculate some values during
     // adding and to return true if the vertex fits some criteria or false if
-    // it doesn't. In the last case the new vertex is not added. 
-    // 
-    // The simple example is filtering coinciding vertices with calculation 
+    // it doesn't. In the last case the new vertex is not added.
+    //
+    // The simple example is filtering coinciding vertices with calculation
     // of the distance between the current and previous ones:
     //
     //    struct vertex_dist
@@ -66,10 +66,10 @@ namespace agg
     //        }
     //    };
     //
-    // Function close() calls this operator and removes the last vertex if 
+    // Function close() calls this operator and removes the last vertex if
     // necessary.
     //------------------------------------------------------------------------
-    template<class T, unsigned S=6> 
+    template<class T, unsigned S=6>
     class vertex_sequence : public pod_bvector<T, S>
     {
     public:
@@ -83,12 +83,12 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class T, unsigned S> 
+    template<class T, unsigned S>
     void vertex_sequence<T, S>::add(const T& val)
     {
         if(base_type::size() > 1)
         {
-            if(!(*this)[base_type::size() - 2]((*this)[base_type::size() - 1])) 
+            if(!(*this)[base_type::size() - 2]((*this)[base_type::size() - 1]))
             {
                 base_type::remove_last();
             }
@@ -98,7 +98,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class T, unsigned S> 
+    template<class T, unsigned S>
     void vertex_sequence<T, S>::modify_last(const T& val)
     {
         base_type::remove_last();
@@ -108,7 +108,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    template<class T, unsigned S> 
+    template<class T, unsigned S>
     void vertex_sequence<T, S>::close(bool closed)
     {
         while(base_type::size() > 1)
@@ -131,7 +131,7 @@ namespace agg
 
 
     //-------------------------------------------------------------vertex_dist
-    // Vertex (x, y) with the distance to the next one. The last vertex has 
+    // Vertex (x, y) with the distance to the next one. The last vertex has
     // distance between the last and the first points if the polygon is closed
     // and 0.0 if it's a polyline.
     struct vertex_dist

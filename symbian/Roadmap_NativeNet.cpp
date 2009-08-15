@@ -1,6 +1,6 @@
 /* RoadmapNativeNet.cpp - Symbian network implementation for Roadmap
- *  This is an abstract interface to the network functionality. 
- * 
+ *  This is an abstract interface to the network functionality.
+ *
  * LICENSE:
  *
  *   Copyright 2009 Maxim Kalaev
@@ -37,15 +37,15 @@ extern "C"{
 #include <commdb.h>
 #include <CommDbConnPref.h>
 #include <apsettingshandlerui.h>
-#include <activeapdb.h> 
+#include <activeapdb.h>
 #include <centralrepository.h>
 #include <profileenginesdkcrkeys.h>
-#include <aknwaitdialog.h> 
+#include <aknwaitdialog.h>
 #include <rconnmon.h>
 #include <utf.h>
-#include <aknlists.h> 
-#include <aknpopup.h> 
-#include <aknpopuplayout.h> 
+#include <aknlists.h>
+#include <aknpopup.h>
+#include <aknpopuplayout.h>
 
 #include "Roadmap_NativeNet.h"
 
@@ -57,7 +57,7 @@ bool CRoadMapNativeNet::m_isConnectionOpen = false;
 TUint32 CRoadMapNativeNet::m_ChosenAP = 0;
 
 //#define CLEANUP_STACK_PUSH(x, obj)  CleanupStack::PushL(obj); ++count;
-//#define CLEANUP_STACK_POP(x)        CleanupStack::Pop(x);     count-=x; 
+//#define CLEANUP_STACK_POP(x)        CleanupStack::Pop(x);     count-=x;
 
 CDialogTimer::CDialogTimer(TInt aPriority)
   : CTimer(aPriority)
@@ -95,7 +95,7 @@ void CDialogTimer::DoCancel()
 
 void CDialogTimer::RunL()
 {
-  if (m_pWaiter->IsStarted()) 
+  if (m_pWaiter->IsStarted())
       m_pWaiter->AsyncStop();
 
   if ( m_State == EDismissAP )
@@ -117,25 +117,25 @@ void CDialogTimer::Start()
 
 
 CRoadMapNativeNet::CRoadMapNativeNet(const char *apHostname, int aPort)
-	: m_pConnectCallback(NULL),
-	  m_context(NULL),
-	  m_pDialogTimer(NULL)  
+    : m_pConnectCallback(NULL),
+      m_context(NULL),
+      m_pDialogTimer(NULL)
 {
   m_hostname = strdup(apHostname);
   m_port = aPort;
-  
+
 }
 
 CRoadMapNativeNet::~CRoadMapNativeNet()
 {
-	delete m_pRepository;
-	delete m_pDialogTimer;
+    delete m_pRepository;
+    delete m_pDialogTimer;
 }
 
 void CRoadMapNativeNet::ConstructL(RoadMapNetConnectCallback apCallback, void* apContext)
 {
   m_pConnectCallback = apCallback;
-  m_context = apContext;  
+  m_context = apContext;
   if ( m_pSocketServer == NULL )
   {
     m_pSocketServer = new RSocketServ();
@@ -144,7 +144,7 @@ void CRoadMapNativeNet::ConstructL(RoadMapNetConnectCallback apCallback, void* a
   {
     m_pConnection = new RConnection();
     m_isConnectionOpen = false;
-  }  
+  }
   m_pRepository = CRepository::NewL( KCRUidProfileEngine );
   m_pDialogTimer = NULL;
 }
@@ -184,7 +184,7 @@ void CRoadMapNativeNet::StartConnectionL()
 }
 void CRoadMapNativeNet::InternalStartConnectionL()
 {
-  
+
   roadmap_net_mon_start();
   User::LeaveIfError(m_pSocketServer->Connect());
   User::LeaveIfError(m_pConnection->Open(*m_pSocketServer));
@@ -197,13 +197,13 @@ void CRoadMapNativeNet::InternalStartConnectionL()
   //    connectPref.SetBearerSet(ECommDbBearerGPRS);
     connectPref.SetIapId(m_ChosenAP);
     err = ConnAsyncStart(connectPref);
-    // NOTE :: err is always KErrNone, other wise the program halts. AGA 
+    // NOTE :: err is always KErrNone, other wise the program halts. AGA
     User::LeaveIfError( err );
   }
   else
   {
-    //m_pWaitDialog =  new(ELeave)CAknWaitDialog(reinterpret_cast<CEikDialog**>(&m_pWaitDialog)); 
-    //m_pWaitDialog->SetTone( CAknNoteDialog::EConfirmationTone ); 
+    //m_pWaitDialog =  new(ELeave)CAknWaitDialog(reinterpret_cast<CEikDialog**>(&m_pWaitDialog));
+    //m_pWaitDialog->SetTone( CAknNoteDialog::EConfirmationTone );
     //m_pWaitDialog->ExecuteLD(R_WAIT_NOTE);
     err = ConnAsyncStart();
     // NOTE :: err is always KErrNone, other wise the program halts. AGA
@@ -236,7 +236,7 @@ bool CRoadMapNativeNet::FindExistingConnection()
   {
     return false;
   }
-  
+
   err = m_pConnection->EnumerateConnections(count);
   if (err == KErrNone)
   {
@@ -256,7 +256,7 @@ bool CRoadMapNativeNet::FindExistingConnection()
   }
   else
   {
-//    roadmap_log (ROADMAP_ERROR, "EnumerateConnections error=%d", err);    
+//    roadmap_log (ROADMAP_ERROR, "EnumerateConnections error=%d", err);
   }
 //  roadmap_log (ROADMAP_ERROR, "count=%d, connected=%d, m_ChosenIP=%d", count, connected, m_ChosenAP);
   return connected;

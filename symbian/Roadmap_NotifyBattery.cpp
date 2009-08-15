@@ -80,11 +80,11 @@ void CRoadmapNotifyBattery::RunL()
   if(iStatus != KErrCancel)
   {
     m_bGettingFirstState = false;
-    m_Telephony->NotifyChange(iStatus, CTelephony::EBatteryInfoChange, m_CurrStatusPckg); 
+    m_Telephony->NotifyChange(iStatus, CTelephony::EBatteryInfoChange, m_CurrStatusPckg);
     SetActive();
   }
 }
-  
+
 void CRoadmapNotifyBattery::DoCancel()
 {
   if ( m_bGettingFirstState == true )

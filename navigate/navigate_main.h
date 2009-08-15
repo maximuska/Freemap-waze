@@ -60,14 +60,14 @@ typedef struct {
    int                  first_shape;
    int                  last_shape;
    RoadMapShapeItr      shape_itr;
-   SegmentContext			context;
-   int						exit_no;
+   SegmentContext           context;
+   int                      exit_no;
    enum NavigateInstr   instruction;
    int                  group_id;
    int                  distance;
    int                  cross_time;
 } NavigateSegment;
- 
+
 int navigate_is_enabled (void);
 int navigate_track_enabled(void);
 int navigate_is_line_on_route(int square_id, int line_id, int from_line, int to_line);

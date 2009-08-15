@@ -38,64 +38,64 @@ class CEikApplication;
 * AVKON application framework for the FreeMap example application.
 */
 class CFreeMapDocument : public CAknDocument
-	{
-	public: // Constructors and destructor
+    {
+    public: // Constructors and destructor
 
-		/**
-		* NewL.
-		* Two-phased constructor.
-		* Construct a CFreeMapDocument for the AVKON application aApp
-		* using two phase construction, and return a pointer
-		* to the created object.
-		* @param aApp Application creating this document.
-		* @return A pointer to the created instance of CFreeMapDocument.
-		*/
-		static CFreeMapDocument* NewL( CEikApplication& aApp );
+        /**
+        * NewL.
+        * Two-phased constructor.
+        * Construct a CFreeMapDocument for the AVKON application aApp
+        * using two phase construction, and return a pointer
+        * to the created object.
+        * @param aApp Application creating this document.
+        * @return A pointer to the created instance of CFreeMapDocument.
+        */
+        static CFreeMapDocument* NewL( CEikApplication& aApp );
 
-		/**
-		* NewLC.
-		* Two-phased constructor.
-		* Construct a CFreeMapDocument for the AVKON application aApp
-		* using two phase construction, and return a pointer
-		* to the created object.
-		* @param aApp Application creating this document.
-		* @return A pointer to the created instance of CFreeMapDocument.
-		*/
-		static CFreeMapDocument* NewLC( CEikApplication& aApp );
+        /**
+        * NewLC.
+        * Two-phased constructor.
+        * Construct a CFreeMapDocument for the AVKON application aApp
+        * using two phase construction, and return a pointer
+        * to the created object.
+        * @param aApp Application creating this document.
+        * @return A pointer to the created instance of CFreeMapDocument.
+        */
+        static CFreeMapDocument* NewLC( CEikApplication& aApp );
 
-		/**
-		* ~CFreeMapDocument
-		* Virtual Destructor.
-		*/
-		virtual ~CFreeMapDocument();
+        /**
+        * ~CFreeMapDocument
+        * Virtual Destructor.
+        */
+        virtual ~CFreeMapDocument();
 
-	public: // Functions from base classes
+    public: // Functions from base classes
 
-		/**
-		* CreateAppUiL
-		* From CEikDocument, CreateAppUiL.
-		* Create a CFreeMapAppUi object and return a pointer to it.
-		* The object returned is owned by the Uikon framework.
-		* @return Pointer to created instance of AppUi.
-		*/
-		CEikAppUi* CreateAppUiL();
+        /**
+        * CreateAppUiL
+        * From CEikDocument, CreateAppUiL.
+        * Create a CFreeMapAppUi object and return a pointer to it.
+        * The object returned is owned by the Uikon framework.
+        * @return Pointer to created instance of AppUi.
+        */
+        CEikAppUi* CreateAppUiL();
 
-	private: // Constructors
+    private: // Constructors
 
-		/**
-		* ConstructL
-		* 2nd phase constructor.
-		*/
-		void ConstructL();
+        /**
+        * ConstructL
+        * 2nd phase constructor.
+        */
+        void ConstructL();
 
-		/**
-		* CFreeMapDocument.
-		* C++ default constructor.
-		* @param aApp Application creating this document.
-		*/
-		CFreeMapDocument( CEikApplication& aApp );
+        /**
+        * CFreeMapDocument.
+        * C++ default constructor.
+        * @param aApp Application creating this document.
+        */
+        CFreeMapDocument( CEikApplication& aApp );
 
-	};
+    };
 
 #endif // __FREEMAPDOCUMENT_h__
 

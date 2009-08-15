@@ -78,8 +78,8 @@ static inline void add_graph_node(struct SquareGraphItem *cache,
    unsigned int l;
 
    l = cache->nodes_index[point_id];
-	cache->nodes_index[point_id] = cur_line + 1;
-	cache->lines_index[cur_line] = l;
+    cache->nodes_index[point_id] = cur_line + 1;
+    cache->lines_index[cur_line] = l;
 /*
    if (l) {
       l--;
@@ -117,32 +117,32 @@ static struct SquareGraphItem *get_square_graph (int square_id) {
    int found = 0;
 
    for (slot = 0; slot < SquareCacheSize; slot++) {
-     	if (SquareGraphCache[slot]->square_id == square_id) {
-     		found = 1;
-     		break;
-     	}
+        if (SquareGraphCache[slot]->square_id == square_id) {
+            found = 1;
+            break;
+        }
    }
 
-	if (!found) {
-		if (SquareCacheSize == MAX_GRAPH_CACHE) {
-			slot--;
-			free_cache_slot (slot);
-			cache = SquareGraphCache[slot];
-		} else {
-			cache = (struct SquareGraphItem *)malloc(sizeof(struct SquareGraphItem));
-			SquareCacheSize++;
-		}
-	} else {
-		cache = SquareGraphCache[slot];
-	}
+    if (!found) {
+        if (SquareCacheSize == MAX_GRAPH_CACHE) {
+            slot--;
+            free_cache_slot (slot);
+            cache = SquareGraphCache[slot];
+        } else {
+            cache = (struct SquareGraphItem *)malloc(sizeof(struct SquareGraphItem));
+            SquareCacheSize++;
+        }
+    } else {
+        cache = SquareGraphCache[slot];
+    }
 
-	for (i = slot; i > 0; i--) {
-		SquareGraphCache[i] = SquareGraphCache[i - 1];
-	}
-	SquareGraphCache[0] = cache;
+    for (i = slot; i > 0; i--) {
+        SquareGraphCache[i] = SquareGraphCache[i - 1];
+    }
+    SquareGraphCache[0] = cache;
 
-	if (found) return cache;
-	
+    if (found) return cache;
+
    cache->square_id = square_id;
    lines1_count = 0;
    lines2_count = 0;
@@ -173,7 +173,7 @@ static struct SquareGraphItem *get_square_graph (int square_id) {
           ((cache_total_mem + cache->mem_size) > MAX_MEM_CACHE) &&
           SquareCacheSize > 1) {
 
-		SquareCacheSize--;
+        SquareCacheSize--;
       free_cache_slot(SquareCacheSize);
       free (SquareGraphCache[SquareCacheSize]);
       SquareGraphCache[SquareCacheSize] = NULL;
@@ -224,41 +224,41 @@ static struct SquareGraphItem *get_square_graph (int square_id) {
 
 static int extend_segment (const PluginLine *line, void *context, int extend_flags) {
 
-	struct successor *successor = (struct successor *)context;
-	
-	successor->square_id = line->square;
-	successor->line_id = line->line_id;
-	
-	roadmap_square_set_current (successor->square_id);
-	if (extend_flags == FLAG_EXTEND_TO) {
-		successor->reversed = 0;
-		roadmap_line_to_point (successor->line_id, &successor->to_point);
-	} else {
-		successor->reversed = 1;
-		roadmap_line_from_point (successor->line_id, &successor->to_point);
-	}
-	
-	return 1;
+    struct successor *successor = (struct successor *)context;
+
+    successor->square_id = line->square;
+    successor->line_id = line->line_id;
+
+    roadmap_square_set_current (successor->square_id);
+    if (extend_flags == FLAG_EXTEND_TO) {
+        successor->reversed = 0;
+        roadmap_line_to_point (successor->line_id, &successor->to_point);
+    } else {
+        successor->reversed = 1;
+        roadmap_line_from_point (successor->line_id, &successor->to_point);
+    }
+
+    return 1;
 }
 
 
 static int find_segment_extension (int square,
-									 		  int seg_line_id, int is_seg_reversed,
-                            		  struct successor *successors) {
+                                              int seg_line_id, int is_seg_reversed,
+                                      struct successor *successors) {
 
-	PluginLine line;
-	int flag = is_seg_reversed ? FLAG_EXTEND_FROM : FLAG_EXTEND_TO;
-	
-	line.square = square;
-	line.line_id = seg_line_id;
-	line.plugin_id = ROADMAP_PLUGIN_ID; 
-	
-	return roadmap_street_extend_line_ends (&line, NULL, NULL, flag, extend_segment, successors);
+    PluginLine line;
+    int flag = is_seg_reversed ? FLAG_EXTEND_FROM : FLAG_EXTEND_TO;
+
+    line.square = square;
+    line.line_id = seg_line_id;
+    line.plugin_id = ROADMAP_PLUGIN_ID;
+
+    return roadmap_street_extend_line_ends (&line, NULL, NULL, flag, extend_segment, successors);
 }
 
 
 int get_connected_segments (int square,
-									 int seg_line_id, int is_seg_reversed,
+                                     int seg_line_id, int is_seg_reversed,
                             int node_id, struct successor *successors,
                             int max, int use_restrictions, int use_directions) {
 
@@ -273,12 +273,12 @@ int get_connected_segments (int square,
    int seg_res_bits = 0;
    struct SquareGraphItem *cache;
 
-	if (max > 0 && 
-		 find_segment_extension (square, seg_line_id, is_seg_reversed, successors)) {
-		
-		return 1;
-	} 
-	
+    if (max > 0 &&
+         find_segment_extension (square, seg_line_id, is_seg_reversed, successors)) {
+
+        return 1;
+    }
+
    /* Init turn restrictions bits */
    if (!res_bits[0]) for (i=0; i<8; i++) res_bits[i] = 1<<i;
 
@@ -310,7 +310,7 @@ int get_connected_segments (int square,
       if (line_reversed) line = line & ~REVERSED;
 
       if (line == seg_line_id) {
-         
+
          if (roadmap_line_route_get_direction
                (seg_line_id, ROUTE_CAR_ALLOWED) == ROUTE_DIRECTION_ANY) {
             res_index++;
@@ -318,27 +318,27 @@ int get_connected_segments (int square,
          continue;
       }
 
-		if (use_directions) {
-	      if (!line_reversed) {
-	         roadmap_line_to_point (line, &to_point_id);
-	         line_direction_allowed =
-	            roadmap_line_route_get_direction (line, ROUTE_CAR_ALLOWED) &
-	                  ROUTE_DIRECTION_WITH_LINE;
-	      } else {
-	         roadmap_line_from_point (line, &to_point_id);
-	         line_direction_allowed =
-	            roadmap_line_route_get_direction (line, ROUTE_CAR_ALLOWED) &
-	                  ROUTE_DIRECTION_AGAINST_LINE;
-	      }
-	
-	      if (!line_direction_allowed) {
-	         continue;
-	      }
-		}
+        if (use_directions) {
+          if (!line_reversed) {
+             roadmap_line_to_point (line, &to_point_id);
+             line_direction_allowed =
+                roadmap_line_route_get_direction (line, ROUTE_CAR_ALLOWED) &
+                      ROUTE_DIRECTION_WITH_LINE;
+          } else {
+             roadmap_line_from_point (line, &to_point_id);
+             line_direction_allowed =
+                roadmap_line_route_get_direction (line, ROUTE_CAR_ALLOWED) &
+                      ROUTE_DIRECTION_AGAINST_LINE;
+          }
+
+          if (!line_direction_allowed) {
+             continue;
+          }
+        }
 
       if (!use_restrictions || (res_index >= 8) ||
           !(seg_res_bits & res_bits[res_index])) {
-          	  successors[count].square_id = square;
+              successors[count].square_id = square;
               successors[count].line_id = line;
               successors[count].reversed = (line_reversed != 0);
               successors[count].to_point = to_point_id;
@@ -367,8 +367,8 @@ int navigate_graph_get_line (int node, int line_no) {
    skip = line_no;
    while (skip) {
       i = cache->lines_index[i];
-	   assert (i > 0);
-	   i--;
+       assert (i > 0);
+       i--;
       skip--;
    }
 
@@ -378,9 +378,9 @@ int navigate_graph_get_line (int node, int line_no) {
 
 void navigate_graph_clear (void) {
 
-	while (SquareCacheSize > 0) {
-		
-		SquareCacheSize--;
-		free_cache_slot (SquareCacheSize);
-	}	
+    while (SquareCacheSize > 0) {
+
+        SquareCacheSize--;
+        free_cache_slot (SquareCacheSize);
+    }
 }

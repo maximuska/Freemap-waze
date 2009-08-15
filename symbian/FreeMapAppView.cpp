@@ -23,8 +23,8 @@
 #include <coemain.h>
 #include <eikenv.h>
 #include <BARSREAD.H>
-#include <eikedwin.h> 
-#include <akninfrm.h> 
+#include <eikedwin.h>
+#include <akninfrm.h>
 #include <UTF.H>
 
 #include "GSConvert.h"
@@ -56,31 +56,31 @@ void ShowEditbox(const char* aTitleUtf8, const char* aTextUtf8, SsdKeyboardCallb
     TBuf<128> title;
     TPtrC8 ptr( ( const TUint8* ) aTitleUtf8, User::StringLength( ( const TUint8* ) aTitleUtf8 ) );
     CnvUtfConverter::ConvertToUnicodeFromUtf8( title, ptr );
-    
+
     ptr.Set( (const TUint8* ) aTextUtf8, User::StringLength( ( const TUint8* ) aTextUtf8 ) );
     CnvUtfConverter::ConvertToUnicodeFromUtf8( enterText, ptr );
-    
+
     pAddNoteDialog = CRoadMapQueryDialog::NewL( enterText, CAknQueryDialog::ENoTone );
-    
+
 
     if ( aBoxType == EEditBoxPassword )
-	{
-		// For password use the secured edit box
-		pAddNoteDialog->PrepareLC( R_ADD_NOTE_QUERY );
-	}
+    {
+        // For password use the secured edit box
+        pAddNoteDialog->PrepareLC( R_ADD_NOTE_QUERY );
+    }
     else
-	{
-    	pAddNoteDialog->PrepareLC( R_ADD_NOTE_QUERY );
-    	pAddNoteDialog->SetPredictiveTextInputPermitted(ETrue);
-	}
-    // Set prompt 
+    {
+        pAddNoteDialog->PrepareLC( R_ADD_NOTE_QUERY );
+        pAddNoteDialog->SetPredictiveTextInputPermitted(ETrue);
+    }
+    // Set prompt
     pAddNoteDialog->SetPromptL(title);
-    // Set the soft left key visible (in case of empty string ) 
-    // 				for all types except the EEditBoxEmptyForbidden  
+    // Set the soft left key visible (in case of empty string )
+    //              for all types except the EEditBoxEmptyForbidden
     pAddNoteDialog->SetLeftSoftKeyVisible( !( aBoxType == EEditBoxEmptyForbidden ) );
-    
+
     TInt answer = pAddNoteDialog->RunLD();
-    if(answer == EEikBidOk) 
+    if(answer == EEikBidOk)
     {
       int bits = (enterText.Length()+1)* 4;
       unsigned char* textBuf = (unsigned char*)calloc(bits+1,1);
@@ -107,11 +107,11 @@ extern "C" void roadmap_main_configure(CBitmapContext *, CFreeMapAppView *);
 // -----------------------------------------------------------------------------
 //
 CFreeMapAppView* CFreeMapAppView::NewL( const TRect& aRect )
-	{
-	CFreeMapAppView* self = CFreeMapAppView::NewLC( aRect );
-	CleanupStack::Pop( self );
-	return self;
-	}
+    {
+    CFreeMapAppView* self = CFreeMapAppView::NewLC( aRect );
+    CleanupStack::Pop( self );
+    return self;
+    }
 
 // -----------------------------------------------------------------------------
 // CFreeMapAppView::NewLC()
@@ -119,12 +119,12 @@ CFreeMapAppView* CFreeMapAppView::NewL( const TRect& aRect )
 // -----------------------------------------------------------------------------
 //
 CFreeMapAppView* CFreeMapAppView::NewLC( const TRect& aRect )
-	{
-	CFreeMapAppView* self = new ( ELeave ) CFreeMapAppView;
-	CleanupStack::PushL( self );
-	self->ConstructL( aRect );
-	return self;
-	}
+    {
+    CFreeMapAppView* self = new ( ELeave ) CFreeMapAppView;
+    CleanupStack::PushL( self );
+    self->ConstructL( aRect );
+    return self;
+    }
 
 // -----------------------------------------------------------------------------
 // CFreeMapAppView::ConstructL()
@@ -132,54 +132,54 @@ CFreeMapAppView* CFreeMapAppView::NewLC( const TRect& aRect )
 // -----------------------------------------------------------------------------
 //
 void CFreeMapAppView::ConstructL( const TRect& aRect )
-	{
-	// Create a window for this application view
-	CreateWindowL();
+    {
+    // Create a window for this application view
+    CreateWindowL();
 
-	// Set the windows size
-	SetRect( aRect );
+    // Set the windows size
+    SetRect( aRect );
 
-	// Fullscreen mode
-	SetExtentToWholeScreen();
-	
-	// Activate the window, which makes it ready to be drawn
-	ActivateL();
-	
-	iOffScreenBitmap = new CWsBitmap(iEikonEnv->WsSession());
-	if (!iOffScreenBitmap) return;
+    // Fullscreen mode
+    SetExtentToWholeScreen();
 
-	TInt error = iOffScreenBitmap->Create(Rect().Size(), iEikonEnv->ScreenDevice()->DisplayMode());
-	if (error != KErrNone)
-	{
-		delete iOffScreenBitmap;
-		iOffScreenBitmap = NULL;
-		return;
-	}		
+    // Activate the window, which makes it ready to be drawn
+    ActivateL();
 
-	TRAP(error,iOffScreenDevice = CFbsBitmapDevice::NewL(iOffScreenBitmap));
-	if (error != KErrNone)
-	{
-		delete iOffScreenDevice;
-		iOffScreenDevice = NULL;
-		delete iOffScreenBitmap;
-		iOffScreenBitmap = NULL;
-		return;
-	}
+    iOffScreenBitmap = new CWsBitmap(iEikonEnv->WsSession());
+    if (!iOffScreenBitmap) return;
 
-	error = iOffScreenDevice->CreateBitmapContext(iOffScreenGc);
-	if (error != KErrNone)
-	{
-		delete iOffScreenGc;
-		iOffScreenGc = NULL;
-		delete iOffScreenDevice;
-		iOffScreenDevice = NULL;
-		delete iOffScreenBitmap;
-		iOffScreenBitmap = NULL;
-		return;
-	}
+    TInt error = iOffScreenBitmap->Create(Rect().Size(), iEikonEnv->ScreenDevice()->DisplayMode());
+    if (error != KErrNone)
+    {
+        delete iOffScreenBitmap;
+        iOffScreenBitmap = NULL;
+        return;
+    }
 
-	roadmap_main_configure(iOffScreenGc, this);
-	}
+    TRAP(error,iOffScreenDevice = CFbsBitmapDevice::NewL(iOffScreenBitmap));
+    if (error != KErrNone)
+    {
+        delete iOffScreenDevice;
+        iOffScreenDevice = NULL;
+        delete iOffScreenBitmap;
+        iOffScreenBitmap = NULL;
+        return;
+    }
+
+    error = iOffScreenDevice->CreateBitmapContext(iOffScreenGc);
+    if (error != KErrNone)
+    {
+        delete iOffScreenGc;
+        iOffScreenGc = NULL;
+        delete iOffScreenDevice;
+        iOffScreenDevice = NULL;
+        delete iOffScreenBitmap;
+        iOffScreenBitmap = NULL;
+        return;
+    }
+
+    roadmap_main_configure(iOffScreenGc, this);
+    }
 
 // -----------------------------------------------------------------------------
 // CFreeMapAppView::CFreeMapAppView()
@@ -187,9 +187,9 @@ void CFreeMapAppView::ConstructL( const TRect& aRect )
 // -----------------------------------------------------------------------------
 //
 CFreeMapAppView::CFreeMapAppView()
-	{
-	// No implementation required
-	}
+    {
+    // No implementation required
+    }
 
 
 // -----------------------------------------------------------------------------
@@ -198,14 +198,14 @@ CFreeMapAppView::CFreeMapAppView()
 // -----------------------------------------------------------------------------
 //
 CFreeMapAppView::~CFreeMapAppView()
-	{
+    {
   delete iOffScreenGc;
   iOffScreenGc = NULL;
   delete iOffScreenDevice;
   iOffScreenDevice = NULL;
   delete iOffScreenBitmap;
   iOffScreenBitmap = NULL;
-	}
+    }
 
 
 // -----------------------------------------------------------------------------
@@ -214,24 +214,24 @@ CFreeMapAppView::~CFreeMapAppView()
 // -----------------------------------------------------------------------------
 //
 void CFreeMapAppView::Draw( const TRect& /*aRect*/ ) const
-	{
+    {
 #ifdef _USE_GC
   // Get the standard graphics context
-	CWindowGc& gc = SystemGc();
+    CWindowGc& gc = SystemGc();
 
-	if (iOffScreenBitmap) {
-		gc.BitBlt(TPoint(0, 0), iOffScreenBitmap);
-	} else {
-		// Gets the control's extent
-		TRect drawRect( Rect());
-	
-		// Clears the screen
-		gc.Clear( drawRect );	
-	}
+    if (iOffScreenBitmap) {
+        gc.BitBlt(TPoint(0, 0), iOffScreenBitmap);
+    } else {
+        // Gets the control's extent
+        TRect drawRect( Rect());
+
+        // Clears the screen
+        gc.Clear( drawRect );
+    }
 #else
-	roadmap_canvas_refresh();
+    roadmap_canvas_refresh();
 #endif
-	}
+    }
 
 // -----------------------------------------------------------------------------
 // CFreeMapAppView::SizeChanged()

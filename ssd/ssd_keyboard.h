@@ -24,7 +24,7 @@
 
 #ifndef __SSD_KEYBOARD_H_
 #define __SSD_KEYBOARD_H_
- 
+
 #define SSD_KEYBOARD_LETTERS 1
 #define SSD_KEYBOARD_DIGITS  2
 

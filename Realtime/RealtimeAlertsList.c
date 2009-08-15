@@ -55,7 +55,7 @@
 
 
 // Context menu:
-static ssd_cm_item      context_menu_items[] = 
+static ssd_cm_item      context_menu_items[] =
 {
    SSD_CM_INIT_ITEM  ( "Show on map",        rtl_cm_show),
    SSD_CM_INIT_ITEM  ( "Delete",             rtl_cm_delete),
@@ -64,7 +64,7 @@ static ssd_cm_item      context_menu_items[] =
    SSD_CM_INIT_ITEM  ( "Sort by proximity",  rtl_cm_sort_proximity),
    SSD_CM_INIT_ITEM  ( "Sort by recency",    rtl_cm_sort_recency),
    SSD_CM_INIT_ITEM  ( "Exit_key",           rtl_cm_exit),
-   SSD_CM_INIT_ITEM  ( "Cancel",      	     rtl_cm_cancel),
+   SSD_CM_INIT_ITEM  ( "Cancel",             rtl_cm_cancel),
 };
 static ssd_contextmenu  context_menu = SSD_CM_INIT_MENU( context_menu_items);
 
@@ -73,17 +73,17 @@ static void set_softkeys( SsdWidget dialog);
 
 static SsdWidget   tabs[tab__count];
 static AlertList gAlertListTable;
-static AlertList gTabAlertList; 
- 
-static   BOOL                 				g_context_menu_is_active= FALSE;
-static   real_time_tabs		g_active_tab = tab_all;
+static AlertList gTabAlertList;
+
+static   BOOL                               g_context_menu_is_active= FALSE;
+static   real_time_tabs     g_active_tab = tab_all;
 static   alert_sort_method g_list_sorted = sort_proximity;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static int RealtimeAlertsListCallBack(SsdWidget widget, const char *new_value,
         const void *value, void *context)
 {
- 
+
     int alertId;
 
     if (!new_value[0] || !strcmp(new_value,
@@ -112,15 +112,15 @@ static int RealtimeAlertsListCallBack(SsdWidget widget, const char *new_value,
 static void delete_callback(int exit_code, void *context){
     int alertId;
     BOOL success;
-    
+
     if (exit_code != dec_yes)
          return;
-    
+
     alertId = atoi((const char*)context);
     success = real_time_remove_alert(alertId);
     if (success)
         roadmap_messagebox("Delete Alert", "Your request was sent to the server");
-    
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ static int RealtimeAlertsDeleteCallBack(SsdWidget widget, const char *new_value,
         const void *value, void *context)
 {
    char message[200];
-    
+
 
     if (!new_value[0] || !strcmp(new_value,
             roadmap_lang_get("Scroll Through Alerts on the map")))
@@ -136,9 +136,9 @@ static int RealtimeAlertsDeleteCallBack(SsdWidget widget, const char *new_value,
          return TRUE;
     }
 
-	 sprintf(message,"%s\n%s",roadmap_lang_get("Delete Alert:"), new_value);
-   
-    ssd_confirm_dialog("Delete Alert", message,FALSE, delete_callback,  (void *)value); 
+     sprintf(message,"%s\n%s",roadmap_lang_get("Delete Alert:"), new_value);
+
+    ssd_confirm_dialog("Delete Alert", message,FALSE, delete_callback,  (void *)value);
 
     return FALSE;
 }
@@ -146,11 +146,11 @@ static int RealtimeAlertsDeleteCallBack(SsdWidget widget, const char *new_value,
 ///////////////////////////////////////////////////////////////////////////////////////////
 void RealtimeAlertsListNoTabs(void)
 {
-	populate_list();
+    populate_list();
     ssd_generic_icon_list_dialog_show(roadmap_lang_get(ALERTS_LIST_TITLE), gAlertListTable.iCount,
             (const char **)&gAlertListTable.labels[0], (const void **)&gAlertListTable.values[0], (const char **)&gAlertListTable.icons[0],NULL,
-            RealtimeAlertsListCallBack, RealtimeAlertsDeleteCallBack, NULL, 
-            NULL, 
+            RealtimeAlertsListCallBack, RealtimeAlertsDeleteCallBack, NULL,
+            NULL,
             NULL,
             80,
             0,
@@ -191,7 +191,7 @@ static int RealtimeAlertsDeleteCallBackTabs(SsdWidget widget, const char *new_va
         const void *value)
 {
    char message[200];
-    
+
 
     if (!new_value[0] || !strcmp(new_value,
             roadmap_lang_get("Scroll Through Alerts on the map")))
@@ -199,39 +199,39 @@ static int RealtimeAlertsDeleteCallBackTabs(SsdWidget widget, const char *new_va
          return TRUE;
     }
 
-	 sprintf(message,"%s\n%s",roadmap_lang_get("Delete Alert:"), new_value);
-   
-    ssd_confirm_dialog("Delete Alert", message,FALSE, delete_callback,  (void *)value); 
+     sprintf(message,"%s\n%s",roadmap_lang_get("Delete Alert:"), new_value);
+
+    ssd_confirm_dialog("Delete Alert", message,FALSE, delete_callback,  (void *)value);
 
     return FALSE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static void populate_tab(int tab, int num, int types,...){
-	int i;
-	int count = 0;
-	va_list ap;
-	int type;
-		
-	for ( i=0; i< gAlertListTable.iCount; i++){
-		int j;
-		va_start(ap, types);
-		type = types;
-		for (j = 0; j < num; j++ ) {
-			if (gAlertListTable.type[i] == type) {
-				gTabAlertList.labels[count] = gAlertListTable.labels[i];
-				gTabAlertList.values[count] = gAlertListTable.values[i];
-				gTabAlertList.icons[count] = gAlertListTable.icons[i];
-				count++;
-			}
-			type = va_arg(ap, int);
-		}
-		va_end(ap);
-	 }
-	 gTabAlertList.iCount = count;
-	 if (count > 0)
-		 ssd_list_populate (tabs[tab], count, (const char **)&gTabAlertList.labels[0], (const void **)&gTabAlertList.values[0],(const char **)&gTabAlertList.icons[0], NULL,RealtimeAlertsListCallBackTabs, RealtimeAlertsDeleteCallBackTabs, TRUE);
-			 	 
+    int i;
+    int count = 0;
+    va_list ap;
+    int type;
+
+    for ( i=0; i< gAlertListTable.iCount; i++){
+        int j;
+        va_start(ap, types);
+        type = types;
+        for (j = 0; j < num; j++ ) {
+            if (gAlertListTable.type[i] == type) {
+                gTabAlertList.labels[count] = gAlertListTable.labels[i];
+                gTabAlertList.values[count] = gAlertListTable.values[i];
+                gTabAlertList.icons[count] = gAlertListTable.icons[i];
+                count++;
+            }
+            type = va_arg(ap, int);
+        }
+        va_end(ap);
+     }
+     gTabAlertList.iCount = count;
+     if (count > 0)
+         ssd_list_populate (tabs[tab], count, (const char **)&gTabAlertList.labels[0], (const void **)&gTabAlertList.values[0],(const char **)&gTabAlertList.icons[0], NULL,RealtimeAlertsListCallBackTabs, RealtimeAlertsDeleteCallBackTabs, TRUE);
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -253,7 +253,7 @@ static void populate_list(){
     int i;
     RoadMapPosition context_save_pos;
     int context_save_zoom;
-    
+
     AlertStr[0] = 0;
     str[0] = 0;
 
@@ -268,13 +268,13 @@ static void populate_list(){
                 = (char *)roadmap_lang_get("Scroll Through Alerts on the map");
         gAlertListTable.icons[0] = "globe";
         gAlertListTable.type[0] = -1;
-        
+
     }
     iCount = 1;
-    
+
     iAlertCount = RTAlerts_Count();
 
- 	 roadmap_math_get_context(&context_save_pos, &context_save_zoom);
+     roadmap_math_get_context(&context_save_pos, &context_save_zoom);
 
     while ((iAlertCount > 0) && (iCount < MAX_ALERTS_ENTRIES))    {
 
@@ -298,16 +298,16 @@ static void populate_list(){
                     - strlen(AlertStr), "%s", roadmap_lang_get("Traffic jam"));
         else if (alert->iType == RT_ALERT_TYPE_TRAFFIC_INFO)
             snprintf(AlertStr + strlen(AlertStr), sizeof(AlertStr)
-                 - strlen(AlertStr), "%s", roadmap_lang_get("Road info"));        
+                 - strlen(AlertStr), "%s", roadmap_lang_get("Road info"));
         else if (alert->iType == RT_ALERT_TYPE_HAZARD)
             snprintf(AlertStr + strlen(AlertStr), sizeof(AlertStr)
-                 - strlen(AlertStr), "%s", roadmap_lang_get("Hazard"));        
+                 - strlen(AlertStr), "%s", roadmap_lang_get("Hazard"));
         else if (alert->iType == RT_ALERT_TYPE_OTHER)
             snprintf(AlertStr + strlen(AlertStr), sizeof(AlertStr)
-                 - strlen(AlertStr), "%s", roadmap_lang_get("Other"));        
+                 - strlen(AlertStr), "%s", roadmap_lang_get("Other"));
         else if (alert->iType == RT_ALERT_TYPE_CONSTRUCTION)
             snprintf(AlertStr + strlen(AlertStr), sizeof(AlertStr)
-                 - strlen(AlertStr), "%s", roadmap_lang_get("Road construction"));        
+                 - strlen(AlertStr), "%s", roadmap_lang_get("Road construction"));
         else
             snprintf(AlertStr + strlen(AlertStr), sizeof(AlertStr)
                     - strlen(AlertStr), "%s",
@@ -371,98 +371,98 @@ static void populate_list(){
 
         gAlertListTable.values[iCount] = strdup(str);
         gAlertListTable.icons[iCount] = strdup(RTAlerts_Get_Icon(alert->iID));
-		gAlertListTable.type[iCount] = alert->iType;
-		gAlertListTable.iDistnace[iCount] = distance;
+        gAlertListTable.type[iCount] = alert->iType;
+        gAlertListTable.iDistnace[iCount] = distance;
         iCount++;
         iAlertCount--;
     }
 
-	 gAlertListTable.iCount = iCount;
-   
+     gAlertListTable.iCount = iCount;
+
     roadmap_math_set_context(&context_save_pos, context_save_zoom);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static SsdWidget create_list(int tab_id){
-	SsdWidget list;
-	char tab_name[20];
-	sprintf(tab_name, "list %d", tab_id);
-	list = ssd_list_new (tab_name, SSD_MAX_SIZE, SSD_MAX_SIZE, inputtype_none, 0, NULL);
+    SsdWidget list;
+    char tab_name[20];
+    sprintf(tab_name, "list %d", tab_id);
+    list = ssd_list_new (tab_name, SSD_MAX_SIZE, SSD_MAX_SIZE, inputtype_none, 0, NULL);
 #ifdef IPHONE
-	ssd_list_resize (list, 73);
-#elif defined (TOUCH_SCREEN)	
-	ssd_list_resize (list, 66);
+    ssd_list_resize (list, 73);
+#elif defined (TOUCH_SCREEN)
+    ssd_list_resize (list, 66);
 #else
-	ssd_list_resize (list, 63);
+    ssd_list_resize (list, 63);
 #endif
-	
-	return list;
+
+    return list;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static void populate_first_tab(){
-	if (gAlertListTable.iCount > 0)
-   		ssd_list_populate (tabs[0], gAlertListTable.iCount, (const char **)&gAlertListTable.labels[0], (const void **)&gAlertListTable.values[0],(const char **)&gAlertListTable.icons[0], NULL,RealtimeAlertsListCallBackTabs, RealtimeAlertsDeleteCallBackTabs, TRUE);
+    if (gAlertListTable.iCount > 0)
+        ssd_list_populate (tabs[0], gAlertListTable.iCount, (const char **)&gAlertListTable.labels[0], (const void **)&gAlertListTable.values[0],(const char **)&gAlertListTable.icons[0], NULL,RealtimeAlertsListCallBackTabs, RealtimeAlertsDeleteCallBackTabs, TRUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static void on_tab_gain_focus(int tab)
 {
-	switch (tab){
-		case tab_all:
-		    populate_first_tab();
-			break;
-		case tab_police:
-			populate_tab(tab_police,1,RT_ALERT_TYPE_POLICE);
-			break;
-		case tab_traffic_jam:
-   			populate_tab(tab_traffic_jam,2, RT_ALERT_TYPE_TRAFFIC_INFO, RT_ALERT_TYPE_TRAFFIC_JAM);
-   			break;
-   		case tab_accidents:
-   			populate_tab(tab_accidents,1, RT_ALERT_TYPE_ACCIDENT);
-   			break;
-   		case tab_chit_chat:
-   			populate_tab(tab_chit_chat,4, RT_ALERT_TYPE_CHIT_CHAT, RT_ALERT_TYPE_HAZARD,RT_ALERT_TYPE_OTHER, RT_ALERT_TYPE_CONSTRUCTION);
-   			break;
-   			
-			default:
-				break;
-	} 
-	g_active_tab = tab;
+    switch (tab){
+        case tab_all:
+            populate_first_tab();
+            break;
+        case tab_police:
+            populate_tab(tab_police,1,RT_ALERT_TYPE_POLICE);
+            break;
+        case tab_traffic_jam:
+            populate_tab(tab_traffic_jam,2, RT_ALERT_TYPE_TRAFFIC_INFO, RT_ALERT_TYPE_TRAFFIC_JAM);
+            break;
+        case tab_accidents:
+            populate_tab(tab_accidents,1, RT_ALERT_TYPE_ACCIDENT);
+            break;
+        case tab_chit_chat:
+            populate_tab(tab_chit_chat,4, RT_ALERT_TYPE_CHIT_CHAT, RT_ALERT_TYPE_HAZARD,RT_ALERT_TYPE_OTHER, RT_ALERT_TYPE_CONSTRUCTION);
+            break;
+
+            default:
+                break;
+    }
+    g_active_tab = tab;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static void clear_lists(){
-	int i;
+    int i;
       for (i=0; i< tab__count;i++){
-	   	ssd_list_populate (tabs[i], 0, NULL, NULL,NULL, NULL,RealtimeAlertsListCallBackTabs, RealtimeAlertsDeleteCallBackTabs, TRUE);
+        ssd_list_populate (tabs[i], 0, NULL, NULL,NULL, NULL,RealtimeAlertsListCallBackTabs, RealtimeAlertsDeleteCallBackTabs, TRUE);
       }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-static SsdTcCtx	create_tab_control(){
-	SsdTcCtx	tabcontrol;
-   const char* tabs_titles[tab__count];  
-	int i;
-      
+static SsdTcCtx create_tab_control(){
+    SsdTcCtx    tabcontrol;
+   const char* tabs_titles[tab__count];
+    int i;
+
    tabs_titles[tab_all] = roadmap_lang_get("All");
    tabs_titles[tab_police] = roadmap_lang_get("Police");
    tabs_titles[tab_traffic_jam] = roadmap_lang_get("Traffic Jams");
    tabs_titles[tab_accidents] = roadmap_lang_get("Accidents");
    tabs_titles[tab_chit_chat] = roadmap_lang_get("Chit Chats");
-   
+
    for (i=0; i< tab__count;i++)
-	   tabs[i] = create_list(i);
-	
-   
-    
+       tabs[i] = create_list(i);
+
+
+
     RTAlerts_Sort_List(sort_proximity);
 
     RTAlerts_Stop_Scrolling();
-    
+
     populate_list();
-     
-   tabcontrol = ssd_tabcontrol_new( 
+
+   tabcontrol = ssd_tabcontrol_new(
                               ALERTS_LIST_TITLE,
                               roadmap_lang_get(ALERTS_LIST_TITLE),
                               NULL,
@@ -473,15 +473,15 @@ static SsdTcCtx	create_tab_control(){
                               tabs,
                               tab__count,
                               0);
-    
+
     for (i=0; i< tab__count;i++){
-	    ssd_dialog_set_drag(ssd_tabcontrol_get_dialog(tabcontrol),tabs[i]);
+        ssd_dialog_set_drag(ssd_tabcontrol_get_dialog(tabcontrol),tabs[i]);
     }
-                             
+
     set_softkeys( ssd_tabcontrol_get_dialog(tabcontrol));
-    
+
     populate_first_tab();
-    
+
     return tabcontrol;
 }
 
@@ -489,100 +489,100 @@ static SsdTcCtx	create_tab_control(){
 ///////////////////////////////////////////////////////////////////////////////////////////
 static SsdTcCtx  get_tabcontrol()
 {
-   static SsdTcCtx	tabcontrol = NULL;
+   static SsdTcCtx  tabcontrol = NULL;
 
    if( tabcontrol){
-   	g_list_sorted =sort_proximity;
-   	RTAlerts_Sort_List(sort_proximity);
-	RTAlerts_Stop_Scrolling();
-   	clear_lists();
-   	populate_list();
-   	populate_first_tab();
-	ssd_tabcontrol_set_active_tab(tabcontrol, tab_all);
+    g_list_sorted =sort_proximity;
+    RTAlerts_Sort_List(sort_proximity);
+    RTAlerts_Stop_Scrolling();
+    clear_lists();
+    populate_list();
+    populate_first_tab();
+    ssd_tabcontrol_set_active_tab(tabcontrol, tab_all);
     return tabcontrol;
    }
    else{
-	   tabcontrol =  create_tab_control();
-	   return tabcontrol;
+       tabcontrol =  create_tab_control();
+       return tabcontrol;
    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 void RealtimeAlertsList(){
-	
+
 //#ifdef TOUCH_SCREEN
-//	RealtimeAlertsListNoTabs();
+//  RealtimeAlertsListNoTabs();
 //#else
-   SsdTcCtx	tabcontrol =  get_tabcontrol(); 
-	ssd_tabcontrol_show(tabcontrol);
-//#endif	
+   SsdTcCtx tabcontrol =  get_tabcontrol();
+    ssd_tabcontrol_show(tabcontrol);
+//#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static void on_option_delete(){
-	char message[300];
-	SsdWidget list = tabs[g_active_tab];
-	const void *value = ssd_list_selected_value ( list);
-	const char* string   = ssd_list_selected_string( list);
-	
-	if (value != NULL){
-	 	
-		 sprintf(message,"%s\n%s",roadmap_lang_get("Delete Alert:"),(const char *)string);
-	   
-	     ssd_confirm_dialog("Delete Alert", message,FALSE, delete_callback,  (void *)value);
-	} 
+    char message[300];
+    SsdWidget list = tabs[g_active_tab];
+    const void *value = ssd_list_selected_value ( list);
+    const char* string   = ssd_list_selected_string( list);
+
+    if (value != NULL){
+
+         sprintf(message,"%s\n%s",roadmap_lang_get("Delete Alert:"),(const char *)string);
+
+         ssd_confirm_dialog("Delete Alert", message,FALSE, delete_callback,  (void *)value);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static void on_option_show(){
-	 	SsdWidget list = tabs[g_active_tab];
-	 	const void *value = ssd_list_selected_value ( list);
-	 	if (value != NULL){
-	 		    int alertId = atoi((const char*)value);
-		       ssd_generic_list_dialog_hide_all();
-      		  RTAlerts_Popup_By_Id(alertId);
+        SsdWidget list = tabs[g_active_tab];
+        const void *value = ssd_list_selected_value ( list);
+        if (value != NULL){
+                int alertId = atoi((const char*)value);
+               ssd_generic_list_dialog_hide_all();
+              RTAlerts_Popup_By_Id(alertId);
      }
-	 		
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static void on_option_show_comments(){
-	 	SsdWidget list = tabs[g_active_tab];
-	 	const void *value = ssd_list_selected_value ( list);
-	 	if (value != NULL){
-	 		    int alertId = atoi((const char*)value);
-    			if (RTAlerts_Get_Number_of_Comments(alertId) != 0)
-    			{
-			        ssd_generic_list_dialog_hide();
-        			  RealtimeAlertCommentsList(alertId);
-    			}
+        SsdWidget list = tabs[g_active_tab];
+        const void *value = ssd_list_selected_value ( list);
+        if (value != NULL){
+                int alertId = atoi((const char*)value);
+                if (RTAlerts_Get_Number_of_Comments(alertId) != 0)
+                {
+                    ssd_generic_list_dialog_hide();
+                      RealtimeAlertCommentsList(alertId);
+                }
      }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static void on_option_add_comment(){
-		SsdWidget list = tabs[g_active_tab];
-	 	const void *value = ssd_list_selected_value ( list);
-	 	if (value != NULL){
-	 		    int alertId = atoi((const char*)value);
-	 		    real_time_post_alert_comment_by_id(alertId);
-	 	}
+        SsdWidget list = tabs[g_active_tab];
+        const void *value = ssd_list_selected_value ( list);
+        if (value != NULL){
+                int alertId = atoi((const char*)value);
+                real_time_post_alert_comment_by_id(alertId);
+        }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static void on_option_sort_proximity(){
-	g_list_sorted =sort_proximity;
-	RTAlerts_Sort_List(sort_proximity);
-	clear_lists();
+    g_list_sorted =sort_proximity;
+    RTAlerts_Sort_List(sort_proximity);
+    clear_lists();
     populate_list();
     on_tab_gain_focus(g_active_tab);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static void on_option_sort_recency(){
-	g_list_sorted =sort_recency;
-	RTAlerts_Sort_List(sort_recency);
-	clear_lists();
+    g_list_sorted =sort_recency;
+    RTAlerts_Sort_List(sort_recency);
+    clear_lists();
     populate_list();
     on_tab_gain_focus(g_active_tab);
 }
@@ -590,73 +590,73 @@ static void on_option_sort_recency(){
 ///////////////////////////////////////////////////////////////////////////////////////////
 static void on_option_selected(  BOOL              made_selection,
                                  ssd_cm_item_ptr   item,
-                                 void*             context)                                  
+                                 void*             context)
 {
    real_time_list_context_menu_items   selection;
    int                                 exit_code = dec_ok;
-   
+
    g_context_menu_is_active = FALSE;
-   
+
    if( !made_selection)
-      return;  
-   
+      return;
+
    selection = (real_time_list_context_menu_items)item->id;
- 
+
    switch( selection)
    {
       case rtl_cm_show:
-      	on_option_show();
+        on_option_show();
          break;
-         
+
       case rtl_cm_delete:
-      	on_option_delete();
+        on_option_delete();
          break;
-         
+
       case rtl_cm_view_comments:
-      	on_option_show_comments();
+        on_option_show_comments();
          break;
-         
+
       case rtl_cm_add_comments:
          on_option_add_comment();
          break;
-         
+
       case rtl_cm_sort_proximity:
       on_option_sort_proximity();
          break;
-         
+
       case rtl_cm_sort_recency:
-      	on_option_sort_recency();
+        on_option_sort_recency();
          break;
-         
-         
+
+
       case rtl_cm_exit:
          exit_code = dec_cancel;
-      	ssd_dialog_hide_all( exit_code);   
-      	roadmap_screen_refresh ();
+        ssd_dialog_hide_all( exit_code);
+        roadmap_screen_refresh ();
          break;
       case rtl_cm_cancel:
-	  	g_context_menu_is_active = FALSE;
-	  	roadmap_screen_refresh ();
-	  	break;	
+        g_context_menu_is_active = FALSE;
+        roadmap_screen_refresh ();
+        break;
 
       default:
          break;
    }
-}                           
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 static int on_options(SsdWidget widget, const char *new_value, void *context)
 {
-	int menu_x;
-	BOOL has_comments = FALSE;
-	BOOL is_empty = FALSE;
-	BOOL is_selected = TRUE;
-	SsdWidget list ;
-	const void *value;
-	BOOL add_cancel = FALSE;
-	BOOL add_exit = TRUE;
-	
+    int menu_x;
+    BOOL has_comments = FALSE;
+    BOOL is_empty = FALSE;
+    BOOL is_selected = TRUE;
+    SsdWidget list ;
+    const void *value;
+    BOOL add_cancel = FALSE;
+    BOOL add_exit = TRUE;
+
 
 #ifdef TOUCH_SCREEN
    add_cancel = TRUE;
@@ -672,68 +672,68 @@ static int on_options(SsdWidget widget, const char *new_value, void *context)
       return 0;
    }
 
-	list = tabs[g_active_tab];
-	value = ssd_list_selected_value ( list);
-	if (value != NULL){
-	 	int alertId = atoi((const char*)value);
-    	if (RTAlerts_Get_Number_of_Comments(alertId) != 0)
-    		has_comments = TRUE;
-    		
-	}
-	else
-		is_selected = FALSE;
-	
-   ssd_contextmenu_show_item( &context_menu, 
+    list = tabs[g_active_tab];
+    value = ssd_list_selected_value ( list);
+    if (value != NULL){
+        int alertId = atoi((const char*)value);
+        if (RTAlerts_Get_Number_of_Comments(alertId) != 0)
+            has_comments = TRUE;
+
+    }
+    else
+        is_selected = FALSE;
+
+   ssd_contextmenu_show_item( &context_menu,
                               rtl_cm_show,
-                              !is_empty && is_selected, 
+                              !is_empty && is_selected,
                               FALSE);
-   ssd_contextmenu_show_item( &context_menu, 
+   ssd_contextmenu_show_item( &context_menu,
                               rtl_cm_add_comments,
-                              !is_empty && is_selected, 
+                              !is_empty && is_selected,
                               FALSE);
-                              
-                              
-   ssd_contextmenu_show_item( &context_menu, 
+
+
+   ssd_contextmenu_show_item( &context_menu,
                               rtl_cm_delete,
-                              !is_empty && is_selected, 
+                              !is_empty && is_selected,
                               FALSE);
-   ssd_contextmenu_show_item( &context_menu, 
+   ssd_contextmenu_show_item( &context_menu,
                               rtl_cm_view_comments,
-                              !is_empty && is_selected && has_comments, 
+                              !is_empty && is_selected && has_comments,
                               FALSE);
 
-   ssd_contextmenu_show_item( &context_menu, 
+   ssd_contextmenu_show_item( &context_menu,
                               rtl_cm_sort_proximity,
-                              (g_list_sorted == sort_recency) && !is_empty, 
+                              (g_list_sorted == sort_recency) && !is_empty,
                               FALSE);
-   ssd_contextmenu_show_item( &context_menu, 
+   ssd_contextmenu_show_item( &context_menu,
                               rtl_cm_sort_recency,
-                              (g_list_sorted == sort_proximity && !is_empty), 
-                              FALSE);
-                              
-   ssd_contextmenu_show_item( &context_menu, 
-                              rtl_cm_exit,
-                              add_exit, 
+                              (g_list_sorted == sort_proximity && !is_empty),
                               FALSE);
 
-   ssd_contextmenu_show_item( &context_menu, 
-                              rtl_cm_cancel,
-                              add_cancel, 
+   ssd_contextmenu_show_item( &context_menu,
+                              rtl_cm_exit,
+                              add_exit,
                               FALSE);
- 		
+
+   ssd_contextmenu_show_item( &context_menu,
+                              rtl_cm_cancel,
+                              add_cancel,
+                              FALSE);
+
    if  (ssd_widget_rtl (NULL))
-	   menu_x = SSD_X_SCREEN_RIGHT;
-	else
-		menu_x = SSD_X_SCREEN_LEFT;
-		
+       menu_x = SSD_X_SCREEN_RIGHT;
+    else
+        menu_x = SSD_X_SCREEN_LEFT;
+
    ssd_context_menu_show(  menu_x,              // X
                            SSD_Y_SCREEN_BOTTOM, // Y
                            &context_menu,
                            on_option_selected,
                            NULL,
-                           dir_default); 
- 
-   g_context_menu_is_active = TRUE; 
+                           dir_default);
+
+   g_context_menu_is_active = TRUE;
 
    return 0;
 }

@@ -49,17 +49,17 @@ editor_db_handler EditorDictionaryHandler = {
 
 int editor_dictionary_locate (const char *string) {
 
-	int i;
-	
-	if (!string) return -1;
-	
-	for (i = editor_db_get_item_count(ActiveDictionary) - 1; i >= 0; i--) {
-		if (!strcmp (string, editor_db_get_item (ActiveDictionary, i, 0, NULL))) {
-			return i;
-		}
-	}	
-	
-	return -1;
+    int i;
+
+    if (!string) return -1;
+
+    for (i = editor_db_get_item_count(ActiveDictionary) - 1; i >= 0; i--) {
+        if (!strcmp (string, editor_db_get_item (ActiveDictionary, i, 0, NULL))) {
+            return i;
+        }
+    }
+
+    return -1;
 }
 
 
@@ -70,11 +70,11 @@ int editor_dictionary_add
    char *db_string;
    int length = strlen (string);
 
-	if (!string) return -1;
-	
-	string_id = editor_dictionary_locate (string);
-	if (string_id >= 0) return string_id;
-	
+    if (!string) return -1;
+
+    string_id = editor_dictionary_locate (string);
+    if (string_id >= 0) return string_id;
+
    string_id =
       editor_db_allocate_items(ActiveDictionary, length+1);
 

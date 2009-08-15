@@ -4,7 +4,7 @@
  *
  *   Copyright 2008 Giant Steps Ltd.
  *   Copyright 2008 Ehud Shabtai
- * 
+ *
  *   This file is part of RoadMap.
  *
  *   RoadMap is free software; you can redistribute it and/or modify
@@ -37,16 +37,16 @@ class CRoadmapNotifyBattery : public CActive
 public:
   CRoadmapNotifyBattery();
   virtual ~CRoadmapNotifyBattery();
-  
+
   static CRoadmapNotifyBattery* NewL(void* apBatteryCallback);
-  
-private: 
+
+private:
   void ConstructL(void* apBatteryCallback);
   void RunL();
   void DoCancel();
-  
+
   void InitBatteryInfo();
-  
+
   CTelephony* m_Telephony;
   CTelephony::TBatteryInfoV1 m_CurrStatus;
   TPckg<CTelephony::TBatteryInfoV1> m_CurrStatusPckg;

@@ -58,12 +58,12 @@ void roadmap_gpssymbian_subscribe_to_navigation (RoadMapGpsdNavigation navigatio
 
 void roadmap_gpssymbian_subscribe_to_satellites (RoadMapGpsdSatellite satellite)
 {
-  
+
 }
 
 void roadmap_gpssymbian_subscribe_to_dilution   (RoadMapGpsdDilution dilution)
 {
-  
+
 }
 
 int roadmap_gpssymbian_decode (void *user_context,

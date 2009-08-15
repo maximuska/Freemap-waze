@@ -20,7 +20,7 @@ codeINSTALL_INIT Install_Init(HWND hwndparent,
          L"usc77001.dgl"
    };
 
-   
+
    WCHAR maps_dir[255];
    wcscpy(maps_dir, pszinstalldir);
    wcscat(maps_dir, L"\\maps");
@@ -31,7 +31,7 @@ codeINSTALL_INIT Install_Init(HWND hwndparent,
       _sntprintf(file, sizeof(file), L"%s\\%s", maps_dir, FILES[i]);
       DeleteFile(file);
    }
-    
+
    return codeINSTALL_INIT_CONTINUE;
 }
 
@@ -51,19 +51,19 @@ codeINSTALL_EXIT Install_Exit(
    BOOL res = CeRunAppAtEvent(roadmap_exe, NOTIFICATION_EVENT_NONE);
    res = CeRunAppAtEvent(roadmap_exe, NOTIFICATION_EVENT_RS232_DETECTED);
    res = CeRunAppAtEvent(roadmap_exe, NOTIFICATION_EVENT_SYNC_END);
-   
-	PROCESS_INFORMATION pi;
-	STARTUPINFO si;
 
-	memset(&pi, 0, sizeof(pi));
-	memset(&si, 0, sizeof(si));
+    PROCESS_INFORMATION pi;
+    STARTUPINFO si;
 
-	si.cb = sizeof(STARTUPINFO);
+    memset(&pi, 0, sizeof(pi));
+    memset(&si, 0, sizeof(si));
 
-	if (CreateProcess(roadmap_exe, APP_RUN_AT_RS232_DETECT, NULL,
+    si.cb = sizeof(STARTUPINFO);
+
+    if (CreateProcess(roadmap_exe, APP_RUN_AT_RS232_DETECT, NULL,
       NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
 
-	   CloseHandle(pi.hThread);
+       CloseHandle(pi.hThread);
    }
 
    return codeINSTALL_EXIT_DONE;
@@ -75,11 +75,11 @@ codeINSTALL_EXIT Install_Exit(
 codeUNINSTALL_INIT Uninstall_Init(
   HWND hwndparent,LPCTSTR pszinstalldir)
 {
-    //local variables    
+    //local variables
     WIN32_FIND_DATA findfiledata;
     HANDLE hfind;
     TCHAR pszfilepath[50];
- 
+
     WCHAR roadmap_exe[255];
     wcscpy(roadmap_exe, pszinstalldir);
     wcscat(roadmap_exe, L"\\FreeMap.exe");
@@ -92,7 +92,7 @@ codeUNINSTALL_INIT Uninstall_Init(
 
 
     //copy database path to character array
-    //pszinstalldir variable will contain the 
+    //pszinstalldir variable will contain the
     //application path (eg : \Program Files\TestApp)
     wcscpy(pszfilepath,pszinstalldir);
     wcscat(pszfilepath,TEXT("\\test.sdf"));

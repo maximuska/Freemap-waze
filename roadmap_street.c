@@ -68,23 +68,23 @@ typedef struct {
    RoadMapStreet        *RoadMapStreets;
    int                   RoadMapStreetsCount;
 
-	RoadMapCity			*RoadMapCities;
-	int					 RoadMapCitiesCount;
+    RoadMapCity         *RoadMapCities;
+    int                  RoadMapCitiesCount;
 
-	RoadMapDictionary RoadMapCityNames;
-	RoadMapDictionary RoadMapStreetPrefix;
-	RoadMapDictionary RoadMapStreetNames;
-	RoadMapDictionary RoadMapText2Speech;
-	RoadMapDictionary RoadMapStreetType;
-	RoadMapDictionary RoadMapStreetSuffix;
+    RoadMapDictionary RoadMapCityNames;
+    RoadMapDictionary RoadMapStreetPrefix;
+    RoadMapDictionary RoadMapStreetNames;
+    RoadMapDictionary RoadMapText2Speech;
+    RoadMapDictionary RoadMapStreetType;
+    RoadMapDictionary RoadMapStreetSuffix;
 } RoadMapStreetContext;
 
 typedef struct {
-	
-	int							rc;
-	RoadMapNeighbour			*result;
-	int							cfcc;
-	const RoadMapPosition 	*position;
+
+    int                         rc;
+    RoadMapNeighbour            *result;
+    int                         cfcc;
+    const RoadMapPosition   *position;
 } RoadMapStreetSearch;
 
 
@@ -112,22 +112,22 @@ static void *roadmap_street_map (const roadmap_db_data_file *file) {
    context->RoadMapCityNames    = NULL;
 
    if (!roadmap_db_get_data (file,
-   								  model__tile_street_name,
-   								  sizeof (RoadMapStreet),
-   								  (void**)&(context->RoadMapStreets),
-   								  &(context->RoadMapStreetsCount))) {
+                                  model__tile_street_name,
+                                  sizeof (RoadMapStreet),
+                                  (void**)&(context->RoadMapStreets),
+                                  &(context->RoadMapStreetsCount))) {
       roadmap_log (ROADMAP_FATAL, "invalid street/name structure");
    }
 
    if (!roadmap_db_get_data (file,
-   								  model__tile_street_city,
-   								  sizeof (RoadMapCity),
-   								  (void**)&(context->RoadMapCities),
-   								  &(context->RoadMapCitiesCount))) {
+                                  model__tile_street_city,
+                                  sizeof (RoadMapCity),
+                                  (void**)&(context->RoadMapCities),
+                                  &(context->RoadMapCitiesCount))) {
       roadmap_log (ROADMAP_FATAL, "invalid street/city structure");
    }
    if (context->RoadMapCitiesCount > 0)
-   	context->RoadMapCitiesCount--;
+    context->RoadMapCitiesCount--;
 
    return context;
 }
@@ -141,29 +141,29 @@ static void roadmap_street_activate (void *context) {
    }
 
    if (this->RoadMapStreetPrefix == NULL) {
-	  this->RoadMapStreetPrefix = roadmap_dictionary_open ("prefix");
+      this->RoadMapStreetPrefix = roadmap_dictionary_open ("prefix");
    }
    if (this->RoadMapStreetNames == NULL) {
-	  this->RoadMapStreetNames = roadmap_dictionary_open ("street");
+      this->RoadMapStreetNames = roadmap_dictionary_open ("street");
    }
    if (this->RoadMapText2Speech == NULL) {
-	  this->RoadMapText2Speech = roadmap_dictionary_open ("text2speech");
+      this->RoadMapText2Speech = roadmap_dictionary_open ("text2speech");
    }
    if (this->RoadMapStreetType == NULL) {
-	  this->RoadMapStreetType = roadmap_dictionary_open ("type");
+      this->RoadMapStreetType = roadmap_dictionary_open ("type");
    }
    if (this->RoadMapStreetSuffix == NULL) {
-	  this->RoadMapStreetSuffix = roadmap_dictionary_open ("suffix");
+      this->RoadMapStreetSuffix = roadmap_dictionary_open ("suffix");
    }
    if (this->RoadMapCityNames == NULL) {
-	  this->RoadMapCityNames = roadmap_dictionary_open ("city");
+      this->RoadMapCityNames = roadmap_dictionary_open ("city");
    }
    if (this->RoadMapStreetNames  == NULL ||
-		 this->RoadMapStreetPrefix == NULL ||
-		 this->RoadMapStreetType   == NULL ||
-		 this->RoadMapStreetSuffix == NULL ||
-		 this->RoadMapCityNames    == NULL) {
-	  roadmap_log (ROADMAP_FATAL, "cannot open dictionary");
+         this->RoadMapStreetPrefix == NULL ||
+         this->RoadMapStreetType   == NULL ||
+         this->RoadMapStreetSuffix == NULL ||
+         this->RoadMapCityNames    == NULL) {
+      roadmap_log (ROADMAP_FATAL, "cannot open dictionary");
    }
 
    RoadMapStreetActive = this;
@@ -204,49 +204,49 @@ typedef struct roadmap_street_identifier {
 #if 0
 static int roadmap_street_city_from_id(int city_id)
 {
-	int i;
+    int i;
 
-	if (!RoadMapStreetActive) {
-		return -1;
-	}
-	
-	 //todo: binary search
-	for (i = 0; i < RoadMapStreetActive->RoadMapCitiesCount; i++) {
-		 if (RoadMapStreetActive->RoadMapCities[i].city == city_id) {
-		 	return i;
-		 }
-	}
+    if (!RoadMapStreetActive) {
+        return -1;
+    }
 
-	return -1;
+     //todo: binary search
+    for (i = 0; i < RoadMapStreetActive->RoadMapCitiesCount; i++) {
+         if (RoadMapStreetActive->RoadMapCities[i].city == city_id) {
+            return i;
+         }
+    }
+
+    return -1;
 }
 #endif
 
 static void roadmap_street_locate (const char *name,
                                    RoadMapStreetIdentifier *street) {
 
-	int index;
-	
-	street->prefix = ROADMAP_INVALID_STRING;
-	street->name = ROADMAP_INVALID_STRING;
-	street->suffix = ROADMAP_INVALID_STRING;
-	street->type = ROADMAP_INVALID_STRING;
-	
-	for (index = 0; index < RoadMapStreetActive->RoadMapStreetsCount; index++) {
-		const char *candidate = roadmap_street_get_street_name_from_id (index);
-		if (name && !strcmp (name, candidate)) {
+    int index;
 
-			RoadMapStreet *one_street = RoadMapStreetActive->RoadMapStreets + index;
-			street->prefix = one_street->fedirp;
-			street->name = one_street->fename;	
-			street->suffix = one_street->fedirs;
-			street->type = one_street->fetype;
-			break;			
-		}
-	}
-	
+    street->prefix = ROADMAP_INVALID_STRING;
+    street->name = ROADMAP_INVALID_STRING;
+    street->suffix = ROADMAP_INVALID_STRING;
+    street->type = ROADMAP_INVALID_STRING;
+
+    for (index = 0; index < RoadMapStreetActive->RoadMapStreetsCount; index++) {
+        const char *candidate = roadmap_street_get_street_name_from_id (index);
+        if (name && !strcmp (name, candidate)) {
+
+            RoadMapStreet *one_street = RoadMapStreetActive->RoadMapStreets + index;
+            street->prefix = one_street->fedirp;
+            street->name = one_street->fename;
+            street->suffix = one_street->fedirs;
+            street->type = one_street->fetype;
+            break;
+        }
+    }
+
 }
-                                   
-                                   
+
+
 #if 0
 static void roadmap_street_locate (const char *name,
                                    RoadMapStreetIdentifier *street) {
@@ -353,8 +353,8 @@ static int roadmap_street_block_by_county_subdivision
    int count = 0;
 
 
-   for (i = RoadMapStreetActive->RoadMapCities[city].first_street; 
-   		i < RoadMapStreetActive->RoadMapCities[city+1].first_street; i++) {
+   for (i = RoadMapStreetActive->RoadMapCities[city].first_street;
+        i < RoadMapStreetActive->RoadMapCities[city+1].first_street; i++) {
 
       RoadMapStreet *this_street = RoadMapStreetActive->RoadMapStreets + i;
 
@@ -363,20 +363,20 @@ static int roadmap_street_block_by_county_subdivision
           (street->suffix == 0 || this_street->fedirs == street->suffix) &&
           (street->type   == 0 || this_street->fetype == street->type  )) {
 
-		 	for (j = roadmap_line_count() - 1; j >= 0; j--) {
+            for (j = roadmap_line_count() - 1; j >= 0; j--) {
 
-				if (roadmap_line_get_street(j) == i) {
-					
-					blocks[count].square = roadmap_square_active ();
+                if (roadmap_line_get_street(j) == i) {
+
+                    blocks[count].square = roadmap_square_active ();
                blocks[count].street = i;
                blocks[count].line   = j;
                blocks[count].city   = city;
-					roadmap_range_get_address (roadmap_line_get_range (j), 
-														blocks[count].range + 0, 
-														blocks[count].range + 1);
-				   ++count;
-				}
-		 	}
+                    roadmap_range_get_address (roadmap_line_get_range (j),
+                                                        blocks[count].range + 0,
+                                                        blocks[count].range + 1);
+                   ++count;
+                }
+            }
       }
    }
    return count;
@@ -393,31 +393,31 @@ int roadmap_street_blocks_by_city
 
    int city;
    RoadMapStreetIdentifier street;
-   
+
    const RoadMapCityId *id;
    RoadMapCityEntry entry;
 
-	city = roadmap_city_find (city_name);
-	if (city < 0) return ROADMAP_STREET_NOCITY;
-	
-	id = roadmap_city_first (city, &entry);
-	while (id) {
-		
-		roadmap_square_set_current (id->square_id);
-		
-	   roadmap_street_locate (street_name, &street);
-	   if (street.name != ROADMAP_INVALID_STRING) {
-	
-		   count = roadmap_street_block_by_county_subdivision
-	                                (&street, id->city_id, blocks + total, size);
-		   if (count > 0) {
-		      total += count;
-		   }
-	   }
-	
-		id = roadmap_city_next (city, &entry);
-	}
-	
+    city = roadmap_city_find (city_name);
+    if (city < 0) return ROADMAP_STREET_NOCITY;
+
+    id = roadmap_city_first (city, &entry);
+    while (id) {
+
+        roadmap_square_set_current (id->square_id);
+
+       roadmap_street_locate (street_name, &street);
+       if (street.name != ROADMAP_INVALID_STRING) {
+
+           count = roadmap_street_block_by_county_subdivision
+                                    (&street, id->city_id, blocks + total, size);
+           if (count > 0) {
+              total += count;
+           }
+       }
+
+        id = roadmap_city_next (city, &entry);
+    }
+
    return total;
 }
 
@@ -429,7 +429,7 @@ int roadmap_street_blocks_by_zip
 
 #if 1
    return 0;
-#else   
+#else
 
    int i;
    int j;
@@ -495,7 +495,7 @@ int roadmap_street_blocks_by_zip
       }
    }
    return count;
-#endif   
+#endif
 }
 
 
@@ -601,42 +601,42 @@ int roadmap_street_get_position (RoadMapBlocks *blocks,
                                  int number,
                                  RoadMapPosition *position) {
 
-	int length;
-	int distance;
-	int side;
+    int length;
+    int distance;
+    int side;
 
-	roadmap_square_set_current (blocks->square);
-	
-	if (number == -1) {
-	
-		length = roadmap_line_length (blocks->line);
-		distance = length / 2;
-		roadmap_street_distance_position (blocks->line, distance, position);
-		return 1;
-	}
+    roadmap_square_set_current (blocks->square);
 
-	for (side = 0; side < 2; side++) {
-		
-		RoadMapStreetRange *range = &blocks->range[side];
-		if (range->fradd >= 0 && 
-			 range->fradd % 2 == number % 2) {
-			 
-			 if ((number >= range->fradd && number <= range->toadd) ||
-			 	  (number >= range->toadd && number <= range->fradd)) {
-	
-				length = roadmap_line_length (blocks->line);
-				if (range->fradd <= range->toadd) {
-					distance = length * (number - range->fradd + 1) / (range->toadd - range->fradd + 2);
-				} else {
-					distance = length * (number - range->fradd - 1) / (range->toadd - range->fradd - 2);
-				}
-				roadmap_street_distance_position (blocks->line, distance, position);
-				return 1;
-			 }
-		}
-	}
+    if (number == -1) {
 
-	return 0;
+        length = roadmap_line_length (blocks->line);
+        distance = length / 2;
+        roadmap_street_distance_position (blocks->line, distance, position);
+        return 1;
+    }
+
+    for (side = 0; side < 2; side++) {
+
+        RoadMapStreetRange *range = &blocks->range[side];
+        if (range->fradd >= 0 &&
+             range->fradd % 2 == number % 2) {
+
+             if ((number >= range->fradd && number <= range->toadd) ||
+                  (number >= range->toadd && number <= range->fradd)) {
+
+                length = roadmap_line_length (blocks->line);
+                if (range->fradd <= range->toadd) {
+                    distance = length * (number - range->fradd + 1) / (range->toadd - range->fradd + 2);
+                } else {
+                    distance = length * (number - range->fradd - 1) / (range->toadd - range->fradd - 2);
+                }
+                roadmap_street_distance_position (blocks->line, distance, position);
+                return 1;
+             }
+        }
+    }
+
+    return 0;
 }
 
 
@@ -649,7 +649,7 @@ static int roadmap_street_get_distance_with_shape
    int smallest_distance;
    RoadMapNeighbour current;
    int fips = roadmap_locator_active();
-	int square = roadmap_square_active ();
+    int square = roadmap_square_active ();
 
    roadmap_plugin_set_line
       (&current.line, ROADMAP_PLUGIN_ID, line, cfcc, square, fips);
@@ -726,7 +726,7 @@ static int roadmap_street_get_distance_no_shape
           ROADMAP_PLUGIN_ID,
           line,
           cfcc,
-			 roadmap_square_active (),
+             roadmap_square_active (),
           roadmap_locator_active ());
 
       return 1;
@@ -749,16 +749,16 @@ int roadmap_street_replace
       }
    }
 
-	/* keep the list sorted */
-	for (i = count; i > 0 && neighbours[i - 1].distance > this->distance; i--) {
-		if (i < max) {
-			neighbours[i] = neighbours[i - 1];
-		}	
-	}
-	
-	if (i < max) neighbours[i] = *this;
-	
-	return count < max ? count + 1 : max;
+    /* keep the list sorted */
+    for (i = count; i > 0 && neighbours[i - 1].distance > this->distance; i--) {
+        if (i < max) {
+            neighbours[i] = neighbours[i - 1];
+        }
+    }
+
+    if (i < max) neighbours[i] = *this;
+
+    return count < max ? count + 1 : max;
 }
 
 
@@ -785,26 +785,26 @@ static int roadmap_street_get_distance_from_line
 
 static int roadmap_street_check_distance (const PluginLine *line, void *context, int extend_flags) {
 
-	RoadMapStreetSearch *street_search = (RoadMapStreetSearch *)context;
-	RoadMapNeighbour	  neighbour;
-	
-	roadmap_square_set_current (line->square);
-	if (roadmap_street_get_distance_from_line (street_search->position,
-															 line->line_id,
-															 street_search->cfcc,
-															 &neighbour)) {
-															 	
-		if (street_search->rc == 0 ||
-			 street_search->result->distance > neighbour.distance) {
-		
-			*street_search->result = neighbour;
-			street_search->result->line.square = line->square;
-			street_search->result->line.line_id = line->line_id;
-			street_search->rc = 1;	 	
-		}
-	}
-	
-	return 1;
+    RoadMapStreetSearch *street_search = (RoadMapStreetSearch *)context;
+    RoadMapNeighbour      neighbour;
+
+    roadmap_square_set_current (line->square);
+    if (roadmap_street_get_distance_from_line (street_search->position,
+                                                             line->line_id,
+                                                             street_search->cfcc,
+                                                             &neighbour)) {
+
+        if (street_search->rc == 0 ||
+             street_search->result->distance > neighbour.distance) {
+
+            *street_search->result = neighbour;
+            street_search->result->line.square = line->square;
+            street_search->result->line.line_id = line->line_id;
+            street_search->rc = 1;
+        }
+    }
+
+    return 1;
 }
 
 
@@ -812,27 +812,27 @@ int roadmap_street_get_distance
         (const RoadMapPosition *position, int line, int cfcc,
          RoadMapNeighbour *result) {
 
-	
-	RoadMapStreetSearch		street_search;
-	PluginLine					search_line;
-	
-	street_search.rc = 0;
-	street_search.result = result;
-	street_search.cfcc = cfcc;
-	street_search.position = position;
-	
-	search_line.plugin_id = ROADMAP_PLUGIN_ID;
-	search_line.square = roadmap_square_active ();
-	search_line.line_id = line;
-	
-	roadmap_street_check_distance (&search_line, &street_search, 0);
-	roadmap_street_extend_line_ends (&search_line, NULL, NULL, FLAG_EXTEND_BOTH, 
-												  roadmap_street_check_distance, &street_search); 
-	
-	return street_search.rc;
+
+    RoadMapStreetSearch     street_search;
+    PluginLine                  search_line;
+
+    street_search.rc = 0;
+    street_search.result = result;
+    street_search.cfcc = cfcc;
+    street_search.position = position;
+
+    search_line.plugin_id = ROADMAP_PLUGIN_ID;
+    search_line.square = roadmap_square_active ();
+    search_line.line_id = line;
+
+    roadmap_street_check_distance (&search_line, &street_search, 0);
+    roadmap_street_extend_line_ends (&search_line, NULL, NULL, FLAG_EXTEND_BOTH,
+                                                  roadmap_street_check_distance, &street_search);
+
+    return street_search.rc;
 }
 
-        
+
 static int roadmap_street_get_closest_in_square
               (const RoadMapPosition *position, int square, int cfcc,
                RoadMapNeighbour *neighbours, int count, int max) {
@@ -854,7 +854,7 @@ static int roadmap_street_get_closest_in_square
       if (roadmap_square_has_shapes (square)) {
 
          for (line = first_line; line <= last_line; line++) {
-            
+
             if (roadmap_plugin_override_line (line, cfcc, fips)) continue;
 
             if (roadmap_line_shapes (line, &first_shape, &last_shape) > 0) {
@@ -920,9 +920,9 @@ int roadmap_street_get_closest
 
       /* -- Look for the square the current location fits in. */
 
-		count_squares = roadmap_square_find_neighbours (position, scale, square);
-		for (j = 0; j < count_squares; j++) {
-	      
+        count_squares = roadmap_square_find_neighbours (position, scale, square);
+        for (j = 0; j < count_squares; j++) {
+
       /* The current location fits in one of the county's squares.
        * We might be in that county, search for the closest streets.
        */
@@ -931,8 +931,8 @@ int roadmap_street_get_closest
             count =
                roadmap_street_get_closest_in_square
                   (position, square[j], categories[i], neighbours, count, max);
-			}
-		}
+            }
+        }
    }
 
    return count;
@@ -983,7 +983,7 @@ static int roadmap_street_check_other_side (int street,
    if (HAS_CONTINUATION ((range + first_range))) {
       first_range++;
    }
-   
+
    first_range++;
 
    if (first_range >= range_end) return -1;
@@ -998,7 +998,7 @@ static int roadmap_street_check_other_side (int street,
 #if 0
 static void roadmap_street_extract_range (int range_index,
                                           RoadMapStreetRange *range) {
-   
+
    RoadMapRange *this_address =
       &(RoadMapRangeActive->RoadMapAddr[range_index]);
 
@@ -1023,12 +1023,12 @@ static int roadmap_street_get_city (int street/*, int range*/) {
 
    int i;
 
-	if (street == -1) return -1;
-	
-	//todo: binary search
-   for (i = RoadMapStreetActive->RoadMapCitiesCount; i >= 0 && 
-   		RoadMapStreetActive->RoadMapCities[i].first_street > street; i--)
-   		;
+    if (street == -1) return -1;
+
+    //todo: binary search
+   for (i = RoadMapStreetActive->RoadMapCitiesCount; i >= 0 &&
+        RoadMapStreetActive->RoadMapCities[i].first_street > street; i--)
+        ;
 
    return RoadMapStreetActive->RoadMapCities[i].city;
 }
@@ -1275,7 +1275,7 @@ int roadmap_street_intersection (const char *state,
                                  int count) {
 
 #if 1
-	  return 0;
+      return 0;
 #else
    static int *fips = NULL;
 
@@ -1324,7 +1324,7 @@ void roadmap_street_get_properties
    if (RoadMapStreetActive == NULL) return;
 
    roadmap_range_get_address (range, &properties->first_range, &properties->second_range);
-   
+
    street = roadmap_range_get_street (range);
    properties->city = roadmap_street_get_city (street);
    properties->street = street;
@@ -1340,15 +1340,15 @@ void roadmap_street_get_street (int line, RoadMapStreetProperties *properties) {
 
 
 static void roadmap_street_append (char *name, int max_size, char *item) {
-    
-	if (item != NULL && item[0] != 0) {
-   	int len;
-   	
+
+    if (item != NULL && item[0] != 0) {
+    int len;
+
         //strcat (name, item);
-   	len = strlen (name);
+    len = strlen (name);
       strncpy_safe (name + len, item, max_size - len);
         //strcat (name, " ");
-   	len = strlen (name);
+    len = strlen (name);
       strncpy_safe (name + len, " ", max_size - len);
    }
 }
@@ -1362,19 +1362,19 @@ const char *roadmap_street_get_street_address
     int max = 0;
 
     if (properties->first_range.fradd == -1 &&
-    	  properties->second_range.fradd == -1) {
+          properties->second_range.fradd == -1) {
         return "";
     }
 
     if (properties->first_range.fradd != -1) {
 
-	    if (properties->first_range.fradd > properties->first_range.toadd) {
-	       min = properties->first_range.toadd;
-	       max = properties->first_range.fradd;
-	    } else {
-	       min = properties->first_range.fradd;
-	       max = properties->first_range.toadd;
-	    }
+        if (properties->first_range.fradd > properties->first_range.toadd) {
+           min = properties->first_range.toadd;
+           max = properties->first_range.fradd;
+        } else {
+           min = properties->first_range.fradd;
+           max = properties->first_range.toadd;
+        }
     }
 
     if (properties->second_range.fradd != -1) {
@@ -1407,32 +1407,32 @@ static const char *roadmap_street_get_street_name_from_id
     char *p;
     RoadMapStreet *this_street;
 
-    
+
     if (street < 0) {
 
         return "";
     }
-    
+
     this_street =
         RoadMapStreetActive->RoadMapStreets + street;
-    
+
     RoadMapStreetName[0] = 0;
 
     roadmap_street_append
         (RoadMapStreetName, sizeof (RoadMapStreetName),
          roadmap_dictionary_get
             (RoadMapStreetActive->RoadMapStreetPrefix, this_street->fedirp));
-        
+
     roadmap_street_append
         (RoadMapStreetName, sizeof (RoadMapStreetName),
          roadmap_dictionary_get
             (RoadMapStreetActive->RoadMapStreetNames, this_street->fename));
-        
+
     roadmap_street_append
         (RoadMapStreetName, sizeof (RoadMapStreetName),
          roadmap_dictionary_get
             (RoadMapStreetActive->RoadMapStreetType, this_street->fetype));
-        
+
     roadmap_street_append
         (RoadMapStreetName, sizeof (RoadMapStreetName),
          roadmap_dictionary_get
@@ -1452,18 +1452,18 @@ static const char *roadmap_street_get_street_name_from_id
 const char *roadmap_street_get_street_name
                 (const RoadMapStreetProperties *properties) {
 
-	return roadmap_street_get_street_name_from_id (properties->street); 
+    return roadmap_street_get_street_name_from_id (properties->street);
 }
 
 
 const char *roadmap_street_get_city_name
                 (const RoadMapStreetProperties *properties) {
-    
+
    if (RoadMapStreetActive == NULL) return 0;
 
-	if (properties->city == (RoadMapString)-1) {
-	 	return "";
-	}
+    if (properties->city == (RoadMapString)-1) {
+        return "";
+    }
    return roadmap_dictionary_get
                 (RoadMapStreetActive->RoadMapCityNames, properties->city);
 }
@@ -1471,7 +1471,7 @@ const char *roadmap_street_get_city_name
 
 const char *roadmap_street_get_full_name
                 (const RoadMapStreetProperties *properties) {
-    
+
     static char RoadMapStreetName [512];
 
     const char *address;
@@ -1488,7 +1488,7 @@ const char *roadmap_street_get_full_name
     } else {
        city = "";
     }
-    
+
     snprintf (RoadMapStreetName, sizeof(RoadMapStreetName),
               "%s%s%s%s%s",
               address,
@@ -1496,7 +1496,7 @@ const char *roadmap_street_get_full_name
               roadmap_street_get_street_name (properties),
               (city[0])? ", " : "",
               city);
-    
+
     return RoadMapStreetName;
 }
 
@@ -1510,10 +1510,10 @@ const char *roadmap_street_get_street_fename
 
         return "";
     }
-    
+
     this_street =
         RoadMapStreetActive->RoadMapStreets + properties->street;
-    
+
     return
          roadmap_dictionary_get
             (RoadMapStreetActive->RoadMapStreetNames, this_street->fename);
@@ -1529,10 +1529,10 @@ const char *roadmap_street_get_street_fetype
 
         return "";
     }
-    
+
     this_street =
         RoadMapStreetActive->RoadMapStreets + properties->street;
-    
+
     return
          roadmap_dictionary_get
             (RoadMapStreetActive->RoadMapStreetType, this_street->fetype);
@@ -1541,17 +1541,17 @@ const char *roadmap_street_get_street_fetype
 
 const char *roadmap_street_get_street_fedirs
                 (const RoadMapStreetProperties *properties) {
-                
+
     RoadMapStreet *this_street;
 
     if (properties->street < 0) {
 
         return "";
     }
-    
+
     this_street =
         RoadMapStreetActive->RoadMapStreets + properties->street;
-    
+
     return
          roadmap_dictionary_get
             (RoadMapStreetActive->RoadMapStreetType, this_street->fedirs);
@@ -1560,17 +1560,17 @@ const char *roadmap_street_get_street_fedirs
 
 const char *roadmap_street_get_street_fedirp
                 (const RoadMapStreetProperties *properties) {
-                
+
     RoadMapStreet *this_street;
 
     if (properties->street < 0) {
 
         return "";
     }
-    
+
     this_street =
         RoadMapStreetActive->RoadMapStreets + properties->street;
-    
+
     return
          roadmap_dictionary_get
             (RoadMapStreetActive->RoadMapStreetType, this_street->fedirp);
@@ -1590,7 +1590,7 @@ const char *roadmap_street_get_street_t2s
     if (properties->street < 0) {
         return "";
     }
-    
+
     this_street =
         RoadMapStreetActive->RoadMapStreets + properties->street;
 
@@ -1623,7 +1623,7 @@ void roadmap_street_get_street_range
    if (range == 1) {
       *from = properties->first_range.fradd;
       *to = properties->first_range.toadd;
-      
+
    } else if (range == 2) {
       *from = properties->second_range.fradd;
       *to = properties->second_range.toadd;
@@ -1635,78 +1635,78 @@ void roadmap_street_get_street_range
 
 
 static const char *roadmap_street_get_name_string (int search_city, int city, int street) {
-	static char full_name[512];
-	
-	if (search_city < 0) {
-		snprintf (full_name, sizeof (full_name), "%s, %s", 
-					roadmap_street_get_street_name_from_id (street), 
-					roadmap_dictionary_get
-               	(RoadMapStreetActive->RoadMapCityNames, 
-               	 RoadMapStreetActive->RoadMapCities[city].city));
-	} else {
-		strncpy_safe (full_name, roadmap_street_get_street_name_from_id (street), sizeof (full_name));
-	}
-	
-	return full_name;
+    static char full_name[512];
+
+    if (search_city < 0) {
+        snprintf (full_name, sizeof (full_name), "%s, %s",
+                    roadmap_street_get_street_name_from_id (street),
+                    roadmap_dictionary_get
+                (RoadMapStreetActive->RoadMapCityNames,
+                 RoadMapStreetActive->RoadMapCities[city].city));
+    } else {
+        strncpy_safe (full_name, roadmap_street_get_street_name_from_id (street), sizeof (full_name));
+    }
+
+    return full_name;
 }
 
 
 int roadmap_street_search (const char *city, const char *str,
-									int max_results,
+                                    int max_results,
                            RoadMapDictionaryCB cb,
                            void *data) {
 
    int index = roadmap_city_find (strlen (city) ? city : NULL);
-	RoadMapCityEntry entry;
-	const RoadMapCityId *id;
-	int from;
-	int to;
-	int street;
-	int prev;
-	
+    RoadMapCityEntry entry;
+    const RoadMapCityId *id;
+    int from;
+    int to;
+    int street;
+    int prev;
+
    RoadMapStreetSearchCount = 0;
 
-	id = roadmap_city_first (index, &entry);
-	while (id) {
-		
-		roadmap_square_set_current (id->square_id);
-		from = RoadMapStreetActive->RoadMapCities[id->city_id].first_street;
-		to = RoadMapStreetActive->RoadMapCities[id->city_id + 1].first_street;
-		
-		for (street = from; street < to; street++) {
+    id = roadmap_city_first (index, &entry);
+    while (id) {
 
-			const char *name = roadmap_street_get_street_name_from_id (street);
-			if (name && roadmap_string_is_sub_ignore_case (name, str)) {
-				
-				if (index < 0) {
-					name = roadmap_street_get_name_string (index, id->city_id, street);
-				}
-				
-				for (prev = RoadMapStreetSearchCount - 1; prev >= 0; prev--) {
-					if (!strcmp (RoadMapStreetSearchNames[prev], name))
-						break;
-				}
-				if (prev >= 0) continue;
-				
-		      if (RoadMapStreetSearchNames[RoadMapStreetSearchCount]) {
-		         free (RoadMapStreetSearchNames[RoadMapStreetSearchCount]);
-		      }
-		      RoadMapStreetSearchNames[RoadMapStreetSearchCount] = strdup(name);
-				if (cb) {
-		      	if (!(*cb) (street, RoadMapStreetSearchNames[RoadMapStreetSearchCount], data)) {
-		      		return RoadMapStreetSearchCount;
-		      	}
-				}
-				RoadMapStreetSearchCount++;
-		      if (RoadMapStreetSearchCount == MAX_SEARCH_NAMES ||
-		      	 RoadMapStreetSearchCount == max_results) {
-		      	return RoadMapStreetSearchCount;
-		      }
-			}
-		}
-		
-		id = roadmap_city_next (index, &entry);
-	}
+        roadmap_square_set_current (id->square_id);
+        from = RoadMapStreetActive->RoadMapCities[id->city_id].first_street;
+        to = RoadMapStreetActive->RoadMapCities[id->city_id + 1].first_street;
+
+        for (street = from; street < to; street++) {
+
+            const char *name = roadmap_street_get_street_name_from_id (street);
+            if (name && roadmap_string_is_sub_ignore_case (name, str)) {
+
+                if (index < 0) {
+                    name = roadmap_street_get_name_string (index, id->city_id, street);
+                }
+
+                for (prev = RoadMapStreetSearchCount - 1; prev >= 0; prev--) {
+                    if (!strcmp (RoadMapStreetSearchNames[prev], name))
+                        break;
+                }
+                if (prev >= 0) continue;
+
+              if (RoadMapStreetSearchNames[RoadMapStreetSearchCount]) {
+                 free (RoadMapStreetSearchNames[RoadMapStreetSearchCount]);
+              }
+              RoadMapStreetSearchNames[RoadMapStreetSearchCount] = strdup(name);
+                if (cb) {
+                if (!(*cb) (street, RoadMapStreetSearchNames[RoadMapStreetSearchCount], data)) {
+                    return RoadMapStreetSearchCount;
+                }
+                }
+                RoadMapStreetSearchCount++;
+              if (RoadMapStreetSearchCount == MAX_SEARCH_NAMES ||
+                 RoadMapStreetSearchCount == max_results) {
+                return RoadMapStreetSearchCount;
+              }
+            }
+        }
+
+        id = roadmap_city_next (index, &entry);
+    }
 
    return RoadMapStreetSearchCount;
 }
@@ -1714,26 +1714,26 @@ int roadmap_street_search (const char *city, const char *str,
 int roadmap_street_search_city (const char *str, RoadMapDictionaryCB cb,
                                 void *data) {
 
-	return roadmap_city_search (str, cb, data);
+    return roadmap_city_search (str, cb, data);
 }
 
 
 void roadmap_street_update_city_index (void) {
 
-	int index;
-	
-	for (index = 0; index < RoadMapStreetActive->RoadMapCitiesCount; index++) {
-		roadmap_city_add (roadmap_dictionary_get
-                			(RoadMapStreetActive->RoadMapCityNames, 
-                			 RoadMapStreetActive->RoadMapCities[index].city),
-                			roadmap_square_active (), index);
-	}
+    int index;
+
+    for (index = 0; index < RoadMapStreetActive->RoadMapCitiesCount; index++) {
+        roadmap_city_add (roadmap_dictionary_get
+                            (RoadMapStreetActive->RoadMapCityNames,
+                             RoadMapStreetActive->RoadMapCities[index].city),
+                            roadmap_square_active (), index);
+    }
 }
 
 
 static int roadmap_street_find_line_cont (int line, int scale, int extend_from,
-												 const char *name, int route, int max_dist,
-												 int *cont_square, int *cont_line) {
+                                                 const char *name, int route, int max_dist,
+                                                 int *cont_square, int *cont_line) {
 
    int edge;
    int square;
@@ -1747,139 +1747,139 @@ static int roadmap_street_find_line_cont (int line, int scale, int extend_from,
    int best_dist = max_dist + 1;
    RoadMapStreetProperties street;
 
-	if (extend_from) {
-		roadmap_line_from (line, &pos);
-	} else {
-		roadmap_line_to (line, &pos);
-	}
-	
-	edge = roadmap_square_cross_pos (&pos);
-	if (edge >= 0) {
-   	square = roadmap_square_search (&pos, scale);
-   	if (square != ROADMAP_SQUARE_GLOBAL) {
-   		roadmap_square_set_current (square);
-   		if (roadmap_line_broken_range (edge, extend_from, &first_broken, &last_broken)) {
-   			for (broken_id = first_broken; broken_id <= last_broken; broken_id++) {
-   				broken_line = roadmap_line_get_broken (broken_id);
-   				if (extend_from) {
-   					roadmap_line_to (broken_line, &new_pos);
-   				} else {
-   					roadmap_line_from (broken_line, &new_pos);
-   				}
-   				if (edge == ROADMAP_DIRECTION_NORTH || edge == ROADMAP_DIRECTION_SOUTH) {
-   					dist = new_pos.longitude - pos.longitude;
-   				} else {
-   					dist = new_pos.latitude - pos.latitude;
-   				}
-   				if (dist < 0) dist = -dist;
-   				if (dist >= best_dist) continue;
-   				
-				   roadmap_street_get_properties (broken_line, &street);
-				   route = roadmap_line_route_get_direction (broken_line, ROUTE_DIRECTION_ANY);
-				   if (route == roadmap_line_route_get_direction (broken_line, ROUTE_DIRECTION_ANY) &&
-				   	 !strcmp (name, roadmap_street_get_full_name (&street))) {
-				   	*cont_square = square;
-				   	*cont_line = broken_line;
-				   	best_dist = dist;
-				   }
-   				
-   			}
-   		}
-   	}
+    if (extend_from) {
+        roadmap_line_from (line, &pos);
+    } else {
+        roadmap_line_to (line, &pos);
+    }
+
+    edge = roadmap_square_cross_pos (&pos);
+    if (edge >= 0) {
+    square = roadmap_square_search (&pos, scale);
+    if (square != ROADMAP_SQUARE_GLOBAL) {
+        roadmap_square_set_current (square);
+        if (roadmap_line_broken_range (edge, extend_from, &first_broken, &last_broken)) {
+            for (broken_id = first_broken; broken_id <= last_broken; broken_id++) {
+                broken_line = roadmap_line_get_broken (broken_id);
+                if (extend_from) {
+                    roadmap_line_to (broken_line, &new_pos);
+                } else {
+                    roadmap_line_from (broken_line, &new_pos);
+                }
+                if (edge == ROADMAP_DIRECTION_NORTH || edge == ROADMAP_DIRECTION_SOUTH) {
+                    dist = new_pos.longitude - pos.longitude;
+                } else {
+                    dist = new_pos.latitude - pos.latitude;
+                }
+                if (dist < 0) dist = -dist;
+                if (dist >= best_dist) continue;
+
+                   roadmap_street_get_properties (broken_line, &street);
+                   route = roadmap_line_route_get_direction (broken_line, ROUTE_DIRECTION_ANY);
+                   if (route == roadmap_line_route_get_direction (broken_line, ROUTE_DIRECTION_ANY) &&
+                     !strcmp (name, roadmap_street_get_full_name (&street))) {
+                    *cont_square = square;
+                    *cont_line = broken_line;
+                    best_dist = dist;
+                   }
+
+            }
+        }
+    }
    }
-	  
-	return best_dist <= max_dist;    
+
+    return best_dist <= max_dist;
 }
 
 
-int roadmap_street_extend_line_ends 
-			(const PluginLine *line, RoadMapPosition *from, RoadMapPosition *to,
-			 int flags, RoadMapStreetIterCB cb, void *context) {
+int roadmap_street_extend_line_ends
+            (const PluginLine *line, RoadMapPosition *from, RoadMapPosition *to,
+             int flags, RoadMapStreetIterCB cb, void *context) {
 
-	PluginLine line_ext;
-	RoadMapPosition pos;
+    PluginLine line_ext;
+    RoadMapPosition pos;
    int count = 0;
    char name[512];
    RoadMapStreetProperties street;
    int route = 0;
    int filled_props = 0;
    int scale;
-	
-	if (from) roadmap_plugin_line_from (line, from);
-	if (to) roadmap_plugin_line_to (line, to);
 
-	if (line->plugin_id != ROADMAP_PLUGIN_ID) return 0;
-	
-	line_ext = *line;
-	roadmap_square_set_current (line->square);
-	scale = roadmap_square_scale (line->square);
+    if (from) roadmap_plugin_line_from (line, from);
+    if (to) roadmap_plugin_line_to (line, to);
 
-	if (flags & FLAG_EXTEND_FROM) {
-	   while (roadmap_line_from_is_fake (line_ext.line_id)) {
+    if (line->plugin_id != ROADMAP_PLUGIN_ID) return 0;
 
-	   	if (!filled_props) {
-			   roadmap_square_set_current (line_ext.square);
-			   roadmap_street_get_properties (line_ext.line_id, &street);
-			   strncpy_safe (name, roadmap_street_get_full_name (&street), 512);
-			   route = roadmap_line_route_get_direction (line_ext.line_id, ROUTE_DIRECTION_ANY);
-			   filled_props = 1;
-	   	}
-	   	
-	   	if (!roadmap_street_find_line_cont (line_ext.line_id, scale, 1, name, route, 16,
-	   													  &line_ext.square, &line_ext.line_id)) {
-	         break;
-	      }
-	      if (roadmap_plugin_same_line (line, &line_ext)) {
-	      	return count;
-	      }
-	      count++;
-	      if (from) roadmap_plugin_line_from (&line_ext, from);
-	      if (cb) {
-	      	if (cb (&line_ext, context, FLAG_EXTEND_FROM)) break;
-	      } 
-	
-	      roadmap_square_set_current (line_ext.square);
-	   }
-	
-		line_ext = *line;
-	   roadmap_square_set_current (line_ext.square);
-	}
+    line_ext = *line;
+    roadmap_square_set_current (line->square);
+    scale = roadmap_square_scale (line->square);
 
-	if (flags & FLAG_EXTEND_TO) {
-	   while (roadmap_line_to_is_fake (line_ext.line_id)) {
+    if (flags & FLAG_EXTEND_FROM) {
+       while (roadmap_line_from_is_fake (line_ext.line_id)) {
 
-	   	if (!filled_props) {
-			   roadmap_square_set_current (line_ext.square);
-			   roadmap_street_get_properties (line_ext.line_id, &street);
-			   strncpy_safe (name, roadmap_street_get_full_name (&street), 512);
-			   route = roadmap_line_route_get_direction (line_ext.line_id, ROUTE_DIRECTION_ANY);
-			   filled_props = 1;
-	   	}
-	   	
-	      roadmap_line_to (line_ext.line_id, &pos);
-	      roadmap_square_cross_pos (&pos);
-	   	if (!roadmap_street_find_line_cont (line_ext.line_id, scale, 0, name, route, 16,
-	   													  &line_ext.square, &line_ext.line_id)) {
-	         break;
-	      }
-	      if (roadmap_plugin_same_line (line, &line_ext)) {
-	      	return count;
-	      }
-	      count++;
-	      if (to) roadmap_plugin_line_to (&line_ext, to);
-	      if (cb) {
-	      	if (cb (&line_ext, context, FLAG_EXTEND_TO)) break;
-	      }
-	
-	      roadmap_square_set_current (line_ext.square);
-	   }
-	}
+        if (!filled_props) {
+               roadmap_square_set_current (line_ext.square);
+               roadmap_street_get_properties (line_ext.line_id, &street);
+               strncpy_safe (name, roadmap_street_get_full_name (&street), 512);
+               route = roadmap_line_route_get_direction (line_ext.line_id, ROUTE_DIRECTION_ANY);
+               filled_props = 1;
+        }
 
-	return count;
+        if (!roadmap_street_find_line_cont (line_ext.line_id, scale, 1, name, route, 16,
+                                                          &line_ext.square, &line_ext.line_id)) {
+             break;
+          }
+          if (roadmap_plugin_same_line (line, &line_ext)) {
+            return count;
+          }
+          count++;
+          if (from) roadmap_plugin_line_from (&line_ext, from);
+          if (cb) {
+            if (cb (&line_ext, context, FLAG_EXTEND_FROM)) break;
+          }
+
+          roadmap_square_set_current (line_ext.square);
+       }
+
+        line_ext = *line;
+       roadmap_square_set_current (line_ext.square);
+    }
+
+    if (flags & FLAG_EXTEND_TO) {
+       while (roadmap_line_to_is_fake (line_ext.line_id)) {
+
+        if (!filled_props) {
+               roadmap_square_set_current (line_ext.square);
+               roadmap_street_get_properties (line_ext.line_id, &street);
+               strncpy_safe (name, roadmap_street_get_full_name (&street), 512);
+               route = roadmap_line_route_get_direction (line_ext.line_id, ROUTE_DIRECTION_ANY);
+               filled_props = 1;
+        }
+
+          roadmap_line_to (line_ext.line_id, &pos);
+          roadmap_square_cross_pos (&pos);
+        if (!roadmap_street_find_line_cont (line_ext.line_id, scale, 0, name, route, 16,
+                                                          &line_ext.square, &line_ext.line_id)) {
+             break;
+          }
+          if (roadmap_plugin_same_line (line, &line_ext)) {
+            return count;
+          }
+          count++;
+          if (to) roadmap_plugin_line_to (&line_ext, to);
+          if (cb) {
+            if (cb (&line_ext, context, FLAG_EXTEND_TO)) break;
+          }
+
+          roadmap_square_set_current (line_ext.square);
+       }
+    }
+
+    return count;
 }
 
 
 int roadmap_street_line_has_predecessor (PluginLine *line) {
-	
-	return roadmap_street_extend_line_ends (line, NULL, NULL, FLAG_EXTEND_FROM, NULL, NULL);
+
+    return roadmap_street_extend_line_ends (line, NULL, NULL, FLAG_EXTEND_FROM, NULL, NULL);
 }

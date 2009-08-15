@@ -69,7 +69,7 @@ typedef struct {
 int roadmap_navigate_get_neighbours
               (const RoadMapPosition *position, int scale, int accuracy,
                RoadMapNeighbour *neighbours, int max, int type);
-               
+
 void roadmap_navigate_disable (void);
 void roadmap_navigate_enable  (void);
 
@@ -98,8 +98,8 @@ int roadmap_navigate_fuzzify
 int roadmap_navigate_get_current (RoadMapGpsPosition *position,
                                   PluginLine *line,
                                   int *direction);
-                                  
-void roadmap_navigate_check_alerts (void);                                  
+
+void roadmap_navigate_check_alerts (void);
 
 void roadmap_navigate_route (RoadMapNavigateRouteCB callbacks);
 void roadmap_navigate_end_route (void);
