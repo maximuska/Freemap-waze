@@ -39,6 +39,13 @@ MACRO USE_FRIBIDI
 MACRO SIMPLE_SCREEN
 MACRO SSD
 MACRO GPS_INTERNAL
+
+MACRO TOUCH_SCREEN
+#define TOUCH_SCREEN
+OPTION CW       -gccext on                      
+OPTION CW       -dialect c99
+
+
 //MACRO GPS_BLUETOOTH
 
 USERINCLUDE	   	..
@@ -95,6 +102,10 @@ LIBRARY			estlib.lib	//	Symbian STDLIB
 LIBRARY			apgrfx.lib // Open browser
 LIBRARY 	   	ptiengine.lib // Qwerty API
 LIBRARY 	   	featdiscovery.lib	// Phone Features
+
+#ifdef TOUCH_SCREEN
+LIBRARY         touchfeedback.lib
+#endif
   
 //LIBRARY        libc.lib libm.lib		//@@ OPENC
 
