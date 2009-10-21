@@ -285,13 +285,13 @@ static struct dictionary_volume *
          											  struct dictionary_volume *first) {
 
    struct dictionary_volume *dictionary;
-   char *data;
+   void *data;
    int size;
    
    if (!roadmap_db_get_data (file,
    								  id,
    								  sizeof (char),
-   								  (void **)&data,
+   								  &data,
    								  &size)) {
    
    	roadmap_log (ROADMAP_ERROR, "invalid dictionary structure");

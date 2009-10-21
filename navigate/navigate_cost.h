@@ -28,6 +28,10 @@
 #define COST_FASTEST 1
 #define COST_SHORTEST 2
 
+#define AVOID_TRAILS_NONE	0
+#define AVOID_TRAILS_ALL	1
+#define AVOID_TRAILS_LONG	2
+
 // Context menu:
 typedef enum navigate_context_menu_items
 {
@@ -53,6 +57,11 @@ int navigate_cost_time (int line_id, int is_reversed, int cur_cost,
 void navigate_cost_initialize (void);
 
 int navigate_cost_type (void);
-
+int navigate_cost_use_traffic (void);
+int navigate_cost_prefer_same_street (void);
+int navigate_cost_avoid_primaries (void);
+int navigate_cost_avoid_trails (void);
+int navigate_cost_allow_unknowns (void);
+int navigate_cost_avoid_toll_roads(void);
 #endif /* _NAVIGATE_COST_H_ */
 

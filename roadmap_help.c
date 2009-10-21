@@ -203,8 +203,6 @@ int roadmap_help_next_topic (const char **label,
    return roadmap_help_get_topic(label, callback);
 }
 
-void roadmap_help_menu(void){
-}
 
 void roadmap_open_help(void){
 #if defined (_WIN32) || defined (__SYMBIAN32__)

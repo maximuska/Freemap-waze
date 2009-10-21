@@ -93,12 +93,6 @@ void ssd_tabcontrol_set_title( SsdTcCtx tcx, const char* title)
    tci->dialog->set_value( tci->dialog, title);
 }
 
-static const char* get_active_tab_text( SsdTcCtx tcx)
-{ 
-   tabcontrol_info_ptr tci = tcx;
-   return tci->tabs[tci->active_tab].title;
-}
-
 SsdWidget ssd_tabcontrol_get_tab( SsdTcCtx tcx, int tab)
 {
    tabcontrol_info_ptr tci = tcx;
@@ -320,6 +314,8 @@ void ssd_tabcontrol_set_active_tab( SsdTcCtx tcx, int tab)
          tci->on_tab_gain_focus( tci->active_tab);
    }
    
+   ssd_widget_set_offset(tci->dialog,0,0);
+   ssd_widget_reset_position(tci->dialog);
    ssd_dialog_resort_tab_order ();
    update_tabsline( tci, cur_tab_id, new_tab_id);
 }
@@ -381,15 +377,21 @@ void on_dialog_closed( int exit_code, void* context)
 
 void ssd_tabcontrol_move_tab_left( SsdWidget dialog)
 {
-   SsdWidget            cnt = ssd_widget_get( dialog, CONTAINER_NAME);
-   tabcontrol_info_ptr  tci = cnt->context;
+   SsdWidget cnt;
+   tabcontrol_info_ptr  tci;
+   ssd_widget_set_offset(dialog,0,0);
+   cnt = ssd_widget_get( dialog, CONTAINER_NAME);
+   tci = cnt->context;
    move_one_tab_left(   tci);
 }
 
 void ssd_tabcontrol_move_tab_right( SsdWidget dialog)
 {
-   SsdWidget            cnt = ssd_widget_get( dialog, CONTAINER_NAME);
-   tabcontrol_info_ptr  tci = cnt->context;
+   SsdWidget cnt;
+   tabcontrol_info_ptr  tci;
+   ssd_widget_set_offset(dialog,0,0);
+   cnt = ssd_widget_get( dialog, CONTAINER_NAME);
+   tci = cnt->context;
    move_one_tab_right(  tci);
 }
 
@@ -451,21 +453,16 @@ void ssd_tabcontrol_show( SsdTcCtx tcx)
 {
    tabcontrol_info_ptr tci = tcx;
 
+   ssd_widget_set_offset(tci->dialog,0,0);
+   ssd_tabcontrol_set_active_tab ( tcx, tci->active_tab);
    ssd_dialog_activate( tci->dialog_name, tcx);
    ssd_dialog_draw();
-   
-   ssd_tabcontrol_set_active_tab ( tcx, tci->active_tab);
 }
 
 SsdWidget ssd_tabcontrol_get_dialog( SsdTcCtx tcx)
 {
    tabcontrol_info_ptr tci = tcx;
    return tci->dialog;
-}
-
-static int on_left_button( SsdWidget widget, const char *new_value)
-{ 
-   return 0;
 }
 
 static SsdSize* get_arrow_size()
@@ -507,8 +504,6 @@ static void calc_tabs_width( SsdWidget main_cont, tabsline_info_ptr tli, int* ta
 
 static void tabs_draw( SsdWidget this, RoadMapGuiRect *rect, int flags)
 {
-   static BOOL first_time_around = TRUE;
-   
    tabcontrol_info_ptr  tci = this->parent->context;
    SsdWidget            left_tab;
    SsdWidget            left_text;
@@ -636,6 +631,7 @@ static void create_tabs( tabcontrol_info_ptr tci)
    assert(LEFT_ARROW_IMAGES_COUNT==RIGHT_ARROW_IMAGES_COUNT);
    
    tci->tli.tabs_container = ssd_container_new(TABS_LINE__CONTAINER, "", SSD_MAX_SIZE,SSD_MIN_SIZE, SSD_END_ROW|SSD_CONTAINER_BORDER);
+   ssd_widget_set_color(tci->tli.tabs_container, NULL, NULL);
    tci->tli.tabs_container->draw= tabs_draw;
 
    left     = ssd_icon_create(TABS_LINE__LEFT_ARROW,  FALSE,0);
@@ -759,6 +755,7 @@ SsdTcCtx ssd_tabcontrol_new(  const char*             name,
                                     SSD_MAX_SIZE,
                                     SSD_MAX_SIZE,
                                     SSD_CONTAINER_BORDER);
+   ssd_widget_set_color(tc.container, NULL, NULL);
 
    tc.container->key_pressed  = OnKeyPressed;
 
@@ -782,4 +779,9 @@ SsdTcCtx ssd_tabcontrol_new(  const char*             name,
    }
 
    return tc_ptr;
+}
+
+int  ssd_tabcontrol_get_height(){
+   SsdSize *size = get_arrow_size();
+   return size->height;
 }

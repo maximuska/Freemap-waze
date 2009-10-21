@@ -34,8 +34,8 @@
 #define  TABS_LINE__RIGHT_TAB          ("tabcontrol.tabs.right.tab")
 #define  TABS_LINE__RIGHT_TAB_TEXT     ("tabcontrol.tabs.right.tab.text")
 #define  TABS_LINE__RIGHT_ARROW        ("tabcontrol.tabs.right.arrow")
-#define  SELECTED_TEXT_COLOR           ("#FFFFFF")
-#define  UNSELECTED_TEXT_COLOR         ("#ABABAB")
+#define  SELECTED_TEXT_COLOR           ("#000000")
+#define  UNSELECTED_TEXT_COLOR         ("#3a3a3a")
 #define  ICON_IMAGES                   tab_images
 #define  ICON_IMAGES_COUNT             (sizeof(tab_images)/sizeof(ssd_icon_wimage_set))
 #define  LEFT_ARROW_IMAGES             left_arrow_images

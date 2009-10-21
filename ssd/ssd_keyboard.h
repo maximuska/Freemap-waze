@@ -1,8 +1,9 @@
-/* ssd_keyboard.h - Full screen keyboard
+
+/* ssd_keyboard.h
  *
  * LICENSE:
  *
- *   Copyright 2006 Ehud Shabtai
+ *   Copyright 2009 PazO
  *
  *   This file is part of RoadMap.
  *
@@ -22,25 +23,39 @@
  *
  */
 
-#ifndef __SSD_KEYBOARD_H_
-#define __SSD_KEYBOARD_H_
- 
-#define SSD_KEYBOARD_LETTERS 1
-#define SSD_KEYBOARD_DIGITS  2
+#ifndef __SSD_KEYBOARD_H__
+#define __SSD_KEYBOARD_H__
 
-/* key types */
-#define SSD_KEYBOARD_OK    0x1
-#define SSD_KEYBOARD_EXTRA 0x2
+#include "ssd_keyboard_layout.h"
 
-#include "ssd_dialog.h"
+typedef enum tag_kb_layout_type
+{
+   qwerty_kb_layout,
+   grid_kb_layout,
+   widegrid_kb_layout
 
-typedef int (*SsdKeyboardCallback) (int type, const char *new_value, void *context);
+}  kb_layout_type;
 
-void ssd_keyboard_show (int type, const char *title, const char *value,
-                        const char *extra_key, SsdKeyboardCallback callback,
-                        void *context);
+typedef enum tag_kb_characters_set
+{
+   English_highcase,
+   English_lowcase,
+   Hebrew,
+   Nunbers_and_symbols
 
-void ssd_keyboard_hide (void);
-void ssd_keyboard_hide_all(void);
+}  kb_characters_set;
 
-#endif // __SSD_KEYBOARD_H_
+SsdWidget   ssd_create_keyboard( SsdWidget                  container,
+                                 CB_OnKeyboardButtonPressed cbOnKey,
+                                 CB_OnKeyboardCommand       cbOnSpecialButton,
+                                 const char*                special_button_name,
+                                 void*                      context);
+
+SsdWidget   ssd_get_keyboard( SsdWidget container);
+
+void        ssd_keyboard_set_grid_layout  ( SsdWidget kb);
+void        ssd_keyboard_set_qwerty_layout( SsdWidget kb);
+void        ssd_keyboard_set_charset      ( SsdWidget kb, kb_characters_set cset);
+void        ssd_keyboard_reset_state      ( SsdWidget kb);
+int 		ssd_keyboard_edit_box_top_offset( void );
+#endif // __SSD_KEYBOARD_H__

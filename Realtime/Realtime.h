@@ -23,15 +23,17 @@
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#include "Realtime/LMap_Base.h"
-#include "roadmap_gps.h"
-#include "roadmap_address.h"
-#include "roadmap.h"
+#include "../Realtime/LMap_Base.h"
+#include "../roadmap_gps.h"
+#include "../address_search/address_search.h"
+#include "../websvc_trans/websvc_trans.h"
+#include "../roadmap.h"
+#include "../roadmap_login.h"
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-typedef void(*PFN_LOGINTESTRES)( BOOL bDetailsVerified, int iErrorCode);
+typedef void(*PFN_LOGINTESTRES)( BOOL bDetailsVerified, roadmap_result rc);
 
 // Module initialization/termination   - Called once, when the process starts/terminates
 BOOL  Realtime_Initialize();
@@ -43,6 +45,8 @@ void  Realtime_Stop( BOOL bEnableLogout);
 
 void  Realtime_AbortTransaction( RoadMapCallback pfnOnTransAborted);
 void  Realtime_NotifyOnIdle    ( RoadMapCallback pfnOnTransIdle);
+//   Register for notification. Callback must call next in chain (in return value).
+RoadMapCallback  Realtime_NotifyOnLogin   ( RoadMapCallback pfnOnLogin);
 
 BOOL  Realtime_ServiceIsActive();
 BOOL  Realtime_IsInTransaction();
@@ -50,28 +54,81 @@ BOOL  Realtime_IsInTransaction();
 BOOL  Realtime_IsEnabled();
 
 BOOL  Realtime_SendCurrentViewDimentions();
-BOOL  Realtime_VerifyLoginDetails( PFN_LOGINTESTRES pfn);
+BOOL Realtime_VerifyLoginDetails( PFN_LOGINTESTRES pfn );
 
 BOOL  Realtime_ReportOnNavigation( const RoadMapPosition* cordinates, address_info_ptr ai);
+BOOL  Realtime_RequestRoute(int						iRoute,
+									int						iType,
+									int						iTripId,
+									int						iAltId,
+									int						nMaxRoutes,
+									int						nMaxSegments,
+									int						nMaxPoints,
+									RoadMapPosition		posFrom,
+									int						iFrSegmentId,
+									int						iFrNodeId[2],
+									const char*				szFrStreet,
+									BOOL						bFrAllowBidi,
+									RoadMapPosition		posTo,
+									int						iToSegmentId,
+									int						iToNodeId[2],
+									const char*				szToStreet,
+									BOOL						bToAllowBidi,
+									int						nOptions,
+									const int*				iOptionNumeral,
+									const BOOL*				bOptionValue,
+									BOOL						bReRoute);
+BOOL	Realtime_SelectRoute	(int							iRoute,
+								 	 int							iAltId);
 
-BOOL  Realtime_Report_Alert(int iAlertType, const char * szDescription, int iDirection);
+
+BOOL  Realtime_Report_Alert(int iAlertType, const char * szDescription, int iDirection, const char* szImageId, BOOL bForwardToTwitter );
 BOOL  Realtime_Alert_ReportAtLocation(int iAlertType, const char * szDescription, int iDirection, RoadMapGpsPosition   MyLocation);
 BOOL  Realtime_Remove_Alert(int iAlertId);
-BOOL  Realtime_Post_Alert_Comment(int iAlertId, const char * szCommentText);
+BOOL  Realtime_Post_Alert_Comment(int iAlertId, const char * szCommentText, BOOL bForwardToTwitter);
 BOOL  Realtime_StartSendingTrafficInfo(void);
 BOOL  Realtime_SendTrafficInfo(int mode);
 BOOL  Realtime_SendSMS(const char * szPhoneNumber);
-
+BOOL  Realtime_TwitterConnect(const char * userName, const char *passWord);
 BOOL  Realtime_Editor_ExportMarkers(PFN_LOGINTESTRES editor_cb);
 BOOL  Realtime_Editor_ExportSegments(PFN_LOGINTESTRES editor_cb);
 
+BOOL Realtime_TripServer_CreatePOI  (const char* name, RoadMapPosition* coordinates, BOOL overide);
+BOOL Realtime_TripServer_DeletePOI(const char * name);
+BOOL Realtime_TripServer_FindTrip (RoadMapPosition*     coordinates);
+
+BOOL Realtime_ReportMapProblem(const char*  szType, const char* szDescription, const RoadMapGpsPosition *MyLocation);
+BOOL Realtime_TrafficAlertFeedback(int iTrafficInfoId, int iValidity);
+BOOL Realtime_CreateAccount(const char* userName, const char* passWord,const char* email,BOOL send_updates);
+BOOL Realtime_UpdateProfile(const char* userName, const char* passWord,const char* email,BOOL send_updates);
+BOOL Realtime_is_random_user();
+void Realtime_set_random_user(BOOL is_random);
 void OnSettingsChanged_VisabilityGroup(void);
+BOOL Realtime_RandomUserRegister();
+void OnMoodChanged(void);
+void Realtime_SetLoginUsername( const char* username );
+void Realtime_SetLoginPassword( const char* pwd );
+void Realtime_SetLoginNickname( const char* nickname );
+void Realtime_LoginDetailsReset( void );
+void Realtime_LoginDetailsInit( void );
+void Realtime_SaveLoginInfo( void );
+BOOL Realtime_IsLoggedIn( void );
+void Realtime_Relogin(void);
 
 void	RealTime_Auth (void);
 void RecommentToFriend(void);
 
 int         RealTimeLoginState(void);
-const char* RealTime_Get_UserName();
+const char* RealTime_GetUserName();
+
+int RealTime_GetMyTotalPoints();
+int RealTime_GetMyRanking();
+
+void RealTime_SetMapDisplayed(BOOL should_send);
+
+BOOL Realtime_GetGeoConfig(const RoadMapPosition *pGPSPosition, wst_handle websvc);
+
+char* Realtime_GetServerCookie(void);
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 

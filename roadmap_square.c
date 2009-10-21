@@ -35,11 +35,14 @@
 #include <string.h>
 #include <ctype.h>
 
+#define DECLARE_ROADMAP_SQUARE
+
 #include "roadmap.h"
 #include "roadmap_math.h"
 #include "roadmap_dbread.h"
 #include "roadmap_tile_model.h"
 #include "roadmap_county_model.h"
+#include "roadmap_tile.h"
 #include "roadmap_db_square.h"
 #include "roadmap_point.h"
 #include "roadmap_shape.h"
@@ -55,6 +58,9 @@
 #include "roadmap_path.h"
 #include "roadmap_alert.h"
 #include "roadmap_metadata.h"
+#include "roadmap_hash.h"
+#include "roadmap_tile_manager.h"
+#include "roadmap_tile_status.h"
 
 #include "roadmap_square.h"
 
@@ -85,11 +91,16 @@ static RoadMapSquareSubHandler SquareHandlers[] = {
 typedef struct {
    RoadMapSquare        *square;
    void                 *subs[NUM_SUB_HANDLERS];
-   int						cache_slot;
+   int						attributes;
+	RoadMapArea 			edges;
 } RoadMapSquareData;
 
 
-#define ROADMAP_SQUARE_CACHE_SIZE	512
+#ifdef J2ME
+#define ROADMAP_SQUARE_CACHE_SIZE	64
+#else
+#define ROADMAP_SQUARE_CACHE_SIZE	4096
+#endif
 
 #define ROADMAP_SQUARE_UNAVAILABLE	((RoadMapSquareData *)-1)
 #define ROADMAP_SQUARE_NOT_LOADED	NULL
@@ -100,25 +111,25 @@ typedef struct {
 	int	prev;
 } SquareCacheNode;
 
-typedef struct {
+typedef struct RoadMapSquareContext_t {
 
    char *type;
 
-   RoadMapGrid     	*SquareGrid;
    RoadMapGlobal     *SquareGlobal;
-   RoadMapScale		*SquareScale;
    RoadMapSquareData **Square;
 
-	int					*SquareBaseIndex;
-	int					SquareRange;
 	SquareCacheNode	SquareCache[ROADMAP_SQUARE_CACHE_SIZE + 1];
+	RoadMapHash			*SquareHash;
 } RoadMapSquareContext;
 
 
-static RoadMapSquareContext *RoadMapSquareActive = NULL;
+RoadMapSquareContext *RoadMapSquareActive = NULL;
 
-static int RoadMapScaleCurrent = 0;
-static int RoadMapSquareCurrent = -1;
+int RoadMapScaleCurrent = 0;
+int RoadMapSquareCurrent = -1;
+static int RoadMapSquareCurrentSlot = -1;
+
+static int RoadMapSquareForceUpdateMode = 0;
 
 static void roadmap_square_unload_all (void);
 
@@ -127,12 +138,6 @@ static void *roadmap_square_map (const roadmap_db_data_file *file) {
    RoadMapSquareContext *context;
 
    int i;
-   int j;
-   int k;
-   int count;
-   int size;
-   char *grid_data;
-   int square_range;
 
 	roadmap_city_init ();
 	
@@ -151,77 +156,19 @@ static void *roadmap_square_map (const roadmap_db_data_file *file) {
       roadmap_log (ROADMAP_FATAL, "invalid global/data structure");
    }
 
-   if (!roadmap_db_get_data (file,
-   								  model__county_global_grid,
-   								  sizeof (RoadMapGrid),
-   								  (void**)&(context->SquareGrid),
-   								  NULL)) {
-      roadmap_log (ROADMAP_FATAL, "invalid global/grid structure");
-   }
-
-   if (!roadmap_db_get_data (file,
-   								  model__county_global_scale,
-   								  sizeof (RoadMapScale),
-   								  (void**)&(context->SquareScale),
-   								  NULL)) {
-      roadmap_log (ROADMAP_FATAL, "invalid global/scale structure");
-   }
-
-	context->SquareBaseIndex = (int *) malloc (context->SquareGrid->num_scales * sizeof (int));
-   roadmap_check_allocated(context->SquareBaseIndex);
-	
-	square_range = 0;
-	for (i = 0; i < context->SquareGrid->num_scales; i++) {
-		
-		context->SquareBaseIndex[i] = square_range;
-		
-	   square_range += context->SquareScale[i].count_longitude
-	              			* context->SquareScale[i].count_latitude;
-	}
-	context->SquareRange = square_range;              
-	
-   context->Square = calloc (square_range, sizeof (RoadMapSquareData *));
+   context->Square = calloc (ROADMAP_SQUARE_CACHE_SIZE, sizeof (RoadMapSquareData *));
    roadmap_check_allocated(context->Square);
 
-   if (!roadmap_db_get_data (file,
-   								  model__county_global_bitmask,
-   								  sizeof (char),
-   								  (void**)&(grid_data),
-   								  NULL)) {
-      roadmap_log (ROADMAP_FATAL, "invalid global/grid structure");
-   }
-
-	for (i = 0, k = 0; i < context->SquareGrid->num_scales; i++) {
-		
-	   count = context->SquareScale[i].count_longitude
-	              * context->SquareScale[i].count_latitude;
-	              
-	   size = (count + 7) / 8;
-	
-   	for (j = 0; j < count; j++, k++) {
-
-			if (grid_data[j / 8] & (1 << (j % 8))) {   			
-   			context->Square[k] = ROADMAP_SQUARE_NOT_LOADED;
-			} else {
-				context->Square[k] = ROADMAP_SQUARE_UNAVAILABLE;
-			}
-   	}
-   	
-   	grid_data += size;
-	}
-	
 	for (i = 0; i <= ROADMAP_SQUARE_CACHE_SIZE; i++) {
 		context->SquareCache[i].square = -1;
 		context->SquareCache[i].next = (i + 1) % (ROADMAP_SQUARE_CACHE_SIZE + 1);
 		context->SquareCache[i].prev = (i + ROADMAP_SQUARE_CACHE_SIZE) % (ROADMAP_SQUARE_CACHE_SIZE + 1);
 	}
 
-   RoadMapSquareCurrent = -1;
+	context->SquareHash = roadmap_hash_new ("tiles", ROADMAP_SQUARE_CACHE_SIZE); 
 	
-	if (RoadMapScaleCurrent >= RoadMapSquareActive->SquareGrid->num_scales) {
-		RoadMapScaleCurrent = RoadMapSquareActive->SquareGrid->num_scales - 1;
-	}
-   
+   RoadMapSquareCurrent = -1;
+
    RoadMapSquareActive = NULL;
    return context;
 }
@@ -236,9 +183,6 @@ static void roadmap_square_activate (void *context) {
    }
    RoadMapSquareActive = square_context;
    RoadMapSquareCurrent = -1;
-	if (RoadMapScaleCurrent >= RoadMapSquareActive->SquareGrid->num_scales) {
-		RoadMapScaleCurrent = RoadMapSquareActive->SquareGrid->num_scales - 1;
-	}
 }
 
 static void roadmap_square_unmap (void *context) {
@@ -258,7 +202,7 @@ static void roadmap_square_unmap (void *context) {
       RoadMapSquareActive = NULL;
    }
 
-   free (square_context->SquareBaseIndex);
+   roadmap_hash_free (square_context->SquareHash);
    free (square_context->Square);
    free (square_context);
 }
@@ -278,6 +222,29 @@ time_t	roadmap_square_global_timestamp (void) {
 }
 
 
+#define TIMESTAMP_SAFETY_MARGIN (3 * 60 * 60) 
+time_t	roadmap_square_timestamp (int square) {
+
+	if (RoadMapSquareActive == NULL) return 0;
+	
+	if (roadmap_square_set_current (square)) {
+		return RoadMapSquareActive->Square[RoadMapSquareCurrentSlot]->square->timestamp + TIMESTAMP_SAFETY_MARGIN;
+	}
+	return 0;	
+}
+
+
+int	roadmap_square_version (int square) {
+
+	if (RoadMapSquareActive == NULL) return 0;
+	
+	if (roadmap_square_set_current (square)) {
+		return RoadMapSquareActive->Square[RoadMapSquareCurrentSlot]->square->timestamp;
+	}
+	return 0;	
+}
+
+
 #if 0 // currently not used
 static int roadmap_square_distance_score (int square1, int square2) {
 	
@@ -292,31 +259,46 @@ static int roadmap_square_distance_score (int square1, int square2) {
 }
 #endif
 
-static void roadmap_square_unload (int square) {
+static void roadmap_square_unload (int slot) {
 	
-	if (RoadMapSquareActive->Square[square]) {
+	if (RoadMapSquareActive->Square[slot] != ROADMAP_SQUARE_NOT_LOADED) {
 		
-		RoadMapSquare *s = RoadMapSquareActive->Square[square]->square;
-		roadmap_locator_unload_tile (s->scale_index, s->lon_index, s->lat_index);
-	
+		RoadMapSquare *s = RoadMapSquareActive->Square[slot]->square;
+		roadmap_locator_unload_tile (s->square_id);
 	}
+		
 }
 
 
-static void roadmap_square_promote (int square) {
+static int roadmap_square_find (int square) {
 
-	int slot = RoadMapSquareActive->Square[square]->cache_slot;
+	int slot = roadmap_hash_get_first (RoadMapSquareActive->SquareHash, square);
+	
+	while (slot >= 0) {
+		
+		if (RoadMapSquareActive->SquareCache[slot].square == square)
+			return slot;
+			
+		slot = roadmap_hash_get_next (RoadMapSquareActive->SquareHash, slot);		
+	} 
+	
+	return -1;	
+}
+
+
+static void roadmap_square_promote (int slot) {
+
 	SquareCacheNode *cache = RoadMapSquareActive->SquareCache;
 	
-	if (cache[0].next != slot) {
+	if (cache[ROADMAP_SQUARE_CACHE_SIZE].next != slot) {
 		cache[cache[slot].next].prev = cache[slot].prev;
 		cache[cache[slot].prev].next = cache[slot].next;
 		
-		cache[slot].next = cache[0].next;
-		cache[slot].prev = 0;
+		cache[slot].next = cache[ROADMAP_SQUARE_CACHE_SIZE].next;
+		cache[slot].prev = ROADMAP_SQUARE_CACHE_SIZE;
 		
-		cache[cache[0].next].prev = slot;
-		cache[0].next = slot;
+		cache[cache[ROADMAP_SQUARE_CACHE_SIZE].next].prev = slot;
+		cache[ROADMAP_SQUARE_CACHE_SIZE].next = slot;
 	}	
 }
 
@@ -328,7 +310,7 @@ static void roadmap_square_unload_all (void) {
 	for (i = 1; i <= ROADMAP_SQUARE_CACHE_SIZE; i++) {
 	
 		if (RoadMapSquareActive->SquareCache[i].square >= 0) {
-			roadmap_square_unload (RoadMapSquareActive->SquareCache[i].square);
+			roadmap_square_unload (i);
 			RoadMapSquareActive->SquareCache[i].square = -1;
 		}		
 		RoadMapSquareActive->SquareCache[i].next = (i + 1) % (ROADMAP_SQUARE_CACHE_SIZE + 1);
@@ -337,28 +319,25 @@ static void roadmap_square_unload_all (void) {
 }
 
 
-static void roadmap_square_cache (int square) {
+static int roadmap_square_cache (int square) {
 
-	int slot = RoadMapSquareActive->SquareCache[0].prev;
-	SquareCacheNode *node = RoadMapSquareActive->SquareCache + slot;
-		
+	SquareCacheNode *node;
+	int slot = RoadMapSquareActive->SquareCache[ROADMAP_SQUARE_CACHE_SIZE].prev;
+	
+	// make sure not to unload the current tile
+	if (slot == RoadMapSquareCurrentSlot) {
+		slot = RoadMapSquareActive->SquareCache[slot].prev;
+	}
+	node = RoadMapSquareActive->SquareCache + slot;
+	//printf ("Putting square %d in slot %d\n", square, slot);	
 	if (node->square >= 0) {
-		roadmap_square_unload (node->square);
+		roadmap_square_unload (slot);
 	}
 	node->square = square;
-	RoadMapSquareActive->Square[square]->cache_slot = slot;
+	return slot;
 }
 
 
-static int roadmap_square_index (RoadMapSquare *square) {
-	
-   int lon = square->lon_index;
-   int lat = square->lat_index;
-   int scale = square->scale_index;
-
-	return RoadMapSquareActive->SquareBaseIndex[scale] +
-				lon * RoadMapSquareActive->SquareScale[scale].count_latitude + lat;
-}
 
 
 //static int TotalSquares = 0;
@@ -368,6 +347,7 @@ static void *roadmap_square_map_one (const roadmap_db_data_file *file) {
 
    int j;
    int index;
+   int slot;
 
    context = malloc(sizeof(RoadMapSquareData));
    roadmap_check_allocated(context);
@@ -380,11 +360,22 @@ static void *roadmap_square_map_one (const roadmap_db_data_file *file) {
       roadmap_log (ROADMAP_FATAL, "invalid square/data structure");
    }
 
-	index = roadmap_square_index (context->square); 
-	RoadMapSquareActive->Square[index] = context;
+	index = context->square->square_id; 
+	roadmap_tile_edges (index, 
+							  &context->edges.west,
+							  &context->edges.east,
+							  &context->edges.south,
+							  &context->edges.north);
 		
-	//RoadMapScaleCurrent = context->square->scale_index;
 	RoadMapSquareCurrent = index;
+   slot = roadmap_square_cache (index);
+	RoadMapSquareActive->Square[slot] = context;
+	RoadMapSquareCurrentSlot = slot;
+
+	//printf ("roadmap_square_map_one: slot %d tile %d\n", RoadMapSquareCurrentSlot, RoadMapSquareCurrent);
+	
+	roadmap_hash_add (RoadMapSquareActive->SquareHash, index, slot);
+	
 
    for (j = 0; j < NUM_SUB_HANDLERS; j++) {
    	if (roadmap_db_exists (file, &(SquareHandlers[j].sector))) {
@@ -396,7 +387,8 @@ static void *roadmap_square_map_one (const roadmap_db_data_file *file) {
       }
    }
    
-   roadmap_square_cache (index);
+	context->attributes = 0;
+
    //printf ("Loaded square %d, total squares = %d\n", index, ++TotalSquares);
    return context;
 }
@@ -405,11 +397,22 @@ static void roadmap_square_activate_one (void *context) {
 
 }
 
+void roadmap_square_delete_reference (int square) {
+	
+	int slot = roadmap_square_find (square); 
+	
+	if (slot >= 0) {
+
+		roadmap_hash_remove (RoadMapSquareActive->SquareHash, square, slot);
+		RoadMapSquareActive->Square[slot] = ROADMAP_SQUARE_NOT_LOADED;
+	}
+}
+
+
 static void roadmap_square_unmap_one (void *context) {
 
    RoadMapSquareData *square_data = (RoadMapSquareData *) context;
    int j;
-   int index;
 
 //   if (square_context->type != RoadMapSquareType) {
 //      roadmap_log(ROADMAP_FATAL, "cannot unmap (bad context type)");
@@ -420,11 +423,9 @@ static void roadmap_square_unmap_one (void *context) {
          SquareHandlers[j].handler->unmap (square_data->subs[j]);
       }
    }
-
-	index = roadmap_square_index (square_data->square); 
-
-	RoadMapSquareActive->Square[index] = ROADMAP_SQUARE_NOT_LOADED;
-
+	
+	roadmap_square_delete_reference (square_data->square->square_id);
+	
    //printf ("Unloaded square %d, total squares = %d\n", index, --TotalSquares);
    free(square_data);
 }
@@ -437,57 +438,122 @@ roadmap_db_handler RoadMapSquareOneHandler = {
 };
 
 
-
-static int roadmap_square_location (const RoadMapPosition *position, int scale_index) {
-
-   int x;
-   int y;
-
-   RoadMapGrid *global = RoadMapSquareActive->SquareGrid;
-   RoadMapScale *scale = RoadMapSquareActive->SquareScale + scale_index;
-
-   x = (position->longitude - global->edges.west) / scale->step_longitude;
-   if (x < 0 || x > scale->count_longitude) {
-      return -1;
-   }
-
-   y = (position->latitude - global->edges.south)  / scale->step_latitude;
-   if (y < 0 || y > scale->count_latitude) {
-      return -1;
-   }
-
-   if (x >= scale->count_longitude) {
-      x = scale->count_longitude - 1;
-   }
-   if (y >= scale->count_latitude) {
-      y = scale->count_latitude - 1;
-   }
-   
-   return RoadMapSquareActive->SquareBaseIndex[scale_index] + (x * scale->count_latitude) + y;
+int roadmap_square_set_attribute (int square, int attribute) {
+	
+	int slot = roadmap_square_find (square);
+	
+	if (slot < 0) return 0;
+	
+	RoadMapSquareActive->Square[slot]->attributes |= attribute;
+	return 1;
 }
 
 
-int roadmap_square_range  (void) {
+int roadmap_square_reset_attribute (int square, int attribute) {
+	
+	int slot = roadmap_square_find (square);
+	
+	if (slot < 0) return 0;
+	
+	RoadMapSquareActive->Square[slot]->attributes &= ~attribute;
+	return 1;
+}
 
-	if (!RoadMapSquareActive) {
-		return 0;
+
+int roadmap_square_get_attribute (int square, int attribute) {
+
+	int slot = roadmap_square_find (square);
+	
+	if (slot < 0) return 0;
+	
+	return RoadMapSquareActive->Square[slot]->attributes & attribute;
+}
+
+
+static int roadmap_square_location (const RoadMapPosition *position, int scale_index) {
+
+	return roadmap_tile_get_id_from_position (scale_index, position);
+}
+
+
+static void roadmap_square_request (int square, int priority, int force_update) {
+	
+	int slot = roadmap_square_find (square);
+	
+	if (slot < 0) {
+		roadmap_tile_request (square, priority, force_update, NULL);
+	}
+}
+
+
+void roadmap_square_request_location (const RoadMapPosition *position) {
+	
+	static int last_requested[5] = {-1, -1, -1, -1, -1};
+	int tile_size;
+	int square;
+	RoadMapPosition neighbour;
+	
+	square = roadmap_square_location (position, 0);
+	
+	tile_size = roadmap_tile_get_size (0);
+	if (square != last_requested[0]) {
+		roadmap_square_request (square, ROADMAP_TILE_STATUS_PRIORITY_GPS, 0); // original position
+		last_requested[0] = square;
 	}
 	
-	return RoadMapSquareActive->SquareRange;	
+	neighbour = *position;
+
+	neighbour.longitude += tile_size / 4;
+	neighbour.latitude += tile_size / 4;
+	square = roadmap_square_location (&neighbour, 0);
+	if (square != last_requested[1]) {
+		roadmap_square_request (square, ROADMAP_TILE_STATUS_PRIORITY_NEIGHBOURS, 0); // north-east
+		last_requested[1] = square;
+	}
+
+	neighbour.longitude -= tile_size / 2;
+	square = roadmap_square_location (&neighbour, 0);
+	if (square != last_requested[2]) {
+		roadmap_square_request (square, ROADMAP_TILE_STATUS_PRIORITY_NEIGHBOURS, 0); // north-west
+		last_requested[2] = square;
+	}
+
+	neighbour.latitude -= tile_size / 2;
+	square = roadmap_square_location (&neighbour, 0);
+	if (square != last_requested[3]) {
+		roadmap_square_request (square, ROADMAP_TILE_STATUS_PRIORITY_NEIGHBOURS, 0); // south-west
+		last_requested[3] = square;
+	}
+
+	neighbour.longitude += tile_size / 2;
+	square = roadmap_square_location (&neighbour, 0);
+	if (square != last_requested[4]) {
+		roadmap_square_request (square, ROADMAP_TILE_STATUS_PRIORITY_NEIGHBOURS, 0); // south-east
+		last_requested[4] = square;
+	}
 }
 
 
 int roadmap_square_search (const RoadMapPosition *position, int scale_index) {
 
    int square;
+   int slot;
    int scale = scale_index;
 
    if (RoadMapSquareActive == NULL) return ROADMAP_SQUARE_OTHER;
 
 	if (scale == -1) scale = RoadMapScaleCurrent;
    square = roadmap_square_location (position, scale);
+   slot = roadmap_square_find (square);
 
-   if (RoadMapSquareActive->Square[square] == ROADMAP_SQUARE_UNAVAILABLE) {
+	if (slot < 0) {
+	
+		if (roadmap_square_set_current (square)) {
+			slot = roadmap_square_find (square);
+		}
+	}
+
+   if (slot < 0) {
       return ROADMAP_SQUARE_GLOBAL;
    }
 
@@ -498,21 +564,96 @@ int roadmap_square_search (const RoadMapPosition *position, int scale_index) {
 int roadmap_square_find_neighbours (const RoadMapPosition *position, int scale_index, int squares[9]) {
 	
 	int					count = 0;
-	int					i;
-	RoadMapPosition	pos;
+	RoadMapPosition	cross;
 	int					square;
-	static int			neighbours[9][2] = {{0, 0}, {0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+	int					step;
+	RoadMapPosition	origin;
 	
-	for (i = 0; i < 9; i++) {
-		pos.latitude = position->latitude + 
-								neighbours[i][0] * RoadMapSquareActive->SquareScale[scale_index].step_latitude; 
-		pos.longitude = position->longitude + 
-								neighbours[i][1] * RoadMapSquareActive->SquareScale[scale_index].step_longitude; 
-		square = roadmap_square_search (&pos, scale_index);
-		if (square != 	ROADMAP_SQUARE_GLOBAL) {
-			squares[count++] = square;
-		}	
+	if (scale_index < 0) {
+		scale_index = RoadMapScaleCurrent; 
 	}
+	
+	step = roadmap_tile_get_size (scale_index);
+	roadmap_tile_get_origin (RoadMapScaleCurrent, position, &origin);
+	
+	// check same square
+	square = roadmap_square_search (&origin, scale_index);
+	if (square != 	ROADMAP_SQUARE_GLOBAL) squares[count++] = square;
+
+	// check square to the south
+	cross.longitude = position->longitude;
+	cross.latitude = origin.latitude;
+	if (roadmap_math_point_is_visible (&cross)) {
+		cross.longitude = origin.longitude;
+		cross.latitude = origin.latitude - step;
+		square = roadmap_square_search (&cross, scale_index);
+		if (square != 	ROADMAP_SQUARE_GLOBAL) squares[count++] = square;
+	}
+		
+	// check square to the north
+	cross.longitude = position->longitude;
+	cross.latitude = origin.latitude + step;
+	if (roadmap_math_point_is_visible (&cross)) {
+		cross.longitude = origin.longitude;
+		square = roadmap_square_search (&cross, scale_index);
+		if (square != 	ROADMAP_SQUARE_GLOBAL) squares[count++] = square;
+	}
+
+	// check square to the east
+	cross.longitude = origin.longitude;
+	cross.latitude = position->latitude;
+	if (roadmap_math_point_is_visible (&cross)) {
+		cross.longitude = origin.longitude - step;
+		cross.latitude = origin.latitude;
+		square = roadmap_square_search (&cross, scale_index);
+		if (square != 	ROADMAP_SQUARE_GLOBAL) squares[count++] = square;
+	}
+		
+	// check square to the west
+	cross.longitude = origin.longitude + step;
+	cross.latitude = position->latitude;
+	if (roadmap_math_point_is_visible (&cross)) {
+		cross.latitude = origin.latitude;
+		square = roadmap_square_search (&cross, scale_index);
+		if (square != 	ROADMAP_SQUARE_GLOBAL) squares[count++] = square;
+	}
+
+	// check square to the south-east
+	cross.longitude = origin.longitude;
+	cross.latitude = origin.latitude;
+	if (roadmap_math_point_is_visible (&cross)) {
+		cross.longitude = origin.longitude - step;
+		cross.latitude = origin.latitude - step;
+		square = roadmap_square_search (&cross, scale_index);
+		if (square != 	ROADMAP_SQUARE_GLOBAL) squares[count++] = square;
+	}
+
+	// check square to the south-west
+	cross.longitude = origin.longitude + step;
+	cross.latitude = origin.latitude;
+	if (roadmap_math_point_is_visible (&cross)) {
+		cross.latitude = origin.latitude - step;
+		square = roadmap_square_search (&cross, scale_index);
+		if (square != 	ROADMAP_SQUARE_GLOBAL) squares[count++] = square;
+	}
+
+	// check square to the north-east
+	cross.longitude = origin.longitude;
+	cross.latitude = origin.latitude + step;
+	if (roadmap_math_point_is_visible (&cross)) {
+		cross.longitude = origin.longitude - step;
+		square = roadmap_square_search (&cross, scale_index);
+		if (square != 	ROADMAP_SQUARE_GLOBAL) squares[count++] = square;
+	}
+
+	// check square to the north-west
+	cross.longitude = origin.longitude + step;
+	cross.latitude = origin.latitude + step;
+	if (roadmap_math_point_is_visible (&cross)) {
+		square = roadmap_square_search (&cross, scale_index);
+		if (square != 	ROADMAP_SQUARE_GLOBAL) squares[count++] = square;
+	}
+		
 	return count;
 }
 
@@ -523,13 +664,15 @@ void  roadmap_square_min (int square, RoadMapPosition *position) {
 
 	roadmap_square_set_current (square);
 	
-   position->longitude = RoadMapSquareActive->Square[square]->square->edges.west;
-   position->latitude  = RoadMapSquareActive->Square[square]->square->edges.south;
+   position->longitude = RoadMapSquareActive->Square[RoadMapSquareCurrentSlot]->edges.west;
+   position->latitude  = RoadMapSquareActive->Square[RoadMapSquareCurrentSlot]->edges.south;
 }
 
 
 void  roadmap_square_edges (int square, RoadMapArea *edges) {
 
+	int slot;
+	
    edges->west = 0;
    edges->east = 0;
    edges->north = 0;
@@ -537,20 +680,11 @@ void  roadmap_square_edges (int square, RoadMapArea *edges) {
 
    if (RoadMapSquareActive == NULL) return;
 
-   if (square == ROADMAP_SQUARE_GLOBAL) {
-
-      RoadMapGrid *global = RoadMapSquareActive->SquareGrid;
-
-      *edges = global->edges;
-
-      return;
-   }
-
-	roadmap_square_set_current (square);
+	slot = roadmap_square_find (square);
 	
-	if (!RoadMapSquareActive->Square[square]) return;
+	if (slot < 0) return;
 	
-   *edges = RoadMapSquareActive->Square[square]->square->edges;
+   *edges = RoadMapSquareActive->Square[slot]->edges;
 }
 
 
@@ -558,7 +692,7 @@ int   roadmap_square_cross_pos (RoadMapPosition *position) {
 
 	/* return the equivalent edge on the next square */
    int scale = roadmap_square_current_scale_factor ();
-   RoadMapArea *edges = &RoadMapSquareActive->Square[RoadMapSquareCurrent]->square->edges;
+   RoadMapArea *edges = &RoadMapSquareActive->Square[RoadMapSquareCurrentSlot]->edges;
 
    if (position->latitude < edges->south + scale) {
       position->latitude -= scale;
@@ -580,77 +714,111 @@ int   roadmap_square_cross_pos (RoadMapPosition *position) {
    return -1;
 }
 
+static void roadmap_square_get_tiles (RoadMapArea *area, int min_scale) {
+	
+   RoadMapPosition position;
+   RoadMapPosition corner;
+   RoadMapPosition origin;
+   int scale;
+   int step;
+   int max_scale = roadmap_tile_get_max_scale ();
+
+   corner.longitude = area->west;
+   corner.latitude = area->south;
+   
+   if (max_scale > min_scale + 1) {
+   	max_scale = min_scale + 1;
+   }
+   
+   for (scale = min_scale; scale <= max_scale; scale++) {
+		roadmap_tile_get_origin (scale, &corner, &origin);
+   	step = roadmap_tile_get_size (scale);
+   	
+   	for (position.longitude = origin.longitude; 
+   		  position.longitude <= area->east; 
+   		  position.longitude += step) {
+   		for (position.latitude = origin.latitude;
+   			  position.latitude <= area->north;
+   			  position.latitude += step) {
+   		
+   			roadmap_tile_request (roadmap_tile_get_id_from_position (scale, &position), ROADMAP_TILE_STATUS_PRIORITY_NONE, 0, NULL);	  	
+   		}
+   	}	
+   }
+}
+
+
+void roadmap_square_force_next_update (void) {
+	
+	RoadMapSquareForceUpdateMode = 1;
+}
+
+
 int roadmap_square_view (int *square, int size) {
 
-   RoadMapGrid *global;
-   RoadMapScale * scale;
+   RoadMapPosition origin;
+   RoadMapPosition position;
 
    RoadMapArea screen;
-   int x0;
-   int x1;
-   int x;
-   int y0;
-   int y1;
-   int y;
+   RoadMapArea	peripheral;
    int count;
    int index;
-   int base_index;
-
+	int step;
+	int slot;
 
    if (RoadMapSquareActive == NULL) return 0;
 
-   global = RoadMapSquareActive->SquareGrid;
-   scale = RoadMapSquareActive->SquareScale + RoadMapScaleCurrent;
-   base_index = RoadMapSquareActive->SquareBaseIndex[RoadMapScaleCurrent];
-
    roadmap_math_screen_edges (&screen);
 
-   x0 = (screen.west - global->edges.west) / scale->step_longitude;
-   x1 = (screen.east - global->edges.west) / scale->step_longitude;
-   if ((x1 < 0) || (x0 >= scale->count_longitude)) {
-      return 0;
-   }
-   if (x0 < 0) {
-      x0 = 0;
-   }
-   if (x1 >= scale->count_longitude) {
-      x1 = scale->count_longitude - 1;
-   }
+	position.longitude = screen.west;
+	position.latitude = screen.south;
+	
+	roadmap_tile_get_origin (RoadMapScaleCurrent, &position, &origin);
+	step = roadmap_tile_get_size (RoadMapScaleCurrent);
+	count = 0;
+	
+	peripheral.west = (screen.west * 9 - screen.east) / 8;
+	peripheral.east = (screen.east * 9 - screen.west) / 8;
+	peripheral.south = (screen.south * 9 - screen.north) / 8;
+	peripheral.north = (screen.north * 9 - screen.south) / 8;
+	
+	for (position.longitude = origin.longitude; position.longitude < screen.east; position.longitude += step) {
+		for (position.latitude = origin.latitude; position.latitude <= screen.north; position.latitude += step) {
+	
+			index = roadmap_tile_get_id_from_position (RoadMapScaleCurrent, &position);
+			slot = roadmap_square_find (index);		
 
-   y0 = (screen.north  - global->edges.south)  / scale->step_latitude;
-   y1 = (screen.south  - global->edges.south)  / scale->step_latitude;
-   if ((y0 < 0) || (y1 >= scale->count_latitude)) {
-      return 0;
-   }
-   if (y1 < 0) {
-      y1 = 0;
-   }
-   if (y0 >= scale->count_latitude) {
-      y0 = scale->count_latitude - 1;
-   }
+			if (slot < 0) {
+				roadmap_tile_request (index, ROADMAP_TILE_STATUS_PRIORITY_ON_SCREEN, 0, NULL);
+				if (roadmap_square_set_current (index)) {
+					slot = roadmap_square_find (index);
+				}
+			}
+			
+         if (slot >= 0) {
 
-   count = 0;
-
-   for (x = x0; x <= x1; ++x) {
-
-      for (y = y1; y <= y0; ++y) {
-
-         index = base_index + x * scale->count_latitude + y;
-
-         if (RoadMapSquareActive->Square[index] != ROADMAP_SQUARE_UNAVAILABLE) {
-
-            square[count] = index;
-            count  += 1;
-            if (count >= size) {
+				if (RoadMapSquareForceUpdateMode ||
+					 ((*roadmap_tile_status_get (index)) & ROADMAP_TILE_STATUS_FLAG_ROUTE)) {
+					// force new version of route tiles when on screen
+					roadmap_tile_request (index, ROADMAP_TILE_STATUS_PRIORITY_ON_SCREEN, 1, NULL);
+				}
+				if (count < size) {
+            	square[count] = index;
+				}
+            count += 1;
+            if (size > 0 && count > size) {
                roadmap_log (ROADMAP_ERROR,
                             "too many square are visible: %d is not enough",
                             size);
-               return size;
             }
          }
       }
    }
 
+#ifndef J2ME
+	roadmap_square_get_tiles (&peripheral, RoadMapScaleCurrent);
+#endif
+	RoadMapSquareForceUpdateMode = 0;
    return count;
 }
 
@@ -684,32 +852,21 @@ int roadmap_square_first_shape (int square) {
 }
 
 
-static void roadmap_square_load (int square) {
+static int roadmap_square_load (int square) {
 	
-	int scale;
-	int lon;
-	int lat;
-	
-	scale = roadmap_square_scale (square);
-	if (scale < 0) return;
-		
-	square -= RoadMapSquareActive->SquareBaseIndex[scale];
-	lon = square / RoadMapSquareActive->SquareScale[scale].count_latitude;
-	lat = square % RoadMapSquareActive->SquareScale[scale].count_latitude;
-	
-	roadmap_locator_load_tile (scale, lon, lat);
+	return roadmap_locator_load_tile (square);
 }
 
 
 void roadmap_square_load_index (void) {   
 
    /* temporary - force load all hi-res tiles */
-	int i;
+//	int i;
 	int rc;
 
    rc = roadmap_city_read_file ("city_index");
 	if (!rc) return;
-		
+/*		
 	for (i = RoadMapSquareActive->SquareScale[0].count_latitude * RoadMapSquareActive->SquareScale[0].count_longitude - 1;
 			i >= 0; i--) {
 		
@@ -718,10 +875,11 @@ void roadmap_square_load_index (void) {
 			roadmap_street_update_city_index ();
 		}
 	}
+*/
 }
 
 
-void roadmap_square_rebuild_index (void) {   
+void roadmap_square_rebuild_index (void) {
 
    roadmap_file_remove(roadmap_db_map_path(), "city_index");
    roadmap_square_load_index();
@@ -729,52 +887,80 @@ void roadmap_square_rebuild_index (void) {
 }
 
 
-int roadmap_square_set_current (int square) {
+int roadmap_square_set_current_internal (int square) {
 
    int j;
+   int slot;
 
-   if (square != RoadMapSquareCurrent) {
-   
-      if (square < 0) {
-      	roadmap_log (ROADMAP_ERROR, "roadmap_square_set_current() : illegal square no. %d", square);
-         return 0;
-      }
+   slot = roadmap_square_find (square);
+   if (slot < 0) {
+			
+		int res;
+		int *status = roadmap_tile_status_get (square);
+		
+		if (status != NULL) {
+			
+			if ((*status) & ROADMAP_TILE_STATUS_FLAG_CHECKED) {
+				if (!((*status) & ROADMAP_TILE_STATUS_FLAG_EXISTS)) {
+					return 0;
+				}
+			}
+			*status = (*status) | ROADMAP_TILE_STATUS_FLAG_CHECKED;	
+		}
+		
+		res = roadmap_square_load (square);
+		
+		switch (res) {
+		case ROADMAP_US_OK:
+			
+			slot = roadmap_square_find (square);
+			if (status != NULL) {
+				*status = (*status) | ROADMAP_TILE_STATUS_FLAG_EXISTS;	
+			}
+			break;
+			
+		case ROADMAP_US_NOMAP:
+		
+			slot = -1;
+			break;
+			
+		case ROADMAP_US_INPROGRESS:
+			//TODO
+			slot = -1;
+			break;
+			
+		default:
+			roadmap_log (ROADMAP_FATAL, "Invalid status %d from roadmap_square_load (%08x)", status, square); 
+		}
+	}
 
-   	if (!RoadMapSquareActive->Square[square]) {
-   		
-   		roadmap_square_load (square);
-   		if (!RoadMapSquareActive->Square[square]) {
-      		roadmap_log (ROADMAP_ERROR, "roadmap_square_set_current() : square loading FAILED. square no. %d", square);
-   			return 0;
-   		}
-   	}
-   	
+	if (slot >= 0) {		
+		roadmap_square_promote (slot);
+			
+		assert (RoadMapSquareActive->Square[slot]->square->square_id == square);  	
+		RoadMapSquareCurrentSlot = slot;
+		RoadMapSquareCurrent = square;
+
+
       for (j = 0; j < NUM_SUB_HANDLERS; j++) {
-         SquareHandlers[j].handler->activate (RoadMapSquareActive->Square[square]->subs[j]);
+         SquareHandlers[j].handler->activate (RoadMapSquareActive->Square[slot]->subs[j]);
       }
+	} else {
+		return 0;
+	}
 
-      RoadMapSquareCurrent = square;
-   	roadmap_square_promote (square);
-   }
-
-   return 1;
+	return 1;
 }
-
-int roadmap_square_active (void) {
-
-   return RoadMapSquareCurrent;
-}
-
 
 void	roadmap_square_adjust_scale (int zoom_factor) {
 
 	int scale;
+	int max_scale;
 	
-	if (RoadMapSquareActive == NULL) return;
-	
+	max_scale = roadmap_tile_get_max_scale ();
 	for (scale = 1; 
-		  scale < RoadMapSquareActive->SquareGrid->num_scales &&
-		  RoadMapSquareActive->SquareScale[scale].scale_factor <= zoom_factor;
+		  scale <= max_scale &&
+		  roadmap_tile_get_scale_factor (scale) <= zoom_factor;
 		  scale++)
 		  ;
 
@@ -788,35 +974,18 @@ void	roadmap_square_set_screen_scale (int scale) {
 		scale = 0;
 	}
 	
-	if (RoadMapSquareActive &&
-		 RoadMapSquareActive->SquareGrid && 
-		 scale >= RoadMapSquareActive->SquareGrid->num_scales) {
-		scale = RoadMapSquareActive->SquareGrid->num_scales - 1;
+	if (scale > roadmap_tile_get_max_scale ()) {
+		scale = roadmap_tile_get_max_scale ();
 	}
 		 
 	RoadMapScaleCurrent = scale;
 }
 
 
-int	roadmap_square_get_screen_scale (void) {
-
-	if (!RoadMapSquareActive ||
-		 !RoadMapSquareActive->SquareGrid) {
-		 return 0;
-	}
-	
-	return RoadMapScaleCurrent;
-}
-
 
 int	roadmap_square_get_num_scales (void) {
 
-	if (!RoadMapSquareActive ||
-		 !RoadMapSquareActive->SquareGrid) {
-		 return 0;
-	}
-	
-	return RoadMapSquareActive->SquareGrid->num_scales;
+	return roadmap_tile_get_max_scale () + 1;
 }
 
 
@@ -826,35 +995,23 @@ int roadmap_square_screen_scale_factor (void) {
 		return 1;
 	}
 	
-	return RoadMapSquareActive->SquareScale[RoadMapScaleCurrent].scale_factor;
+	return roadmap_tile_get_scale_factor (RoadMapScaleCurrent);
 }
 
 
 int roadmap_square_current_scale_factor (void) {
-/*
+
 	if (!RoadMapSquareActive) {
 		return 1;
 	}
-*/	
-	return RoadMapSquareActive->SquareScale[RoadMapSquareActive->Square[RoadMapSquareCurrent]->square->scale_index].scale_factor;
+	
+	return roadmap_tile_get_scale_factor (RoadMapSquareActive->Square[RoadMapSquareCurrentSlot]->square->scale);
 }
 
 
 int	roadmap_square_scale (int square) {
 
-	int scale;
-	
-	if (!RoadMapSquareActive ||
-		 !RoadMapSquareActive->SquareGrid ||
-		 square < 0) {
-		return -1;
-	}
-
-	for (scale = RoadMapSquareActive->SquareGrid->num_scales - 1; scale >= 0; scale--) {
-		if (square >= RoadMapSquareActive->SquareBaseIndex[scale]) break;
-	}
-
-	return scale;
+	return roadmap_tile_get_scale (square);
 }
 
 

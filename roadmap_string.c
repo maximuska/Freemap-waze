@@ -217,3 +217,16 @@ int roadmap_string_is_sub_ignore_case (const char *where, const char *what) {
 	return 0;
 }
 
+
+int roadmap_string_compare_ignore_case (const char *str1, const char *str2) {
+
+	while (*str1 == *str2) {
+	
+		if (!*str1) return 0;
+		str1++;
+		str2++;	
+	}	
+	
+	return (*str1) - (*str2);
+}
+

@@ -119,6 +119,7 @@ static struct SquareGraphItem *get_square_graph (int square_id) {
    for (slot = 0; slot < SquareCacheSize; slot++) {
      	if (SquareGraphCache[slot]->square_id == square_id) {
      		found = 1;
+     		//printf ("get_square_graph: found square %d in slot %d\n", square_id, slot);
      		break;
      	}
    }
@@ -142,6 +143,8 @@ static struct SquareGraphItem *get_square_graph (int square_id) {
 	SquareGraphCache[0] = cache;
 
 	if (found) return cache;
+
+	//printf ("get_square_graph: adding square %d to slot %d\n", square_id, slot);
 	
    cache->square_id = square_id;
    lines1_count = 0;
@@ -289,6 +292,9 @@ int get_connected_segments (int square,
    node_id &= 0xffff;
 
    i = cache->nodes_index[node_id];
+   if (i <= 0) {
+   	roadmap_log (ROADMAP_ERROR, "cannot find data for node %d square %d", node_id, square);
+   }
    assert (i > 0);
 
    if (use_restrictions) {
@@ -301,7 +307,7 @@ int get_connected_segments (int square,
 
    while (i && count < max) {
 
-      int to_point_id;
+      int to_point_id = -1;
       int line_direction_allowed;
 
       line = cache->lines[i - 1];
@@ -376,11 +382,36 @@ int navigate_graph_get_line (int node, int line_no) {
 }
 
 
-void navigate_graph_clear (void) {
+static void navigate_graph_clear_all (void) {
+	
+	int slot;
+	for (slot = SquareCacheSize - 1; slot >= 0; slot--) {
+		
+		free_cache_slot (slot);
+	}
+	SquareCacheSize = 0;	
+}
 
-	while (SquareCacheSize > 0) {
+void navigate_graph_clear (int square) {
+
+	int slot;
+	
+	if (square == -1) {
+		navigate_graph_clear_all ();
+		return;
+	}
+	
+	for (slot = SquareCacheSize - 1; slot >= 0 && SquareGraphCache[slot]->square_id != square; slot--)
+		;
+	
+	if (slot >= 0) {
 		
 		SquareCacheSize--;
-		free_cache_slot (SquareCacheSize);
+		free_cache_slot (slot);
+		
+		while (slot < SquareCacheSize) {
+			SquareGraphCache[slot] = SquareGraphCache[slot + 1];
+			slot++;	
+		}
 	}	
 }

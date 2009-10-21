@@ -89,6 +89,10 @@ void editor_track_util_release_focus();
 int editor_track_util_roadmap_node_to_editor (NodeNeighbour *node);
 
 int editor_track_util_get_line_length (const PluginLine *line);
+void editor_track_util_get_line_point_ids (const PluginLine *line, 
+														 int reverse, 
+														 int *from_id, 
+														 int *to_id);
 
 #endif // INCLUDE__EDITOR_TRACK_UTIL__H
 

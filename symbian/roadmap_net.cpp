@@ -64,7 +64,8 @@ static RoadMapConfigDescriptor RoadMapConfigConnectionAuto =
 
 
 static RoadMapSocket roadmap_net_connect_async_internal (const char *protocol,
-                                         const char *name, 
+                                         const char *name,
+                                         time_t update_time,
                                          int default_port,
                                          RoadMapNetConnectCallback callback,
                                          void *context, 
@@ -97,7 +98,7 @@ static RoadMapSocket roadmap_net_connect_async_internal (const char *protocol,
   {
     const char *http_type = "POST";
     if (!strcmp(protocol, "http_get")) http_type = "GET";
-    TRAPD(err1, s = CRoadMapNativeHTTP::NewL( http_type, name, default_port, 
+    TRAPD(err1, s = CRoadMapNativeHTTP::NewL( http_type, name, default_port, update_time, 
                                               callback, context));
     if ( s == NULL || err1 != KErrNone) { err = err1; }
   }
@@ -114,31 +115,34 @@ static RoadMapSocket roadmap_net_connect_async_internal (const char *protocol,
 
 
 RoadMapSocket roadmap_net_connect (const char *protocol,
-                                   const char *name, int default_port, network_error* err)
+                                   const char *name, 
+                                   time_t update_time,
+                                   int default_port, roadmap_result* err)
 {
   int retVal = KErrNone;
   RoadMapSocket s;
   
   if (err != NULL)
- 	(*err) = neterr_success;
+ 	(*err) = succeeded;
  	   
-  s = roadmap_net_connect_async_internal(protocol, name, default_port, NULL, NULL, retVal);
+  s = roadmap_net_connect_async_internal(protocol, name, update_time, default_port, NULL, NULL, retVal);
   
   if ((s == NULL) && (err != NULL))
-   	(*err) = neterr_general_error;                                                   
+   	(*err) = err_net_failed;                                                   
  
   return s;
   
 }
 
 int roadmap_net_connect_async (const char *protocol,
-                               const char *name, 
+                               const char *name,
+                               time_t update_time,
                                int default_port,
                                RoadMapNetConnectCallback callback,
                                void *context)
 {
   int retVal = KErrNone;
-  RoadMapSocket s = roadmap_net_connect_async_internal(protocol, name,
+  RoadMapSocket s = roadmap_net_connect_async_internal(protocol, name, update_time,
                                                       default_port, callback, context,
                                                       retVal);
 	if ( s == NULL) 
@@ -209,6 +213,7 @@ int roadmap_net_send_http (RoadMapSocket s, const void *ptr, int in_size, int wa
       {
         net->SetRequestProperty("User-Agent", roadmap_start_version());
         net->SetReadyToSendData(true);
+        cur = eol;
         break;
       }
 
@@ -227,8 +232,8 @@ int roadmap_net_send_http (RoadMapSocket s, const void *ptr, int in_size, int wa
       cur = eol;
     }
 
-    ptr = (char *)ptr + (eol - start);
-    data_size -= (eol - start);
+    ptr = (char *)ptr + (cur - start);
+    data_size -= (cur - start);
     free(start);
   }
 

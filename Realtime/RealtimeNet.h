@@ -24,10 +24,10 @@
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#include "RealtimeNetDefs.h"
+#include "Realtime/RealtimeNetDefs.h"
 #include "../editor/track/editor_track_report.h"
+#include "../address_search/address_search.h"
 #include "roadmap_gps.h"
-#include "roadmap_address.h"
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -39,6 +39,9 @@ BOOL  RTNet_LoadParams ();
 int   RTNet_Send       ( RoadMapSocket socket, const char* szText);
 BOOL  RTNet_TransactionQueue_ProcessSingleItem( BOOL* pTransactionStarted);
 void  RTNet_TransactionQueue_Clear();
+
+ETransactionStatus   RTNet_GetTransactionState();
+void                 RTNet_AbortTransaction( ETransactionStatus* new_state);
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -47,108 +50,120 @@ BOOL  RTNet_Login(      LPRTConnectionInfo   pCI,
                         const char*          szUserName,
                         const char*          szUserPW,
                         const char*          szUserNickname,
-                        PFN_ONASYNCCOMPLETED pfnOnCompleted);
-                        
+                        CB_OnWSTCompleted pfnOnCompleted);
+
 BOOL  RTNet_GuestLogin( LPRTConnectionInfo   pCI,
-                        PFN_ONASYNCCOMPLETED pfnOnCompleted);
-                        
-BOOL  RTNet_Register(   LPRTConnectionInfo   pCI,
-                        PFN_ONASYNCCOMPLETED pfnOnCompleted);
-                        
+                        CB_OnWSTCompleted pfnOnCompleted);
+
+BOOL  RTNet_RandomUserRegister(   LPRTConnectionInfo   pCI,
+                        CB_OnWSTCompleted pfnOnCompleted);
+
 BOOL  RTNet_Logout(     LPRTConnectionInfo   pCI,
-                        PFN_ONASYNCCOMPLETED pfnOnCompleted);
+                        CB_OnWSTCompleted pfnOnCompleted);
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void  RTNet_Watchdog(LPRTConnectionInfo  pCI);
 
-BOOL  RTNet_SetMyVisability(  LPRTConnectionInfo   pCI, 
-                              ERTVisabilityGroup   eVisability, 
+BOOL  RTNet_SetMyVisability(  LPRTConnectionInfo   pCI,
+                              ERTVisabilityGroup   eVisability,
                               ERTVisabilityReport  eVisabilityReport,
-                              PFN_ONASYNCCOMPLETED pfnOnCompleted,
+                              CB_OnWSTCompleted pfnOnCompleted,
                               char*                packet_only);
+
+BOOL RTNet_SetMood		   (LPRTConnectionInfo   pCI,
+                   			int 					iMood,
+                   			CB_OnWSTCompleted pfnOnCompleted,
+                   			char*                packet_only);
 
 BOOL  RTNet_At            (LPRTConnectionInfo   pCI,
                            const
                            RoadMapGpsPosition*  pGPSPosition,
                            int                  from_node,
                            int                  to_node,
-                           PFN_ONASYNCCOMPLETED pfnOnCompleted,
+                           CB_OnWSTCompleted pfnOnCompleted,
                            char*                packet_only);
 
 BOOL  RTNet_NavigateTo(    LPRTConnectionInfo   pCI,
                            const
                            RoadMapPosition*     cordinates,
                            address_info_ptr     ai,
-                           PFN_ONASYNCCOMPLETED pfnOnCompleted);
+                           CB_OnWSTCompleted pfnOnCompleted);
 
 BOOL  RTNet_MapDisplyed ( LPRTConnectionInfo   pCI,
                            const RoadMapArea*   pRoadMapArea,
                            unsigned int         scale,
-                           PFN_ONASYNCCOMPLETED pfnOnCompleted,
+                           CB_OnWSTCompleted pfnOnCompleted,
                            char*                packet_only);
-                           
-BOOL  RTNet_CreateNewRoads ( 
+
+BOOL  RTNet_CreateNewRoads (
                            LPRTConnectionInfo   pCI,
                            int                  nToggles,
                            const time_t*        toggle_time,
                            BOOL                 bStatusFirst,
-                           PFN_ONASYNCCOMPLETED pfnOnCompleted,
+                           CB_OnWSTCompleted pfnOnCompleted,
                            char*                packet_only);
-                           
+
 BOOL  RTNet_StartFollowUsers(
-                           LPRTConnectionInfo   pCI, 
-                           PFN_ONASYNCCOMPLETED pfnOnCompleted,
+                           LPRTConnectionInfo   pCI,
+                           CB_OnWSTCompleted pfnOnCompleted,
                            char*                packet_only);
-                           
-BOOL  RTNet_StopFollowUsers(LPRTConnectionInfo pCI, 
-                           PFN_ONASYNCCOMPLETED pfnOnCompleted,
+
+BOOL  RTNet_StopFollowUsers(LPRTConnectionInfo pCI,
+                           CB_OnWSTCompleted pfnOnCompleted,
                            char*                packet_only);
 
 BOOL  RTNet_GPSPath(      LPRTConnectionInfo   pCI,
                            time_t               period_begin,
                            LPGPSPointInTime     points,
                            int                  count,
-                           PFN_ONASYNCCOMPLETED pfnOnCompleted,
+                           CB_OnWSTCompleted pfnOnCompleted,
                            char*                packet_only);
 
 BOOL  RTNet_NodePath(     LPRTConnectionInfo   pCI,
                            time_t               period_begin,
                            LPNodeInTime         nodes,
                            int                  count,
-                           PFN_ONASYNCCOMPLETED pfnOnCompleted,
+                           CB_OnWSTCompleted pfnOnCompleted,
                            char*                packet_only);
 
 BOOL  RTNet_ReportAlert(   LPRTConnectionInfo   pCI,
                            int                  iType,
                            const char*          szDescription,
                            int                  iDirection,
-                           PFN_ONASYNCCOMPLETED pfnOnCompleted);
+                           const char*          szImageId,
+                           BOOL						bForwardToTwitter,
+                           CB_OnWSTCompleted pfnOnCompleted);
 
-BOOL  RTNet_ReportAlertAtPosition( 
+BOOL  RTNet_ReportAlertAtPosition(
                         LPRTConnectionInfo         pCI,
                         int                        iType,
                         const char*                szDescription,
                         int                        iDirection,
+                        const char*                szImageId,
+                        BOOL								bForwardToTwitter,
                         const RoadMapGpsPosition*  MyLocation,
-                        PFN_ONASYNCCOMPLETED       pfnOnCompleted);
-                        
-BOOL RTNet_SendSMS ( 
+                        int 				from_node,
+                        int 				to_node,
+                        CB_OnWSTCompleted       	pfnOnCompleted);
+
+BOOL RTNet_SendSMS (
                 LPRTConnectionInfo   pCI,
 	            const char*          szPhoneNumber,
-	            PFN_ONASYNCCOMPLETED pfnOnCompleted);
+	            CB_OnWSTCompleted pfnOnCompleted);
 
-BOOL  RTNet_PostAlertComment( 
+BOOL  RTNet_PostAlertComment(
                         LPRTConnectionInfo   pCI,
                         int                  iAlertId,
                         const char*          szDescription,
-                        PFN_ONASYNCCOMPLETED pfnOnCompleted);
+                        BOOL                 bForwardToTwitter,
+                        CB_OnWSTCompleted pfnOnCompleted);
 
 BOOL  RTNet_RemoveAlert(LPRTConnectionInfo   pCI,
                         int                  iAlertId,
-                        PFN_ONASYNCCOMPLETED pfnOnCompleted);
-                        
+                        CB_OnWSTCompleted pfnOnCompleted);
+
 BOOL  RTNet_ReportMarker(  LPRTConnectionInfo   pCI,
                            const char*          szType,
                            int                  iLongitude,
@@ -158,8 +173,27 @@ BOOL  RTNet_ReportMarker(  LPRTConnectionInfo   pCI,
                            int                  nParams,
                            const char*          szParamKey[],
                            const char*          szParamVal[],
-                           PFN_ONASYNCCOMPLETED pfnOnCompleted,
+                           CB_OnWSTCompleted pfnOnCompleted,
                            char*                packet_only);
+
+BOOL RTNet_TrafficAlertFeedback( LPRTConnectionInfo   pCI,
+                           int                  iTrafficInfoId,
+                           int                  iValidity,
+                           CB_OnWSTCompleted pfnOnCompleted);
+
+BOOL  RTNet_CreateAccount (LPRTConnectionInfo   pCI,
+                           const char*          userName,
+                           const char*          passWord,
+                           const char*          email,
+                           BOOL                 send_updates,
+                           CB_OnWSTCompleted pfnOnCompleted);
+
+BOOL  RTNet_UpdateProfile (LPRTConnectionInfo   pCI,
+                           const char*          userName,
+                           const char*          passWord,
+                           const char*          email,
+                           BOOL                 send_updates,
+                           CB_OnWSTCompleted pfnOnCompleted);
 
 BOOL  RTNet_ReportOneSegment_Encode (char *packet, int iSegment);
 
@@ -167,24 +201,83 @@ int   RTNet_ReportOneSegment_MaxLength (int iSegment);
 
 BOOL  RTNet_SendTrafficInfo ( LPRTConnectionInfo   pCI,
                              int mode,
-                             PFN_ONASYNCCOMPLETED pfnOnCompleted);
-                                                                                                                                                      
-BOOL  RTNet_GeneralPacket( LPRTConnectionInfo   pCI, 
+                             CB_OnWSTCompleted pfnOnCompleted);
+
+BOOL  RTNet_GeneralPacket( LPRTConnectionInfo   pCI,
                            const char*          Packet,
-                           PFN_ONASYNCCOMPLETED pfnOnCompleted);
-                           
+                           CB_OnWSTCompleted pfnOnCompleted);
+
 void	RTNet_Auth_BuildCommand (	char*				Command,
 											int				ServerId,
 											const char*		ServerCookie,
 											const char*		UserName,
 											int				DeviceId,
 											const char*		Version);
-											                           
-//////////////////////////////////////////////////////////////////////////////////////////////////
 
+BOOL RTNet_RequestRoute(LPRTConnectionInfo   pCI,
+								int						iRoute,
+								int						iType,
+								int						iTripId,
+								int						iAltId,
+								int						nMaxRoutes,
+								int						nMaxSegments,
+								int						nMaxPoints,
+								RoadMapPosition		posFrom,
+								int						iFrSegmentId,
+								int						iFrNodeId[2],
+								const char*				szFrStreet,
+								BOOL						bFrAllowBidi,
+								RoadMapPosition		posTo,
+								int						iToSegmentId,
+								int						iToNodeId[2],
+								const char*				szToStreet,
+								BOOL						bToAllowBidi,
+								int						nOptions,
+								const int*				iOptionNumeral,
+								const BOOL*				bOptionValue,
+								BOOL						bReRoute,
+                        CB_OnWSTCompleted		pfnOnCompleted);
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-#include "realtime_roadmap_net.h"
+BOOL	RTNet_SelectRoute	(LPRTConnectionInfo   	pCI,
+								 int							iRoute,
+								 int							iAltId,
+								 CB_OnWSTCompleted		pfnOnCompleted);
+
+BOOL  RTNet_TwitterConnect (
+                   LPRTConnectionInfo   pCI,
+                   const char*          userName,
+                   const char*          passWord,
+                   CB_OnWSTCompleted pfnOnCompleted);
+
+BOOL  RTNet_TripServer_CreatePOI  (
+                   LPRTConnectionInfo   pCI,
+                   const char*          name,
+                   RoadMapPosition*     coordinates,
+                   BOOL					overide,
+                   CB_OnWSTCompleted pfnOnCompleted);
+
+BOOL  RTNet_TripServer_DeletePOI  (
+                   LPRTConnectionInfo   pCI,
+                   const char*          name,
+                   CB_OnWSTCompleted pfnOnCompleted);
+
+BOOL RTNet_TripServer_FindTrip  (
+						LPRTConnectionInfo   pCI,
+						RoadMapPosition*     coordinates,
+						CB_OnWSTCompleted pfnOnCompleted);
+
+BOOL RTNet_ReportMapProblem(
+                  LPRTConnectionInfo   pCI,
+                  const char*          szType,
+                  const char*          szDescription,
+                  const RoadMapGpsPosition   *MyLocation,
+                  CB_OnWSTCompleted pfnOnCompleted);
+
+BOOL RTNet_GetGeoConfig(
+                  LPRTConnectionInfo         pCI,
+                  wst_handle                 websvc,
+                  const RoadMapPosition      *Location,
+                  CB_OnWSTCompleted          pfnOnCompleted);
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 

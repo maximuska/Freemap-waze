@@ -33,7 +33,7 @@
 #define EDITOR_DB_TRKSEGS		5
 #define EDITOR_DB_STREETS		6
 #define EDITOR_DB_LINES			7
-#define EDITOR_DB_OVERRIDES	8
+#define EDITOR_DB_OVERRIDES	    8
 
 typedef struct editor_db_section_s {
    unsigned int type_id;

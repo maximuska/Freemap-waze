@@ -26,16 +26,7 @@
 
 #include "roadmap.h"
 #include "roadmap_plugin.h"
-
-typedef struct tag_address_info
-{
-   const char* state;
-   const char* country;
-   const char* city;
-   const char* street;
-   const char* house;
-   
-}  address_info, *address_info_ptr;
+#include "address_search/address_search.h"
 
 typedef void (*RoadMapAddressSearchCB) (const char *result, void *context);
 typedef int  (*RoadMapAddressNav) (const RoadMapPosition *point,

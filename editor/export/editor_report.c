@@ -44,7 +44,7 @@ static int EditorReportMarkersInProgress = 0;
 static int EditorReportSegmentsInProgress = 0;
 
 
-static void editor_report_markers_cb (BOOL bDetailsVerified, int iErrorCode) {
+static void editor_report_markers_cb (BOOL bDetailsVerified, roadmap_result rc) {
 
 	EditorReportMarkersInProgress = 0;
 	if (bDetailsVerified) {
@@ -63,7 +63,7 @@ void editor_report_markers (void) {
 }
 
 
-static void editor_report_segments_cb (BOOL bDetailsVerified, int iErrorCode) {
+static void editor_report_segments_cb (BOOL bDetailsVerified, roadmap_result rc) {
 
 	EditorReportSegmentsInProgress = 0;
 	if (bDetailsVerified) {

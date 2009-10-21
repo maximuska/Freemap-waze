@@ -83,5 +83,10 @@ void start_alerts_quick_menu(void);
 
 const char* roadmap_start_version();
 
+void roadmap_start_reset_debug_mode();
+
+int roadmap_start_get_first_time_use();
+void start_settings_quick_menu(void);
+
 #endif /* INCLUDE__ROADMAP_START__H */
 

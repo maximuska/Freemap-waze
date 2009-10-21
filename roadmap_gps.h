@@ -69,7 +69,7 @@ typedef void (*roadmap_gps_listener)
                    const RoadMapGpsPosition *position);
 
 void roadmap_gps_register_listener (roadmap_gps_listener listener);
-
+void roadmap_gps_unregister_listener(roadmap_gps_listener listener);
 
 /* The monitor is a function to be called each time a valid GPS satellite
  * status has been received. There can be more than one monitor at a given
@@ -139,6 +139,12 @@ void roadmap_gps_raw (time_t tm, int longitude, int latitude,
 void roadmap_gps_shutdown (void);
 int roadmap_gps_reception_state (void);
 void roadmap_gps_detect_receiver (void);
+void roadmap_gps_csv_tracker_initialize(void);
+void roadmap_gps_csv_tracker_set_enable( BOOL value );
+BOOL roadmap_gps_csv_tracker_get_enable( void );
+void roadmap_gps_csv_tracker_shutdown( void );
+void roadmap_gps_coarse_fix( int latitude, int longitude );
+
 
 /* Generic protocols */
 #define ROADMAP_NO_VALID_DATA    -512000000

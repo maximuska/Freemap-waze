@@ -30,7 +30,7 @@
 //TODO temp
 #define MAX_SOUND_NAME 300
 #else
-#define MAX_SOUND_NAME 30
+#define MAX_SOUND_NAME 100
 #endif
 
 #define SOUND_LIST_NO_FREE 0x1

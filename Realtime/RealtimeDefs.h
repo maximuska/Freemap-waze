@@ -34,12 +34,16 @@
 #define  RT_THRESHOLD_TO_DISABLE_SERVICE__MAX_NETWORK_ERRORS_SUCCESSIVE       (100)
 #define  RT_THRESHOLD_TO_DISABLE_SERVICE__MAX_SECONDS_FROM_LAST_SESSION       (20*60)
 #define  RT_THRESHOLD_TO_ENTER_SILENT_MODE__MAX_NETWORK_ERRORS_SUCCESSIVE     (3)
+
+// Warning initialization timeout in milli-seconds
+#define  RT_WARNING_INIT_TO			(30000)
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #define  RT_CFG_TYPE                   ("preferences")
-#define  RT_USER_TYPE				   ("user")
+#define  RT_USER_TYPE				      ("user")
 #define  RT_CFG_TAB                    ("Realtime")
 
 //   User name
@@ -63,20 +67,49 @@
 #define  RT_CFG_PRM_STATUS_Enabled     ("Enabled")
 #define  RT_CFG_PRM_STATUS_Disabled    ("Disabled")
 
+//   Enable / Disable auto registration:
+#define  RT_CFG_PRM_AUTOREG_Var         RTPrm_AutoReg
+#define  RT_CFG_PRM_AUTOREG_Name        ("Auto registration")
+#define  RT_CFG_PRM_AUTOREG_Enabled     ("Enabled")
+#define  RT_CFG_PRM_AUTOREG_Disabled    ("Disabled")
+
+//   Random user
+#define  RT_CFG_PRM_RANDOM_USER_Var     RTPrm_RandomUser
+#define  RT_CFG_PRM_RANDOM_USER_Name   ("Random user")
+#define  RT_CFG_PRM_RANDOM_USERT_Default ("0")
+
 //   Refresh rate
-#define  RT_CFG_PRM_REFRAT_Var         RTPrm_RefreshRate
-#define  RT_CFG_PRM_REFRAT_Name        ("Refresh rate (minutes)")
-#define  RT_CFG_PRM_REFRAT_Default     ("0.5")
-#define  RT_CFG_PRM_REFRAT_iMin        (0.1F)
-#define  RT_CFG_PRM_REFRAT_iMax        (30.F)
-#define  RT_CFG_PRM_REFRAT_iDef        (4.F)
-#define  RT_CFG_PRM_REFRAT_iWD         (15.F)   //   Watchdog
+#define  RT_CFG_PRM_REFRAT_Var         	RTPrm_RefreshRate
+#define  RT_CFG_PRM_REFRAT_Name        	("Refresh rate (minutes)")
+#ifdef J2ME
+#define  RT_CFG_PRM_REFRAT_Default     	("1.5")
+#else
+#define  RT_CFG_PRM_REFRAT_Default     	("0.5")
+#endif
+#define  RT_CFG_PRM_HIRESREFRAT_Var    	RTPrm_HiResRefreshRate
+#define  RT_CFG_PRM_HIRESREFRAT_Name   	("Hi-Res Refresh rate (minutes)")
+#define  RT_CFG_PRM_HIRESREFRAT_Default	("0.25")
+#define  RT_CFG_PRM_SUMMARY_Var    			RTPrm_SummaryRefreshRate
+#define  RT_CFG_PRM_SUMMARY_Name   			("Summary Refresh rate (minutes)")
+#define  RT_CFG_PRM_SUMMARY_Default			("0.02")
+#define  RT_CFG_PRM_COMMCHECK_Var    		RTPrm_CommCheckPeriod
+#define  RT_CFG_PRM_COMMCHECK_Name   		("Comm Check period (minutes)")
+#define  RT_CFG_PRM_COMMCHECK_Default		("1.2")
+#define  RT_CFG_PRM_REFRAT_iMin        	(0.1F)
+#define  RT_CFG_PRM_REFRAT_iMax        	(90.F)
+#define  RT_CFG_PRM_REFRAT_iDef        	(4.F)
+#define  RT_CFG_PRM_COMMCHECK_iMax       	(90.F)
+#define  RT_CFG_PRM_COMMCHECK_iDef        (1.F)
+#define  RT_CFG_PRM_HIRESREFRAT_iMin   	(0.01F)
+#define  RT_CFG_PRM_HIRESREFRAT_iDef   	(0.1F)
+#define  RT_CFG_PRM_SUMMARY_iMin   			(0.1F)
+#define  RT_CFG_PRM_SUMMARY_iDef   			(1.F)
+#define  RT_CFG_PRM_REFRAT_iWD         	(15.F)   //   Watchdog
 
 //   Remote web-service address
 #define  RT_CFG_PRM_WEBSRV_Var         RTPrm_WebServiceAddress
 #define  RT_CFG_PRM_WEBSRV_Name        ("Web-Service Address")
-#define  RT_CFG_PRM_WEBSRV_Default     ("http://212.150.51.90:80/rtserver")
-//#define  RT_CFG_PRM_WEBSRV_Default     ("http://62.219.147.126:80/rtserver")
+#define  RT_CFG_PRM_WEBSRV_Default     ("")
 
 const char*  RT_CFG_GetWebServiceAddress();
 
@@ -94,20 +127,6 @@ const char*  RT_CFG_GetWebServiceAddress();
 #define  RT_CFG_PRM_VISREP_Nickname    ("ReportNickname")
 #define  RT_CFG_PRM_VISREP_Anonymous   ("ReportAnonymous")
 
-
-/*   My visability:
-#define  RT_CFG_PRM_MYVSBL_Var         RTPrm_MyVisability
-#define  RT_CFG_PRM_MYVSBL_Name        ("My visability")
-#define  RT_CFG_PRM_MYVSBL_None        ("Invisible")
-#define  RT_CFG_PRM_MYVSBL_Frnd        ("Only my friends can see me")
-#define  RT_CFG_PRM_MYVSBL_All         ("Visible to everyone")
-
-//   My ROI
-#define  RT_CFG_PRM_INTRST_Var         RTPrm_OtherVisability
-#define  RT_CFG_PRM_INTRST_Name        ("I want to see")
-#define  RT_CFG_PRM_INTRST_None        ("No one")
-#define  RT_CFG_PRM_INTRST_Frnd        ("My friends")
-#define  RT_CFG_PRM_INTRST_All         ("Everyone")   */
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -128,7 +147,7 @@ typedef enum tagERTVisabilityGroup
 
    VisGrp__count,
    VisGrp__invalid
-   
+
 }  ERTVisabilityGroup;
 
 
@@ -136,13 +155,13 @@ typedef enum tagERTVisabilityGroup
 // Visability Report group:
 typedef enum tagERTVisabilityReport
 {
-   
+
    VisRep_Anonymous = 1,
    VisRep_NickName ,
-   
+
    VisRep__count,
    VisRep__invalid
-   
+
 }  ERTVisabilityReport;
 
 const char*          ERTVisabilityGroup_to_string  ( ERTVisabilityGroup e);
@@ -161,7 +180,7 @@ const char*          ERTVisabilityReport_to_string( ERTVisabilityReport e);
 typedef enum tagEVersionUpgradeSeverity
 {
    VUS_NA,
-   
+
    VUS_Low,
    VUS_Medium,
    VUS_Hi
@@ -205,11 +224,21 @@ typedef enum tagETransactionStatus
    TS_Idle,
    TS_Active,
    TS_Stopping,
-   
+
    TS__count,
    TS__invalid
 
 }  ETransactionStatus;
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+typedef enum tagECycleType
+{
+	CT_None,
+	CT_Summary,
+	CT_Full
+}	ECycleType;
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 

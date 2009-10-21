@@ -35,6 +35,7 @@
 #include "roadmap_start.h"
 #include "roadmap_main.h"
 #include "roadmap_start.h"
+#include "roadmap_screen.h"
 
 #include "roadmap_net_mon.h"
 
@@ -58,7 +59,7 @@ static void periodic_callack (void) {
       roadmap_message_unset('!');
       LastActivityTime = 0;
       roadmap_main_remove_periodic(periodic_callack);
-      roadmap_start_redraw();
+      roadmap_screen_mark_redraw();
    }
 }
 
@@ -66,7 +67,7 @@ static void periodic_callack (void) {
 static void update_activity (void) {
    if (!LastActivityTime) roadmap_main_set_periodic (1000, periodic_callack);
    LastActivityTime = time(NULL);   
-   roadmap_start_redraw ();
+   roadmap_screen_mark_redraw ();
 }
 
 
@@ -78,7 +79,7 @@ void roadmap_net_mon_start (void) {
    assert (CurrentState == NET_MON_DISABLED || CurrentState == NET_MON_OFFLINE);
    CurrentState = NET_MON_START;
    roadmap_message_set('!', roadmap_lang_get("Accessing network..."));
-   roadmap_start_redraw ();
+   roadmap_screen_mark_redraw ();
    update_activity();
 }
 
@@ -88,7 +89,7 @@ void roadmap_net_mon_start (void) {
 void roadmap_net_mon_destroy (void) {
    assert (CurrentState != NET_MON_DISABLED);
    CurrentState = NET_MON_DISABLED;
-   roadmap_start_redraw ();
+   roadmap_screen_mark_redraw ();
 }
 
 

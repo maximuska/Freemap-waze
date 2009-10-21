@@ -26,7 +26,7 @@
  */
 
 #include <string.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 
 #include "roadmap.h"
 #include "roadmap_lang.h"
@@ -40,8 +40,11 @@
 #include "ssd_container.h"
 #include "ssd_button.h"
 #include "ssd_text.h"
-
 #include "ssd_menu.h"
+#ifdef ANDROID
+#include "roadmap_androidmath.h"	// For the div implementation
+#endif
+
 
 #ifdef   USE_CONTEXTMENU_INSTEAD
 #endif   // USE_CONTEXTMENU_INSTEAD
@@ -52,7 +55,7 @@ typedef struct list_menu_data{
    int        num_rows;
    SsdWidget  container ;
    int        num_items ;
-   
+
 }  menu_list_data;
 
 
@@ -61,8 +64,8 @@ static int button_callback (SsdWidget widget, const char *new_value) {
    RoadMapCallback callback = (RoadMapCallback) widget->context;
 
    (*callback)();
-   
-#ifdef TOUCH_SCREEN   
+
+#ifdef TOUCH_SCREEN
    if (widget->parent)
    	ssd_widget_loose_focus(widget->parent);
 #endif
@@ -78,13 +81,13 @@ static void move_to_start(){
 	  menu_list_data *data;
 	  int i;
 	  int num_items;
-	  
+
 	  data = (menu_list_data *)	ssd_dialog_get_current_data();
-	  	
+
 	  for (i=0; i<data->num_items;i++)
          ssd_widget_hide(data->MenuWidgets[i]);
-     
-     
+
+
      if (data->num_items < data->num_rows)
      	num_items = data->num_items;
      else
@@ -100,17 +103,17 @@ static void move_to_start(){
 static void move_down(){
    menu_list_data *data;
    int i;
-   div_t n;
+   //div_t n;
    int relative_index;
 
    data = (menu_list_data *)   ssd_dialog_get_current_data();
-   
-   n = div (data->CurrentIndex, data->num_rows);
-   relative_index =  n.rem;
-   
+
+   //n = div (data->CurrentIndex, data->num_rows);
+   relative_index = data->CurrentIndex % data->num_rows;
+
       if (((data->CurrentIndex == data->num_rows -1) || (relative_index == data->num_rows -1) || (data->CurrentIndex == data->num_items -1)) && (data->num_items > data->num_rows)){
           int index;
-          
+
          for (i=0; i<data->num_items;i++)
                ssd_widget_hide(data->MenuWidgets[i]);
 
@@ -118,17 +121,17 @@ static void move_down(){
             index = 0;
          else
             index = data->CurrentIndex +1;
-                  
+
          for (i=index; i<index+data->num_rows;i++)
             if (i < data->num_items)
                ssd_widget_show(data->MenuWidgets[i]);
       }
-             
+
       if (data->CurrentIndex < data->num_items-1)
          data->CurrentIndex++;
       else
          data->CurrentIndex = 0;
-             
+
       ssd_dialog_resort_tab_order();
       ssd_dialog_set_focus(ssd_widget_get(data->MenuWidgets[data->CurrentIndex],"button"));
 }
@@ -136,66 +139,67 @@ static void move_down(){
 static void move_up(){
       menu_list_data *data;
       int i;
-      div_t n;
-   	  int relative_index;
-   
+      int n_quot;
+   	int relative_index;
+
       data = (menu_list_data *)   ssd_dialog_get_current_data();
-      n = div (data->CurrentIndex, data->num_rows);
-      relative_index =  n.rem;
-      
+      n_quot = data->CurrentIndex / data->num_rows;
+      relative_index = data->CurrentIndex % data->num_rows;
+
       if (((data->CurrentIndex == 0) || (relative_index == 0) || (data->CurrentIndex == data->num_rows )) && (data->num_items > data->num_rows)){
           int index;
-                
+
          for (i=0; i<data->num_items;i++)
             ssd_widget_hide(data->MenuWidgets[i]);
 
          if (relative_index == 0)
-         	if (n.quot == 0){
-         		div_t n2;
-         		n2 = div (data->num_items, data->num_rows);
-         		if (n2.rem == 0)
-         			index = (n2.quot -1) * data->num_rows;
+         	if (n_quot == 0){
+         		//div_t n2;
+         		int n2_rem = data->num_items % data->num_rows;
+         		int n2_quot = data->num_items / data->num_rows;
+         		if (n2_rem == 0)
+         			index = (n2_quot -1) * data->num_rows;
          		else
-         			index = n2.quot * data->num_rows ;
+         			index = n2_quot * data->num_rows ;
          	}
          	else
-         		index = (n.quot -1) * data->num_rows;
+         		index = (n_quot -1) * data->num_rows;
          else
             index =0;
-                  
+
          for (i=index; i<index+data->num_rows;i++)
             if (i < data->num_items)
                ssd_widget_show(data->MenuWidgets[i]);
       }
 
-                
+
       if (data->CurrentIndex > 0)
          data->CurrentIndex--;
       else
          data->CurrentIndex = data->num_items -1;
-             
+
       ssd_dialog_resort_tab_order();
       ssd_dialog_set_focus(ssd_widget_get(data->MenuWidgets[data->CurrentIndex],"button"));
-   
+
 }
 
 #ifdef TOUCH_SCREEN
 static void scroll_page_down(){
 	  menu_list_data *data;
-   	     	  
+
       data = (menu_list_data *)   ssd_dialog_get_current_data();
       if( (data->CurrentIndex + data->num_rows) >= data->num_items)
       	return;
-	
+
 	  data->CurrentIndex += data->num_rows-1;
-	  
+
 	  move_down();
-	  
+
 }
 
 static void scroll_page_up(){
 	  menu_list_data *data;
-   	     	  
+
       data = (menu_list_data *)   ssd_dialog_get_current_data();
       if( (data->CurrentIndex - data->num_rows) < 0)
       	return;
@@ -223,17 +227,17 @@ static int scroll_buttons_callback (SsdWidget widget, const char *new_value) {
 
 static BOOL OnKeyPressed (SsdWidget widget, const char* utf8char, uint32_t flags){
    BOOL        key_handled = TRUE;
-   
+
    if( KEY_IS_ENTER)
    {
       widget->callback(widget, SSD_BUTTON_SHORT_CLICK);
       return TRUE;
    }
-   
+
     if( KEYBOARD_VIRTUAL_KEY & flags)
    {
       switch( *utf8char) {
-        
+
          case VK_Arrow_up:
                move_up();
             break;
@@ -242,7 +246,7 @@ static BOOL OnKeyPressed (SsdWidget widget, const char* utf8char, uint32_t flags
             move_down();
             break;
 
-         default:       
+         default:
             key_handled = FALSE;
       }
 
@@ -251,22 +255,22 @@ static BOOL OnKeyPressed (SsdWidget widget, const char* utf8char, uint32_t flags
    {
       assert(utf8char);
       assert(*utf8char);
-      
+
       // Other special keys:
       if( KEYBOARD_ASCII & flags)
-      {      
+      {
          switch(*utf8char)
          {
             case TAB_KEY:
                 move_down();
                break;
 
-            default:       
+            default:
                key_handled = FALSE;
          }
       }
    }
-   
+
    if( key_handled)
       roadmap_screen_redraw ();
 
@@ -282,63 +286,70 @@ static void draw_bg( SsdWidget this, RoadMapGuiRect *rect, int flags){
    int i;
    static int top_height, top_width;
    static int bottom_height, bottom_width;
-   
+
+#ifdef TOUCH_SCREEN
+   int height = roadmap_canvas_height() ;
+#else
    int height = roadmap_canvas_height() -  roadmap_bar_bottom_height();
+#endif
    int width = roadmap_canvas_width();
-   
+
    if (!TopBgImage)
       TopBgImage = (RoadMapImage) roadmap_res_get(RES_BITMAP, RES_SKIN, "menu_bg_top");
    if (TopBgImage == NULL){
       return;
    }
-      
+
    if (!BottomBgImage)
       BottomBgImage = (RoadMapImage) roadmap_res_get(RES_BITMAP, RES_SKIN, "menu_bg_bottom");
    if (BottomBgImage == NULL){
       return;
    }
-      
+
    if (!MiddleBgImage)
       MiddleBgImage = (RoadMapImage) roadmap_res_get(RES_BITMAP, RES_SKIN, "menu_bg_middle");
    if (MiddleBgImage == NULL){
          return;
-   } 
+   }
 
    top_height = roadmap_canvas_image_height(TopBgImage);
    bottom_height = roadmap_canvas_image_height(BottomBgImage);
-   
+
 
     if ((flags & SSD_GET_SIZE)){
     	rect->miny += top_height + 4;
     	rect->maxy = height - bottom_height ;
     	return;
     }
-    
+
    top_width  = roadmap_canvas_image_width(TopBgImage);
     bottom_width  = roadmap_canvas_image_width(BottomBgImage);
-    
+
 
 	if (!(flags & SSD_GET_SIZE)){
 		rect->miny += top_height + 4;
-    	        
-                rect->maxy = height - bottom_height -roadmap_bar_bottom_height() ;
+#ifdef TOUCH_SCREEN
+        rect->maxy = height - bottom_height  ;
+#else
+		rect->maxy = height - bottom_height -roadmap_bar_bottom_height() ;
+#endif
     	        rect->maxx -= 7;
-		
+
 		point.y = 0;
 		point.x = width - top_width;
-	
+
 		roadmap_canvas_draw_image (TopBgImage, &point, 0,IMAGE_NORMAL);
-		
+
 		point.y = height - bottom_height+4;
 		point.x = width - bottom_width;
-		
+
 		for (i = top_height; i <  point.y; i++){
 			RoadMapGuiPoint pointMiddle;
 			pointMiddle.y = i;
 			pointMiddle.x = width - top_width;
 			roadmap_canvas_draw_image (MiddleBgImage, &pointMiddle, 0,IMAGE_NORMAL);
-		}  
-		
+		}
+
 		roadmap_canvas_draw_image (BottomBgImage, &point, 0,IMAGE_NORMAL);
 	}
 }
@@ -370,15 +381,22 @@ static const RoadMapAction *find_action
 
 static int long_click (SsdWidget widget, const RoadMapGuiPoint *point) {
 
-   if (ssd_widget_long_click (widget->children, point)) {
-      ssd_dialog_hide (widget->name, dec_ok);
-   }
-
-   return 1;
+//   if (ssd_widget_long_click (widget->children, point)) {
+//      ssd_dialog_hide (widget->name, dec_ok);
+//   }
+//
+   return 0;
 }
+#ifdef TOUCH_SCREEN
+static int close_button_callback (SsdWidget widget, const char *new_value) {
 
+   ssd_dialog_hide_current (dec_close);
+   return 0;
+}
+#endif
 
 static SsdWidget ssd_menu_new (const char           *name,
+							   SsdWidget        	 addition_conatiner,
                                const char           *items_file,
                                const char           *items[],
                                const RoadMapAction  *actions,
@@ -401,22 +419,48 @@ static SsdWidget ssd_menu_new (const char           *name,
       if (flags & SSD_DIALOG_VERTICAL){
          width = SSD_MIN_SIZE;
       }
-         
+
       container = ssd_container_new (name, NULL, width, SSD_MIN_SIZE, 0);
       ssd_widget_set_size (dialog, SSD_MIN_SIZE, SSD_MIN_SIZE);
       ssd_widget_set_color (dialog, "#000000", "#ff0000000");
       ssd_widget_set_color (container, "#000000", "#ff0000000");
+#ifdef TOUCH_SCREEN
+      if (flags & SSD_DIALOG_FLOAT){
+      	if (!(flags & SSD_CONTAINER_TITLE)) {
+          const char *close_icons[] = {"rm_quit","rm_quit_pressed"};
+
+          ssd_widget_add (container,
+                  ssd_button_new ("close", "", close_icons, 2,
+                                  SSD_ALIGN_RIGHT, close_button_callback));
+      	}
+      }
+#endif
 
    } else {
-      container = ssd_container_new (name, NULL, SSD_MAX_SIZE, SSD_MAX_SIZE,
-                                  SSD_ALIGN_GRID);
-      ssd_widget_set_color (dialog, "#000000", "#ff0000000");
-      ssd_widget_set_color (container, "#000000", "#ff0000000");
+   	SsdWidget space;
+      container = ssd_container_new (name, NULL, SSD_MAX_SIZE, SSD_MIN_SIZE,
+                                  0);
+      //ssd_widget_set_color (dialog, NULL, NULL);
+      ssd_widget_set_color (container, NULL, NULL);
+	  //add additional container
+   	  if (addition_conatiner != NULL){
+   	     space = ssd_container_new ("spacer", NULL, SSD_MAX_SIZE, 5, SSD_WIDGET_SPACE|SSD_END_ROW);
+   	     ssd_widget_set_color (space, NULL,NULL);
+   	     ssd_widget_add(dialog, space);
+   	     ssd_widget_add(dialog, addition_conatiner);
+   	  }
+   	  else{
+   	  	space = ssd_container_new ("spacer", NULL, SSD_MAX_SIZE, 5, SSD_WIDGET_SPACE|SSD_END_ROW);
+   	  	ssd_widget_set_color (space, NULL,NULL);
+   	  	ssd_widget_add(dialog, space);
+   	  }
+
    }
+
 
    /* Override long click */
    container->long_click = long_click;
-   
+
    if (!menu_items) menu_items = items;
 
    for (i = 0; menu_items[i] != NULL; ++i) {
@@ -437,92 +481,121 @@ static SsdWidget ssd_menu_new (const char           *name,
 	                           SSD_WS_TABSTOP|SSD_ALIGN_CENTER|next_item_flags);
 	         SsdWidget button;
 	         SsdWidget text;
-	         
+
 	         button_icon[0] = item;
 	         button_icon[1] = NULL;
-	         
+
 	         ssd_widget_set_color (w, "#000000", NULL);
-	
+
 	         button = ssd_button_new
 	                    (item, item, button_icon, 1, SSD_ALIGN_CENTER|SSD_END_ROW,
 	                     button_callback);
-	
+
+	         button->long_click = long_click;
 	         ssd_widget_get_size (button ,&size, NULL);
-	
+
 	         ssd_widget_set_context (button, this_action->callback);
 	         ssd_widget_add (w, button);
-	
+
 	         if (!(flags & SSD_BUTTON_NO_TEXT)){
 	           text_box = ssd_container_new ("text_box", NULL,
 	                                         size.width + size.width / 4,
 	                                         SSD_MIN_SIZE,
 	                                         SSD_ALIGN_CENTER|SSD_END_ROW);
-	
+
 	           ssd_widget_set_color (text_box, "#000000", NULL);
-	
+
 	           text = ssd_text_new (item,
 	                                roadmap_lang_get (this_action->label_long),
 	                                10, /* 60,*/ SSD_ALIGN_CENTER|SSD_END_ROW);
+
 	           ssd_widget_add (text_box, text);
 	           ssd_widget_add (w, text_box);
 	         }
 	         ssd_widget_add (container, w);
-      	 	
+
       	 }
       	 else{
-		 const char *bg_button_icon[]   = {"menu_button", "menu_button_selected"};
-		 
-         SsdWidget text_box;
+		   const char *bg_button_icon[]   = {"menu_button", "menu_button_selected"};
+		   const char *bg_button_icon_top[]   = {"menu_button_top", "menu_button_top_s"};
+		   const char *bg_button_icon_middle[]   = {"menu_button_middle", "menu_button_middle_s"};
+		   const char *bg_button_icon_bottom[]   = {"menu_button_bottom", "menu_button_bottom_s"};
+         SsdWidget text_box,button_container;
          SsdSize size;
          const RoadMapAction *this_action = find_action (actions, item);
          const char *button_icon[2];
          SsdWidget button;
          SsdWidget text;
-
+         SsdWidget bg_button ;
          SsdWidget w = ssd_container_new (item, NULL,
-                           SSD_MIN_SIZE, SSD_MIN_SIZE,
+                           SSD_MAX_SIZE, SSD_MIN_SIZE,
                            SSD_ALIGN_CENTER|next_item_flags);
-                           
-         SsdWidget bg_button = ssd_button_new ("menu_bg_button", "", bg_button_icon, 2,
-                                      SSD_ALIGN_CENTER|SSD_WS_TABSTOP, button_callback);
 
+
+         if ((i == 0) && (menu_items[i+1] == NULL)){
+         	bg_button = ssd_button_new ("menu_bg_button", "", bg_button_icon, 2,
+                                      SSD_ALIGN_CENTER|SSD_WS_TABSTOP, button_callback);
+         }else if (i == 0){
+         	bg_button = ssd_button_new ("menu_bg_button", "", bg_button_icon_top, 2,
+                                      SSD_ALIGN_CENTER|SSD_WS_TABSTOP, button_callback);
+         }else if (menu_items[i+1] == NULL){
+         	bg_button = ssd_button_new ("menu_bg_button", "", bg_button_icon_bottom, 2,
+                                      SSD_ALIGN_CENTER|SSD_WS_TABSTOP, button_callback);
+         }else{
+         	bg_button = ssd_button_new ("menu_bg_button", "", bg_button_icon_middle, 2,
+                                      SSD_ALIGN_CENTER|SSD_WS_TABSTOP, button_callback);
+         }
+         bg_button->long_click = long_click;
          button_icon[0] = item;
          button_icon[1] = NULL;
-         
+
          ssd_widget_set_color (w, "#000000", NULL);
 
-		 
-		 
-         button = ssd_button_new
-                    (item, item, button_icon, 1, SSD_ALIGN_CENTER|SSD_END_ROW,
+        button_container = ssd_container_new ("text_box", NULL,
+                                         80,
+                                         SSD_MIN_SIZE,
+                                         SSD_ALIGN_VCENTER);
+ 		  ssd_widget_set_color(button_container, NULL, NULL);
+        button = ssd_button_new
+                    (item, item, button_icon, 1, SSD_ALIGN_VCENTER|SSD_ALIGN_CENTER,
                      button_callback);
+        button->long_click = long_click;
+        ssd_widget_add(button_container, button);
+        ssd_widget_add (bg_button, button_container);
+        ssd_widget_get_size (bg_button ,&size, NULL);
 
-         ssd_widget_get_size (bg_button ,&size, NULL);
+        ssd_widget_set_context (bg_button, this_action->callback);
 
-         ssd_widget_set_context (bg_button, this_action->callback);
-         ssd_widget_add (bg_button, button);
 
-		 
-		 
+
+
          if (!(flags & SSD_BUTTON_NO_TEXT)){
            text_box = ssd_container_new ("text_box", NULL,
-                                         size.width + size.width / 4,
                                          SSD_MIN_SIZE,
-                                         SSD_ALIGN_CENTER|SSD_END_ROW);
-
+                                         SSD_MIN_SIZE,
+                                         SSD_END_ROW|SSD_ALIGN_VCENTER);
            ssd_widget_set_color (text_box, "#000000", NULL);
 
            text = ssd_text_new (item,
                                 roadmap_lang_get (this_action->label_long),
-                                10, /* 60,*/ SSD_ALIGN_CENTER|SSD_END_ROW);
+                                16, /* 60,*/ 0);
            ssd_widget_add (text_box, text);
+           text = ssd_text_new ("right_text",
+                          "",
+                          14, /* 60,*/ SSD_ALIGN_RIGHT|SSD_ALIGN_VCENTER);
+           if (ssd_widget_rtl(NULL))
+              ssd_widget_set_offset(text, 15,0);
+           else
+              ssd_widget_set_offset(text, -15,0);
+           ssd_text_set_color(text, "#475570");
+           ssd_widget_add (bg_button, text);
            ssd_widget_add (bg_button, text_box);
          }
-         
+
          ssd_widget_add (w, bg_button);
          ssd_widget_add (container, w);
       	 }
-      	 
+
          next_item_flags = 0;
       }
    }
@@ -533,11 +606,24 @@ static SsdWidget ssd_menu_new (const char           *name,
    return dialog;
 }
 
+void ssd_menu_set_right_text(char *name, char *item, char *text){
+   SsdWidget widget;
+   SsdWidget text_w;
+   SsdWidget dialog = ssd_dialog_activate (name, NULL);
+   if (!dialog)
+      return;
+   widget = ssd_widget_get(dialog, item);
+   if (!widget)
+      return;
+   text_w = ssd_widget_get(widget, "right_text");
+   ssd_text_set_text(text_w, text);
+   
+}
 static SsdWidget  ssd_menu_list_new(const char           *name,
                                const char           *items_file,
                                const char           *items[],
                                const RoadMapAction  *actions,
-                               int                         flags) {
+                               int                   flags) {
    int i;
    int next_item_flags = 0;
    int width = SSD_MAX_SIZE;
@@ -546,57 +632,62 @@ static SsdWidget  ssd_menu_list_new(const char           *name,
    SsdWidget dialog;
    const char **menu_items = NULL;
    const char *button_icon[3];
-   
-#ifdef TOUCH_SCREEN   
+   int rtl_flag;
+
+#ifdef TOUCH_SCREEN
    SsdWidget scroll_up, scroll_down;
    SsdWidget container;
-#endif   
+#endif
    menu_list_data *data =  ( menu_list_data *)calloc (1, sizeof(menu_list_data));
-        
-        
+
+
    dialog = ssd_dialog_new (name, roadmap_lang_get (name), NULL,
                       flags|SSD_DIALOG_GUI_TAB_ORDER);
 
      data->num_items = 0;
      data->CurrentIndex = 0;
-     
+
    if( items_file)
       menu_items = roadmap_factory_user_config (items_file, "menu", actions);
 
    if (flags & SSD_DIALOG_FLOAT) {
 
-      if (flags & SSD_DIALOG_VERTICAL){
-         width = SSD_MIN_SIZE;
-            
-         
-      }
-   
-    if (flags & SSD_BG_IMAGE)
-          dialog->draw = draw_bg;      
-                                          
-      data->container = ssd_container_new (name, NULL, width, SSD_MIN_SIZE, 0);
-      ssd_widget_set_size (dialog, SSD_MIN_SIZE, SSD_MIN_SIZE);
-      ssd_widget_set_color (dialog, NULL, NULL);
-      ssd_widget_set_color (data->container, NULL, NULL);
-     
-   } else {
-      data->container = ssd_container_new (name, NULL, SSD_MAX_SIZE, SSD_MAX_SIZE,
-                                  SSD_ALIGN_GRID);
-      ssd_widget_set_color (dialog, "#000000", "#ffffffee");
-      ssd_widget_set_color (data->container, "#000000", NULL);
-   }
+        if (flags & SSD_DIALOG_VERTICAL){
+           width = SSD_MIN_SIZE;
+
+
+        }
+        dialog->draw = draw_bg;
+        data->container = ssd_container_new (name, NULL, width, SSD_MIN_SIZE, 0);
+        ssd_widget_set_size (dialog, SSD_MIN_SIZE, SSD_MIN_SIZE);
+        ssd_widget_set_color (dialog, NULL, NULL);
+        ssd_widget_set_color (data->container, NULL, NULL);
+        if (!is_screen_wide())
+           ssd_widget_set_offset(data->container,0, 0-roadmap_bar_top_height());
+
+     } else {
+        data->container = ssd_container_new (name, NULL, SSD_MAX_SIZE, SSD_MAX_SIZE,
+                                    SSD_ALIGN_GRID);
+        ssd_widget_set_color (dialog, "#000000", "#ffffffee");
+        ssd_widget_set_color (data->container, "#000000", NULL);
+     }
+
 
    /* Override long click */
    data->container->long_click = long_click;
-   
+
    if (!menu_items) menu_items = items;
 
+   if (ssd_widget_rtl (NULL))
+	 rtl_flag = SSD_END_ROW;
+   else
+	 rtl_flag = SSD_ALIGN_RIGHT;
+
 #ifdef TOUCH_SCREEN
-#ifndef IPHONE
    container = ssd_container_new ("scroll_up_con", NULL,
                            70, SSD_MIN_SIZE,
                            SSD_END_ROW);
-   ssd_widget_set_color (container, "#000000", NULL);                           
+   ssd_widget_set_color (container, "#000000", NULL);
    button_icon[0] = "menu_page_up";
    scroll_up = ssd_button_new
                     ("scroll_up", "scroll_up", button_icon, 1,
@@ -604,7 +695,6 @@ static SsdWidget  ssd_menu_list_new(const char           *name,
                      scroll_buttons_callback);
    ssd_widget_add (container, scroll_up);
    ssd_widget_add (dialog, container);
-#endif   
 #endif
 
    for (i = 0; menu_items[i] != NULL; ++i) {
@@ -615,44 +705,41 @@ static SsdWidget  ssd_menu_list_new(const char           *name,
          next_item_flags = SSD_START_NEW_ROW;
 
       } else {
-		 int rtl_flag;
          char focus_name[250];
          SsdWidget button;
 		 SsdWidget w;
          const RoadMapAction *this_action = find_action (actions, item);
-         
-         if (ssd_widget_rtl (NULL))
-			rtl_flag = SSD_END_ROW;
-		 else
-			rtl_flag = SSD_ALIGN_RIGHT;
-         
+
+
          w = ssd_container_new (item, NULL,
                            SSD_MIN_SIZE, SSD_MIN_SIZE,
                            next_item_flags|rtl_flag);
 
          button_icon[0] = item;
          strcpy(focus_name, item);
-         strcat(focus_name,"_focus");
-       
+         strcat(focus_name,"_focus_");
+         strcat(focus_name, roadmap_lang_get_system_lang());
+
          button_icon[1] = strdup(focus_name);
          button_icon[2] = NULL;
- 
+
          ssd_widget_set_color (w, "#000000", NULL);
 
-		
+
         button = ssd_button_new
                     ("button", item, button_icon, 2,
                      SSD_WS_TABSTOP|SSD_VAR_SIZE,
                      button_callback);
          ssd_widget_get_size(button, &button_size, NULL );
-         
+         button->long_click = long_click;
+
          ssd_widget_set_context (button, this_action->callback);
          ssd_widget_add (w, button);
          ssd_widget_hide(w);
          data->MenuWidgets[data->num_items] = w;
-         data->num_items++;                  
+         data->num_items++;
          ssd_widget_add (data->container, w);
-           
+
          next_item_flags = 0;
       }
    }
@@ -661,7 +748,7 @@ static SsdWidget  ssd_menu_list_new(const char           *name,
    ssd_widget_container_size (dialog, &size);
    if (data->num_items > 0){
    	ssd_widget_container_size (dialog, &size);
-   	data->num_rows = size.height / button_size.height;	
+   	data->num_rows = size.height / button_size.height;
    	if  (data->num_items <= data->num_rows){
 	   	int i;
    		for (i = 0 ;i < data->num_items; i++){
@@ -673,44 +760,46 @@ static SsdWidget  ssd_menu_list_new(const char           *name,
    		for (i = 0 ;i < data->num_rows; i++){
    			ssd_widget_show (data->MenuWidgets[i]);
    		}
-   	
+
    		for (i=0; i<data->num_items;i++){
    			data->MenuWidgets[i]->children->key_pressed = OnKeyPressed;
    		}
    	}
    }
    ssd_widget_add (dialog, data->container);
-   
+
 #if defined (TOUCH_SCREEN) && !defined (IPHONE)
    container = ssd_container_new ("scroll_down_con", NULL,
                            70, SSD_MIN_SIZE,
-                           SSD_END_ROW);
-   ssd_widget_set_color (container, "#000000", NULL);                           
+                           SSD_START_NEW_ROW|SSD_END_ROW);
+   ssd_widget_set_color (container, "#000000", NULL);
    button_icon[0] = "menu_page_down";
    scroll_down = ssd_button_new
                     ("scroll_down", "scroll_down", button_icon, 1,
-                     SSD_WS_TABSTOP|SSD_END_ROW|SSD_VAR_SIZE|SSD_ALIGN_CENTER,
+                     SSD_START_NEW_ROW|SSD_WS_TABSTOP|SSD_END_ROW|SSD_VAR_SIZE|SSD_ALIGN_CENTER,
                      scroll_buttons_callback);
    ssd_widget_add (container, scroll_down);
    ssd_widget_add (dialog, container);
 #endif
-   
+
+
    dialog->data = (void *)data;
    return dialog;
-}                                  
+}
 
 
 
 void ssd_menu_activate (const char           *name,
                         const char           *items_file,
                         const char           *items[],
+                        SsdWidget 			 addition_conatiner,
                         PFN_ON_DIALOG_CLOSED on_dialog_closed,
                         const RoadMapAction  *actions,
                         int                   flags) {
    SsdWidget dialog = ssd_dialog_activate (name, NULL);
 
-   
-   
+
+
    if (dialog) {
       ssd_dialog_set_callback (on_dialog_closed);
       ssd_widget_set_flags (dialog, flags);
@@ -718,8 +807,8 @@ void ssd_menu_activate (const char           *name,
       return;
    }
 
-   dialog = ssd_menu_new (name, items_file, items, actions, flags);
-   
+   dialog = ssd_menu_new (name, addition_conatiner, items_file, items, actions, flags);
+
    ssd_dialog_activate (name, NULL);
    ssd_dialog_set_callback (on_dialog_closed);
    ssd_dialog_draw ();
@@ -735,35 +824,35 @@ void ssd_list_menu_activate (const char           *name,
    menu_list_data *data;
    int align = 0;
    SsdWidget dialog = ssd_dialog_activate (name, NULL);
-   
+
    if (!ssd_widget_rtl (NULL))
-			align = SSD_ALIGN_RIGHT;
+		align = SSD_ALIGN_RIGHT;
 
    if (dialog) {
    	  ssd_dialog_set_callback (on_dialog_closed);
       ssd_widget_set_flags (dialog, flags|align);
       data = (menu_list_data *)dialog->data;
-      
-#ifndef TOUCH_SCREEN   	
+
+#ifndef TOUCH_SCREEN
       dialog->in_focus = dialog->default_widget;
       move_to_start();
-#endif      
+#endif
       ssd_dialog_draw ();
       return;
    }
-   
-   
+
+
    dialog = ssd_menu_list_new (name, items_file, items, actions, flags|align);
    data = (menu_list_data *)dialog->data;
    data->CurrentIndex = 0;
-   
+
    ssd_dialog_activate (name, NULL);
    ssd_dialog_set_callback (on_dialog_closed);
    ssd_dialog_draw ();
 }
 
 void ssd_menu_hide (const char *name) {
-         
+
    ssd_dialog_hide (name, dec_close);
 }
 
@@ -773,12 +862,12 @@ void ssd_menu_load_images(const char   *items_file, const RoadMapAction  *action
 #ifdef TOUCH_SCREEN
      const char **menu_items = roadmap_factory_user_config (items_file, "menu", actions);
      int i;
-      
+
      for (i = 0; menu_items[i] != NULL; ++i) {
          const char *item = menu_items[i];
          if (item != RoadMapFactorySeparator) {
-               roadmap_res_get(RES_BITMAP, 
-                                 RES_SKIN|RES_LOCK, 
+               roadmap_res_get(RES_BITMAP,
+                                 RES_SKIN|RES_LOCK,
                                 item);
          }
    }

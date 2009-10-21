@@ -160,7 +160,7 @@ typedef void (*plugin_adjust_layer_hook)
 
 typedef int (*plugin_get_closest_func)
        (const RoadMapPosition *position,
-        int *categories, int categories_count,
+        int *categories, int categories_count, int max_shapes,
         struct RoadMapNeighbour_t *neighbours, int count,
         int max);
 
@@ -219,7 +219,7 @@ void roadmap_plugin_adjust_layer (int layer,
 
 int roadmap_plugin_get_closest
        (const RoadMapPosition *position,
-        int *categories, int categories_count,
+        int *categories, int categories_count, int max_shapes,
         struct RoadMapNeighbour_t *neighbours, int count,
         int max);
 

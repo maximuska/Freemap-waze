@@ -58,16 +58,16 @@ class CFreeMapAppUi : public CAknAppUi
 		CFreeMapAppUi();
 
 		
-		/** 
-		 * Initialization of the qwerty mapping
-		 */
-		void InitQwertyMappingsL();
-		
 		/**
 		 * Keyboard mapping data for scan code - call InitQwertyMappingsL first !
 		 */
-		TBool  GetUnicodeForScanCodeL( TInt aScanCode, TUint16 &aUnicodeOut ) const;
+		TBool  GetUnicodeForScanCodeL( const TKeyEvent& aKeyEvent, TUint16 &aUnicodeOut );
 
+		/**
+		 * Keyboard mapping data for scan code in the numeric input mode ( no qwerty translation )
+		 */
+		TBool  GetUnicodeForScanCodeNumericL( const TKeyEvent& aKeyEvent, TUint16 &aUnicodeOut );
+		
 		/**
 		 * Keyboard mapping data for scan code - call InitQwertyMappingsL first !
 		 */
@@ -87,7 +87,11 @@ class CFreeMapAppUi : public CAknAppUi
 		virtual ~CFreeMapAppUi();
 
 	protected:
-		
+		/** 
+		 * Initialization of the qwerty mapping
+		 */
+		void InitQwertyMappingsL();
+
 		
 	private:  // Functions from base classes
 

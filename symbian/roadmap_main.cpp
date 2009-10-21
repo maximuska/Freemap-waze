@@ -69,7 +69,7 @@ int USING_PHONE_KEYPAD = 0;
 #include "RoadMap_NativeSocket.h"
 
 // timer stuff
-#define ROADMAP_MAX_TIMER 16
+#define ROADMAP_MAX_TIMER 20
 #define ROADMAP_MAX_IO 16
 struct roadmap_main_timer {
 	CPeriodic *periodic;
@@ -85,8 +85,10 @@ static CFreeMapAppView *View;
 static CBitmapContext *Gc;
 
 extern "C" void roadmap_start_quick_menu (void);
+extern "C" void roadmap_confirmed_exit(void);
 
 void roadmap_canvas_new (RWindow& aWindow, int initWidth, int initHeight);
+BOOL roadmap_canvas_agg_is_landscape();
 
 // for ssd login details dialog
 extern "C" {
@@ -120,13 +122,19 @@ extern "C" {
 	{
 		RoadMapMainInput = callback;
 	}
+	
+	void roadmap_main_minimize( void ){
+	   roadmap_confirmed_exit();
+	}
 
-TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType) 
+
+TKeyResponse roadmap_main_process_key( const TKeyEvent& aKeyEvent, TEventCode aType ) 
 {
 	char regular_key[2];
 	EVirtualKey vk      = VK_None;
 	const char* pCode;
-  
+	TUint code = aKeyEvent.iScanCode;
+	
 	if ( aType != EEventKey ) { return EKeyWasNotConsumed;  }
   
 	if ( code == EStdKeyDevice3 )
@@ -176,9 +184,9 @@ TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType)
 		default				: break;
 	}
 	// Regular keys - phone or qwerty 
-	if ( USING_PHONE_KEYPAD  )
+	if ( USING_PHONE_KEYPAD || ( aKeyEvent.iModifiers & EModifierFunc ) )
 	{
-		regular_key[0] = ( char ) ( code & 0xFF );
+		regular_key[0] = ( char ) ( aKeyEvent.iCode & 0xFF );	/* In case of keypad iCode and iScanCode are the same */
 		regular_key[1] = '\0';
 		pCode =  regular_key;
 	}
@@ -187,13 +195,11 @@ TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType)
 		TUint16 qwertyCode = code;
 		TUint32 qwertyCodeNullEnd = 0;
 		CFreeMapAppUi* pAppUi = static_cast<CFreeMapAppUi*>( CEikonEnv::Static()->EikAppUi() );
-		// AGA DEBUG
-		roadmap_log ( ROADMAP_ERROR, "AGA DEBUG# ScanCode : %d. Event : %d", code, aType );
-		
-		pAppUi->GetUnicodeForScanCodeL( code, qwertyCode );
+
+		pAppUi->GetUnicodeForScanCodeL( aKeyEvent, qwertyCode );
 		// Little endian: first byte = first char, null terminated
 		qwertyCodeNullEnd = qwertyCode & 0xFFFF; 
-		pCode =  reinterpret_cast<const char*>( &qwertyCodeNullEnd );		
+		pCode =  reinterpret_cast<const char*>( &qwertyCodeNullEnd );
 	}
 	// Handle regular keys. pCode - pointer to the null terminated bytes
 	// of the utf character
@@ -363,8 +369,8 @@ TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType)
       }
       
       interval *= 1000;
-      
-      timer->periodic->Start(interval, interval, TCallBack(roadmap_main_timeout, (TAny *)timer->callback));
+      if (interval > 0 )
+         timer->periodic->Start(interval, interval, TCallBack(roadmap_main_timeout, (TAny *)timer->callback));
       
    }
    
@@ -421,6 +427,10 @@ TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType)
    	return AknLayoutUtils::CbaLocation();
    }
 
+   int roadmap_horizontal_screen_orientation(){
+      return roadmap_canvas_agg_is_landscape();
+   }
+   
    void roadmap_internet_open_browser (char *url) {
    	  RApaLsSession apaLsSession;
    	  const TUid KOSSBrowserUidValue = {0x10008D39}; // 0x1020724D for S60 3rd Ed

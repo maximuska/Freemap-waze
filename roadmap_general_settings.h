@@ -20,7 +20,10 @@
 
 #ifndef __ROADMAP_GENERAL_SETTINGS_H__
 #define __ROADMAP_GENERAL_SETTINGS_H__
+#include "ssd/ssd_widget.h"
 
 void roadmap_general_settings_show(void);
+void quick_settins_exit( int exit_code, void* context);
+SsdWidget create_quick_setting_menu();
 
 #endif // __ROADMAP_GENERAL_SETTINGS_H__

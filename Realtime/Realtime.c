@@ -25,6 +25,7 @@
 #include "../roadmap_navigate.h"
 #include "../roadmap_math.h"
 #include "../roadmap_object.h"
+#include "../roadmap_trip.h"
 #include "../roadmap_line.h"
 #include "../roadmap_point.h"
 #include "../roadmap_messagebox.h"
@@ -35,25 +36,27 @@
 #include "../roadmap_square.h"
 #include "../roadmap_start.h"
 #include "../roadmap_lang.h"
-#include "../ssd/ssd_login_details.h"
+#include "../roadmap_mood.h"
 #include "../roadmap_device_events.h"
 #include "../roadmap_state.h"
 #include "../ssd/ssd_dialog.h"
-#include "../ssd/ssd_keyboard.h"
+#include "../ssd/ssd_keyboard_dialog.h"
 #include "../ssd/ssd_confirm_dialog.h"
 #include "../editor/db/editor_marker.h"
 #include "../editor/db/editor_line.h"
 #include "../editor/export/editor_report.h"
 #include "../editor/export/editor_sync.h"
-
+#include "../ssd/ssd_progress_msg_dialog.h"
+#include "roadmap_message.h"
 #include "RealtimeNet.h"
 #include "RealtimeAlerts.h"
 #include "RealtimeTrafficInfo.h"
-
+#include "roadmap_warning.h"
 #include "RealtimePrivacy.h"
 #include "RealtimeOffline.h"
+#include "roadmap_geo_config.h"
 
-#include "RealtimeString.h"
+#include "../websvc_trans/string_parser.h"
 #include "Realtime.h"
 
 #ifdef _WIN32
@@ -69,7 +72,10 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 static   BOOL                 gs_bInitialized               = FALSE;
 static   BOOL                 gs_bRunning                   = FALSE;
+static   BOOL                 gs_bSaveLoginInfoOnSuccess    = FALSE;
 static   BOOL                 gs_bShouldSendMyVisability    = TRUE;
+static   BOOL                 gs_bShouldSendMapDisplayed    = TRUE;
+static   BOOL                 gs_bShouldSendSetMood         = TRUE;
 static   BOOL                 gs_bHadAtleastOneGoodSession  = FALSE;
 static   BOOL                 gs_bWasStoppedAutoamatically  = FALSE;
 static   BOOL                 gs_bQuiteErrorMode            = FALSE;
@@ -79,12 +85,20 @@ static   StatusStatistics     gs_ST;
 static   EConnectionStatus    gs_eConnectionStatus          = CS_Unknown;
 static   PFN_LOGINTESTRES     gs_pfnOnLoginTestResult       = NULL;
 static   RoadMapCallback      gs_pfnOnSystemIsIdle          = NULL;
+static   RoadMapCallback      gs_pfnOnUserLoggedIn          = NULL;
 static   PFN_LOGINTESTRES     gs_pfnOnExportMarkersResult   = NULL;
 static   PFN_LOGINTESTRES     gs_pfnOnExportSegmentsResult  = NULL;
-static   PFN_ONASYNCCOMPLETED gs_pfnOnLoginAfterRegister    = NULL;
+static   CB_OnWSTCompleted    gs_pfnOnLoginAfterRegister    = NULL;
+static   BOOL                 gs_bWritingOffline            = FALSE;
 static   RTPathInfo*          gs_pPI;
-static	BOOL						gs_bWritingOffline			= FALSE;
-
+static	int					  	gs_iCycleTimeSeconds			= 0;
+static	int					  	gs_iCycleRoundoffSeconds	= 0;
+static	int					  	gs_iMaxCommCheckSeconds		= 0;
+static	int						gs_iSummaryCycleSeconds		= 0;
+static  LoginDetails   	  	  gs_LoginDetails;
+static  BOOL                  gs_bRTWarningInit	= TRUE;	/* Initial state before the actual */
+																	/* network information is available */
+static BOOL 				  gs_bFirstLoginFailure = TRUE;
 static void Realtime_FullReset( BOOL bRedraw)
 {
    RTConnectionInfo_FullReset    ( &gs_CI);
@@ -92,11 +106,11 @@ static void Realtime_FullReset( BOOL bRedraw)
    StatusStatistics_Reset        ( &gs_ST);
    RTNet_TransactionQueue_Clear  ();
    RTSystemMessageQueue_Empty    ();
-   
+
    gs_pfnOnLoginTestResult       = NULL;
    gs_bHadAtleastOneGoodSession  = FALSE;
    gs_bQuiteErrorMode            = FALSE;
-   
+
    if(bRedraw)
       roadmap_screen_redraw();
 }
@@ -106,7 +120,7 @@ static void Realtime_ResetTransactionState( BOOL bRedraw)
    RTConnectionInfo_ResetTransaction( &gs_CI);
    VersionUpgradeInfo_Init          ( &gs_VU);
    RTSystemMessageQueue_Empty       ();
-   
+
    if(bRedraw)
       roadmap_screen_redraw();
 }
@@ -118,10 +132,39 @@ static void Realtime_ResetLoginState( BOOL bRedraw)
    StatusStatistics_Reset        ( &gs_ST);
    RTNet_TransactionQueue_Clear  ();
    RTSystemMessageQueue_Empty    ();
-   
-   if(bRedraw)
+
+   if( bRedraw )
       roadmap_screen_redraw();
 }
+
+static void RealTime_WarningInit( void )
+{
+	roadmap_main_remove_periodic( RealTime_WarningInit );
+	gs_bRTWarningInit = FALSE;
+}
+
+static BOOL RealTime_Warning( char* dest_string )
+{
+	BOOL res = FALSE;
+
+	if ( !RealTimeLoginState() )
+	{
+		if ( gs_bRTWarningInit )
+		{
+			strncpy( dest_string, roadmap_lang_get("Searching network . . .    "), ROADMAP_WARNING_MAX_LEN );
+			res = TRUE;
+		}
+		else
+		{
+			strncpy( dest_string, roadmap_lang_get("No network, unable to display live data"), ROADMAP_WARNING_MAX_LEN );
+			res = TRUE;
+		}
+	}
+
+	return res;
+}
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -136,79 +179,110 @@ void     OnRemoveUser   (LPRTUserLocation pUI);
 void     OnMapMoved     (void);
 
 void     OnDeviceEvent  ( device_event event, void* context);
-BOOL     TestLoginDetails();
+static  BOOL     TestLoginDetails();
 
-BOOL     Login( PFN_ONASYNCCOMPLETED callback, BOOL bAutoRegister);
+static BOOL     Login( CB_OnWSTCompleted callback /* Callback on login transaction */,
+					BOOL bShowRegistration /* Show registration dialog if no user&pwd */ );
 
-void 		Realtime_DumpOffline (void);
+static void OnTransactionCompleted_TestLoginDetails_Login( void* ctx, roadmap_result rc );
+static BOOL TestLoginMain();
+static void RealTime_WarningInit( void );
+void     Realtime_DumpOffline (void);
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//   User name
-RoadMapConfigDescriptor RT_CFG_PRM_NAME_Var = 
-                           ROADMAP_CONFIG_ITEM( 
-                                    RT_CFG_TAB, 
-                                    RT_CFG_PRM_NAME_Name);
 
-//   Nickname
-RoadMapConfigDescriptor RT_CFG_PRM_NKNM_Var = 
-                           ROADMAP_CONFIG_ITEM( 
-                                    RT_CFG_TAB, 
-                                    RT_CFG_PRM_NKNM_Name);
-
-//   Web-service address
-RoadMapConfigDescriptor RT_CFG_PRM_PASSWORD_Var = 
-                           ROADMAP_CONFIG_ITEM( 
-                                    RT_CFG_TAB, 
-                                    RT_CFG_PRM_PASSWORD_Name);
+extern RoadMapConfigDescriptor RT_CFG_PRM_NAME_Var;
+extern RoadMapConfigDescriptor RT_CFG_PRM_NKNM_Var;
+extern RoadMapConfigDescriptor RT_CFG_PRM_PASSWORD_Var;
 
 //   Enable / Disable service
-static RoadMapConfigDescriptor RT_CFG_PRM_STATUS_Var = 
-                           ROADMAP_CONFIG_ITEM( 
-                                    RT_CFG_TAB, 
+static RoadMapConfigDescriptor RT_CFG_PRM_STATUS_Var =
+                           ROADMAP_CONFIG_ITEM(
+                                    RT_CFG_TAB,
                                     RT_CFG_PRM_STATUS_Name);
 
+//   Enable / Disable auto registration
+static RoadMapConfigDescriptor RT_CFG_PRM_AUTOREG_Var =
+                           ROADMAP_CONFIG_ITEM(
+                                    RT_CFG_TAB,
+                                    RT_CFG_PRM_AUTOREG_Name);
+
 //   Refresh rate
-static RoadMapConfigDescriptor RT_CFG_PRM_REFRAT_Var = 
-                           ROADMAP_CONFIG_ITEM( 
-                                    RT_CFG_TAB, 
+static RoadMapConfigDescriptor RT_CFG_PRM_REFRAT_Var =
+                           ROADMAP_CONFIG_ITEM(
+                                    RT_CFG_TAB,
                                     RT_CFG_PRM_REFRAT_Name);
 
+//   Hi-Res Refresh rate
+static RoadMapConfigDescriptor RT_CFG_PRM_HIRESREFRAT_Var =
+                           ROADMAP_CONFIG_ITEM(
+                                    RT_CFG_TAB,
+                                    RT_CFG_PRM_HIRESREFRAT_Name);
+
+//   Summary Refresh rate
+static RoadMapConfigDescriptor RT_CFG_PRM_SUMMARY_Var =
+                           ROADMAP_CONFIG_ITEM(
+                                    RT_CFG_TAB,
+                                    RT_CFG_PRM_SUMMARY_Name);
+
+//   Commcheck time
+static RoadMapConfigDescriptor RT_CFG_PRM_COMMCHECK_Var =
+                           ROADMAP_CONFIG_ITEM(
+                                    RT_CFG_TAB,
+                                    RT_CFG_PRM_COMMCHECK_Name);
+
 //   Web-service address
-static RoadMapConfigDescriptor RT_CFG_PRM_WEBSRV_Var = 
-                           ROADMAP_CONFIG_ITEM( 
-                                    RT_CFG_TAB, 
+static RoadMapConfigDescriptor RT_CFG_PRM_WEBSRV_Var =
+                           ROADMAP_CONFIG_ITEM(
+                                    RT_CFG_TAB,
                                     RT_CFG_PRM_WEBSRV_Name);
 
+//   Web-service address
+static RoadMapConfigDescriptor RT_CFG_PRM_RANDOM_USER_Var =
+                           ROADMAP_CONFIG_ITEM(
+                                    RT_CFG_TAB,
+                                    RT_CFG_PRM_RANDOM_USER_Name);
+
 /*   My visability status
-static RoadMapConfigDescriptor RT_CFG_PRM_MYVSBL_Var = 
-                           ROADMAP_CONFIG_ITEM( 
-                                    RT_CFG_TAB, 
+static RoadMapConfigDescriptor RT_CFG_PRM_MYVSBL_Var =
+                           ROADMAP_CONFIG_ITEM(
+                                    RT_CFG_TAB,
                                     RT_CFG_PRM_MYVSBL_Name);
 
 //   My ROI - What people do I want to see
-static RoadMapConfigDescriptor RT_CFG_PRM_INTRST_Var = 
-                           ROADMAP_CONFIG_ITEM( 
-                                    RT_CFG_TAB, 
+static RoadMapConfigDescriptor RT_CFG_PRM_INTRST_Var =
+                           ROADMAP_CONFIG_ITEM(
+                                    RT_CFG_TAB,
                                     RT_CFG_PRM_INTRST_Name);*/
 
 //   Visability group:
-RoadMapConfigDescriptor RT_CFG_PRM_VISGRP_Var = 
-			                       ROADMAP_CONFIG_ITEM( 
-                                    RT_CFG_TAB, 
+RoadMapConfigDescriptor RT_CFG_PRM_VISGRP_Var =
+                                ROADMAP_CONFIG_ITEM(
+                                    RT_CFG_TAB,
                                     RT_CFG_PRM_VISGRP_Name);
-                                    
+
 //   Visability Report:
-RoadMapConfigDescriptor RT_CFG_PRM_VISREP_Var = 
-			                       ROADMAP_CONFIG_ITEM( 
-                                    RT_CFG_TAB, 
+RoadMapConfigDescriptor RT_CFG_PRM_VISREP_Var =
+                                ROADMAP_CONFIG_ITEM(
+                                    RT_CFG_TAB,
                                     RT_CFG_PRM_VISREP_Name);
- 
-BOOL GetCurrentDirectionPoints(  RoadMapGpsPosition*  GPS_position, 
+
+BOOL GetCurrentDirectionPoints(  RoadMapGpsPosition*  GPS_position,
                                  int*                 from_node,
                                  int*                 to_node,
                                  int*                 direction);
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+BOOL IsImportantError( roadmap_result res)
+{ return (res != succeeded) && (res != err_rt_no_data_to_send);}
+
+BOOL IsTransactionError( roadmap_result res)
+{ return is_network_error(res) || is_general_error(res);}
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -220,36 +294,86 @@ const char* RT_GetWebServiceAddress()
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-int Realtime_GetRefreshRateinMilliseconds()
+static int Realtime_DecodeRefreshRateMilliseconds( RoadMapConfigDescriptor *pDesc,
+																	float							fDefVal,
+												  				 	float							fMinVal,
+												  				 	float							fMaxVal)
 {
-   const char* szRefreshRate  = NULL;
-   float       fRefreshRate   = 0.F;
+   const char* szRefreshRate  	 = NULL;
+   float       fRefreshRate   	 = 0.F;
 
    //   Calculate refresh rate:
-   szRefreshRate = roadmap_config_get( &RT_CFG_PRM_REFRAT_Var);
+   szRefreshRate = roadmap_config_get( pDesc);
    if( szRefreshRate && (*szRefreshRate))
-      fRefreshRate = (float)atof(szRefreshRate);
-   
+      fRefreshRate = (float) atof(szRefreshRate);
+
    //   Fix refresh rate:
    if( !fRefreshRate)
-      fRefreshRate = RT_CFG_PRM_REFRAT_iDef;
+      fRefreshRate = fDefVal;
    else
    {
-      if( fRefreshRate < RT_CFG_PRM_REFRAT_iMin)
-         fRefreshRate = RT_CFG_PRM_REFRAT_iMin;
-      else
-         if( RT_CFG_PRM_REFRAT_iMax < fRefreshRate)
-            fRefreshRate = RT_CFG_PRM_REFRAT_iMax;
+	  BOOL bLowLimExceed = ( fRefreshRate < fMinVal );
+	  BOOL bUpLimExceed = ( fRefreshRate > fMaxVal );
+      if ( bLowLimExceed )
+         fRefreshRate = fMinVal;
+ 	  if ( bUpLimExceed )
+		 fRefreshRate = fMaxVal;
    }
-   
+
    //   Refresh-rate in milliseconds
    return (int)(fRefreshRate * 60 * 1000.F);
+}
+
+
+int Realtime_GetRefreshRateinMilliseconds()
+{
+	int iRefreshRate;
+
+   gs_iCycleTimeSeconds = Realtime_DecodeRefreshRateMilliseconds ( &RT_CFG_PRM_REFRAT_Var,
+   																					 RT_CFG_PRM_REFRAT_iDef,
+   																					 RT_CFG_PRM_REFRAT_iMin,
+   																					 RT_CFG_PRM_REFRAT_iMax) / 1000;
+
+   roadmap_log( ROADMAP_WARNING, "Current network cycle time: %d seconds.", gs_iCycleTimeSeconds );
+
+   iRefreshRate = Realtime_DecodeRefreshRateMilliseconds ( &RT_CFG_PRM_HIRESREFRAT_Var,
+   																			RT_CFG_PRM_HIRESREFRAT_iDef,
+   																			RT_CFG_PRM_HIRESREFRAT_iMin,
+   																			gs_iCycleTimeSeconds / 60.0);
+
+   roadmap_log( ROADMAP_WARNING, "Current network refresh rate: %d seconds.", (int)(iRefreshRate/1000) );
+   gs_iCycleRoundoffSeconds = (int)(iRefreshRate/2000);
+
+   gs_iSummaryCycleSeconds = Realtime_DecodeRefreshRateMilliseconds ( &RT_CFG_PRM_SUMMARY_Var,
+   																					 RT_CFG_PRM_SUMMARY_iDef,
+   																					 iRefreshRate / 60000.0,
+   																					 gs_iCycleTimeSeconds / 60.0) / 1000;
+
+   roadmap_log( ROADMAP_WARNING, "Current summary cycle time: %d seconds.", gs_iSummaryCycleSeconds );
+
+   gs_iMaxCommCheckSeconds = Realtime_DecodeRefreshRateMilliseconds ( &RT_CFG_PRM_COMMCHECK_Var,
+   																			RT_CFG_PRM_COMMCHECK_iDef,
+   																			iRefreshRate / 60000.0,
+   																			RT_CFG_PRM_COMMCHECK_iMax) / 1000;
+
+   roadmap_log( ROADMAP_WARNING, "Current comm retry time: %d seconds.", gs_iMaxCommCheckSeconds );
+
+   return iRefreshRate;
 }
 
 //   Enabled / Disabled:
 BOOL GetEnableDisableState()
 {
    if( 0 == strcmp( roadmap_config_get( &RT_CFG_PRM_STATUS_Var), RT_CFG_PRM_STATUS_Enabled))
+      return TRUE;
+   return FALSE;
+}
+
+//   Get 'Auto Registration' state:
+BOOL IsAutoRegEnabled()
+{
+   const char* val = roadmap_config_get( &RT_CFG_PRM_AUTOREG_Var);
+   if( 0 == strcmp( val, RT_CFG_PRM_AUTOREG_Enabled))
       return TRUE;
    return FALSE;
 }
@@ -262,63 +386,96 @@ BOOL Realtime_Initialize()
 {
    if( gs_bInitialized)
       return TRUE;
-      
+
    // Nickname:
-   roadmap_config_declare( RT_USER_TYPE, 
+   roadmap_config_declare( RT_USER_TYPE,
                            &RT_CFG_PRM_NKNM_Var,
                            RT_CFG_PRM_NKNM_Default,
                            NULL);
-   
-      
+
+
    // Password:
-   roadmap_config_declare_password ( 
-                           RT_USER_TYPE, 
+   roadmap_config_declare_password (
+                           RT_USER_TYPE,
                            &RT_CFG_PRM_PASSWORD_Var,
                            RT_CFG_PRM_PASSWORD_Default);
-      
+
    // Name:
-   roadmap_config_declare( RT_USER_TYPE, 
+   roadmap_config_declare( RT_USER_TYPE,
                            &RT_CFG_PRM_NAME_Var,
                            RT_CFG_PRM_NAME_Default,
                            NULL);
-   
+
    //   Enable / Disable service
-   roadmap_config_declare_enumeration( RT_CFG_TYPE, 
-                                       &RT_CFG_PRM_STATUS_Var, 
-                                       OnSettingsChanged_EnableDisable, 
-                                       RT_CFG_PRM_STATUS_Enabled, 
-                                       RT_CFG_PRM_STATUS_Disabled, 
+   roadmap_config_declare_enumeration( RT_CFG_TYPE,
+                                       &RT_CFG_PRM_STATUS_Var,
+                                       OnSettingsChanged_EnableDisable,
+                                       RT_CFG_PRM_STATUS_Enabled,
+                                       RT_CFG_PRM_STATUS_Disabled,
+                                       NULL);
+
+   //   Enable / Disable auto registration
+   roadmap_config_declare_enumeration( RT_CFG_TYPE,
+                                       &RT_CFG_PRM_AUTOREG_Var,
+                                       NULL,
+                                       RT_CFG_PRM_AUTOREG_Disabled,
+                                       RT_CFG_PRM_AUTOREG_Enabled,
                                        NULL);
 
    //   Refresh rate
-   roadmap_config_declare( RT_CFG_TYPE, 
+   roadmap_config_declare( RT_CFG_TYPE,
                            &RT_CFG_PRM_REFRAT_Var,
                            RT_CFG_PRM_REFRAT_Default,
                            NULL);
 
+   //   Hi-Res Refresh rate
+   roadmap_config_declare( RT_CFG_TYPE,
+                           &RT_CFG_PRM_HIRESREFRAT_Var,
+                           RT_CFG_PRM_HIRESREFRAT_Default,
+                           NULL);
+
+   //   Summary Refresh rate
+   roadmap_config_declare( RT_CFG_TYPE,
+                           &RT_CFG_PRM_SUMMARY_Var,
+                           RT_CFG_PRM_SUMMARY_Default,
+                           NULL);
+
+   //   Comm-check max time
+   roadmap_config_declare( RT_CFG_TYPE,
+                           &RT_CFG_PRM_COMMCHECK_Var,
+                           RT_CFG_PRM_COMMCHECK_Default,
+                           NULL);
+
    //   Web-service address
-   roadmap_config_declare( RT_CFG_TYPE, 
+   roadmap_config_declare( RT_CFG_TYPE,
                            &RT_CFG_PRM_WEBSRV_Var,
                            RT_CFG_PRM_WEBSRV_Default,
                            NULL);
 
    // Visability group:
-   roadmap_config_declare_enumeration( RT_USER_TYPE, 
-                                       &RT_CFG_PRM_VISGRP_Var, 
-                                       OnSettingsChanged_VisabilityGroup, 
-                                       RT_CFG_PRM_VISGRP_Anonymous, 
-                                       RT_CFG_PRM_VISGRP_Invisible, 
+   roadmap_config_declare_enumeration( RT_USER_TYPE,
+                                       &RT_CFG_PRM_VISGRP_Var,
+                                       OnSettingsChanged_VisabilityGroup,
+                                       RT_CFG_PRM_VISGRP_Anonymous,
+                                       RT_CFG_PRM_VISGRP_Invisible,
                                        RT_CFG_PRM_VISGRP_Nickname,
                                        NULL);
-                                       
-                                       
+
+
    // Visability report:
-   roadmap_config_declare_enumeration( RT_USER_TYPE, 
-                                       &RT_CFG_PRM_VISREP_Var, 
-                                       OnSettingsChanged_VisabilityGroup, 
+   roadmap_config_declare_enumeration( RT_USER_TYPE,
+                                       &RT_CFG_PRM_VISREP_Var,
+                                       OnSettingsChanged_VisabilityGroup,
                                        RT_CFG_PRM_VISREP_Nickname,
-                                       RT_CFG_PRM_VISREP_Anonymous, 
+                                       RT_CFG_PRM_VISREP_Anonymous,
                                        NULL);
+
+   //Random User
+   roadmap_config_declare( RT_USER_TYPE,
+                           &RT_CFG_PRM_RANDOM_USER_Var,
+                           RT_CFG_PRM_RANDOM_USERT_Default,
+                           NULL);
+
 
    RealtimePrivacyInit();
    RTConnectionInfo_Init   ( &gs_CI, OnAddUser, OnMoveUser, OnRemoveUser);
@@ -326,21 +483,35 @@ BOOL Realtime_Initialize()
    StatusStatistics_Init   ( &gs_ST);
    RTAlerts_Init();
    RTNet_Init();
-   
+   Realtime_LoginDetailsInit();
+
    // This will disable the auto-detection of large time gap between good sessions:
    gs_ST.timeLastGoodSession = time(NULL);
 
    roadmap_device_events_register( OnDeviceEvent, NULL);
-   
+
    gs_bInitialized = TRUE;
-   
-	// dump data from previous run to offline file   
-	Realtime_DumpOffline ();
+
+   // dump data from previous run to offline file
+   Realtime_DumpOffline ();
 
    //   If needed - start service:
    OnSettingsChanged_EnableDisable();
-   
+
+   roadmap_main_set_periodic( RT_WARNING_INIT_TO, RealTime_WarningInit );
+   roadmap_warning_register( (RoadMapWarningFn) RealTime_Warning, "RealTime" );
+
    return TRUE;
+}
+
+BOOL Realtime_is_random_user(){
+   int is_random = roadmap_config_get_integer(&RT_CFG_PRM_RANDOM_USER_Var);
+   return (BOOL)is_random;
+}
+
+void Realtime_set_random_user(BOOL is_random){
+   roadmap_config_set_integer(&RT_CFG_PRM_RANDOM_USER_Var, (int)is_random);
+   roadmap_config_save(0);
 }
 
 void Realtime_Terminate()
@@ -350,9 +521,9 @@ void Realtime_Terminate()
 
    roadmap_device_events_unregister( OnDeviceEvent);
 
-	// dump pending data to offline file   
-	Realtime_DumpOffline ();
-	
+   // dump pending data to offline file
+   Realtime_DumpOffline ();
+
    Realtime_Stop( FALSE /* Enable Logout? */);
    RTNet_Term();
    RTAlerts_Term();
@@ -379,12 +550,12 @@ BOOL Realtime_Start()
                      // 'Init' was called from 'Realtime_Initialize()', thus it is always
                      // called before 'Term'...
    RTAlerts_Init();
-   
+
    gs_pfnOnSystemIsIdle = NULL;
 
    gs_bRunning = TRUE;
    roadmap_main_set_periodic( Realtime_GetRefreshRateinMilliseconds(), OnTimer_Realtime);
-   
+
    roadmap_screen_subscribe_after_flow_control_refresh( OnMapMoved);
 
    OnTimer_Realtime();
@@ -392,11 +563,11 @@ BOOL Realtime_Start()
    return gs_bRunning;
 }
 
-void OnTransactionCompleted_LogoutAndStop( BOOL bTransactionSucceeded)
+void OnTransactionCompleted_LogoutAndStop( void* ctx, roadmap_result rc)
 {
-   if( !bTransactionSucceeded)
+   if( succeeded != rc)
       roadmap_log( ROADMAP_WARNING, "OnTransactionCompleted_LogoutAndStop() - 'Logout' failed");
-   
+
    gs_CI.eTransactionStatus = TS_Idle;
    Realtime_FullReset( TRUE /* Redraw */);
 }
@@ -429,11 +600,11 @@ void Realtime_Stop(BOOL bEnableLogout)
 
    if( bLogoutInProcess)
       return;
-   
+
    if( TS_Idle == gs_CI.eTransactionStatus)
       Realtime_FullReset(TRUE /* Redraw */);
    else
-      gs_CI.eTransactionStatus = TS_Stopping;
+      RTNet_AbortTransaction( &gs_CI.eTransactionStatus);
 
    gs_bRunning = FALSE;
 }
@@ -448,31 +619,74 @@ void  Realtime_NotifyOnIdle( RoadMapCallback pfnOnSystemIsIdle)
 {
    assert(    pfnOnSystemIsIdle);
    assert(!gs_pfnOnSystemIsIdle);
-   
+
    gs_pfnOnSystemIsIdle = NULL;
-   
+
    if( TS_Idle == gs_CI.eTransactionStatus)
    {
       pfnOnSystemIsIdle();
       return;
    }
-   
+
    gs_pfnOnSystemIsIdle = pfnOnSystemIsIdle;
 }
 
-void  Realtime_AbortTransaction( RoadMapCallback pfnOnSystemIsIdle)
+static void Realtime_LoginCallback( void)
+{
+	roadmap_main_remove_periodic( Realtime_LoginCallback);
+
+    if ( gs_bSaveLoginInfoOnSuccess )
+    {
+	   Realtime_SaveLoginInfo();
+	   gs_bSaveLoginInfoOnSuccess = FALSE;
+    }
+
+	if( gs_pfnOnUserLoggedIn )
+	{
+		gs_pfnOnUserLoggedIn();
+	}
+
+	gs_pfnOnUserLoggedIn = NULL;
+	roadmap_screen_refresh();
+}
+
+RoadMapCallback  Realtime_NotifyOnLogin( RoadMapCallback pfnOnLogin)
+{
+	RoadMapCallback	pPrev	= gs_pfnOnUserLoggedIn;
+
+   assert(    pfnOnLogin);
+
+	if( gs_pfnOnUserLoggedIn == pfnOnLogin)
+	{
+		roadmap_log( ROADMAP_ERROR, "Login callback 0x%lx already registered", (long)pfnOnLogin);
+		return NULL;
+	}
+
+   gs_pfnOnUserLoggedIn = pfnOnLogin;
+
+   if( (TS_Idle == gs_CI.eTransactionStatus) && gs_CI.bLoggedIn)
+   {
+      roadmap_main_set_periodic( 10, Realtime_LoginCallback);
+   }
+
+   return pPrev;
+}
+
+void Realtime_AbortTransaction( RoadMapCallback pfnOnSystemIsIdle)
 {
    assert(    pfnOnSystemIsIdle);
    assert(!gs_pfnOnSystemIsIdle);
-   
+
    gs_pfnOnSystemIsIdle = NULL;
-   
+
+   RTNet_AbortTransaction( &gs_CI.eTransactionStatus);
+
    if( TS_Idle == gs_CI.eTransactionStatus)
    {
       pfnOnSystemIsIdle();
       return;
    }
-   
+
    gs_pfnOnSystemIsIdle    = pfnOnSystemIsIdle;
    gs_CI.eTransactionStatus= TS_Stopping;
 }
@@ -483,10 +697,10 @@ void  Realtime_AbortTransaction( RoadMapCallback pfnOnSystemIsIdle)
 void OnMsgboxClosed_ShowSystemMessage( int exit_code)
 {
    RTSystemMessage Message;
-   
+
    if( RTSystemMessageQueue_IsEmpty())
       return;
-   
+
    if( RTSystemMessageQueue_Pop( &Message))
    {
       roadmap_messagebox_cb( Message.Title, Message.Text, OnMsgboxClosed_ShowSystemMessage);
@@ -499,9 +713,9 @@ void ShowSystemMessages()
 
 void PerformVersionUpgrade( int exit_code, void *context)
 {
-   assert( gs_VU.NewVersion[0]);
-   assert( gs_VU.URL[0]);
-   
+//   assert( gs_VU.NewVersion[0]);
+//   assert( gs_VU.URL[0]);
+
 #if defined (_WIN32) || defined (__SYMBIAN32__)
    if( dec_yes == exit_code)
       roadmap_internet_open_browser( gs_VU.URL);
@@ -510,17 +724,35 @@ void PerformVersionUpgrade( int exit_code, void *context)
    VersionUpgradeInfo_Init ( &gs_VU);
 }
 
-#ifndef IPHONE
+#ifdef IPHONE
+void UpgradeVersion()
+{
+   const char* szTitle  = "Software Update";
+   const char* szText   = "A newer version of Waze is available. Please go to App Store to perform an upgrade.";
+
+   roadmap_messagebox(szTitle, szText);
+   VersionUpgradeInfo_Init ( &gs_VU);
+}
+#elif ANDROID
+void UpgradeVersion()
+{
+   const char* szTitle  = "Software Update";
+   const char* szText   = "A newer version of Waze is available. Please go to Android Market to perform an upgrade.";
+
+   roadmap_messagebox(szTitle, szText);
+   VersionUpgradeInfo_Init ( &gs_VU);
+}
+#else
 void UpgradeVersion()
 {
    const char* szTitle  = "Software Update";
    const char* szText   = "";
-   
+
    switch( gs_VU.eSeverity)
    {
       case VUS_NA:
          return;
-   
+
       case VUS_Low:
          szText = "A newer version of Waze is available. Would you like to install the new version?";
          break;
@@ -532,35 +764,27 @@ void UpgradeVersion()
       case VUS_Hi:
          szText = "A newer version of Waze is available. Would you like to install the new version?";
          break;
-      
+
       default:
       {
          assert(0);
          return;
       }
    }
-   
-   ssd_confirm_dialog      (  szTitle, 
-                              szText, 
-                              TRUE, 
+
+   ssd_confirm_dialog      (  szTitle,
+                              szText,
+                              TRUE,
                               PerformVersionUpgrade,
                               NULL);
-}
-#else
-
-void UpgradeVersion()
-{
-   const char* szTitle  = "Software Update";
-   const char* szText   = "A newer version of Waze is available. Please go to Cydia to perform an upgrade.";
-
-   roadmap_messagebox(szTitle, szText);
+   VersionUpgradeInfo_Init ( &gs_VU);
 }
 #endif
 
 BOOL ThereAreTooManyNetworkErrors(/*?*/)
 {
    int iSecondsPassedFromLastGoodSession;
-   
+
    if( (gs_ST.iNetworkErrorsSuccessive < RT_THRESHOLD_TO_DISABLE_SERVICE__MAX_NETWORK_ERRORS_SUCCESSIVE)
          &&
        (gs_ST.iNetworkErrors           < RT_THRESHOLD_TO_DISABLE_SERVICE__MAX_NETWORK_ERRORS))
@@ -570,8 +794,8 @@ BOOL ThereAreTooManyNetworkErrors(/*?*/)
    iSecondsPassedFromLastGoodSession = (int)(time(NULL) - gs_ST.timeLastGoodSession);
    if( iSecondsPassedFromLastGoodSession < RT_THRESHOLD_TO_DISABLE_SERVICE__MAX_SECONDS_FROM_LAST_SESSION)
       return FALSE;
-   
-   roadmap_log(ROADMAP_WARNING, 
+
+   roadmap_log(ROADMAP_WARNING,
                "There Are Too Many Network Errors(!) - %d network errors occurred. %d of them successive. %d seconds passed from last good session!",
                gs_ST.iNetworkErrors,
                gs_ST.iNetworkErrorsSuccessive,
@@ -582,11 +806,11 @@ BOOL ThereAreTooManyNetworkErrors(/*?*/)
 
 static void HandleNetworkErrors()
 {
-   if( (ERR_NetworkError == gs_CI.LastError) || (ERR_SessionTimedout == gs_CI.LastError))
+   if( IsTransactionError( gs_CI.LastError) || (err_timed_out == gs_CI.LastError))
    {
       gs_ST.iNetworkErrors++;
       gs_ST.iNetworkErrorsSuccessive++;
-      
+
       if( ThereAreTooManyNetworkErrors())
       {
          // TURNNING OFF REALTIME
@@ -598,7 +822,7 @@ static void HandleNetworkErrors()
          if(!gs_bQuiteErrorMode &&
             (RT_THRESHOLD_TO_ENTER_SILENT_MODE__MAX_NETWORK_ERRORS_SUCCESSIVE <
                gs_ST.iNetworkErrorsSuccessive))
-         {               
+         {
             roadmap_log( ROADMAP_INFO, "HandleNetworkErrors() - Entering the 'quite error mode' state");
             gs_bQuiteErrorMode = TRUE;
          }
@@ -607,7 +831,7 @@ static void HandleNetworkErrors()
    else
    {
       gs_ST.iNetworkErrorsSuccessive= 0;
-      
+
       if( gs_bQuiteErrorMode)
       {
          gs_bQuiteErrorMode = FALSE;
@@ -616,22 +840,25 @@ static void HandleNetworkErrors()
    }
 }
 
-void OnTransactionCompleted( BOOL bTransactionSucceeded)
+void OnTransactionCompleted( void* ctx, roadmap_result rc)
 {
    BOOL bNewTransactionStarted = FALSE;
-   
+
+   if( succeeded == gs_CI.LastError)
+      gs_CI.LastError = rc;
+
    // Were we asked to abort?
    if( TS_Stopping == gs_CI.eTransactionStatus)
    {
       Realtime_ResetTransactionState(TRUE /* Redraw */);
       RTNet_TransactionQueue_Clear();
-   
+
       if( gs_pfnOnSystemIsIdle)
       {
          gs_pfnOnSystemIsIdle();
          gs_pfnOnSystemIsIdle = NULL;
       }
-         
+
       return;
    }
 
@@ -639,73 +866,81 @@ void OnTransactionCompleted( BOOL bTransactionSucceeded)
    {
       int   iUpdatedUsersCount;
       int   iRemovedUsersCount;
-      
+
       RTUsers_RemoveUnupdatedUsers( &gs_CI.Users, &iUpdatedUsersCount, &iRemovedUsersCount);
-      
+
       if( iUpdatedUsersCount || iRemovedUsersCount)
          roadmap_screen_redraw();
    }
-   
+
    if( RTUsers_IsEmpty( &gs_CI.Users))
       roadmap_log( ROADMAP_DEBUG, "OnTransactionCompleted() - No users where found");
    else
       roadmap_log( ROADMAP_DEBUG, "OnTransactionCompleted() - Have %d users", RTUsers_Count( &gs_CI.Users));
-   
-   if( ERR_Success == gs_CI.LastError)
+
+   if( succeeded != gs_CI.LastError)
    {
-      if( bTransactionSucceeded)
+      roadmap_log( ROADMAP_WARNING, "OnTransactionCompleted() - Last operation ended with error '%s'", roadmap_result_string(gs_CI.LastError));
+   }
+
+   switch( gs_CI.LastError)
+   {
+      case err_rt_unknown_login_id:
+         roadmap_net_mon_error(roadmap_result_string(gs_CI.LastError));
+         Realtime_ResetLoginState( TRUE);
+         break;
+
+      case err_rt_login_failed:
+      case err_rt_wrong_name_or_password:
       {
-         gs_ST.timeLastGoodSession = time(NULL);
-         gs_CI.AdditionalErrorInfo = 0;
-         
-         if( !gs_bHadAtleastOneGoodSession)
-            gs_bHadAtleastOneGoodSession = TRUE;
+
+    	 if ( gs_bFirstLoginFailure )
+    	 {
+    		 roadmap_login_new_existing_dlg();
+    		 gs_bFirstLoginFailure = FALSE;
+    	 }
+    	 else
+    	 {
+    		 roadmap_messagebox( "Login Failed: Wrong login details", "Please verify login details are accurate" );
+    		 roadmap_login_details_dialog_show_un_pw();
+    	 }
+         break;
       }
-   }
-   else
-   {
-      roadmap_log( ROADMAP_WARNING, "OnTransactionCompleted() - Last operation ended with error '%s'", GetErrorString(gs_CI.LastError));
-      
-      switch (gs_CI.LastError) 
-      {
-         case ERR_UnknownLoginID:
-            roadmap_net_mon_error(GetErrorString(gs_CI.LastError));
-            Realtime_ResetLoginState( TRUE);
-            break;
 
-         case ERR_LoginFailed:
-         case ERR_WrongNameOrPassword:
-            ssd_login_details_dialog_show ();
-            break;
-            
-         case ERR_GeneralError:
-         case ERR_SessionTimedout:
-         case ERR_ParsingError:
-         case ERR_WrongNetworkSettings:
-            roadmap_net_mon_error(GetErrorString(gs_CI.LastError));
-            break;
 
-         case ERR_NetworkError:
-            if(  !gs_bQuiteErrorMode                                    &&
-                 gs_bHadAtleastOneGoodSession                           && 
-                (gs_CI.AdditionalErrorInfo != neterr_request_pending)   &&
-                (gs_CI.AdditionalErrorInfo != neterr_no_path_to_destination))
-               roadmap_net_mon_error(GetErrorString(gs_CI.LastError));
+      default:
+
+         if( is_network_error(gs_CI.LastError))
+         {
+            if(  !gs_bQuiteErrorMode                           &&
+                 gs_bHadAtleastOneGoodSession                  &&
+                (gs_CI.LastError != err_net_request_pending)   &&
+                (gs_CI.LastError != err_net_no_path_to_destination))
+               roadmap_net_mon_error(roadmap_result_string(gs_CI.LastError));
             else
-               roadmap_log(ROADMAP_DEBUG, 
-                           "OnTransactionCompleted() - Not presenting network error (Virgin: %d; Err-info: %d; Quite err mode: %d)", 
-                           !gs_bHadAtleastOneGoodSession, gs_CI.AdditionalErrorInfo, gs_bQuiteErrorMode);
-            break;
+               roadmap_log(ROADMAP_DEBUG,
+                           "OnTransactionCompleted() - Not presenting network error (Virgin: %d; Last-Err: '%s'; Quite err mode: %d)",
+                           !gs_bHadAtleastOneGoodSession, roadmap_result_string(gs_CI.LastError), gs_bQuiteErrorMode);
+         }
+         else
+         {
+			   if( succeeded != gs_CI.LastError)
+			   {
+            	roadmap_net_mon_error(roadmap_result_string(gs_CI.LastError));
+			   }
 
-         default:
-            assert(0);
-            break;
-      }      
+			   // ignoring other non-network non-login errors
+		      gs_ST.timeLastGoodSession = time(NULL);
+
+		      if( !gs_bHadAtleastOneGoodSession)
+		         gs_bHadAtleastOneGoodSession = TRUE;
+         }
+
+         break;
    }
-   
+
    // Special case: If 'no internet' - stop service:
-   if((ERR_NetworkError             == gs_CI.LastError) && 
-      (neterr_no_path_to_destination== gs_CI.AdditionalErrorInfo))
+   if( err_net_no_path_to_destination  == gs_CI.LastError)
    {
       roadmap_log( ROADMAP_INFO, "OnTransactionCompleted() - !!! NO INTERNET !!! REALTIME SERVICE IS STOPPING AUTOMATICALLY !!!");
       Realtime_Stop( FALSE);
@@ -717,40 +952,50 @@ void OnTransactionCompleted( BOOL bTransactionSucceeded)
 
    if( RTSystemMessageQueue_Size())
       ShowSystemMessages();
-   
+
    if( VUS_NA != gs_VU.eSeverity)
       UpgradeVersion();
-   
-   if( gs_pfnOnLoginTestResult)
+
+   Realtime_ResetTransactionState( FALSE /* Redraw */);
+
+   if( gs_pfnOnLoginTestResult )
       TestLoginDetails();
    else
    {
-      if(!gs_CI.bLoggedIn                                                     || 
-         !RTNet_TransactionQueue_ProcessSingleItem( &bNewTransactionStarted)  || 
+      if(!gs_CI.bLoggedIn                                                     ||
+         !RTNet_TransactionQueue_ProcessSingleItem( &bNewTransactionStarted)  ||
          !bNewTransactionStarted)
          gs_CI.eTransactionStatus = TS_Idle;
    }
-   
-   if( (TS_Idle == gs_CI.eTransactionStatus) && gs_pfnOnSystemIsIdle)
+
+   if( (TS_Idle == gs_CI.eTransactionStatus))
    {
-      gs_pfnOnSystemIsIdle();
-      gs_pfnOnSystemIsIdle = NULL;
+   	if( gs_pfnOnSystemIsIdle)
+	   {
+	      gs_pfnOnSystemIsIdle();
+	      gs_pfnOnSystemIsIdle = NULL;
+	   }
+	   if( gs_CI.bLoggedIn )
+	   {
+	   	roadmap_main_set_periodic( 10, Realtime_LoginCallback );
+	   }
    }
+   roadmap_screen_refresh();
 }
 
-void OnAsyncOperationCompleted_AllTogether( BOOL bResult)
+void OnAsyncOperationCompleted_AllTogether( void* ctx, roadmap_result rc)
 {
-   if( !bResult)
+   if( succeeded != rc)
       roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_AllTogether(POST) - The 'AllTogether' packet-send had failed");
 
-   editor_track_report_conclude_export (bResult != FALSE);
-   
-   OnTransactionCompleted( bResult);
+   editor_track_report_conclude_export( succeeded == rc);
+
+   OnTransactionCompleted( ctx, rc);
 }
 
-void OnAsyncOperationCompleted_NodePath( BOOL bResult)
+void OnAsyncOperationCompleted_NodePath( void* ctx, roadmap_result rc)
 {
-   if( bResult)
+   if( succeeded == rc)
    {
       roadmap_log( ROADMAP_DEBUG, "OnAsyncOperationCompleted_NodePath() - 'NodePath' succeeded (if there where points to send - they were sent)");
       roadmap_log( ROADMAP_DEBUG, "OnAsyncOperationCompleted_NodePath() - TRANSACTION FULLY COMPLETED");
@@ -758,8 +1003,18 @@ void OnAsyncOperationCompleted_NodePath( BOOL bResult)
    else
       roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_NodePath(POST) - 'NodePath' had failed");
 
-   OnTransactionCompleted( bResult);
+   OnTransactionCompleted( ctx, rc);
 }
+
+
+void OnAsyncOperationCompleted_CreateAccount( void* ctx, roadmap_result rc)
+{
+   // Finilize the transation
+   OnTransactionCompleted(  ctx,  rc );
+   // Handle the errors
+   roadmap_login_update_details_on_response( rc );
+}
+
 
 BOOL HaveNodePathToSend()
 { return (1 <= gs_pPI->num_nodes);}
@@ -769,21 +1024,21 @@ BOOL SendMessage_NodePath( char* packet_only)
    BOOL  bRes;
 
    bRes = RTNet_NodePath( &gs_CI,
-                           gs_pPI->nodes[0].GPS_time, 
+                           gs_pPI->nodes[0].GPS_time,
                            gs_pPI->nodes,
                            gs_pPI->num_nodes,
                            OnAsyncOperationCompleted_NodePath,
                            packet_only);
-   
+
    return bRes;
 }
 
-void OnAsyncOperationCompleted_GPSPath( BOOL bResult)
+void OnAsyncOperationCompleted_GPSPath( void* ctx, roadmap_result rc)
 {
-   if( !bResult)
+   if( succeeded != rc)
    {
       roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_GPSPath(POST) - 'GPSPath' had failed");
-      OnTransactionCompleted( bResult);
+      OnTransactionCompleted( ctx, rc);
       return;
    }
 
@@ -796,16 +1051,16 @@ void OnAsyncOperationCompleted_GPSPath( BOOL bResult)
       else
       {
          roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_GPSPath(PRE) - Failed to send 'NodePath'");
-         OnTransactionCompleted( bResult);
+         OnTransactionCompleted( ctx, rc);
       }
    }
    else
-      OnAsyncOperationCompleted_NodePath(TRUE);
+      OnAsyncOperationCompleted_NodePath( ctx, succeeded);
 }
 
 
 BOOL HaveGPSPointsToSend()
-{ 
+{
    return (1 < gs_pPI->num_points);
 }
 
@@ -813,23 +1068,23 @@ BOOL SendMessage_GPSPath( char* packet_only)
 {
    BOOL  bRes;
 
-   bRes = RTNet_GPSPath(&gs_CI, 
-                        gs_pPI->points[0].GPS_time, 
+   bRes = RTNet_GPSPath(&gs_CI,
+                        gs_pPI->points[0].GPS_time,
                         gs_pPI->points,
                         gs_pPI->num_points,
                         OnAsyncOperationCompleted_GPSPath,
                         packet_only);
-   
+
    return bRes;
 }
 
 
-void OnAsyncOperationCompleted_CreateNewRoads( BOOL bResult)
+void OnAsyncOperationCompleted_CreateNewRoads( void* ctx, roadmap_result rc)
 {
-   if( !bResult)
+   if( succeeded != rc)
    {
       roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_CreateNewRoads(POST) - 'CreateNewRoads' had failed");
-      OnTransactionCompleted( FALSE);
+      OnTransactionCompleted( ctx, rc);
       return;
    }
 
@@ -842,51 +1097,74 @@ void OnAsyncOperationCompleted_CreateNewRoads( BOOL bResult)
       else
       {
          roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_CreateNewRoads(PRE) - Failed to send 'GPSPath'");
-         OnTransactionCompleted( FALSE);
+         OnTransactionCompleted( ctx, err_failed);
       }
    }
    else
-      OnAsyncOperationCompleted_GPSPath(TRUE);  // Move on to next handler...
+      OnAsyncOperationCompleted_GPSPath( ctx, succeeded);  // Move on to next handler...
 }
 
 
-void OnAsyncOperationCompleted_ReportAlert( BOOL bResult)
+void OnAsyncOperationCompleted_ReportAlert( void* ctx, roadmap_result rc)
 {
-   if (!bResult)
-   {
-   		roadmap_messagebox ("Error", "Sending report failed");
+   RTAlerts_CloseProgressDlg();
+   if( succeeded == rc){
+      RTAlerts_Resert_Minimized();
+      roadmap_trip_restore_focus();
+      roadmap_messagebox_timeout ("Thank you!!!", "Your report was successfully send to wazers in your area", 3);
+   }else{
+      roadmap_messagebox ("Error", "Sending report failed. Please resend later");
    }
-   else{
-   		roadmap_messagebox_timeout ("Thank you!!!", "Your report was sent to the community", 3);
-   }
-   
-   OnTransactionCompleted( bResult);
+
+   OnTransactionCompleted( ctx, rc);
 }
 
-void OnAsyncOperationCompleted_SendSMS( BOOL bResult)
+void OnAsyncOperationCompleted_SendSMS( void* ctx, roadmap_result rc)
 {
-   if (!bResult)
-   {
-   		roadmap_messagebox ("Error", "Sending message failed");
-   }
-   else{
-   		roadmap_messagebox_timeout ("Thank you!!!", "Message sent", 3);
-   }
-   
-   OnTransactionCompleted( bResult);
+   if( succeeded == rc)
+      roadmap_messagebox_timeout ("Thank you!!!", "Message sent", 3);
+   else
+      roadmap_messagebox ("Error", "Sending message failed");
+
+   OnTransactionCompleted( ctx, rc);
 }
-void OnAsyncOperationCompleted_PostComment( BOOL bResult)
+
+void OnAsyncOperationCompleted_TwitterConnect( void* ctx, roadmap_result rc)
 {
-   if (!bResult)
-   {
-   		roadmap_messagebox ("Error", "Sending comment failed");
-   }
+   if( succeeded != rc)
+      roadmap_messagebox ("Error", "There is no network connection.Updating your twitter account details failed.");
 
-   OnTransactionCompleted( bResult);
+   OnTransactionCompleted( ctx, rc);
 }
 
+void OnAsyncOperationCompleted_PostComment( void* ctx, roadmap_result rc)
+{
+   if( succeeded != rc)
+      roadmap_messagebox ("Error", "Sending comment failed");
+
+   OnTransactionCompleted( ctx, rc);
+}
+
+void OnAsyncOperationCompleted_ReportMapProblem( void* ctx, roadmap_result rc)
+{
+   if( succeeded != rc)
+      roadmap_messagebox ("Error", "Sending message failed");
+
+
+   OnTransactionCompleted( ctx, rc);
+}
+
+void OnAsyncOperationCompleted_TripServer( void* ctx, roadmap_result rc)
+{
+   if( succeeded != rc)
+   {
+      roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_TripServer(POST)  failed (rc=%d)", rc);
+      OnTransactionCompleted( ctx, rc);
+      return;
+   }
+}
 BOOL HaveCreateNewRoadsToSend()
-{ 
+{
    return (0 < gs_pPI->num_update_toggles);
 }
 
@@ -894,49 +1172,49 @@ BOOL SendMessage_CreateNewRoads( char* packet_only)
 {
    BOOL bStatus = FALSE;
    RoadMapStateFn fnState;
-   
+
    fnState = roadmap_state_find ("new_roads");
-   
+
    if (fnState == NULL)
    {
-   	roadmap_log (ROADMAP_ERROR, "Failed to retrieve new_roads state");
-   	return TRUE;	
+      roadmap_log (ROADMAP_ERROR, "Failed to retrieve new_roads state");
+      return TRUE;
    }
 
-  	bStatus = (fnState() != 0);
+     bStatus = (fnState() != 0);
 
-   return RTNet_CreateNewRoads(  
-   								&gs_CI,
-   								gs_pPI->num_update_toggles,
-   								gs_pPI->update_toggle_times, 
+   return RTNet_CreateNewRoads(
+                           &gs_CI,
+                           gs_pPI->num_update_toggles,
+                           gs_pPI->update_toggle_times,
                            gs_pPI->first_update_toggle_state,
                            OnAsyncOperationCompleted_CreateNewRoads,
                            packet_only);
 }
 
-void OnAsyncOperationCompleted_MapDisplayed( BOOL bResult)
+void OnAsyncOperationCompleted_MapDisplayed( void* ctx, roadmap_result rc)
 {
-   if( !bResult)
+   if( succeeded != rc)
    {
       roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_MapDisplayed(POST) - 'MapDisplayed' had failed");
-      OnTransactionCompleted( FALSE);
+      OnTransactionCompleted( ctx, rc);
       return;
    }
 
    roadmap_log( ROADMAP_DEBUG, "OnAsyncOperationCompleted_MapDisplayed() - 'MapDisplayed' was sent!");
 
-	if (HaveCreateNewRoadsToSend ())
-	{
-		if (SendMessage_CreateNewRoads (NULL)) {
+   if (HaveCreateNewRoadsToSend ())
+   {
+      if (SendMessage_CreateNewRoads (NULL)) {
          roadmap_log( ROADMAP_DEBUG, "OnAsyncOperationCompleted_MapDisplayed() - Sending 'CreateNewRoads'...");
-		}
-		else {
+      }
+      else {
          roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_MapDisplayed(PRE) - Failed to send 'CreateNewRoads'");
-         OnTransactionCompleted( FALSE);
-		}
-	}
+         OnTransactionCompleted( ctx, err_failed);
+      }
+   }
    else
-      OnAsyncOperationCompleted_CreateNewRoads(TRUE);  // Move on to next handler...
+      OnAsyncOperationCompleted_CreateNewRoads( ctx, succeeded);  // Move on to next handler...
 }
 
 
@@ -945,45 +1223,45 @@ BOOL SendMessage_MapDisplyed( char* packet_only)
    RoadMapArea MapPosition;
 
    roadmap_math_screen_edges( &MapPosition);
-   if((gs_CI.LastMapPosSent.west  == MapPosition.west ) && 
-      (gs_CI.LastMapPosSent.south == MapPosition.south) && 
-      (gs_CI.LastMapPosSent.east  == MapPosition.east ) && 
+   if((gs_CI.LastMapPosSent.west  == MapPosition.west ) &&
+      (gs_CI.LastMapPosSent.south == MapPosition.south) &&
+      (gs_CI.LastMapPosSent.east  == MapPosition.east ) &&
       (gs_CI.LastMapPosSent.north == MapPosition.north))
    {
       roadmap_log( ROADMAP_DEBUG, "SendMessage_MapDisplyed() - Skipping operation; Current coordinates where already sent...");
-      
+
       if( !packet_only)
-         OnAsyncOperationCompleted_MapDisplayed( TRUE);
-         
+         OnAsyncOperationCompleted_MapDisplayed( NULL, succeeded);
+
       return TRUE;
    }
 
-   if( RTNet_MapDisplyed(  &gs_CI, 
+   if( RTNet_MapDisplyed(  &gs_CI,
                            &MapPosition,
-			   roadmap_math_get_scale(0),
+            roadmap_math_get_scale(0),
                            OnAsyncOperationCompleted_MapDisplayed,
                            packet_only))
    {
       gs_CI.LastMapPosSent = MapPosition;
       return TRUE;
    }
-   
-   return FALSE;      
+
+   return FALSE;
 }
 
-void OnAsyncOperationCompleted_At( BOOL bResult)
+void OnAsyncOperationCompleted_At( void* ctx, roadmap_result rc)
 {
-   if( bResult)
+   if( succeeded == rc)
       roadmap_log( ROADMAP_DEBUG, "OnAsyncOperationCompleted_At() - My position is set!");
    else
       roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_At(POST) - Failed to set my position; Ignoring and continueing...");
-     
+
    if( SendMessage_MapDisplyed( NULL))
       roadmap_log( ROADMAP_DEBUG, "OnAsyncOperationCompleted_At() - Sending 'MapDisplayed'...");
    else
    {
       roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_At(PRE) - Failed to send 'MapDisplayed'");
-      OnTransactionCompleted( FALSE);
+      OnTransactionCompleted( ctx, err_failed);
    }
 }
 
@@ -993,27 +1271,54 @@ BOOL SendMessage_At( char* packet_only)
    int                  from;
    int                  to;
    int                  direction;
+   static BOOL          sendGpsLocation = TRUE;
 
    if( !editor_track_report_get_current_position( &MyLocation, &from, &to, &direction))
    {
-      roadmap_log( ROADMAP_DEBUG, "SendMessage_At() - 'GetCurrentDirectionPoints()' failed");
-      return FALSE;
+      BOOL has_reception = (roadmap_gps_reception_state() != GPS_RECEPTION_NONE) && (roadmap_gps_reception_state() != GPS_RECEPTION_NA);
+      const RoadMapPosition *Location = roadmap_trip_get_position ("GPS");
+
+      if (( Location == NULL) || IS_DEFAULT_LOCATION(Location) || !has_reception){
+         // No GPS position, try cell one
+    	  Location = roadmap_trip_get_position( "Location" );
+      }
+
+      if ((Location != NULL) && !IS_DEFAULT_LOCATION(Location) && sendGpsLocation ){
+         sendGpsLocation = FALSE;
+         MyLocation.latitude = Location->latitude;
+         MyLocation.longitude = Location->longitude;
+         MyLocation.altitude = 0;
+         MyLocation.speed = 0;
+         MyLocation.steering = 0;
+         return RTNet_At(  &gs_CI,
+                  &MyLocation,
+                  -1,
+                  -1,
+                  OnAsyncOperationCompleted_At,
+                  packet_only);
+      }
+      else{
+         roadmap_log( ROADMAP_DEBUG, "SendMessage_At() - 'editor_track_report_get_current_position()' failed");
+         return FALSE;
+      }
    }
-   
-   return RTNet_At(  &gs_CI, 
-        &MyLocation, 
+
+
+   sendGpsLocation = FALSE;
+   return RTNet_At(  &gs_CI,
+        &MyLocation,
         from,
         to,
         OnAsyncOperationCompleted_At,
         packet_only);
 }
 
-void OnAsyncOperationCompleted_SetVisability( BOOL bResult)
+void OnAsyncOperationCompleted_SetVisability( void* ctx, roadmap_result rc)
 {
-   if( !bResult)
+   if( succeeded != rc)
    {
       roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_SetVisability(POST) - Failed to set visability");
-      OnTransactionCompleted( FALSE);
+      OnTransactionCompleted( ctx, rc);
       return;
    }
 
@@ -1025,7 +1330,17 @@ void OnAsyncOperationCompleted_SetVisability( BOOL bResult)
    else
    {
       roadmap_log( ROADMAP_WARNING, "OnAsyncOperationCompleted_SetVisability(PRE) - Failed to set my position ('At')");
-      OnAsyncOperationCompleted_At(FALSE);
+      OnAsyncOperationCompleted_At( ctx, err_failed);
+   }
+}
+
+void OnAsyncOperationCompleted_SetMood( void* ctx, roadmap_result rc)
+{
+   if( succeeded != rc)
+   {
+      roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_SetVMood(POST) - Failed to set visability");
+      OnTransactionCompleted( ctx, rc);
+      return;
    }
 }
 
@@ -1033,40 +1348,62 @@ BOOL SendMessage_SetMyVisability( char* packet_only)
 {
    ERTVisabilityGroup eVisability;
    ERTVisabilityReport eVisabilityReport;
-   
+
    if( !gs_bShouldSendMyVisability)
    {
       if( packet_only)
          (*packet_only) = '\0';
-         
+
       return TRUE;
    }
-      
+
    eVisability = ERTVisabilityGroup_from_string( roadmap_config_get( &RT_CFG_PRM_VISGRP_Var));
 
    eVisabilityReport = ERTVisabilityReport_from_string(roadmap_config_get( &RT_CFG_PRM_VISREP_Var));
-   
-   if( RTNet_SetMyVisability( &gs_CI,  
-                              eVisability, 
+
+   if( RTNet_SetMyVisability( &gs_CI,
+                              eVisability,
                               eVisabilityReport,
-                              OnAsyncOperationCompleted_SetVisability, 
+                              OnAsyncOperationCompleted_SetVisability,
                               packet_only))
    {
       gs_bShouldSendMyVisability = FALSE;
       return TRUE;
    }
-   
-   return FALSE;                              
+
+   return FALSE;
 }
 
-void OnAsyncOperationCompleted_MapDisplayed__only( BOOL bResult)
+BOOL SendMessage_SetMood( char* packet_only)
 {
-   if( bResult)
+   if( !gs_bShouldSendSetMood)
+   {
+      if( packet_only)
+         (*packet_only) = '\0';
+
+      return TRUE;
+   }
+
+   if( RTNet_SetMood( &gs_CI,
+   					  roadmap_mood_state(),
+                      OnAsyncOperationCompleted_SetMood,
+                      packet_only))
+   {
+      gs_bShouldSendSetMood = FALSE;
+      return TRUE;
+   }
+
+   return FALSE;
+}
+
+void OnAsyncOperationCompleted_MapDisplayed__only( void* ctx, roadmap_result rc)
+{
+   if( succeeded == rc)
       roadmap_log( ROADMAP_DEBUG, "OnAsyncOperationCompleted_MapDisplayed__only() - 'MapDisplayed' was sent successfully");
    else
       roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_MapDisplayed__only(POST) - 'MapDisplayed' had failed");
 
-   OnTransactionCompleted( bResult);
+   OnTransactionCompleted( ctx, rc);
 }
 
 BOOL Realtime_SendCurrentViewDimentions()
@@ -1081,21 +1418,21 @@ BOOL Realtime_SendCurrentViewDimentions()
    }
 
    roadmap_math_screen_edges( &MapPosition);
-   if((gs_CI.LastMapPosSent.west  == MapPosition.west ) && 
-      (gs_CI.LastMapPosSent.south == MapPosition.south) && 
-      (gs_CI.LastMapPosSent.east  == MapPosition.east ) && 
+   if((gs_CI.LastMapPosSent.west  == MapPosition.west ) &&
+      (gs_CI.LastMapPosSent.south == MapPosition.south) &&
+      (gs_CI.LastMapPosSent.east  == MapPosition.east ) &&
       (gs_CI.LastMapPosSent.north == MapPosition.north))
    {
       roadmap_log( ROADMAP_DEBUG, "Realtime_SendCurrentViewDimentions() - Skipping operation; Current coordinates where already sent...");
       return TRUE;
    }
-   
+
    //   Remove all users:
    RTUsers_ResetUpdateFlag( &gs_CI.Users);
-   
-   bRes = RTNet_MapDisplyed(  &gs_CI, 
+
+   bRes = RTNet_MapDisplyed(  &gs_CI,
                               &MapPosition,
-			      roadmap_math_get_scale(0),
+               roadmap_math_get_scale(0),
                               OnAsyncOperationCompleted_MapDisplayed__only,
                               NULL);
    if( bRes)
@@ -1105,21 +1442,32 @@ BOOL Realtime_SendCurrentViewDimentions()
    }
    else
       roadmap_log( ROADMAP_ERROR, "Realtime_SendCurrentViewDimentions(PRE) - 'RTNet_MapDisplyed()' had failed");
-   
+
    return bRes;
 }
 
-BOOL SendAllMessagesTogether_BuildPacket( char* Packet)
+BOOL SendAllMessagesTogether_BuildPacket( BOOL bSummaryOnly, char* Packet)
 {
    char* p = Packet;
-   
-   // See me
-   if( !SendMessage_SetMyVisability( p))
-   {
-      roadmap_log( ROADMAP_ERROR, "SendAllMessagesTogether(PRE) - 'SendMessage_SetMyVisability()' had failed");
-      return FALSE;
-   }
-   p = Packet + strlen(Packet);
+
+	if( !bSummaryOnly)
+	{
+	   // See me
+	   if( !SendMessage_SetMyVisability( p))
+	   {
+	      roadmap_log( ROADMAP_ERROR, "SendAllMessagesTogether(PRE) - 'SendMessage_SetMyVisability()' had failed");
+	      return FALSE;
+	   }
+	   p = Packet + strlen(Packet);
+
+	   // Set mood
+	   if( !SendMessage_SetMood (p))
+	   {
+	      roadmap_log( ROADMAP_ERROR, "SendAllMessagesTogether(PRE) - 'SendMessage_SetMood()' had failed");
+	      return FALSE;
+	   }
+	   p = Packet + strlen(Packet);
+	}
 
    // At (my location)
    if( SendMessage_At( p))
@@ -1127,24 +1475,30 @@ BOOL SendAllMessagesTogether_BuildPacket( char* Packet)
    else
       roadmap_log( ROADMAP_DEBUG, "SendAllMessagesTogether(PRE) - 'SendMessage_At()' had failed; Ignoring and continueing");
 
-   // Map displayed
-   if( !SendMessage_MapDisplyed( p))
-   {
-      roadmap_log( ROADMAP_ERROR, "SendAllMessagesTogether(PRE) - 'SendMessage_MapDisplyed()' had failed");
-      return FALSE;
-   }
-   p = Packet + strlen(Packet);
-
-	// Allow new roads toggles
-	if (HaveCreateNewRoadsToSend ())
+	if( !bSummaryOnly)
 	{
-		if (!SendMessage_CreateNewRoads (p)) {
+	   if (gs_bShouldSendMapDisplayed)
+	   {
+	      // Map displayed
+	      if( !SendMessage_MapDisplyed( p))
+	      {
+	         roadmap_log( ROADMAP_ERROR, "SendAllMessagesTogether(PRE) - 'SendMessage_MapDisplyed()' had failed");
+	         return FALSE;
+	      }
+	      p = Packet + strlen(Packet);
+	   }
+	}
+
+   // Allow new roads toggles
+   if (HaveCreateNewRoadsToSend ())
+   {
+      if (!SendMessage_CreateNewRoads (p)) {
          roadmap_log( ROADMAP_ERROR, "SendAllMessagesTogether(PRE) - 'SendMessage_CreateNewRoads()' had failed");
          return FALSE;
-		}
+      }
       p = Packet + strlen(Packet);
-	}
-	
+   }
+
    // GPS points path
    if( HaveGPSPointsToSend())
    {
@@ -1166,209 +1520,367 @@ BOOL SendAllMessagesTogether_BuildPacket( char* Packet)
       }
       p = Packet + strlen(Packet);
    }
-   
+
+
    if( 0 < strlen( Packet))
       return TRUE;
-   
-   gs_CI.LastError = ERR_NoDataToSend;
+
+   gs_CI.LastError = err_rt_no_data_to_send;
    return FALSE;
 }
 
-BOOL SendAllMessagesTogether( BOOL bCalledAfterLogin)
+BOOL SendAllMessagesTogether( BOOL bSummaryOnly, BOOL bCalledAfterLogin)
 {
-   RTPacket Packet;
+   ebuffer  Packet;
    int      iGPSPointsCount;
    int      iNodePointsCount;
-   int		iAllowNewRoadsCount;
+   int      iAllowNewRoadsCount;
    char*    Buffer;
    BOOL     bTransactionStarted = FALSE;
-   
-   RTPacket_Init( &Packet);
-   
+
+   ebuffer_init( &Packet);
+
    gs_pPI = editor_track_report_begin_export (0);
-   iGPSPointsCount   	= gs_pPI->num_points;
-   iNodePointsCount  	= gs_pPI->num_nodes;
-   iAllowNewRoadsCount	= gs_pPI->num_update_toggles;
-   Buffer            	= RTPacket_Alloc( &Packet, 
-                          	MESSAGE_MAX_SIZE__AllTogether__dynamic(iGPSPointsCount,
-                          														iNodePointsCount,
-                          													   iAllowNewRoadsCount));
-   
-   if( SendAllMessagesTogether_BuildPacket( Buffer))
-      bTransactionStarted = RTNet_GeneralPacket(&gs_CI, 
-                                                Buffer, 
+   iGPSPointsCount      = gs_pPI->num_points;
+   iNodePointsCount     = gs_pPI->num_nodes;
+   iAllowNewRoadsCount   = gs_pPI->num_update_toggles;
+   Buffer               = ebuffer_alloc( &Packet,
+                             MESSAGE_MAX_SIZE__AllTogether__dynamic(iGPSPointsCount,
+                                                                    iNodePointsCount,
+                                                                    iAllowNewRoadsCount));
+
+   if( SendAllMessagesTogether_BuildPacket( bSummaryOnly, Buffer))
+      bTransactionStarted = RTNet_GeneralPacket(&gs_CI,
+                                                Buffer,
                                                 OnAsyncOperationCompleted_AllTogether);
    else
-      roadmap_log( ROADMAP_DEBUG, "SendAllMessagesTogether() - NOT SENDING (maybe no data to send?)");
+      roadmap_log( ROADMAP_WARNING, "SendAllMessagesTogether() - NOT SENDING (maybe no data to send?)");
 
+	if( bSummaryOnly)
+      roadmap_log( ROADMAP_WARNING, "SendAllMessagesTogether() - High Frequency Summary mode (jammed..)");
 
    if( !bTransactionStarted && bCalledAfterLogin)
-      OnTransactionCompleted( TRUE /* Called on behalf of the 'login', which DID succeed... */);
-      
-   if (!bTransactionStarted)
-   	editor_track_report_conclude_export (0);
+      OnTransactionCompleted( NULL, succeeded /* Called on behalf of the 'login', which DID succeed... */);
 
-   RTPacket_Free( &Packet);
-   
+   if (!bTransactionStarted)
+      editor_track_report_conclude_export (0);
+
+   ebuffer_free( &Packet);
+
    return bTransactionStarted;
 }
 
-void OnAsyncOperationCompleted_Login( BOOL bResult)
+void OnAsyncOperationCompleted_Login( void* ctx, roadmap_result rc)
 {
-   if( !bResult)
+   if( succeeded != rc || !gs_CI.bLoggedIn)
    {
       roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_Login(POST) - Failed to log in");
-      OnTransactionCompleted( FALSE);
+      OnTransactionCompleted( ctx, rc);
       return;
    }
 
    roadmap_log( ROADMAP_DEBUG, "OnAsyncOperationCompleted_Login() - User logged in!");
 
-   SendAllMessagesTogether( TRUE /* Called After Login */);
+   gs_bFirstLoginFailure = FALSE;
+
+   SendAllMessagesTogether( FALSE, TRUE /* Called After Login */);
+
+   roadmap_main_set_periodic( 10, Realtime_LoginCallback);
 }
 
-void OnAsyncOperationCompleted_Register( BOOL bResult)
+void OnAsyncOperationCompleted_Register( void* ctx, roadmap_result rc)
 {
-   PFN_ONASYNCCOMPLETED pfnLoginAfterRegister = gs_pfnOnLoginAfterRegister;
-   
+   CB_OnWSTCompleted pfnLoginAfterRegister = gs_pfnOnLoginAfterRegister;
+
    gs_pfnOnLoginAfterRegister = NULL;
-   
-   assert( pfnLoginAfterRegister);
 
-   if( bResult)
+   // assert( pfnLoginAfterRegister);
+
+   if( succeeded == rc)
    {
-      roadmap_config_set( &RT_CFG_PRM_NAME_Var,    gs_CI.UserNm);
-      roadmap_config_set( &RT_CFG_PRM_PASSWORD_Var,gs_CI.UserPW);
-      roadmap_config_set( &RT_CFG_PRM_NKNM_Var,    gs_CI.UserNk);
-
-      roadmap_log(ROADMAP_DEBUG, 
-                  "OnAsyncOperationCompleted_Register(POST) - The 'Register' operation had succeeded! (Name: '%s'; PW: '%s')",
+	  Realtime_SetLoginUsername( gs_CI.UserNm );
+	  Realtime_SetLoginPassword( gs_CI.UserPW );
+	  Realtime_SetLoginNickname( gs_CI.UserNk );
+	  gs_bSaveLoginInfoOnSuccess = TRUE;			// Force saving username and password to the configuration
+	  Realtime_set_random_user( TRUE );
+      roadmap_log(ROADMAP_DEBUG,
+                  "OnAsyncOperationCompleted_Register(POST) - The 'Register' operation has succeeded! (Name: '%s'; PW: '%s')",
                   gs_CI.UserNm, gs_CI.UserPW);
    }
    else
       roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_Register(POST) - The 'Register' operation had failed");
 
-   if( !bResult || !Login( pfnLoginAfterRegister, FALSE /* Auto register? */))
-      pfnLoginAfterRegister( FALSE);
+   Realtime_ResetTransactionState( FALSE /* Redraw */);
+
+   if( succeeded == rc )
+   {
+	  Realtime_ResetLoginState( FALSE /* Redraw */ );
+
+	  if ( pfnLoginAfterRegister )
+	  {	/* There is special function for the login callback */
+		  Login( pfnLoginAfterRegister, FALSE );
+	  }
+	  else
+	  {
+		  TestLoginMain();
+	  }
+   }
 }
 
-BOOL Login( PFN_ONASYNCCOMPLETED callback, BOOL bAutoRegister)
-{
-   const char* szName         = roadmap_config_get( &RT_CFG_PRM_NAME_Var);
-   const char* szPassword     = roadmap_config_get( &RT_CFG_PRM_PASSWORD_Var);
-   const char* szNickname     = roadmap_config_get( &RT_CFG_PRM_NKNM_Var);
-   gs_bShouldSendMyVisability = TRUE;
 
-   if( szName && (*szName) && szPassword && (*szPassword))
+void OnAsyncOperationCompleted_GetGeoConfig( void* ctx, roadmap_result rc)
+{
+
+   if( succeeded == rc)
+   {
+   }
+   else
+      roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_GetGeoConfig(POST) - The 'GetGeoConfig' operation had failed, rc=%s", roadmap_result_string(rc));
+
+   roadmap_geo_config_transaction_failed();
+   Realtime_ResetTransactionState( FALSE /* Redraw */);
+
+}
+
+/***********************************************************
+ *  Name        : Login
+ *  Purpose     : Tries to login to the Realtime server with the supplied user name and password
+ *
+ *  Params      : [in]  callback - the callback to be executed upon transaction completion
+ *  			  [in]  bShowRegistration - indicates if registration dialog should be opened in case of clean user data
+ *              : [out] - none
+ *  Returns     : Always TRUE  - FFU
+ *  Notes       :
+ */
+static BOOL Login( CB_OnWSTCompleted callback, BOOL bShowRegistration )
+{
+   const char* szName = NULL;
+   const char* szPassword = NULL;
+   const char* szNickname = NULL;
+
+   szName = gs_LoginDetails.username;
+   szPassword = gs_LoginDetails.pwd;
+   szNickname = gs_LoginDetails.nickname;
+
+   gs_bShouldSendMyVisability = TRUE;
+   gs_bShouldSendSetMood      = TRUE;
+
+   /*
+    *  If user and password exist - try to login and handle the results in callback
+    */
+   if( (*szName) && (*szPassword) )
    {
       roadmap_log( ROADMAP_DEBUG, "Login() - Trying to login user '%s'", szName);
       return RTNet_Login( &gs_CI, szName, szPassword, szNickname, callback);
    }
-   
-   // Else:
-   
-   if( !bAutoRegister)
+
+   /*
+    * User and password do not exist.
+    * Check if there is request to show the registration
+    */
+   if( !bShowRegistration )
    {
-      roadmap_log( ROADMAP_DEBUG, "Login() - Do not have 'name&password' AND (bAutoRegister == FALSE) - returning FALSE...");
-      return FALSE;
+      roadmap_log( ROADMAP_DEBUG, "Login() - Do not have 'name&password' and  (bShowRegistration == FALSE) - returning FALSE...");
+      return TRUE;
    }
-   
+
    gs_pfnOnLoginAfterRegister = callback;
-   roadmap_log( ROADMAP_DEBUG, "Login() - Do not have 'name&password', doing 'Register()'");
-   return RTNet_Register( &gs_CI, OnAsyncOperationCompleted_Register);
+
+   roadmap_log( ROADMAP_DEBUG, "Login() - Do not have 'name&password' - show the new/existing dialog" );
+
+   roadmap_login_new_existing_dlg();
+
+   return TRUE;
 }
 
-BOOL TransactionStarted()
+BOOL Realtime_RandomUserRegister()
+{
+   return RTNet_RandomUserRegister( &gs_CI, OnAsyncOperationCompleted_Register );
+}
+
+BOOL TransactionStarted( BOOL bSummaryOnly)
 {
    if( gs_bRunning && !gs_CI.bLoggedIn)
       return Login( OnAsyncOperationCompleted_Login, TRUE /* Auto register? */);
-      
-   return SendAllMessagesTogether( FALSE /* Called After Login */);
+
+   return SendAllMessagesTogether( bSummaryOnly, FALSE /* Called After Login */);
 }
 
 BOOL NameAndPasswordAlreadyFailedAuthentication()
 {
-   const char* szName      = roadmap_config_get( &RT_CFG_PRM_NAME_Var);
-   const char* szPassword  = roadmap_config_get( &RT_CFG_PRM_PASSWORD_Var);
-   
-   if( ERR_WrongNameOrPassword != gs_CI.LastError)
+   const char* szName;
+   const char* szPassword;
+
+   szName = gs_LoginDetails.username;
+   szPassword = gs_LoginDetails.pwd;
+
+   if( err_rt_wrong_name_or_password != gs_CI.LastError)
       return FALSE;
-   
+
    return (!strcmp(gs_CI.UserNm, szName) && !strcmp(gs_CI.UserPW, szPassword));
 }
 
-BOOL StartTransaction()
+BOOL StartTransaction( BOOL bSummaryOnly)
 {
    if( gs_bQuiteErrorMode)
    {
       static BOOL s_skip_this_time = FALSE;
-   
+
       s_skip_this_time = !s_skip_this_time;
-      
+
       if( s_skip_this_time)
       {
-         roadmap_log( ROADMAP_WARNING, "StartTransaction() - QUITE ERROR MODE - Skipping this iteration (one on one off)");
+         roadmap_log( ROADMAP_WARNING, "StartTransaction() - QUIET ERROR MODE - Skipping this iteration (one on one off)");
          return TRUE;
       }
    }
 
    // Do we want to start session?
-   if( ERR_Success != gs_CI.LastError)
+   if( succeeded != gs_CI.LastError)
    {
       if( NameAndPasswordAlreadyFailedAuthentication())
       {
          roadmap_log( ROADMAP_WARNING, "StartTransaction() - NOT ATTEMPTING A NEW SESSION - Last login attempt failed with 'wrong name/pw'; Login details were not modified");
-         
+
          return FALSE;
       }
-      
-      gs_CI.LastError            = ERR_Success;
-   }
 
-   // Loose previous additional error info:
-   gs_CI.AdditionalErrorInfo = 0;
+      gs_CI.LastError = succeeded;
+   }
 
    // START TRANSACTION:
    RTUsers_ResetUpdateFlag( &gs_CI.Users);   // User[i].updated = FALSE
    gs_CI.eTransactionStatus = TS_Active;     // We are in transaction now
-   if( TransactionStarted())                 // Start...
+   if( TransactionStarted( bSummaryOnly))                 // Start...
       return TRUE;
-   
+
    // TRANSACTION FAILED TO START
    //    ...rollback...
-      
+
    gs_CI.eTransactionStatus = TS_Idle;       // We are idle
    RTUsers_RedoUpdateFlag( &gs_CI.Users);    // User[i].updated = TRUE  (undo above)
 
-   if( ERR_Success == gs_CI.LastError)
-      gs_CI.LastError = ERR_GeneralError;    // Last error - General error
-      
-   if( ERR_NoDataToSend == gs_CI.LastError)
-      gs_CI.LastError = ERR_Success;
+   if( succeeded == gs_CI.LastError)
+      gs_CI.LastError = err_failed;          // Last error - General error
+
+   if( err_rt_no_data_to_send == gs_CI.LastError)
+      gs_CI.LastError = succeeded;
 
    return FALSE;
 }
 
+
+static ECycleType Realtime_GetCycleType(void)
+{
+	static int 				s_lastFullCycle = 0;
+	static int				s_lastCycle = 0;
+	static int				s_lastCommCheck = 0;
+	int 						timeNow = time( NULL);
+	static PluginLine		s_lastLine;
+	static int				s_lastDirection;
+	static int				s_lastTime = 0;
+	PluginLine				currentLine;
+	int						currentDirection;
+
+	// test for communication failure
+	if( gs_bQuiteErrorMode ||
+		 (!gs_bHadAtleastOneGoodSession) ||
+		 (gs_CI.LastError >= network_errors &&
+		  gs_CI.LastError <= network_errors_end))
+	{
+		if( 0 == s_lastCommCheck ||
+			 timeNow < s_lastCommCheck + gs_iMaxCommCheckSeconds)
+		{
+			if( 0 == s_lastCommCheck)
+				s_lastCommCheck = timeNow;
+			s_lastCycle = s_lastFullCycle = timeNow - gs_iCycleRoundoffSeconds;
+			return CT_Full;
+		}
+	}
+	else
+	{
+		s_lastCommCheck = 0;
+	}
+
+	// test if full cycle time is reached
+	if( timeNow >= s_lastFullCycle + gs_iCycleTimeSeconds)
+	{
+		s_lastCycle = s_lastFullCycle = timeNow - gs_iCycleRoundoffSeconds;
+		return CT_Full;
+	}
+
+	// test if an operation is needed
+	if( timeNow < s_lastCycle + gs_iSummaryCycleSeconds)
+	{
+		return CT_None;
+	}
+
+	// test if we are jammed
+	if( !roadmap_navigate_is_jammed())
+	{
+		s_lastTime = 0;
+		return CT_None;
+	}
+
+	// test if current segment is already marked as jammed
+	if( (-1 == roadmap_navigate_get_current( NULL, &currentLine, &currentDirection)) ||
+		 (ROADMAP_PLUGIN_ID != currentLine.plugin_id) ||
+		 (-1 != RTTrafficInfo_Get_Line( currentLine.line_id, currentLine.square, ROUTE_DIRECTION_AGAINST_LINE == currentDirection)) )
+	{
+		s_lastTime = 0;
+		return CT_None;
+	}
+
+	// check if this is a new jammed segment
+	if( (0 == s_lastTime) ||
+		 (!roadmap_plugin_same_line( &s_lastLine, &currentLine)) ||
+		 (s_lastDirection != currentDirection) )
+	{
+		s_lastTime = timeNow;
+		s_lastLine = currentLine;
+		s_lastDirection = currentDirection;
+	}
+
+	// check how much time we are jammed at this segment
+	if( timeNow >= s_lastTime + gs_iCycleTimeSeconds)
+	{
+		return CT_None;
+	}
+
+	s_lastCycle = timeNow - gs_iCycleRoundoffSeconds;
+	return CT_Summary;
+}
+
+
 void OnTimer_Realtime(void)
 {
+	ECycleType ct;
+
    if( !gs_bRunning)
    {
       assert(0);
       return;
    }
-	  
+
+	ct = Realtime_GetCycleType();
+	if( CT_None == ct)
+	{
+		//roadmap_log (ROADMAP_DEBUG, "Skipping comm cycle");
+		return;
+	}
+
    switch(gs_CI.eTransactionStatus)
    {
       case TS_Idle:
-         StartTransaction();
+         StartTransaction( CT_Summary == ct);
          break;
-      
+
       case TS_Active:
          RTNet_Watchdog( &gs_CI);
          break;
-      
+
       default:
-         return;
+    	  break;
    }
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1394,6 +1906,13 @@ void OnSettingsChanged_EnableDisable(void)
 void OnSettingsChanged_VisabilityGroup(void)
 {
    gs_bShouldSendMyVisability = TRUE;
+   SendMessage_SetMyVisability( NULL );
+}
+
+void OnMoodChanged(void)
+{
+   gs_bShouldSendSetMood = TRUE;
+   SendMessage_SetMood(NULL);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1407,8 +1926,12 @@ void OnAddUser(LPRTUserLocation pUI)
    RoadMapDynamicString GUI_ID= roadmap_string_new( pUI->sGUIID);
    RoadMapDynamicString Name  = roadmap_string_new( pUI->sName);
    RoadMapDynamicString Sprite= roadmap_string_new( "Friend");
-   RoadMapDynamicString Image = roadmap_string_new( "Friend");
-   
+   RoadMapDynamicString Image;
+   if (pUI->iMood != -1)
+   		Image = roadmap_string_new( roadmap_mood_to_string(pUI->iMood));
+   else
+   		Image = roadmap_string_new( "Friend");
+
    Pos.longitude  = (int)(1000000.F * pUI->fLongitude);
    Pos.latitude   = (int)(1000000.F * pUI->fLatitude);
    Pos.altitude   = 0;   //   Hieght
@@ -1429,7 +1952,7 @@ void OnMoveUser(LPRTUserLocation pUI)
 {
    RoadMapGpsPosition   Pos;
    RoadMapDynamicString GUI_ID   = roadmap_string_new( pUI->sGUIID);
-   
+
    Pos.longitude  = (int)(1000000.F * pUI->fLongitude);
    Pos.latitude   = (int)(1000000.F * pUI->fLatitude);
    Pos.altitude   = 0;   //   Hieght
@@ -1439,7 +1962,7 @@ void OnMoveUser(LPRTUserLocation pUI)
    roadmap_object_move( GUI_ID, &Pos);
 
    roadmap_string_release( GUI_ID);
-} 
+}
 
 void OnRemoveUser(LPRTUserLocation pUI)
 {
@@ -1449,17 +1972,19 @@ void OnRemoveUser(LPRTUserLocation pUI)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL Realtime_Report_Alert(int iAlertType, const char * szDescription, int iDirection)
+BOOL Realtime_Report_Alert(int iAlertType, const char * szDescription, int iDirection, const char* szImageId, BOOL bForwardToTwitter )
 {
    BOOL success;
 
-   success = RTNet_ReportAlert(&gs_CI, iAlertType, szDescription, iDirection, OnAsyncOperationCompleted_ReportAlert);
+
+   success = RTNet_ReportAlert(&gs_CI, iAlertType, szDescription, iDirection, szImageId, bForwardToTwitter, OnAsyncOperationCompleted_ReportAlert);
+
    if( !success)
    {
-      roadmap_messagebox ("Error", "Can't find current street.");
+      roadmap_messagebox ("Error", "Sending report failed");
       return FALSE;
    }
-	
+
    return success;
 }
 
@@ -1468,12 +1993,38 @@ BOOL Realtime_SendSMS(const char * szPhoneNumber)
 {
    return RTNet_SendSMS(&gs_CI, szPhoneNumber, OnAsyncOperationCompleted_SendSMS);
 }
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL Realtime_Post_Alert_Comment(int iAlertId, const char * szCommentText)
+BOOL Realtime_TwitterConnect(const char * userName, const char *passWord)
+{
+   return RTNet_TwitterConnect(&gs_CI, userName, passWord, OnAsyncOperationCompleted_TwitterConnect);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+BOOL Realtime_TripServer_CreatePOI  (const char* name, RoadMapPosition* coordinates, BOOL overide){
+
+   return RTNet_TripServer_CreatePOI(&gs_CI, name, coordinates,overide,  OnAsyncOperationCompleted_TripServer);
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+BOOL Realtime_TripServer_DeletePOI(const char * name)
+{
+   return RTNet_TripServer_DeletePOI(&gs_CI, name, OnAsyncOperationCompleted_TripServer);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+BOOL Realtime_TripServer_FindTrip  (RoadMapPosition*     coordinates){
+	return RTNet_TripServer_FindTrip  (&gs_CI, coordinates, OnAsyncOperationCompleted_TripServer);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+BOOL Realtime_Post_Alert_Comment(int iAlertId, const char * szCommentText,BOOL bForwardToTwitter)
 {
    BOOL success;
-   success = RTNet_PostAlertComment(&gs_CI, iAlertId, szCommentText, OnAsyncOperationCompleted_PostComment);
-   
+   success = RTNet_PostAlertComment(&gs_CI, iAlertId, szCommentText, bForwardToTwitter, OnAsyncOperationCompleted_PostComment);
+
    if( !success)
    {
       roadmap_messagebox ("Error", "Sending comment failed");
@@ -1485,219 +2036,264 @@ BOOL Realtime_Post_Alert_Comment(int iAlertId, const char * szCommentText)
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL Realtime_Alert_ReportAtLocation(int iAlertType, const char * szDescription, int iDirection, RoadMapGpsPosition   MyLocation){
-   BOOL success = RTNet_ReportAlertAtPosition(&gs_CI, iAlertType, szDescription, iDirection, &MyLocation, OnAsyncOperationCompleted_MapDisplayed);
+BOOL Realtime_Alert_ReportAtLocation(int iAlertType, const char * szDescription, int iDirection, RoadMapGpsPosition   MyLocation)
+{
+   BOOL success = RTNet_ReportAlertAtPosition(&gs_CI, iAlertType, szDescription, iDirection, "", FALSE, &MyLocation, -1, -1, OnAsyncOperationCompleted_MapDisplayed);
 
-   if (!success) {
+   if (!success)
+   {
       roadmap_messagebox ("Error", "Sending report failed");
    }
 
    return success;
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////
+BOOL Realtime_ReportMapProblem(const char*  szType, const char* szDescription, const RoadMapGpsPosition *MyLocation){
+   BOOL success = RTNet_ReportMapProblem(&gs_CI, szType, szDescription, MyLocation, OnAsyncOperationCompleted_ReportMapProblem);
+
+   if (!success)
+   {
+      roadmap_messagebox ("Error", "Sending report failed");
+   }
+
+   return success;
+
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL Realtime_Remove_Alert(int iAlertId){
    BOOL success;
    success = RTNet_RemoveAlert(&gs_CI, iAlertId, OnTransactionCompleted);
-   
+
    return success;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void OnTransactionCompleted_ReportMarkers( BOOL bTransactionSucceeded)
+void OnTransactionCompleted_ReportMarkers( void* ctx, roadmap_result rc)
 {
-   if( !bTransactionSucceeded)
+   if( succeeded != rc)
       roadmap_log( ROADMAP_WARNING, "OnTransactionCompleted_ReportMarkers() - failed");
 
-	if (gs_pfnOnExportMarkersResult) gs_pfnOnExportMarkersResult(bTransactionSucceeded, gs_CI.LastError);
-   OnTransactionCompleted( bTransactionSucceeded);
+   if(gs_pfnOnExportMarkersResult)
+      gs_pfnOnExportMarkersResult( rc, gs_CI.LastError);
+
+   OnTransactionCompleted( ctx, rc);
 }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void OnTransactionCompleted_ReportSegments( BOOL bTransactionSucceeded)
+void OnTransactionCompleted_ReportSegments( void* ctx, roadmap_result rc)
 {
-   if( !bTransactionSucceeded)
+   if( succeeded != rc)
       roadmap_log( ROADMAP_WARNING, "OnTransactionCompleted_ReportSegments() - failed");
 
-	if (gs_pfnOnExportSegmentsResult) gs_pfnOnExportSegmentsResult(bTransactionSucceeded, gs_CI.LastError);
-   OnTransactionCompleted( bTransactionSucceeded);
+   if (gs_pfnOnExportSegmentsResult) gs_pfnOnExportSegmentsResult(rc, gs_CI.LastError);
+   OnTransactionCompleted( ctx, rc);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL	ReportOneMarker(char* packet, int iMarker)
+BOOL   ReportOneMarker(char* packet, int iMarker)
 {
-	const char*			szName;
-	const char*			szType;
-	const char*			szDescription;
-	const char*			szKeys[ED_MARKER_MAX_ATTRS];
-	char*					szValues[ED_MARKER_MAX_ATTRS];
-	int					iKeyCount;
-	RoadMapPosition	position;
-	int					steering;
-	
-	editor_marker_position(iMarker, &position, &steering);
-	editor_marker_export(iMarker, &szName, &szDescription,
-								szKeys, szValues, &iKeyCount);
-	szType = editor_marker_type(iMarker);
-								
-	return RTNet_ReportMarker(&gs_CI, szType,
-									  position.longitude,
-									  position.latitude,
-									  steering,
-									  szDescription,
-									  iKeyCount,
-									  szKeys,
-									  (const char**)szValues,
-									  OnTransactionCompleted_ReportMarkers,
-									  packet); 		
+   const char*         szName;
+   const char*         szType;
+   const char*         szDescription;
+   const char*         szKeys[ED_MARKER_MAX_ATTRS];
+   char*               szValues[ED_MARKER_MAX_ATTRS];
+   int               iKeyCount;
+   RoadMapPosition   position;
+   int               steering;
+
+   editor_marker_position(iMarker, &position, &steering);
+   editor_marker_export(iMarker, &szName, &szDescription,
+                        szKeys, szValues, &iKeyCount);
+   szType = editor_marker_type(iMarker);
+
+   return RTNet_ReportMarker(&gs_CI, szType,
+                             position.longitude,
+                             position.latitude,
+                             steering,
+                             szDescription,
+                             iKeyCount,
+                             szKeys,
+                             (const char**)szValues,
+                             OnTransactionCompleted_ReportMarkers,
+                             packet);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-char*	Realtime_Report_Markers(void)
+char*   Realtime_Report_Markers(void)
 {
-   BOOL	success = FALSE;
-	int	nMarkers;
-	int	iMarker;
-	char*	packet;
-	char*	p;
-	
-	nMarkers = editor_marker_count ();
-	
-	if( !nMarkers)
-	   return NULL;
-	
-	packet = malloc(nMarkers * 1024); //TBD
-	
-	p = packet;
-	*p = '\0';
-	for (iMarker = 0; iMarker < nMarkers; iMarker++)
-	{
-		if (editor_marker_committed (iMarker)) continue;
-		success = ReportOneMarker(p, iMarker);
-		if (!success)
-		{
-      	roadmap_messagebox ("Error", "Sending markers failed");
-      	free(packet);
-      	return NULL;
-		}
-		
-		p += strlen(p);
-	}
-	
-	return packet;
+   BOOL   success = FALSE;
+   int   nMarkers;
+   int   iMarker;
+   char*   packet;
+   char*   p;
+
+   nMarkers = editor_marker_count ();
+
+   if( !nMarkers)
+      return NULL;
+
+   packet = malloc(nMarkers * 1024); //TBD
+
+   p = packet;
+   *p = '\0';
+   for (iMarker = 0; iMarker < nMarkers; iMarker++)
+   {
+      if (editor_marker_committed (iMarker)) continue;
+      success = ReportOneMarker(p, iMarker);
+      if (!success)
+      {
+         roadmap_messagebox ("Error", "Sending markers failed");
+         free(packet);
+         return NULL;
+      }
+
+      p += strlen(p);
+   }
+
+   return packet;
 }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 char* Realtime_Report_Segments(void)
 {
-   BOOL	success = FALSE;
-	char*	packet;
-	char*	p;
-	int required_size = 0;
-	int count;
-	int i;
+   BOOL   success = FALSE;
+   char*   packet;
+   char*   p;
+   int required_size = 0;
+   int count;
+   int i;
 
-	count = editor_line_get_count ();
-	for (i = 0; i < count; i++)
-	{
-		required_size += RTNet_ReportOneSegment_MaxLength (i);
-	}
+   count = editor_line_get_count ();
+   for (i = 0; i < count; i++)
+   {
+      required_size += RTNet_ReportOneSegment_MaxLength (i);
+   }
 
-	if (!required_size) return NULL;
-	
-	packet = malloc (required_size);
-	
-	p = packet;
-	*p = '\0';
-	for (i = 0; i < count; i++)
-	{
-		if (editor_line_committed (i)) continue;
-		success = RTNet_ReportOneSegment_Encode (p, i);
-		if (!success)
-		{
-      	roadmap_messagebox ("Error", "Sending update failed");
-      	free(packet);
-      	return NULL;
-		}
-		
-		p += strlen(p);
-	}
+   if (!required_size) return NULL;
 
-	
-	return packet;
+   packet = malloc (required_size);
+
+   p = packet;
+   *p = '\0';
+   for (i = 0; i < count; i++)
+   {
+      if (editor_line_committed (i)) continue;
+      success = RTNet_ReportOneSegment_Encode (p, i);
+      if (!success)
+      {
+         roadmap_messagebox ("Error", "Sending update failed");
+         free(packet);
+         return NULL;
+      }
+
+      p += strlen(p);
+   }
+
+
+   return packet;
 }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL	Realtime_Editor_ExportMarkers(PFN_LOGINTESTRES editor_cb)
+BOOL   Realtime_Editor_ExportMarkers(PFN_LOGINTESTRES editor_cb)
 {
-   BOOL	success = FALSE;
-	char*	packet;
-	
-	packet = Realtime_Report_Markers ();
+   BOOL   success = FALSE;
+   char*   packet;
 
-	if (packet) {	
-		if (*packet) {
-			if (gs_bWritingOffline) {
-				Realtime_OfflineWrite (packet);
-				editor_cb (TRUE, 0);
-				success = TRUE;
-			} else {
-				gs_pfnOnExportMarkersResult = editor_cb;
-				success = RTNet_GeneralPacket(&gs_CI, packet, OnTransactionCompleted_ReportMarkers);
-			}
-		}
-		free(packet);
-	}
-	
-	return success;
+   packet = Realtime_Report_Markers ();
+
+   if (packet) {
+      if (*packet) {
+         if (gs_bWritingOffline) {
+            Realtime_OfflineWrite (packet);
+            editor_cb (TRUE, 0);
+            success = TRUE;
+         } else {
+            gs_pfnOnExportMarkersResult = editor_cb;
+            success = RTNet_GeneralPacket(&gs_CI, packet, OnTransactionCompleted_ReportMarkers);
+         }
+      }
+      free(packet);
+   }
+
+   return success;
 }
 
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL	Realtime_Editor_ExportSegments(PFN_LOGINTESTRES editor_cb)
+BOOL   Realtime_Editor_ExportSegments(PFN_LOGINTESTRES editor_cb)
 {
-   BOOL	success = FALSE;
-	char*	packet;
-	
-	packet = Realtime_Report_Segments ();
+   BOOL   success = FALSE;
+   char*   packet;
 
-	if (packet) {	
-		if (*packet) {
-			if (gs_bWritingOffline) {
-				Realtime_OfflineWrite (packet);
-				editor_cb (TRUE, 0);
-				success = TRUE;
-			} else {
-				gs_pfnOnExportSegmentsResult = editor_cb;
-				success = RTNet_GeneralPacket(&gs_CI, packet, OnTransactionCompleted_ReportSegments);
-			}
-		}
-		free(packet);
-	}
-	
-	return success;
+   packet = Realtime_Report_Segments ();
+
+   if (packet) {
+      if (*packet) {
+         if (gs_bWritingOffline) {
+            Realtime_OfflineWrite (packet);
+            editor_cb (TRUE, 0);
+            success = TRUE;
+         } else {
+            gs_pfnOnExportSegmentsResult = editor_cb;
+            success = RTNet_GeneralPacket(&gs_CI, packet, OnTransactionCompleted_ReportSegments);
+         }
+      }
+      free(packet);
+   }
+
+   return success;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
 BOOL Realtime_SendTrafficInfo(int mode){
-	
-	BOOL success;
-	//TEMP_AVI
-	return TRUE;
-		
-	success = RTNet_SendTrafficInfo(&gs_CI, mode, OnTransactionCompleted);
-    return success;
-} 
 
+   BOOL success;
+	//Not implemented yet
+   return TRUE;
+
+    success = RTNet_SendTrafficInfo(&gs_CI, mode, OnTransactionCompleted);
+    return success;
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#define  MAP_DRAG_EVENT__PEEK_INTERVAL             (500) // Milliseconds
+BOOL Realtime_TrafficAlertFeedback(int iTrafficInfoId,
+                                   int iValidity){
+   return RTNet_TrafficAlertFeedback(&gs_CI, iTrafficInfoId, iValidity, OnTransactionCompleted);
+}
+
+
+BOOL Realtime_CreateAccount(const char*          userName,
+                            const char*          passWord,
+                            const char*          email,
+                            BOOL                 send_updates){
+   gs_CI.LastError = succeeded;
+   gs_CI.eTransactionStatus = TS_Active;     	// We are in transaction now
+   return RTNet_CreateAccount(&gs_CI, userName, passWord, email, send_updates, OnAsyncOperationCompleted_CreateAccount);
+}
+
+BOOL Realtime_UpdateProfile(const char*          userName,
+                            const char*          passWord,
+                            const char*          email,
+                            BOOL                 send_updates){
+   gs_CI.LastError = succeeded;
+   gs_CI.eTransactionStatus = TS_Active;     	// We are in transaction now
+   return RTNet_UpdateProfile(&gs_CI, userName, passWord, email, send_updates, OnAsyncOperationCompleted_CreateAccount);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef J2ME
+#define  MAP_DRAG_EVENT__PEEK_INTERVAL             (1000) // Milliseconds
+#define  MAP_DRAG_EVENT__TERMINATION_THRESHOLD     (10)   // Seconds
+#else
+#define  MAP_DRAG_EVENT__PEEK_INTERVAL             (5000) // Milliseconds
 #define  MAP_DRAG_EVENT__TERMINATION_THRESHOLD     (2)   // Seconds
+#endif
 
 static   BOOL     gs_bMapMoveTimerWasSet     = FALSE;
 static   time_t   gs_TimeOfLastMapMoveEvent  = 0;
@@ -1706,13 +2302,13 @@ void OnTimePassedFromLastMapDragEvent(void)
 {
    time_t   now                        = time(NULL);
    int      iSecondsPassedFromLastEvent= (int)(now - gs_TimeOfLastMapMoveEvent);
-   
+
    if( iSecondsPassedFromLastEvent < MAP_DRAG_EVENT__TERMINATION_THRESHOLD)
       return;
-   
+
    roadmap_main_remove_periodic( OnTimePassedFromLastMapDragEvent);
    gs_bMapMoveTimerWasSet = FALSE;
-   
+
    if( gs_bRunning && gs_CI.bLoggedIn)
       Realtime_SendCurrentViewDimentions();
 }
@@ -1724,7 +2320,7 @@ void OnMapMoved(void)
       assert(0);
       return;
    }
-   
+
    if( !gs_CI.bLoggedIn)
       return;
 
@@ -1733,7 +2329,7 @@ void OnMapMoved(void)
       roadmap_main_set_periodic( MAP_DRAG_EVENT__PEEK_INTERVAL, OnTimePassedFromLastMapDragEvent);
       gs_bMapMoveTimerWasSet = TRUE;
    }
-   
+
    gs_TimeOfLastMapMoveEvent = time(NULL);
 }
 
@@ -1741,7 +2337,7 @@ void OnDeviceEvent( device_event event, void* context)
 {
    EConnectionStatus eNewStatus = gs_eConnectionStatus;
    int               iSecondsPassedFromLastGoodSession;
-   
+
    roadmap_log( ROADMAP_DEBUG, "OnDeviceEvent() - Event: %d (%s)", event, get_device_event_name(event));
 
    switch(event)
@@ -1750,7 +2346,7 @@ void OnDeviceEvent( device_event event, void* context)
       case device_event_RS232_connection_established:
          eNewStatus = CS_Connected;
          break;
-      
+
       case device_event_network_disconnected:
          eNewStatus = CS_Disconnected;
          break;
@@ -1758,31 +2354,39 @@ void OnDeviceEvent( device_event event, void* context)
       default:
          break;
    }
-   
+
    // Anything changed?
    if( eNewStatus == gs_eConnectionStatus)
+   {
+      if( (CS_Connected == gs_eConnectionStatus) && !gs_bHadAtleastOneGoodSession)
+      {
+         roadmap_log( ROADMAP_DEBUG, "OnDeviceEvent() - Just got connected AND is a virgin: INITIATING A NEW SESSION!");
+         OnTimer_Realtime();
+      }
+
       return;
+   }
 
    // Update current status
    gs_eConnectionStatus = eNewStatus;
-   
+
    // Connected?
    if( CS_Connected != gs_eConnectionStatus)
    {
       roadmap_log( ROADMAP_DEBUG,"OnDeviceEvent() - New state: Disconnected");
-      
+
       if( !gs_bWasStoppedAutoamatically)
       {
          roadmap_log( ROADMAP_INFO, "OnDeviceEvent() - !!! GOT DISCONNECTED !!! REALTIME SERVICE IS STOPPING AUTOMATICALLY !!!");
          Realtime_Stop( FALSE);
          gs_bWasStoppedAutoamatically = TRUE;
       }
-      
+
       return;
    }
-      
+
    roadmap_log( ROADMAP_DEBUG, "OnDeviceEvent() - New state: Connected");
-   
+
    if( gs_bWasStoppedAutoamatically)
    {
       roadmap_log( ROADMAP_INFO, "OnDeviceEvent() - !!! REALTIME SERVICE AUTO-RESTART !!!");
@@ -1790,14 +2394,14 @@ void OnDeviceEvent( device_event event, void* context)
       gs_bWasStoppedAutoamatically = FALSE;
       return;
    }
-   
+
    // Verify we are not currently in the transaction:
    if( TS_Idle != gs_CI.eTransactionStatus)
       return;
 
    // Check time threshold:
    iSecondsPassedFromLastGoodSession = (int)(time(NULL) - gs_ST.timeLastGoodSession);
-   if( RT_MAX_SECONDS_BETWEEN_GOOD_SESSIONS < iSecondsPassedFromLastGoodSession)
+   if( !gs_bHadAtleastOneGoodSession || (RT_MAX_SECONDS_BETWEEN_GOOD_SESSIONS < iSecondsPassedFromLastGoodSession))
    {
       roadmap_log( ROADMAP_DEBUG, "OnDeviceEvent() - %d seconds passed from last-good-session; INITIATING A NEW SESSION!", iSecondsPassedFromLastGoodSession);
       OnTimer_Realtime();
@@ -1808,49 +2412,54 @@ void OnDeviceEvent( device_event event, void* context)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 int RealTimeLoginState(void){
-	if (gs_CI.bLoggedIn && (ERR_Success == gs_CI.LastError))
-		return 1;
-	else
-		return 0;
-	
+   if (gs_CI.bLoggedIn && (!is_network_error(gs_CI.LastError)) && (!is_realtime_error(gs_CI.LastError)))
+      return 1;
+   else
+      return 0;
+
 }
 
-const char *RealTime_Get_UserName(){
-	return roadmap_config_get( &RT_CFG_PRM_NAME_Var);
+BOOL Realtime_IsLoggedIn( void )
+{
+	return gs_CI.bLoggedIn;
+}
+
+const char *RealTime_GetUserName(){
+   return roadmap_config_get( &RT_CFG_PRM_NAME_Var);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void	RealTime_Auth (void) {
+void   RealTime_Auth (void) {
 
-   char	Command [MESSAGE_MAX_SIZE__Auth];
-		
+   char   Command [MESSAGE_MAX_SIZE__Auth];
+
    if (gs_CI.bLoggedIn) {
-   
-   	RTNet_Auth_BuildCommand (Command,
-   									 gs_CI.iServerID, 
-   									 gs_CI.ServerCookie, 
-   									 gs_CI.UserNm, 
-   									 RT_DEVICE_ID, 
-   									 roadmap_start_version ());	
+
+      RTNet_Auth_BuildCommand (Command,
+                               gs_CI.iServerID,
+                               gs_CI.ServerCookie,
+                               gs_CI.UserNm,
+                               RT_DEVICE_ID,
+                               roadmap_start_version ());
    } else {
-   
-   	char  Name    [(RT_USERNM_MAXSIZE * 2) + 1];
-   	const char* szName      = roadmap_config_get( &RT_CFG_PRM_NAME_Var);
-	   if( HAVE_STRING(szName))
-	      PackNetworkString( szName, Name, RT_USERNM_MAXSIZE);
-	   else
-	      Name[0] = '\0';
-   	
-   	RTNet_Auth_BuildCommand (Command,
-   									 -1, 
-   									 "", 
-   									 Name, 
-   									 RT_DEVICE_ID, 
-   									 roadmap_start_version ());	
+
+      char  Name    [(RT_USERNM_MAXSIZE * 2) + 1];
+      const char* szName      = roadmap_config_get( &RT_CFG_PRM_NAME_Var);
+      if( HAVE_STRING(szName))
+         PackNetworkString( szName, Name, RT_USERNM_MAXSIZE);
+      else
+         Name[0] = '\0';
+
+      RTNet_Auth_BuildCommand (Command,
+                               -1,
+                               "",
+                               Name,
+                               RT_DEVICE_ID,
+                               roadmap_start_version ());
    }
-   
+
    Realtime_OfflineWrite (Command);
 }
 
@@ -1861,15 +2470,15 @@ static BOOL LoginDetailsChanged()
    char  Password[(RT_USERPW_MAXSIZE * 2) + 1];
    char  Nickname[(RT_USERNK_MAXSIZE * 2) + 1];
 
-   // Current settings:
-   const char* szName      = roadmap_config_get( &RT_CFG_PRM_NAME_Var);
-   const char* szPassword  = roadmap_config_get( &RT_CFG_PRM_PASSWORD_Var);
-   const char* szNickname  = roadmap_config_get( &RT_CFG_PRM_NKNM_Var);
-   
+
+   const char* szName      = gs_LoginDetails.username;
+   const char* szPassword  = gs_LoginDetails.pwd;
+   const char* szNickname  = gs_LoginDetails.nickname;
+
    // If we are not logged-in - we do not have any details cached:
    if( !gs_CI.bLoggedIn)
       return FALSE;  // Question is not applicable
-   
+
    // Convert all strings to 'network strings'     (',' == "\,")
    if( HAVE_STRING(szName))
       PackNetworkString( szName, Name, RT_USERNM_MAXSIZE);
@@ -1883,121 +2492,184 @@ static BOOL LoginDetailsChanged()
       PackNetworkString( szNickname, Nickname, RT_USERNK_MAXSIZE);
    else
       Nickname[0] = '\0';
-   
+
    // Compare
    if(strcmp( Name,     gs_CI.UserNm)  ||
       strcmp( Password, gs_CI.UserPW)  ||
       strcmp( Nickname, gs_CI.UserNk))
       return TRUE;
-   
+
    return FALSE;
 }
 
-void TestLoginDetailsCompleted( BOOL bRes)
+static void TestLoginDetailsCompleted( BOOL bRes )
 {
    PFN_LOGINTESTRES  pfn   = gs_pfnOnLoginTestResult;
    gs_pfnOnLoginTestResult = NULL;
    gs_CI.eTransactionStatus= TS_Idle;
 
-   pfn( bRes, gs_CI.LastError);
-}
-
-void OnTransactionCompleted_TestLoginDetails_Login( BOOL bTransactionSucceeded)
-{
-   if( !bTransactionSucceeded)
-      roadmap_log( ROADMAP_WARNING, "OnTransactionCompleted_TestLoginDetails_Login() - 'Login' failed");
-
-   TestLoginDetailsCompleted( bTransactionSucceeded);
-}
-
-BOOL TestLoginDetails_WhileNotLoggedIn()
-{
-   if( Login( OnTransactionCompleted_TestLoginDetails_Login, FALSE /* Auto register? */))
-      return TRUE;
-
-   TestLoginDetailsCompleted( FALSE);
-   return FALSE;
-}
-
-void OnTransactionCompleted_TestLoginDetails_Logout( BOOL bTransactionSucceeded)
-{
-   if( !bTransactionSucceeded)
-      roadmap_log( ROADMAP_WARNING, "OnTransactionCompleted_VerifyLoginDetails() - 'Logout' failed");
-   
-   Realtime_ResetLoginState(TRUE /* Redraw */);
-   TestLoginDetails_WhileNotLoggedIn();
-}
-
-BOOL TestLoginDetails()
-{
-   BOOL  bLogoutInProcess  = FALSE;
-   
-   // Catch the process flag:
-   gs_CI.eTransactionStatus= TS_Active;
-   
-   if( gs_CI.bLoggedIn)
+   if ( pfn )
    {
-      if( !LoginDetailsChanged())
-      {
-         // We are currently logged-in, and login-details did not change
-         TestLoginDetailsCompleted( TRUE);
-         return TRUE;
-      }
-         
-      roadmap_log( ROADMAP_DEBUG, "TestLoginDetails() - Login details changed and we are logged in; LOGGING OUT");
+	   pfn( bRes, gs_CI.LastError);
+   }
 
-      if( RTNet_Logout( &gs_CI, OnTransactionCompleted_TestLoginDetails_Logout))
-         bLogoutInProcess  = TRUE;
-      else
-         roadmap_log( ROADMAP_ERROR, "TestLoginDetails() - 'RTNet_Logout()' had failed");
+      if ( !roadmap_screen_refresh() )
+         roadmap_screen_redraw();
+}
+
+void OnTransactionCompleted_TestLoginDetails_Login( void* ctx, roadmap_result rc )
+{
+   TestLoginDetailsCompleted( succeeded == rc );
+
+   if( gs_CI.bLoggedIn )
+   {
+	   roadmap_main_set_periodic( 10, Realtime_LoginCallback );
+   }
+
+   if (rc == succeeded)
+   {
+      SendAllMessagesTogether( FALSE, TRUE /* Called After Login */);
    }
    else
    {
-      if( NameAndPasswordAlreadyFailedAuthentication())
+	  roadmap_log( ROADMAP_WARNING, "OnTransactionCompleted_TestLoginDetails_Login() - 'Login' failed");
+   }
+}
+
+/***********************************************************
+ *  Name        : TestLoginMain()
+ *  Purpose     : Executes the transaction for checking the login if not logged in now
+ *  Params      : [in]  - none
+ *              : [out] - Always TRUE  - FFU
+ *  Returns     :
+ *  Notes       :
+ */
+static BOOL TestLoginMain()
+{
+   // Catch the process flag:
+   BOOL bRes = TRUE;
+   gs_CI.eTransactionStatus= TS_Active;
+   gs_CI.LastError = succeeded;
+   if( Login( OnTransactionCompleted_TestLoginDetails_Login, FALSE /* Auto register? */))
+   {
+
+      gs_CI.eTransactionStatus = TS_Active;     	// We are in transaction now
+      RTUsers_ResetUpdateFlag( &gs_CI.Users );   	// User[i].updated = FALSE
+      bRes = TRUE;
+   }
+   else
+   {
+      gs_CI.LastError = err_failed;
+      bRes = FALSE;
+   }
+   return bRes;
+}
+
+/***********************************************************
+ *  Name        : TestLoginDetails
+ *  Purpose     : Main login flow function - tests the login details according to the system state
+ *  				The result of the testing is handled in the callback provided by Realtime_VerifyLoginDetails
+ *  Params      : [in]  - none
+ *              : [out] - none
+ *  Returns     : Always TRUE  - FFU
+ *  Notes       :
+ */
+static BOOL TestLoginDetails()
+{
+   BOOL bRes = TRUE;
+   if( gs_CI.bLoggedIn && !LoginDetailsChanged() )
+   {  /* Currently logged in: If the details did not change - do nothing*/
+	  roadmap_log( ROADMAP_DEBUG, "TestLoginDetails() - Login details did not changed - nothing to do" );
+   }
+   else
+   {  /* Currently not logged in: Try to login to server */
+      if( NameAndPasswordAlreadyFailedAuthentication() )
       {
-         TestLoginDetailsCompleted( FALSE);
-         return TRUE;
+         bRes = FALSE;
+         TestLoginDetailsCompleted( FALSE );
+      }
+      else
+      {
+		 Realtime_ResetLoginState( TRUE /* Redraw */ );
+ 		 bRes = TestLoginMain();
       }
    }
-   
-   if( bLogoutInProcess)
-      return TRUE;
-   
-   Realtime_ResetLoginState(TRUE /* Redraw */);
-   return TestLoginDetails_WhileNotLoggedIn();
-}
 
-BOOL Realtime_VerifyLoginDetails( PFN_LOGINTESTRES pfn)
-{
-   if( !gs_bInitialized || !pfn || gs_pfnOnLoginTestResult)
+   /* If we now that the result is false - accomplish the result, otherwise
+    * wait for the server answer
+    */
+   if ( bRes == FALSE )
    {
-      assert(0);
-      return FALSE;
+	   TestLoginDetailsCompleted( bRes );
    }
-   
-   gs_pfnOnLoginTestResult = pfn;
-   
-   if( gs_CI.eTransactionStatus != TS_Idle)
-      return TRUE;
-   
-   return TestLoginDetails();   
+
+   return bRes;
 }
 
-void OnAsyncOperationCompleted_ReportOnNavigation( BOOL bResult)
+/***********************************************************
+ *  Name        : Realtime_SaveLoginInfo
+ *  Purpose     : Saves login info to the configuration based on the login data in the transaction context
+ *
+ *  Params      : [in]  - none
+ *              : [out] - none
+ *  Returns     : void
+ *  Notes       :
+ */
+void Realtime_SaveLoginInfo( void )
 {
-   if( bResult)
+    roadmap_config_set( &RT_CFG_PRM_NAME_Var,    gs_CI.UserNm );
+    roadmap_config_set( &RT_CFG_PRM_PASSWORD_Var,gs_CI.UserPW );
+    roadmap_config_set( &RT_CFG_PRM_NKNM_Var,    gs_CI.UserNk );
+}
+
+void Realtime_Relogin(void){
+   Realtime_ResetLoginState( TRUE /* Redraw */ );
+   Realtime_LoginDetailsInit();
+   Login( OnAsyncOperationCompleted_Login, TRUE /* Auto register? */);
+
+}
+
+/***********************************************************
+ *  Name        : Realtime_VerifyLoginDetails
+ *  Purpose     : API for the asynchronous login test.
+ *
+ *  Params      : [in]  pfn - the callback executed on the login result
+ *              : [out] - none
+ *  Returns     : Always TRUE  - FFU
+ *  Notes       :
+ */
+ BOOL Realtime_VerifyLoginDetails( PFN_LOGINTESTRES pfn )
+ {
+   if( gs_bInitialized && pfn && !gs_pfnOnLoginTestResult)
+   {
+	   gs_pfnOnLoginTestResult = pfn;
+	   gs_bSaveLoginInfoOnSuccess = TRUE;
+	   TestLoginDetails();
+   }
+   else
+   {
+ 	   roadmap_log( ROADMAP_ERROR, "Wrong Realtime engine state: ( gs_bInitialized: %d, pfn: %x, gs_pfnOnLoginTestResult: %x )",
+			   gs_bInitialized, pfn, gs_pfnOnLoginTestResult );
+
+   }
+   return TRUE;
+}
+
+void OnAsyncOperationCompleted_ReportOnNavigation( void* ctx, roadmap_result rc)
+{
+   if( succeeded == rc)
       roadmap_log( ROADMAP_DEBUG, "OnAsyncOperationCompleted_ReportOnNavigation() - 'MapDisplayed' was sent successfully");
    else
       roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_ReportOnNavigation(POST) - 'MapDisplayed' had failed");
 
-   OnTransactionCompleted( bResult);
+   OnTransactionCompleted( ctx, rc);
 }
 
 BOOL Realtime_ReportOnNavigation( const RoadMapPosition* cordinates, address_info_ptr aiptr)
 {
    address_info   ai = (*aiptr);
    BOOL           bRes;
-   
+
    NULLSTRING_TO_EMPTYSTRING(ai.state)
    NULLSTRING_TO_EMPTYSTRING(ai.country)
    NULLSTRING_TO_EMPTYSTRING(ai.city)
@@ -2015,8 +2687,8 @@ BOOL Realtime_ReportOnNavigation( const RoadMapPosition* cordinates, address_inf
       roadmap_log( ROADMAP_ERROR, "Realtime_ReportOnNavigation() - Realtime service is currently disabled; Exiting method");
       return FALSE;
    }
-   
-   bRes = RTNet_NavigateTo(   &gs_CI, 
+
+   bRes = RTNet_NavigateTo(   &gs_CI,
                               cordinates,
                               &ai,
                               OnAsyncOperationCompleted_ReportOnNavigation);
@@ -2024,133 +2696,273 @@ BOOL Realtime_ReportOnNavigation( const RoadMapPosition* cordinates, address_inf
       roadmap_log( ROADMAP_DEBUG, "Realtime_ReportOnNavigation()");
    else
       roadmap_log( ROADMAP_ERROR, "Realtime_ReportOnNavigation(PRE) - 'RTNet_NavigateTo()' had failed");
-   
+
    return bRes;
 }
 
-static int keyboard_callback(int type, const char *new_value, void *context)
+void OnAsyncOperationCompleted_RequestRoute (void* ctx, roadmap_result rc)
 {
-    BOOL success;
+   if( succeeded == rc)
+      roadmap_log( ROADMAP_DEBUG, "OnAsyncOperationCompleted_RequestRoute() - succeeded");
+   else
+      roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_RequestRoute() - failed");
 
-    if (type != SSD_KEYBOARD_OK)
-        return 1;
-        
-    if (new_value[0] == 0)
-		return 1;
-		 
-    success = Realtime_SendSMS(new_value);
-    if (success){
-        ssd_keyboard_hide_all();
-    }
-    else
-        ssd_keyboard_hide();
+   OnTransactionCompleted( ctx, rc);
+}
 
-    return 1;
- 
+BOOL Realtime_RequestRoute(int						iRoute,
+									int						iType,
+									int						iTripId,
+									int						iAltId,
+									int						nMaxRoutes,
+									int						nMaxSegments,
+									int						nMaxPoints,
+									RoadMapPosition		posFrom,
+									int						iFrSegmentId,
+									int						iFrNodeId[2],
+									const char*				szFrStreet,
+									BOOL						bFrAllowBidi,
+									RoadMapPosition		posTo,
+									int						iToSegmentId,
+									int						iToNodeId[2],
+									const char*				szToStreet,
+									BOOL						bToAllowBidi,
+									int						nOptions,
+									const int*				iOptionNumeral,
+									const BOOL*				bOptionValue,
+									BOOL						bReRoute)
+{
+
+   BOOL bRes = RTNet_RequestRoute(&gs_CI,
+   										 iRoute,
+   										 iType,
+   										 iTripId,
+   										 iAltId,
+   										 nMaxRoutes,
+   										 nMaxSegments,
+   										 nMaxPoints,
+   										 posFrom,
+   										 iFrSegmentId,
+   										 iFrNodeId,
+   										 szFrStreet,
+   										 bFrAllowBidi,
+   										 posTo,
+   										 iToSegmentId,
+   										 iToNodeId,
+   										 szToStreet,
+   										 bToAllowBidi,
+   										 nOptions,
+   										 iOptionNumeral,
+   										 bOptionValue,
+   										 bReRoute,
+                              	 OnAsyncOperationCompleted_RequestRoute);
+   if( bRes)
+      roadmap_log( ROADMAP_DEBUG, "Realtime_RequestRoute()");
+   else
+      roadmap_log( ROADMAP_ERROR, "Realtime_RequestRoute() - failed");
+
+   return bRes;
+}
+
+
+BOOL Realtime_GetGeoConfig(const RoadMapPosition   *pGPSPosition, wst_handle websvc){
+   return RTNet_GetGeoConfig(&gs_CI,websvc,pGPSPosition, OnAsyncOperationCompleted_GetGeoConfig);
+}
+
+static void OnAsyncOperationCompleted_SelectRoute (void* ctx, roadmap_result rc)
+{
+   if( succeeded == rc)
+      roadmap_log( ROADMAP_DEBUG, "OnAsyncOperationCompleted_SelectRoute() - succeeded");
+   else
+      roadmap_log( ROADMAP_ERROR, "OnAsyncOperationCompleted_SelectRoute() - failed");
+
+   OnTransactionCompleted( ctx, rc);
+}
+
+BOOL	Realtime_SelectRoute	(int							iRoute,
+								 	 int							iAltId)
+{
+	BOOL bRes = RTNet_SelectRoute (&gs_CI,
+   										 iRoute,
+   										 iAltId,
+                              	 OnAsyncOperationCompleted_SelectRoute);
+
+   if( bRes)
+      roadmap_log( ROADMAP_DEBUG, "Realtime_SelectRoute()");
+   else
+      roadmap_log( ROADMAP_ERROR, "Realtime_SelectRoute() - failed");
+
+   return bRes;
+}
+
+static BOOL keyboard_callback(int         exit_code,
+                              const char* value,
+                              void*       context)
+{
+    if( dec_ok != exit_code)
+        return TRUE;
+
+    if( !value || !(*value))
+      return FALSE;
+
+    return Realtime_SendSMS( value);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static void recommend_waze_dialog_callbak(int exit_code, void *context){
-   
+
     if (exit_code != dec_yes)
          return;
-    
-#ifdef __SYMBIAN32__
+
+#if (defined(__SYMBIAN32__) && !defined(TOUCH_SCREEN))
     ShowEditbox(roadmap_lang_get("Phone number"), "",
-            keyboard_callback, NULL, EEditBoxEmptyForbidden );
+            keyboard_callback, NULL, EEditBoxEmptyForbidden | EEditBoxNumeric );
 #else
-    ssd_keyboard_show (SSD_KEYBOARD_DIGITS,
-            roadmap_lang_get("Phone number"), "", NULL, keyboard_callback, NULL);
-#endif  	
-    
+   ssd_show_keyboard_dialog(  roadmap_lang_get( "Phone number"),
+                              NULL,
+                              keyboard_callback,
+                              NULL);
+#endif
+
 }
 
 void RecommentToFriend(){
 
-	ssd_confirm_dialog("Recommend Waze to a friend", "To recommend to a friend, please enter their phone number. Send?", FALSE, recommend_waze_dialog_callbak,  NULL); 	
+   ssd_confirm_dialog("Recommend Waze to a friend", "To recommend to a friend, please enter their phone number. Send?", FALSE, recommend_waze_dialog_callbak,  NULL);
 }
 
 
 void Realtime_DumpOffline (void)
 {
-   RTPacket		Packet;
-   int      	iPoint;
-   int      	iNode;
-   int			iToggle;
-   char*    	Buffer;
-   RTPathInfo	pi;
-   RTPathInfo	*pOrigPI;
-   
-	Realtime_OfflineOpen (editor_sync_get_export_path (), 
-								 editor_sync_get_export_name ());
+   ebuffer      Packet;
+   int         iPoint;
+   int         iNode;
+   int         iToggle;
+   char*       Buffer;
+   RTPathInfo   pi;
+   RTPathInfo   *pOrigPI;
 
-   RTPacket_Init( &Packet);
+   Realtime_OfflineOpen (editor_sync_get_export_path (),
+                         editor_sync_get_export_name ());
+
+   ebuffer_init( &Packet);
 
    pOrigPI = editor_track_report_begin_export (1);
-   
+
    if (pOrigPI && pOrigPI->num_nodes + pOrigPI->num_points + pOrigPI->num_update_toggles > 0)
    {
-	   Buffer            	= RTPacket_Alloc( &Packet, 
-	                          	MESSAGE_MAX_SIZE__AllTogether__dynamic(RTTRK_GPSPATH_MAX_POINTS,
-	                          														RTTRK_NODEPATH_MAX_POINTS,
-	                          													   RTTRK_CREATENEWROADS_MAX_TOGGLES));
-   
-	   pi = *pOrigPI;
-	   
-	   for (iToggle = 0; 
-	   	  iToggle < pOrigPI->num_update_toggles; 
-	   	  iToggle += RTTRK_CREATENEWROADS_MAX_TOGGLES)
-	  	{
-			pi.num_update_toggles = pOrigPI->num_update_toggles - iToggle;
-			if (pi.num_update_toggles > RTTRK_CREATENEWROADS_MAX_TOGGLES)
-				pi.num_update_toggles = RTTRK_CREATENEWROADS_MAX_TOGGLES;
-			pi.update_toggle_times = pOrigPI->update_toggle_times + iToggle;
-			
-			gs_pPI = &pi;
-			if (SendMessage_CreateNewRoads (Buffer))
-			{
-				Realtime_OfflineWrite (Buffer);
-			}
-	  	}
-	  	 
-	   for (iPoint = 0; 
-	   	  iPoint < pOrigPI->num_points;
-	   	  iPoint += RTTRK_GPSPATH_MAX_POINTS)
-	  	{
-			pi.num_points = pOrigPI->num_points - iPoint;
-			if (pi.num_points > RTTRK_GPSPATH_MAX_POINTS)
-				pi.num_points = RTTRK_GPSPATH_MAX_POINTS;
-			pi.points = pOrigPI->points + iPoint;
-			
-			gs_pPI = &pi;
-			if (SendMessage_GPSPath (Buffer))
-			{
-				Realtime_OfflineWrite (Buffer);
-			}
-	  	}
-	   for (iNode = 0; 
-	   	  iNode < pOrigPI->num_nodes;
-	   	  iNode += RTTRK_NODEPATH_MAX_POINTS)
-	  	{
-			pi.num_nodes = pOrigPI->num_nodes - iNode;
-			if (pi.num_nodes > RTTRK_NODEPATH_MAX_POINTS)
-				pi.num_nodes = RTTRK_NODEPATH_MAX_POINTS;
-			pi.nodes = pOrigPI->nodes + iNode;
-			  		
-			gs_pPI = &pi;
-			if (SendMessage_NodePath (Buffer))
-			{
-				Realtime_OfflineWrite (Buffer);
-			}
-	  	}
-	  	RTPacket_Free (&Packet);
+      Buffer               = ebuffer_alloc( &Packet,
+                                MESSAGE_MAX_SIZE__AllTogether__dynamic(RTTRK_GPSPATH_MAX_POINTS,
+                                                                       RTTRK_NODEPATH_MAX_POINTS,
+                                                                       RTTRK_CREATENEWROADS_MAX_TOGGLES));
+
+      pi = *pOrigPI;
+
+      for (iToggle = 0;
+           iToggle < pOrigPI->num_update_toggles;
+           iToggle += RTTRK_CREATENEWROADS_MAX_TOGGLES)
+        {
+         pi.num_update_toggles = pOrigPI->num_update_toggles - iToggle;
+         if (pi.num_update_toggles > RTTRK_CREATENEWROADS_MAX_TOGGLES)
+            pi.num_update_toggles = RTTRK_CREATENEWROADS_MAX_TOGGLES;
+         pi.update_toggle_times = pOrigPI->update_toggle_times + iToggle;
+
+         gs_pPI = &pi;
+         if (SendMessage_CreateNewRoads (Buffer))
+         {
+            Realtime_OfflineWrite (Buffer);
+         }
+        }
+
+      for (iPoint = 0;
+           iPoint < pOrigPI->num_points;
+           iPoint += RTTRK_GPSPATH_MAX_POINTS)
+        {
+         pi.num_points = pOrigPI->num_points - iPoint;
+         if (pi.num_points > RTTRK_GPSPATH_MAX_POINTS)
+            pi.num_points = RTTRK_GPSPATH_MAX_POINTS;
+         pi.points = pOrigPI->points + iPoint;
+
+         gs_pPI = &pi;
+         if (SendMessage_GPSPath (Buffer))
+         {
+            Realtime_OfflineWrite (Buffer);
+         }
+        }
+      for (iNode = 0;
+           iNode < pOrigPI->num_nodes;
+           iNode += RTTRK_NODEPATH_MAX_POINTS)
+        {
+         pi.num_nodes = pOrigPI->num_nodes - iNode;
+         if (pi.num_nodes > RTTRK_NODEPATH_MAX_POINTS)
+            pi.num_nodes = RTTRK_NODEPATH_MAX_POINTS;
+         pi.nodes = pOrigPI->nodes + iNode;
+
+         gs_pPI = &pi;
+         if (SendMessage_NodePath (Buffer))
+         {
+            Realtime_OfflineWrite (Buffer);
+         }
+        }
+        ebuffer_free (&Packet);
    }
    editor_track_report_conclude_export (1);
-   
+
    gs_bWritingOffline = TRUE;
    editor_report_markers ();
    editor_report_segments ();
    gs_bWritingOffline = FALSE;
-   
-	Realtime_OfflineClose ();	
+
+   Realtime_OfflineClose ();
+}
+
+int RealTime_GetMyTotalPoints(){
+	return gs_CI.iMyTotalPoints;
+}
+
+int RealTime_GetMyRanking(){
+	return gs_CI.iMyRanking;
+}
+
+void RealTime_SetMapDisplayed(BOOL should_send) {
+	gs_bShouldSendMapDisplayed = should_send;
+}
+
+void Realtime_SetLoginUsername( const char* username )
+{
+	roadmap_login_set_username( &gs_LoginDetails, username );
+}
+
+void Realtime_SetLoginPassword( const char* pwd )
+{
+	roadmap_login_set_pwd( &gs_LoginDetails, pwd );
+}
+
+void Realtime_SetLoginNickname( const char* nickname )
+{
+	roadmap_login_set_nickname( &gs_LoginDetails, nickname );
+}
+
+void Realtime_LoginDetailsReset( void )
+{
+	gs_LoginDetails.username[0] = 0;
+	gs_LoginDetails.pwd[0] = 0;
+	gs_LoginDetails.nickname[0] = 0;
+	gs_LoginDetails.email[0] = 0;
+}
+
+void Realtime_LoginDetailsInit( void )
+{
+   const char* szName         = roadmap_config_get( &RT_CFG_PRM_NAME_Var);
+   const char* szPassword     = roadmap_config_get( &RT_CFG_PRM_PASSWORD_Var);
+   const char* szNickname     = roadmap_config_get( &RT_CFG_PRM_NKNM_Var);
+
+   Realtime_SetLoginUsername( szName );
+   Realtime_SetLoginPassword( szPassword );
+   Realtime_SetLoginNickname( szNickname );
+}
+
+char* Realtime_GetServerCookie(void)
+{
+   return &gs_CI.ServerCookie[0];
 }

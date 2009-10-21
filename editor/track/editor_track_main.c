@@ -47,26 +47,35 @@
 #include "roadmap_square.h"
 #include "roadmap_line.h"
 #include "roadmap_line_route.h"
-
+#include "roadmap_shape.h"
+#include "roadmap_message.h"
+#include "roadmap_ticker.h"
 #include "../editor_main.h"
+#include "../editor_points.h"
 #include "../db/editor_db.h"
 #include "../db/editor_trkseg.h"
 #include "../db/editor_point.h"
 #include "../db/editor_route.h"
 #include "../db/editor_line.h"
+#include "../db/editor_override.h"
 #include "../editor_log.h"
 #include "editor_track_filter.h"
 #include "editor_track_util.h"
 #include "editor_track_known.h"
 #include "editor_track_unknown.h"
 #include "editor_track_compress.h"
+#include "../editor_screen.h"
 #include "editor_track_report.h"
 #include "roadmap_messagebox.h"
+#include "Realtime/Realtime.h"
+#include <navigate/navigate_instr.h>
 
 #include "editor_track_main.h"
 
 #define GPS_POINTS_DISTANCE "10m"
 #define MAX_POINTS_IN_SEGMENT 10000
+
+
 
 #ifdef IPHONE
 #define GPS_TIME_GAP 8
@@ -86,10 +95,11 @@ typedef struct {
 } TrackPoint;
 
 static TrackPoint TrackPoints[MAX_POINTS_IN_SEGMENT];
+
 static int cur_ordinal = 1;
 static int points_count = 0;
 static int points_start = 0;
-static int cur_active_line = 0;
+static int cur_active_line = 0; 
 static RoadMapGpsPosition TrackLastPosition;
 static time_t LastGpsUpdate = 0;
 
@@ -381,6 +391,13 @@ static void editor_track_set_fuzzy (void) {
    roadmap_fuzzy_set_cycle_params (40, 150);
 }
 
+static int handle_new_direction (const PluginLine *line, void *context, int extend_flags) {
+	roadmap_square_set_current(line->square);
+
+	editor_override_line_set_flag (line->line_id, line->square, ED_LINE_NEW_DIRECTION);
+	return 0;
+}
+
 static int end_known_segment (int point_id,
                               RoadMapTracking *new_street,
                               RoadMapNeighbour *new_line) {
@@ -410,10 +427,37 @@ static int end_known_segment (int point_id,
    }
 
    if (new_street->valid) {
-
+	  int split_point;
       /* we have just switched from one known street to another */
-
-      int split_point = editor_track_util_connect_roads
+      
+	  if (TrackConfirmedStreet.valid && (TrackConfirmedLine.line.plugin_id == ROADMAP_PLUGIN_ID) && editor_screen_gray_scale()){	
+    	 int low_weight;
+    	 roadmap_square_set_current(TrackConfirmedLine.line.square);
+		 low_weight = roadmap_line_route_is_low_weight (TrackConfirmedLine.line.line_id);
+		 if (low_weight){
+			int length;
+			RoadMapPosition line_from;
+    		RoadMapPosition line_to;
+    		int flags;
+    		if (editor_override_line_get_flags(TrackConfirmedLine.line.line_id, TrackConfirmedLine.line.square, &flags) == -1){
+    		   length = roadmap_line_length (TrackConfirmedLine.line.line_id);
+    		   if (length > 0){
+    		      editor_points_add(length);
+	
+    		      roadmap_line_from (TrackConfirmedLine.line.line_id, &line_from);
+    		      roadmap_line_to (TrackConfirmedLine.line.line_id, &line_to);
+    		      roadmap_square_set_current (TrackConfirmedLine.line.square);
+    		      editor_override_line_set_flag (TrackConfirmedLine.line.line_id, TrackConfirmedLine.line.square,  ED_LINE_NEW_DIRECTION);
+    		   }
+    		   //roadmap_street_extend_line_ends (&TrackConfirmedLine.line, &line_from, &line_to, FLAG_EXTEND_BOTH, handle_new_direction, NULL);
+    		}
+		 }
+		 else{
+		    editor_points_hide();
+		 }
+      }
+	
+      split_point = editor_track_util_connect_roads
                            (&TrackConfirmedLine.line,
                             &new_line->line,
                             TrackConfirmedStreet.line_direction,
@@ -616,12 +660,20 @@ static void track_rec_locate_point(int point_id, int point_type) {
 
 	//track_verify_square (point_id);
 	
+   
    if (!cur_active_line) {
 
       RoadMapTracking new_street;
       RoadMapNeighbour new_line;
       
       do {
+         int prev_square = -1;
+         int prev_line = -1;
+         
+         if (TrackConfirmedStreet.valid) {
+	         prev_square = TrackConfirmedLine.line.square;
+	         prev_line = TrackConfirmedLine.line.line_id;
+         }
          
          count = editor_track_known_locate_point
             (point_id,
@@ -630,7 +682,7 @@ static void track_rec_locate_point(int point_id, int point_type) {
              &TrackConfirmedLine,
              &new_street,
              &new_line);
-
+             
          if (count) {
 
             if (count == -1) {
@@ -643,12 +695,24 @@ static void track_rec_locate_point(int point_id, int point_type) {
                cur_node.id = -1;
                is_new_track = 1;
             } else {
-
-               int consumed = end_known_segment (count, &new_street, &new_line);
-
+				
+	            int consumed = end_known_segment (count, &new_street, &new_line);
+	            if (new_street.valid && (new_line.line.plugin_id == ROADMAP_PLUGIN_ID) && editor_screen_gray_scale()){	
+	    	    
+		  	    		int points;
+  	    		
+    	    			roadmap_square_set_current (TrackConfirmedLine.line.square);
+	      	    	points = roadmap_line_length (TrackConfirmedLine.line.line_id);
+                  if ((!roadmap_line_route_is_low_weight (TrackConfirmedLine.line.line_id)) || editor_override_exists(TrackConfirmedLine.line.line_id, TrackConfirmedLine.line.square )){
+                     editor_points_hide();
+                  }
+	         	}
+	         	else{
+	         	   editor_points_hide();  
+	         	}
+               
                if (!new_street.valid) {
                   /* the current point does not belong to a known street */
-
                   assert(!editor_track_known_num_candidates());
                   editor_track_known_reset_resolve();
                   cur_active_line = 1;
@@ -674,12 +738,41 @@ static void track_rec_locate_point(int point_id, int point_type) {
 
                point_id -= count;
             }
+         } else if ((prev_square != -1) && (prev_square != TrackConfirmedLine.line.square)) {
+            
+               /*printf ("crossed from tile %d line %d to tile %d line %d\n",
+                        prev_square, prev_line,
+                        TrackConfirmedLine.line.square,
+                        TrackConfirmedLine.line.line_id); */
+               if (TrackConfirmedStreet.valid && (TrackConfirmedLine.line.plugin_id == ROADMAP_PLUGIN_ID) && editor_screen_gray_scale()){  
+                 int low_weight;
+                 roadmap_square_set_current(prev_square);
+                 low_weight = roadmap_line_route_is_low_weight (prev_line);
+                 if (low_weight){
+                   int length;
+                   RoadMapPosition line_from;
+                   RoadMapPosition line_to;
+                   int flags;
+                   if (editor_override_line_get_flags(prev_line, prev_square, &flags) == -1){
+                      length = roadmap_line_length (prev_line);
+                      if (length > 0){
+                         editor_points_add(length);
+             
+                         roadmap_line_from (prev_line, &line_from);
+                         roadmap_line_to (prev_line, &line_to);
+                         roadmap_square_set_current (prev_square);
+                         editor_override_line_set_flag (prev_line, prev_square,  ED_LINE_NEW_DIRECTION);
+                         roadmap_street_extend_line_ends (&TrackConfirmedLine.line, &line_from, &line_to, FLAG_EXTEND_BOTH, handle_new_direction, NULL);
+                      }
+                   }
+                 }
+                }
+                            
+               
          }
-
       } while (points_count && count && editor_track_known_resolve());
 
    } else {
-
       count = editor_track_unknown_locate_point
                (point_id,
                 &TrackLastPosition,
@@ -751,14 +844,26 @@ const struct GPSFilter *editor_track_get_gps_filter (void) {
 
 
 void editor_track_toggle_new_roads (void) {
+   if ( Realtime_is_random_user() ){
+      roadmap_messagebox ("Error", "Sorry, only registered users can record new roads. Go to Settings > Profile to register.");
+      return;
+   }
+
    if (EditorAllowNewRoads) EditorAllowNewRoads = 0;
    else EditorAllowNewRoads = 1;
    
+   ssd_dialog_hide_all(dec_close);
+   
+   
    if (EditorAllowNewRoads) {
        editor_track_set_fuzzy ();
-       roadmap_messagebox ("New roads", "Recording new roads activated");
+       roadmap_messagebox ("New roads", "New Road Recording is ON. Please turn it off once you've finished recording a new road.");
    } else {
-       roadmap_messagebox ("New roads", "Recording new roads disabled");
+      if (editor_line_get_count () > 0)
+         roadmap_messagebox ("New roads", "Road successfully recorded.  A link to edit it will be sent to your email and to you Dashboard on www.waze.com. (May take 24 hrs.)");
+      else
+         roadmap_messagebox ("New roads", "New Road Recording is now OFF");
+      
        roadmap_fuzzy_reset_cycle ();
    }
    
@@ -790,6 +895,20 @@ int editor_track_get_update_toggle_state (int index) {
 void editor_track_reset_update_toggles (void) {
 
 	NumUpdateToggles = 0;	
+}
+
+static int editor_new_roads_state(void){
+#ifdef TOUCH_SCREEN   
+   if (EditorAllowNewRoads)
+      return 1;
+   else
+      return roadmap_screen_show_icons_only_when_touched();
+#else
+   if (EditorAllowNewRoads)
+      return 0;
+   else
+      return -1;
+#endif    
 }
 
 int editor_ignore_new_roads (void) {
@@ -835,7 +954,7 @@ static void editor_track_force_reset (void) {
          }
       }
    }
-
+   TrackPreviousLine = TrackConfirmedLine;
    TrackConfirmedStreet.valid = 0;
    editor_track_known_reset_resolve ();
    track_reset_points (points_count);
@@ -931,11 +1050,11 @@ editor_gps_update (time_t gps_time,
 
 void editor_track_initialize (void) {
 
-   roadmap_start_add_action ("togglenewroads", "Toggle new roads creation", NULL, NULL,
+   roadmap_start_add_action ("togglenewroads", "Record new roads", NULL, NULL,
       "Allow / prevent automatic creation of new roads",
       editor_track_toggle_new_roads);
 
-   roadmap_state_add ("new_roads", &editor_ignore_new_roads);
+   roadmap_state_add ("new_roads", &editor_new_roads_state);
 
    roadmap_gps_register_listener(editor_gps_update);
    
@@ -967,6 +1086,15 @@ static void editor_track_shape_position (int shape, RoadMapPosition *position) {
 }
 
 
+int editor_track_is_new_road(){
+   if (!editor_ignore_new_roads() || editor_screen_show_candidates())
+      if (points_count > 2)
+         return TRUE;
+   
+   return FALSE;
+   
+}
+
 int editor_track_draw_current (RoadMapPen pen) {
 
    RoadMapPosition *from;
@@ -974,10 +1102,11 @@ int editor_track_draw_current (RoadMapPen pen) {
    int first_shape = -1;
    int last_shape = -2;
 
-   if (!cur_active_line) return 0;
    if (points_count < 2) return 0;
 
    if (pen == NULL) return 0;
+
+   if (!cur_active_line) return 0;
 
    from = track_point_pos (0);
    to = track_point_pos (points_count-1);
@@ -995,6 +1124,106 @@ int editor_track_draw_current (RoadMapPen pen) {
 }
 
 
+int editor_track_draw_current_new_direction_road(){
+  	RoadMapPen layer_pens[LAYER_PROJ_AREAS];
+ 	NavigateSegment segment;
+ 	RoadMapPosition intersection;
+ 	int distance;
+ 	int i;
+ 	
+  	if (points_count < 1) return 0;
+  		
+  	roadmap_square_set_current(TrackConfirmedLine.line.square);
+  	if (!roadmap_line_route_is_low_weight (TrackConfirmedLine.line.line_id)) {
+  	   return 0;
+	}
+
+	segment.square = TrackConfirmedLine.line.square;
+	segment.line = TrackConfirmedLine.line.line_id;
+	roadmap_line_from(TrackConfirmedLine.line.line_id, &segment.from_pos);
+	roadmap_line_to(TrackConfirmedLine.line.line_id, &segment.to_pos);
+
+	roadmap_line_shapes (TrackConfirmedLine.line.line_id, &segment.first_shape, &segment.last_shape);
+	segment.shape_initial_pos = segment.from_pos;
+   
+   	for (i = 0; i < LAYER_PROJ_AREAS; i++) {
+      			layer_pens[i] = roadmap_layer_get_pen (roadmap_line_cfcc(TrackConfirmedLine.line.line_id),1, i);
+	}
+	
+	navigate_instr_fix_line_end(track_point_pos(points_count - 1), &segment,
+							TrackConfirmedStreet.line_direction == ROUTE_DIRECTION_WITH_LINE ? LINE_END : LINE_START);
+	
+   	if (!editor_override_exists(TrackConfirmedLine.line.line_id, TrackConfirmedLine.line.square)){
+   		distance =
+            roadmap_math_get_distance_from_segment
+            (track_point_pos(points_count - 1), &segment.from_pos, &segment.to_pos, &intersection, NULL);
+	
+						
+		if (TrackConfirmedStreet.line_direction == ROUTE_DIRECTION_WITH_LINE)
+   			distance = roadmap_math_distance (&intersection, &segment.from_pos);
+   		else
+   			distance = roadmap_math_distance (&intersection, &segment.to_pos);
+	    roadmap_ticker_set_last_event(road_munching_event);
+   		editor_points_display(distance);
+   	}
+   roadmap_screen_draw_one_line
+               (&segment.from_pos, &segment.to_pos, 0, &segment.shape_initial_pos, segment.first_shape, segment.last_shape,
+                NULL, layer_pens, LAYER_PROJ_AREAS, -1, 0, 0, 0);
+                
+	return 0;              
+}
+
+int editor_track_draw_new_direction_roads () {
+  int k; 
+  int count = editor_override_get_count();
+  
+  if (TrackConfirmedStreet.valid)
+     editor_track_draw_current_new_direction_road();
+   	 for (k=0; k<count; k++) {
+   		int line_id, square, flags, direction;
+   		
+   		if (!editor_override_get(k, &line_id, &square, &direction, &flags)) continue;
+       
+   		if (flags & ED_LINE_NEW_DIRECTION){
+			   RoadMapPosition from;
+         	RoadMapPosition to;
+         	int first_shape;
+         	int last_shape;
+         	RoadMapPen layer_pens[LAYER_PROJ_AREAS];
+         	int i;
+         	if (!roadmap_square_set_current(square))
+         	   continue;
+         	
+         	if (line_id >= roadmap_line_count() || line_id < 0)
+         	   continue;
+         	
+         	roadmap_line_shapes (line_id, &first_shape, &last_shape);
+
+
+            roadmap_line_from (line_id, &from);
+            roadmap_line_to (line_id, &to);
+            
+
+            if (!roadmap_layer_is_visible (roadmap_line_cfcc(line_id), 0))
+            	continue;
+
+            if (!roadmap_math_line_is_visible (&from, &to))
+            	continue;
+
+         	for (i = 0; i < LAYER_PROJ_AREAS; i++) {
+      			layer_pens[i] = roadmap_layer_get_pen (roadmap_line_cfcc(line_id),1, i);
+   			}
+				
+            roadmap_screen_draw_one_line
+               (&from, &to, 0,
+                &from, first_shape, last_shape,
+                NULL, layer_pens, LAYER_PROJ_AREAS, -1, 0, 0, 0);
+
+   	    }
+   	 }
+   return 0;
+}
+
 int editor_track_deflate (void) {
 
 	int i;
@@ -1009,4 +1238,34 @@ int editor_track_deflate (void) {
 	}
 
 	return j;
+}
+
+int editor_track_is_new_direction_roads (){
+   PluginLine line;
+	static int last_state;
+
+	if (!TrackConfirmedStreet.valid){
+		last_state = FALSE;
+		return FALSE;
+	}	
+
+	if (editor_override_exists(TrackConfirmedLine.line.line_id, TrackConfirmedLine.line.square)) {
+		last_state = FALSE;
+		return FALSE;
+	}else{
+		 int direction;
+		 roadmap_square_set_current(TrackConfirmedLine.line.square);
+
+   	 if ((roadmap_navigate_get_current(NULL, &line, &direction) == -1) ||
+					(!roadmap_plugin_same_line(&line, &TrackConfirmedLine.line)))
+				  return last_state;
+
+		 if (!roadmap_line_route_is_low_weight (TrackConfirmedLine.line.line_id)) {
+		 	 last_state = FALSE;
+          return FALSE;
+		 }
+
+		 last_state = TRUE;
+		 return TRUE;
+	}
 }

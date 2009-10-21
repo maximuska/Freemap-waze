@@ -54,14 +54,20 @@
 
 #include "roadmap_res.h"
 #include "roadmap_canvas.h"
-
-#include "ssd/ssd_login_details.h"
+#include "roadmap_camera_defs.h"
+#include "roadmap_login.h"
 int roadmap_preferences_use_keyboard() { return 0; }
 
 void roadmap_preferences_edit (void) {
-   ssd_login_details_dialog_show ();
+	roadmap_login_details_dialog_show ();
 }
 
 
 
 time_t timegm(struct tm *tm) { return 0; }
+
+
+BOOL roadmap_camera_take_picture( CameraImageFile* image_file, CameraImageBuf* image_thumbnail ){
+   return FALSE;
+
+}

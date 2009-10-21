@@ -242,7 +242,7 @@ void roadmap_plugin_get_line_points (const PluginLine *line,
    if (line->plugin_id == ROADMAP_PLUGIN_ID) {
 
       roadmap_line_shapes (line->line_id, first_shape, last_shape);
-      *shape_itr = &roadmap_shape_get_position;
+      *shape_itr = NULL;
    } else {
       RoadMapPluginHooks *hooks = get_hooks (line->plugin_id);
       
@@ -564,7 +564,7 @@ void roadmap_plugin_adjust_layer (int layer,
 
 int roadmap_plugin_get_closest
        (const RoadMapPosition *position,
-        int *categories, int categories_count,
+        int *categories, int categories_count, int max_shapes,
         RoadMapNeighbour *neighbours, int count,
         int max) {
 
@@ -578,7 +578,7 @@ int roadmap_plugin_get_closest
       if (hooks->get_closest != NULL) {
 
          count = hooks->get_closest
-                     (position, categories, categories_count,
+                     (position, categories, categories_count, max_shapes,
                       neighbours, count, max);
       }
    }

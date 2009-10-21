@@ -47,6 +47,7 @@ typedef struct editor_marker_type {
 } EditorMarkerType;
 
 typedef struct editor_db_marker_s {
+	int				tile_timestamp;
    int	         time;
    int            longitude;
    int            latitude;
@@ -73,6 +74,7 @@ void editor_marker_position(int marker,
                             RoadMapPosition *position,
                             int *steering);
 
+int			editor_marker_is_obsolete(int marker);
 time_t      editor_marker_time(int marker);
 const char *editor_marker_type(int marker);
 const char *editor_marker_note(int marker);

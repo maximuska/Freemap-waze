@@ -45,7 +45,8 @@
 #include "roadmap_display.h"
 #include "roadmap_street.h"
 #include "roadmap_math.h"
-#include "ssd/ssd_keyboard.h"
+#include "ssd/ssd_dialog.h"
+#include "ssd/ssd_keyboard_dialog.h"
 #include "ssd/ssd_generic_list_dialog.h"
 #include "ssd/ssd_confirm_dialog.h"
 
@@ -61,7 +62,7 @@ static RoadMapAddressNav RoadMapAddressNavigate;
 typedef struct {
 
     const char *title;
-    
+
     int   use_zip;
     int   navigate;
 
@@ -113,17 +114,17 @@ static void roadmap_address_done (RoadMapGeocode *selected,
     roadmap_trip_set_point ("Address", &selected->position);
 
     if (!context->navigate || !RoadMapAddressNavigate) {
-       
+
        roadmap_trip_set_focus ("Address");
 
        roadmap_display_activate
           ("Selected Street", &line, &selected->position, &street);
-       
+
 		 roadmap_street_extend_line_ends (&line, &from, &to, FLAG_EXTEND_BOTH, NULL, NULL);
 		 roadmap_display_update_points ("Selected Street", &from, &to);
        roadmap_screen_refresh ();
     } else {
-      
+
        if ((*RoadMapAddressNavigate) (&selected->position, &line, 0, ai) != -1) {
        }
     }
@@ -139,10 +140,19 @@ static int roadmap_address_show (const char *city,
    int count;
 
    RoadMapGeocode *selections;
-   address_info   ai = { NULL, NULL, city, street_name, street_number_image};
 
    char *state;
    const char *argv[4];
+
+   address_info   ai;
+
+   ai.state = NULL;
+   ai.country = NULL;
+
+   ai.city = city;
+   ai.street = street_name;
+
+   ai.house = street_number_image;
 
    state         = "IL";
 
@@ -168,6 +178,7 @@ static int roadmap_address_show (const char *city,
    argv[3] = state;
 
    roadmap_history_add ('A', argv);
+   roadmap_history_save();
 
    roadmap_address_done (selections, context, &ai);
 
@@ -198,7 +209,7 @@ static int roadmap_address_populate_list (RoadMapString index,
 static int roadmap_address_search_count (int full_list,
 													  const char *str,
                                          RoadMapAddressSearch *search) {
-                                         
+
    int count;
 
    if (search->city) {
@@ -239,7 +250,7 @@ static int list_callback (SsdWidget widget, const char *new_value, const void *v
        char str[255];
 
        ssd_generic_list_dialog_hide ();
- 
+
        strcpy(str, new_value);
        str[strlen(str) - 2] = '\0';
 
@@ -251,8 +262,6 @@ static int list_callback (SsdWidget widget, const char *new_value, const void *v
        return 1;
    }
 
-   ssd_keyboard_hide ();
-
    search->callback (new_value, search->data);
    free (search);
 
@@ -262,49 +271,53 @@ static int list_callback (SsdWidget widget, const char *new_value, const void *v
 }
 
 
-
-
+#ifndef J2ME
 static int cmpstring(const void *p1, const void *p2) {
    return strcmp(* (char * const *) p1, * (char * const *) p2);
 }
+#endif
 
-static int keyboard_callback (int type, const char *new_value, void *context) {
+static BOOL keyboard_callback(int         exit_code,
+                              const char* value,
+                              void*       context)
+{
    RoadMapAddressSearch *search = (RoadMapAddressSearch *)context;
 
    const char *title;
    int count;
-   int is_kb_ok = (type == SSD_KEYBOARD_OK);
+   int is_kb_ok = (dec_ok == exit_code);
 
    if (!search->city) {
-      if (!*new_value && is_kb_ok) {
+      if (!*value && is_kb_ok) {
          search->callback ("", search->data);
          free (search);
-         return 1;
+         return TRUE;
       }
       title = roadmap_lang_get ("City");
    } else {
       title = roadmap_lang_get ("Street");
-      if (search->prefix && !strcmp(search->prefix, new_value)) {
+      if (search->prefix && !strcmp(search->prefix, value)) {
          ssd_dialog_set_value ("input", "");
 
          free (search->prefix);
          search->prefix = NULL;
-         return 0;
+         return TRUE;
       }
    }
 
-   count = roadmap_address_search_count (is_kb_ok, new_value, search);
+   count = roadmap_address_search_count (is_kb_ok, value, search);
 
-   if (*new_value && !count) return 0;
+   if (*value && !count) return 0;
    if (!count) return 1;
 
-   if ((count <= MAX_LIST_RESULTS) || 
-       (type == SSD_KEYBOARD_OK)) {
+   if ((count <= MAX_LIST_RESULTS) || is_kb_ok)
+   {
+      roadmap_address_search_populate (is_kb_ok, value, search);
 
-      roadmap_address_search_populate (is_kb_ok, new_value, search);
-
+#ifndef J2ME
       qsort (RoadMapAddressSearchNames, RoadMapAddressSearchCount,
              sizeof(RoadMapAddressSearchNames[0]), cmpstring);
+#endif
 
       ssd_generic_list_dialog_show (title,
                      RoadMapAddressSearchCount,
@@ -312,36 +325,22 @@ static int keyboard_callback (int type, const char *new_value, void *context) {
                      NULL,
                      list_callback,
                      NULL,
-                     search);
+                     search, SSD_GEN_LIST_ENTRY_HEIGHT );
    }
 
 
-   return 1;
+   return TRUE;
 }
 
 
-static int house_keyboard_callback (int type, const char *new_value,
-                                    void *data) {
+static BOOL house_keyboard_callback(int         exit_code,
+                                    const char* value,
+                                    void*       context)
+{
+   ///[BOOKMARK]:[VERIFY] - Is this ever called?
+   assert(0);
 
-   RoadMapAddressDialog *context = (RoadMapAddressDialog *)data;
-
-   if (type == SSD_KEYBOARD_EXTRA) {
-      context->navigate = 1;
-      if (roadmap_address_show (context->city_name, context->street_name,
-                                new_value, context)) {
-         ssd_keyboard_hide ();
-      }
-      context->navigate = 0;
-   }
-
-   if (type == SSD_KEYBOARD_OK) {
-      if (roadmap_address_show (context->city_name, context->street_name,
-                                new_value, context)) {
-         ssd_keyboard_hide ();
-      }
-   }
-
-   return 1;
+   return FALSE;
 }
 
 
@@ -368,14 +367,12 @@ static void roadmap_address_street_result (const char *result, void *data) {
 
    if (context->street_name) free(context->street_name);
    context->street_name = strdup(name);
-   
 
-   ssd_keyboard_show (SSD_KEYBOARD_DIGITS,
-                      roadmap_lang_get ("House number"),
-                      "",
-                      roadmap_lang_get ("Navigate"),
-                      house_keyboard_callback,
-                      context);
+
+   ssd_show_keyboard_dialog(  roadmap_lang_get ("House number"),
+                              NULL,
+                              house_keyboard_callback,
+                              context);
 }
 
 
@@ -408,8 +405,8 @@ static int history_callback (SsdWidget widget, const char *new_value, const void
    } else if (!strchr(new_value, ',')) {
       /* We only got a city */
       if (context->city_name) free(context->city_name);
-     
-      context->city_name = strdup (new_value); 
+
+      context->city_name = strdup (new_value);
       roadmap_address_search_dialog
          (context->city_name, roadmap_address_street_result, data);
    } else {
@@ -424,7 +421,7 @@ static int history_callback (SsdWidget widget, const char *new_value, const void
       context->city_name = strdup (argv[2]);
       context->street_name = strdup (argv[1]);
 
-	  
+
       if (roadmap_address_show (context->city_name, context->street_name,
                                 argv[0], context)) {
          ssd_generic_list_dialog_hide ();
@@ -441,7 +438,7 @@ static int history_callback (SsdWidget widget, const char *new_value, const void
 
 static void delete_callback(int exit_code, void *context){
 		/* We got a full address */
-    
+
     if (exit_code != dec_yes)
          return;
 
@@ -454,7 +451,7 @@ static void delete_callback(int exit_code, void *context){
 static int history_delete_callback (SsdWidget widget, const char *new_value, const void *value,
 										    void *data) {
    char message[100];
-   
+
    if (!new_value[0] || !strcmp(new_value, roadmap_lang_get ("Other city"))) {
    	// do nothing here
       return 0;
@@ -462,9 +459,9 @@ static int history_delete_callback (SsdWidget widget, const char *new_value, con
    	// do nothing
 		return 0;
    } else {
-   
+
    	sprintf(message,"%s\n%s",roadmap_lang_get("Delete history entry"), new_value);
-   	ssd_confirm_dialog("Delete History", message,FALSE, delete_callback, (void *)ssd_dialog_get_data ("list")); 
+   	ssd_confirm_dialog("Delete History", message,FALSE, delete_callback, (void *)ssd_dialog_get_data ("list"));
 	   return 0;
    }
 }
@@ -489,12 +486,10 @@ void roadmap_address_search_dialog (const char *city,
       title = roadmap_lang_get ("Street");
    }
 
-   ssd_keyboard_show (SSD_KEYBOARD_LETTERS,
-                      title,
-                      "",
-                      NULL,
-                      keyboard_callback,
-                      context);
+   ssd_show_keyboard_dialog(  title,
+                              NULL,
+                              keyboard_callback,
+                              context);
 }
 
 
@@ -509,7 +504,7 @@ void roadmap_address_history (void) {
                                            NULL, NULL, 0};
 
    if (count == -1) {
-      roadmap_history_declare ('A', 4);
+      roadmap_history_declare ('A', 7);
       labels[0] = (char *)roadmap_lang_get ("Other city");
    }
 
@@ -525,13 +520,13 @@ void roadmap_address_history (void) {
       roadmap_history_get ('A', history, argv);
 
 	  exist = FALSE;
-           
+
       for (i=0; i< count; i++){
       	if (!strcmp(labels[i], argv[2])){
       		exist = TRUE;
       	}
       }
-      
+
       if (!exist){
       	  if (labels[count]) free (labels[count]);
 	      labels[count] = strdup(argv[2]);
@@ -542,15 +537,15 @@ void roadmap_address_history (void) {
       history = roadmap_history_before ('A', history);
       if (history == prev) break;
    }
-   	   
-      
+
+
    ssd_generic_list_dialog_show (roadmap_lang_get ("Address search"),
                   count,
                   (const char **)labels,
                   (const void **)values,
                   history_callback,
                   history_delete_callback,
-                  &context);
+                  &context, SSD_GEN_LIST_ENTRY_HEIGHT );
 }
 
 

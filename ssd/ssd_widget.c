@@ -35,6 +35,7 @@
 #include "roadmap_lang.h"
 #include "ssd_widget.h"
 #include "roadmap_bar.h"
+#include "roadmap_pointer.h"
 #include "roadmap_softkeys.h"
 
 #ifdef _WIN32
@@ -47,6 +48,18 @@
 
 #define SSD_WIDGET_SEP 2
 #define MAX_WIDGETS_PER_ROW 100
+/*
+ * This threshold defines the maximum movement (in inches!) defined as
+ * abs( press.x - release.x) + abs( press.y - release.y )
+ * Pay attention that this threshold has to be adjusted according to the device ppi
+ * in order to match the physical movement
+ * For example threshold 60 on device of 180 ppi (G1) corresponds to actual movement of 1/3 inch
+ *
+ */
+#define FORCE_CLICK_MOVEMENT_THRESHOLD  (60)
+#define ABS_POINTS_DISTANCE( a, b ) ( abs( (a).x - (b).x ) + abs( (a).y - (b).y ) )
+
+static RoadMapGuiPoint PressedPointerPoint = {-1, -1};
 
 // Get child by ID (name)
 // Can return child child...
@@ -118,7 +131,7 @@ static void calc_pack_size (SsdWidget w_cur, RoadMapGuiRect *rect,
 
          if (cur_width > max_width) max_width = cur_width;
 
-         if (w_last_drawn && 
+         if (w_last_drawn &&
             (w_last_drawn->flags & SSD_WIDGET_SPACE)) {
 
             rect->miny += SSD_WIDGET_SEP;
@@ -157,7 +170,7 @@ static void calc_pack_size (SsdWidget w_cur, RoadMapGuiRect *rect,
          index_in_row = 0;
          cur_width = 0;
          rect->miny += max_height;
-         if (w_last_drawn && 
+         if (w_last_drawn &&
             (w_last_drawn->flags & SSD_WIDGET_SPACE)) {
 
             rect->miny += SSD_WIDGET_SEP;
@@ -177,7 +190,7 @@ static void calc_pack_size (SsdWidget w_cur, RoadMapGuiRect *rect,
       index_in_row = 0;
       cur_width = 0;
       rect->miny += max_height;
-      if (w_last_drawn && 
+      if (w_last_drawn &&
             (w_last_drawn->flags & SSD_WIDGET_SPACE)) {
 
          rect->miny += SSD_WIDGET_SEP;
@@ -203,6 +216,7 @@ static void ssd_widget_draw_one (SsdWidget w, int x, int y, int height) {
    w->position.x = x;
    w->position.y = y;
 
+
    if (size.width && size.height) {
       rect.minx = x;
       rect.miny = y;
@@ -211,7 +225,7 @@ static void ssd_widget_draw_one (SsdWidget w, int x, int y, int height) {
 
 #if 0
       if (!w->parent) printf("****** start draw ******\n");
-      printf("draw - %s:%s %d-%d\n", w->_typeid, w->name, rect.miny, rect.maxy);
+      printf("draw - %s:%s x=%d-%d y=%d-%d\n", w->_typeid, w->name, rect.minx, rect.maxx, rect.miny, rect.maxy);
 #endif
 
       w->draw(w, &rect, 0);
@@ -234,6 +248,9 @@ static int ssd_widget_draw_row (SsdWidget *w, int count,
    int rtl = ssd_widget_rtl(w[0]->parent);
    SsdWidget prev_widget;
 
+   if (y > roadmap_canvas_height()){
+      return 0;
+   }
    if (w[0]->flags & SSD_ALIGN_LTR) rtl = 0;
 
    if (rtl) cur_x = x;
@@ -400,7 +417,7 @@ static void ssd_widget_draw_grid (SsdWidget w, const RoadMapGuiRect *rect) {
    SsdWidget widgets[MAX_WIDGETS_PER_ROW];
    int width  = rect->maxx - rect->minx + 1;
    int height = rect->maxy - rect->miny + 1;
-   SsdSize max_size; 
+   SsdSize max_size;
    int cur_y = rect->miny;
    int max_height = 0;
    int avg_width = 0;
@@ -414,7 +431,7 @@ static void ssd_widget_draw_grid (SsdWidget w, const RoadMapGuiRect *rect) {
 
    max_size.width = width;
    max_size.height = height;
-   
+
    while (w != NULL) {
       SsdSize size;
       ssd_widget_get_size (w, &size, &max_size);
@@ -511,13 +528,13 @@ static void ssd_widget_draw_pack (SsdWidget w, const RoadMapGuiRect *rect) {
          max_size.height = height;
          ssd_widget_get_size (w, &size, &max_size);
       }
-      
+
       if ((count == MAX_WIDGETS_PER_ROW) ||
          ((count > 0) &&
                      (((cur_width + size.width) > width) ||
                      (w->flags & SSD_START_NEW_ROW)))) {
 
-         if (w_last_drawn && 
+         if (w_last_drawn &&
             (w_last_drawn->flags & SSD_WIDGET_SPACE)) {
 
             cur_y += SSD_WIDGET_SEP;
@@ -555,7 +572,7 @@ static void ssd_widget_draw_pack (SsdWidget w, const RoadMapGuiRect *rect) {
 
       if (w->flags & SSD_END_ROW) {
 
-         if (w_last_drawn && 
+         if (w_last_drawn &&
             (w_last_drawn->flags & SSD_WIDGET_SPACE)) {
 
             cur_y += SSD_WIDGET_SEP;
@@ -574,7 +591,7 @@ static void ssd_widget_draw_pack (SsdWidget w, const RoadMapGuiRect *rect) {
    }
 
    if (count) {
-      if (w_last_drawn && 
+      if (w_last_drawn &&
             (w_last_drawn->flags & SSD_WIDGET_SPACE)) {
 
          cur_y += SSD_WIDGET_SEP;
@@ -585,39 +602,19 @@ static void ssd_widget_draw_pack (SsdWidget w, const RoadMapGuiRect *rect) {
 
 
 void ssd_widget_draw (SsdWidget w, const RoadMapGuiRect *rect,
-                      int parent_flags) {
+                      int parenlt_flags) {
 
-   if (parent_flags & SSD_ALIGN_GRID) ssd_widget_draw_grid (w, rect);
+   if (parenlt_flags & SSD_ALIGN_GRID) ssd_widget_draw_grid (w, rect);
    else ssd_widget_draw_pack (w, rect);
 }
 
 static BOOL ssd_widget_default_on_key_pressed( SsdWidget w, const char* utf8char, uint32_t flags)
 { return FALSE;}
 
-roadmap_input_type ssd_widget_get_input_type( SsdWidget this)
-{
-   roadmap_input_type t = inputtype_none;
-
-   if( this->get_input_type)
-      t = this->get_input_type( this);
-
-   if( inputtype_none == t)
-   {
-      SsdWidget next = this->children;
-      while( (inputtype_none == t) && next)
-      {
-         t     = ssd_widget_get_input_type( next);
-         next  = next->next;
-      }
-   }
-   
-   return t;
-}
-
 SsdWidget ssd_widget_new (const char *name,
-                          PFN_WIDGET_ONKEYPRESSED pfn_on_key_pressed,
+                          CB_OnWidgetKeyPressed pfn_on_key_pressed,
                           int flags) {
-                          
+
    static int tab_order_sequence = 0;
 
    SsdWidget w;
@@ -630,17 +627,23 @@ SsdWidget ssd_widget_new (const char *name,
    w->size.height    = SSD_MIN_SIZE;
    w->size.width     = SSD_MIN_SIZE;
    w->in_focus       = FALSE;
+   w->focus_highlight = TRUE;
    w->default_widget = (SSD_WS_DEFWIDGET  & flags)? TRUE: FALSE;
    w->tab_stop       = (SSD_WS_TABSTOP & flags)? TRUE: FALSE;
    w->prev_tabstop   = NULL;
    w->next_tabstop   = NULL;
-   w->left_tabstop   = NULL;
-   w->right_tabstop  = NULL;
+   w->tabstop_left   = NULL;
+   w->tabstop_right  = NULL;
    w->tabstop_above  = NULL;
    w->tabstop_below  = NULL;
    w->parent_dialog  = NULL;
    w->get_input_type = NULL;
+   w->pointer_down   = NULL;
+   w->pointer_up     = NULL;
    w->tab_sequence   = tab_order_sequence++;
+   w->force_click  = FALSE;
+
+   memset( &w->click_offsets, 0, sizeof( SsdClickOffsets ) );
 
    if( pfn_on_key_pressed)
       w->key_pressed = pfn_on_key_pressed;
@@ -654,16 +657,11 @@ SsdWidget ssd_widget_new (const char *name,
 
 
 SsdWidget ssd_widget_find_by_pos (SsdWidget widget,
-                                  const RoadMapGuiPoint *point) {
+                                  const RoadMapGuiPoint *point, BOOL use_offsets ) {
 
    while (widget != NULL) {
-      SsdSize size;
-      ssd_widget_get_size (widget, &size, NULL);
 
-      if ((widget->position.x <= point->x) &&
-          ((widget->position.x + size.width) >= point->x) &&
-          (widget->position.y <= point->y) &&
-          ((widget->position.y + size.height) >= point->y)) {
+	   if ( ssd_widget_contains_point( widget, point, use_offsets ) ) {
 
          return widget;
       }
@@ -672,6 +670,59 @@ SsdWidget ssd_widget_find_by_pos (SsdWidget widget,
    }
 
    return NULL;
+}
+/* Finds the clickable widgets (short and long click) at the deeper level,
+ * for which the current position belongs to
+ */
+BOOL ssd_widget_find_clickable_by_pos (SsdWidget widget,
+                                  const RoadMapGuiPoint *point, SsdWidget* widget_short_click, SsdWidget* widget_long_click )
+{
+   while ( widget != NULL ) {
+      SsdSize size;
+      ssd_widget_get_size ( widget, &size, NULL );
+
+      if ((widget->position.x <= point->x) &&
+          ((widget->position.x + size.width) >= point->x) &&
+          (widget->position.y <= point->y) &&
+          ((widget->position.y + size.height) >= point->y)) {
+
+         if ( widget->short_click )
+        	 *widget_short_click = widget;
+         if ( widget->long_click )
+        	 *widget_long_click = widget;
+
+         if ( ssd_widget_find_clickable_by_pos( widget->children, point, widget_short_click, widget_long_click ) )
+        	 return TRUE;
+      }
+      widget = widget->next;
+   }
+
+   return FALSE;
+}
+
+
+
+/* Checks if the point relies in the vicinity of the widget defined by the given frame offsets */
+BOOL ssd_widget_check_point_location ( SsdWidget widget,
+                                  const RoadMapGuiPoint *point, int frame_offset_x, int frame_ofset_y ) {
+
+      SsdSize size;
+      BOOL res = FALSE;
+
+      if ( widget )
+      {
+		  ssd_widget_get_size ( widget, &size, NULL );
+
+		  if ( ( ( widget->position.x - frame_offset_x ) <= point->x) &&
+			   ( ( widget->position.x + size.width + frame_offset_x ) >= point->x) &&
+			   ( ( widget->position.y - frame_ofset_y ) <= point->y) &&
+			   ( ( widget->position.y + size.height + frame_ofset_y ) >= point->y) )
+		  {
+
+			 res = TRUE;
+		  }
+      }
+   return res;
 }
 
 
@@ -689,34 +740,82 @@ int ssd_widget_rtl (SsdWidget parent) {
 
 int ssd_widget_pointer_down (SsdWidget widget, const RoadMapGuiPoint *point) {
 
-   widget = ssd_widget_find_by_pos (widget, point);
+	SsdWidget widget_next = widget;
 
    if (!widget) return 0;
 
-   if (widget->pointer_down && widget->pointer_down(widget, point)) {
-      return 1;
+   /* Find clickable widget and remember.
+    * Drag end will check if the release event was at the vicinity of this widget
+    */
+   PressedPointerPoint = *point;
 
-   } else if (widget->children != NULL) {
 
-      return ssd_widget_pointer_down (widget->children, point);
+   /* Check all the overlapping ( in terms of click area ) widgets
+   * First widget, that it or its children handle the event - wins
+   */
+   while ( widget_next != NULL )
+   {
+	   if ( ssd_widget_contains_point( widget_next, point, TRUE ) )
+	   {
+		   if ( ( widget_next->pointer_down && widget_next->pointer_down( widget_next, point ) ) ||
+				   ( widget_next->children && ssd_widget_pointer_down( widget_next->children, point ) ) )
+		   {
+			  return 1;
+		   }
+	   }
+	   widget_next = widget_next->next;
    }
+   return 0;
+}
 
+int ssd_widget_pointer_up(SsdWidget widget, const RoadMapGuiPoint *point) {
+
+  SsdWidget widget_next = widget;
+
+   if( !widget)
+      return 0;
+
+   /* Check all the overlapping ( in terms of click area ) widgets
+   * First widget, that it or its children handle the event - wins
+   */
+   while ( widget_next != NULL )
+   {
+	   if ( ssd_widget_contains_point( widget_next, point, TRUE ) )
+	   {
+		   if ( ( widget_next->pointer_up && widget_next->pointer_up( widget_next, point ) ) ||
+				   ( widget_next->children && ssd_widget_pointer_up( widget_next->children, point ) ) )
+		   {
+			  return 1;
+		   }
+	   }
+	   widget_next = widget_next->next;
+   }
    return 0;
 }
 
 
 int ssd_widget_short_click (SsdWidget widget, const RoadMapGuiPoint *point) {
 
-   widget = ssd_widget_find_by_pos (widget, point);
+   SsdWidget widget_next = widget;
 
-   if (!widget) return 0;
+   if (!widget) {
+      return 0;
+   }
 
-   if (widget->short_click && widget->short_click(widget, point)) {
-      return 1;
-
-   } else if (widget->children != NULL) {
-
-      return ssd_widget_short_click (widget->children, point);
+   /* Check all the overlapping ( in terms of click area ) widgets
+   * First widget, that it or its children handle the event - wins
+   */
+   while ( widget_next != NULL )
+   {
+	   if ( ssd_widget_contains_point( widget_next, point, TRUE ) )
+	   {
+		   if ( ( widget_next->short_click && widget_next->short_click( widget_next, point ) ) ||
+				   ( widget_next->children && ssd_widget_short_click( widget_next->children, point ) ) )
+		   {
+			  return 1;
+		   }
+	   }
+	   widget_next = widget_next->next;
    }
 
    return 0;
@@ -730,70 +829,6 @@ void ssd_widget_set_backgroundfocus( SsdWidget w, BOOL set)
       w->background_focus = FALSE;
 }
 
-BOOL ssd_widget_set_focus( SsdWidget w)
-{
-   if( w->tab_stop)
-   {
-      roadmap_input_type input_type;
-      
-      w->in_focus = TRUE;
-      
-      input_type = ssd_widget_get_input_type( w );
-      
-      roadmap_input_type_set_mode( input_type );
-   }
-   
-   w->background_focus = FALSE;
-      
-   return w->in_focus;
-}
-
-void ssd_widget_loose_focus   ( SsdWidget w)
-{
-   w->in_focus          = FALSE;
-   w->background_focus  = FALSE;
-}
-
-static SsdWidget ssd_widget_focus_backward( SsdWidget w)
-{
-   if( !w->prev_tabstop || (w->prev_tabstop == w))
-      return w;   // Only one tab-stop in w dialog. Nothing changed.
-
-   return w->prev_tabstop;
-}
-
-static SsdWidget ssd_widget_focus_forward(SsdWidget w)
-{
-   if(!w->next_tabstop || (w->next_tabstop == w))
-      return w;   // Only one tab-stop in w dialog. Nothing changed.
-      
-   return w->next_tabstop;
-}
-
-static SsdWidget ssd_widget_focus_left( SsdWidget w) {
-
-   if( !w->left_tabstop) return ssd_widget_focus_backward( w);
-   else return w->left_tabstop;
-}
-
-static SsdWidget ssd_widget_focus_right( SsdWidget w) {
-
-   if( !w->right_tabstop) return ssd_widget_focus_forward( w);
-   else return w->right_tabstop;
-}
-
-static SsdWidget ssd_widget_focus_up( SsdWidget w) {
-
-   if( !w->tabstop_above) return ssd_widget_focus_backward( w);
-   else return w->tabstop_above;
-}
-
-static SsdWidget ssd_widget_focus_down( SsdWidget w)
-{
-   if( !w->tabstop_below) return ssd_widget_focus_forward( w);
-   else return w->tabstop_below;
-}
-
 static void ssd_widget_sort_children (SsdWidget widget) {
    SsdWidget first = widget;
    SsdWidget prev = NULL;
@@ -803,7 +838,7 @@ static void ssd_widget_sort_children (SsdWidget widget) {
 
    /* No support for first widget as ORDER_LAST */
    assert (! (widget->flags & SSD_ORDER_LAST));
-   
+
    assert( widget != widget->next);
 
    while (widget) {
@@ -831,42 +866,27 @@ static void ssd_widget_sort_children (SsdWidget widget) {
 }
 
 
-SsdWidget ssd_widget_move_focus (SsdWidget w, SSD_FOCUS_DIRECTION direction) {
-   SsdWidget next_w;
-   if (!w) return NULL;
-
-   switch (direction) {
-   case FOCUS_BACK: next_w = ssd_widget_focus_backward(w); break;
-   case FOCUS_FORWARD: next_w = ssd_widget_focus_forward(w); break;
-   case FOCUS_UP: next_w = ssd_widget_focus_up(w); break;
-   case FOCUS_DOWN: next_w = ssd_widget_focus_down(w); break;
-   case FOCUS_LEFT: next_w = ssd_widget_focus_left(w); break;
-   case FOCUS_RIGHT: next_w = ssd_widget_focus_right(w); break;
-   default: next_w = w; break;
-   }
-
-   if(w == next_w) return w;   // Only one tab-stop in w dialog. Nothing changed.
-      
-   ssd_widget_loose_focus  (w);
-   ssd_widget_set_focus    (next_w);
-   
-   return next_w;
-}
-
 int ssd_widget_long_click (SsdWidget widget, const RoadMapGuiPoint *point) {
 
-   widget = ssd_widget_find_by_pos (widget, point);
+   SsdWidget widget_next = widget;
 
    if (!widget) return 0;
 
-   if (widget->long_click && widget->long_click(widget, point)) {
-      return 1;
-
-   } else if (widget->children != NULL) {
-
-      return ssd_widget_long_click (widget->children, point);
+   /* Check all the overlapping ( in terms of click area ) widgets
+   * First widget, that it or its children handle the event - wins
+   */
+   while ( widget_next != NULL )
+   {
+	   if ( ssd_widget_contains_point( widget_next, point, TRUE ) )
+	   {
+		   if ( ( widget_next->long_click && widget_next->long_click( widget_next, point ) ) ||
+				   ( widget_next->children && ssd_widget_long_click( widget_next->children, point ) ) )
+		   {
+			  return 1;
+		   }
+	   }
+	   widget_next = widget_next->next;
    }
-
    return 0;
 }
 
@@ -929,14 +949,31 @@ void ssd_widget_add (SsdWidget parent, SsdWidget child) {
    ssd_widget_sort_children(parent->children);
 }
 
+static BOOL focus_belong_to_widget( SsdWidget w)
+{
+   SsdWidget p = w;
+
+   while( p)
+   {
+      if( p->in_focus || focus_belong_to_widget( p->children))
+         return TRUE;
+
+      p = p->next;
+   }
+
+   return FALSE;
+}
+
+extern void ssd_dialog_invalidate_tab_order ();
+
 SsdWidget ssd_widget_remove(SsdWidget parent, SsdWidget child)
 {
    SsdWidget cur_child     = parent->children;
    SsdWidget child_behind  = NULL;
-   
+
    assert(parent);
    assert(child);
-   
+
    while( cur_child)
    {
       if( cur_child == child)
@@ -945,15 +982,19 @@ SsdWidget ssd_widget_remove(SsdWidget parent, SsdWidget child)
             child_behind->next= child->next;
          else
             parent->children  = child->next;
-         
-         //assert(0 && "need to re-sort tab order!");
+
+         child->next   = NULL;
+         child->parent = NULL;
+
+         ssd_dialog_invalidate_tab_order();
+
          return child;
       }
-      
+
       child_behind= cur_child;
       cur_child   = cur_child->next;
    }
-   
+
    return NULL;
 }
 
@@ -961,11 +1002,11 @@ SsdWidget ssd_widget_replace(SsdWidget parent, SsdWidget old_child, SsdWidget ne
 {
    SsdWidget cur_child     = parent->children;
    SsdWidget child_behind  = NULL;
-   
+
    assert(parent);
    assert(old_child);
    assert(new_child);
-   
+
    while( cur_child)
    {
       if( cur_child == old_child)
@@ -974,17 +1015,21 @@ SsdWidget ssd_widget_replace(SsdWidget parent, SsdWidget old_child, SsdWidget ne
             child_behind->next= new_child;
          else
             parent->children  = new_child;
-         
+
          new_child->next   = old_child->next;
          new_child->parent = old_child->parent;
+         old_child->next   = NULL;
+         old_child->parent = NULL;
+
+         ssd_dialog_invalidate_tab_order();
 
          return old_child;
       }
-      
+
       child_behind= cur_child;
       cur_child   = cur_child->next;
    }
-   
+
    return NULL;
 }
 
@@ -1011,7 +1056,7 @@ void ssd_widget_set_context (SsdWidget widget, void *context) {
 void ssd_widget_get_size (SsdWidget w, SsdSize *size, const SsdSize *max) {
 
    SsdSize pack_size = {0, 0};
-                        
+
    RoadMapGuiRect max_size = {0, 0, 0, 0};
    int total_height_below = 0;
 
@@ -1023,30 +1068,27 @@ void ssd_widget_get_size (SsdWidget w, SsdSize *size, const SsdSize *max) {
 
    if (!max && (w->cached_size.width < 0)) {
        static SsdSize canvas_size;
-       
+
        canvas_size.width   = roadmap_canvas_width();
+#ifdef TOUCH_SCREEN
+ 	   canvas_size.height  = roadmap_canvas_height() ;
+#else
        canvas_size.height  = roadmap_canvas_height() - roadmap_bar_bottom_height();
-       
+#endif
        max = &canvas_size;
    }
    else{
    	if (!max)
    		max = &w->cached_size;
    }
-   
-	   
+
+
 
    if ((w->cached_size.width >= 0) && (w->cached_size.height >= 0)) {
       *size = w->cached_size;
       return;
    }
 
-   ///[BOOKMARK]:[NOTE]:[PAZ] - Special case solution:
-   ///   Line(n) asked for MAX-HEIGHT, but it needs to accomodate 
-   ///   for the height of line(n+1).
-   ///   This solution is for such case, where there is only 
-   ///   a sinlge container with this flag (SSD_ORDER_LAST).
-   ///   E.g. - List box (n) and softkeys buttons (n+1)
    if (size->height == SSD_MAX_SIZE) {
       /* Check if other siblings exists and should be placed below this one */
       SsdWidget below_w = w->next;
@@ -1064,7 +1106,7 @@ void ssd_widget_get_size (SsdWidget w, SsdSize *size, const SsdSize *max) {
    }
 
    if (w->flags & SSD_DIALOG_FLOAT) {
-   	   
+
       if (size->width == SSD_MAX_SIZE) size->width = max->width -10;
       if (size->height== SSD_MAX_SIZE) size->height= max->height - total_height_below;
 
@@ -1078,14 +1120,18 @@ void ssd_widget_get_size (SsdWidget w, SsdSize *size, const SsdSize *max) {
       w->cached_size = *size;
       return;
    }
-   
+
    if (size->width >= 0)  {
       max_size.maxx = size->width - 1;
    } else {
       if (!max){
                 static SsdSize canvas_size;
                 canvas_size.width = roadmap_canvas_width();
+#ifdef TOUCH_SCREEN
+				canvas_size.height = roadmap_canvas_height();
+#else
                 canvas_size.height = roadmap_canvas_height() - roadmap_bar_bottom_height();
+#endif
                 max = &canvas_size;
       }
       max_size.maxx = max->width - 1;
@@ -1146,7 +1192,11 @@ void ssd_widget_container_size (SsdWidget dialog, SsdSize *size) {
 
    } else {
       max_size.width = roadmap_canvas_width ();
+#ifdef TOUCH_SCREEN
+      max_size.height = roadmap_canvas_height ();
+#else
       max_size.height = roadmap_canvas_height () - roadmap_bar_bottom_height();
+#endif
    }
 
    ssd_widget_get_size (dialog, size, &max_size);
@@ -1185,7 +1235,19 @@ void ssd_widget_reset_cache (SsdWidget w) {
    }
 }
 
+void ssd_widget_reset_position (SsdWidget w) {
 
+   SsdWidget child = w->children;
+
+   w->position.x = -1;
+   w->position.y = -1;
+
+   while (child != NULL) {
+
+      ssd_widget_reset_position (child);
+      child = child->next;
+   }
+}
 void ssd_widget_hide (SsdWidget w) {
    w->flags |= SSD_WIDGET_HIDE;
 }
@@ -1201,412 +1263,6 @@ void ssd_widget_set_flags (SsdWidget widget, int flags) {
    widget->flags = flags;
    widget->default_widget = (SSD_WS_DEFWIDGET  & flags)? TRUE: FALSE;
    widget->tab_stop       = (SSD_WS_TABSTOP & flags)? TRUE: FALSE;
-}
-
-// Macros used for GUI-wize tab-sort (left,right,up,down)
-#define  WIDGET_WIDTH(_w_)                            ((_w_->cached_size.width < 0)? max_width:  _w_->cached_size.width)
-#define  WIDGET_HEIGHT(_w_)                           ((_w_->cached_size.height< 0)? max_height: _w_->cached_size.height)
-#define  WIDGET_HALF_WIDTH(_w_)                       ((int)(WIDGET_WIDTH(_w_)/2))
-#define  WIDGET_HALF_HEIGHT(_w_)                      ((int)(WIDGET_HEIGHT(_w_)/2))
-#define  GET_X_DISTANCE(_w_,_other_)                  (((_w_)->position.x + WIDGET_HALF_WIDTH (_w_)) - ((_other_)->position.x + WIDGET_HALF_WIDTH (_other_)))
-#define  GET_Y_DISTANCE(_w_,_other_)                  (((_w_)->position.y + WIDGET_HALF_HEIGHT(_w_)) - ((_other_)->position.y + WIDGET_HALF_HEIGHT(_other_)))
-#define  GET_ABSOLUTE_X_DISTANCE(_w_,_other_)         (abs(GET_X_DISTANCE(_w_,_other_)))
-#define  GET_ABSOLUTE_Y_DISTANCE(_w_,_other_)         (abs(GET_Y_DISTANCE(_w_,_other_)))
-#define  OBJECT_IS_TO_THE_LEFT(_w_,_other_)           (_other_->position.x < _w_->position.x)
-#define  OBJECT_IS_TO_THE_RIGHT(_w_,_other_)          (_w_->position.x < _other_->position.x)
-#define  OBJECT_IS_ABOVE(_w_,_other_)                 (_other_->position.y < _w_->position.y)
-#define  OBJECT_IS_BELOW(_w_,_other_)                 (_w_->position.y < _other_->position.y)
-#define  CONSIDER_A_NEW_NEIGHBOUR(_next_,_prev_)                        \
-{                                                                       \
-   if( w->_next_)                                                       \
-   {                                                                    \
-      /* Maybe our current neighbour with w new one (other)?   */       \
-      w->_next_ = ssd_widget_select_nearest_neighbour(                  \
-            w,                /* THE object  (w)               */       \
-            w->_next_,        /* Option a (current)            */       \
-            other);              /* Option b (new)             */       \
-                                                                        \
-      /* Set also other-side pointer, to point back at us      */       \
-      if( w->_next_->_prev_)                                            \
-      w->_next_->_prev_ = ssd_widget_select_nearest_neighbour(          \
-            w->_next_,        /* THE object  (w)               */       \
-            w->_next_->_prev_,/* Option a (current)            */       \
-            w);               /* Option b (us)                 */       \
-      else                                                              \
-      w->_next_->_prev_ = w;                                            \
-   }                                                                    \
-   else                                                                 \
-   w->_next_ = other;                                                   \
-}
-
-// Method to return a widget-pointer (left,right,top,bottom)
-typedef SsdWidget*   (*PFN_GET_WIDGET_PTR)   (SsdWidget);
-
-// Helper for 'ssd_widget_sort_gui_tab_order__fix_orphan_pointers()' below
-void ssd_widget_sort_gui_tab_order__fix_corners(SsdWidget   w, 
-      PFN_GET_WIDGET_PTR      pfn_back_ptr,
-      PFN_GET_WIDGET_PTR      pfn_next_ptr)
-{
-   int         max_width   = roadmap_canvas_width();
-   int         max_height  = roadmap_canvas_height() - roadmap_bar_bottom_height();
-   SsdWidget   p           = w;
-   SsdWidget   far_widget  = NULL;     // This will be used for cases of loops
-   int         far_distance= 0;
-   SsdWidget   loop_watch  = w;     // Loop watch-dog
-   BOOL        inc_watch   = FALSE; // Loop watch-dog
-   int         distance;
-
-   if( *(pfn_next_ptr(w)))
-      return;  // Already set
-
-   while( *(pfn_back_ptr(p)))
-   {
-      p = *pfn_back_ptr(p);
-
-      // Keep track on widget, which is the most-far (farest?) from us:
-      // The 'far_widget' will be used as a match for cases of internal loop,
-      // discovered by the watchdog:
-      distance = GET_ABSOLUTE_X_DISTANCE(w,p) + GET_ABSOLUTE_Y_DISTANCE(w,p);
-      if( far_distance < distance)
-      {
-         far_distance= distance;
-         far_widget  = p;
-      }
-
-      // Watch-dog:
-      if( loop_watch == p)
-      {
-         if( !far_widget || (far_widget==w))
-            return;     // Internal closed loop
-         p = far_widget;
-         break;
-      }
-
-      // Increment watchdog
-      if( inc_watch)
-         loop_watch = *pfn_back_ptr(loop_watch);
-      inc_watch = !inc_watch;
-
-
-      if( p == w)
-         return;     // Looped back to 'w' (logically w cannot happen)
-   }
-
-   // Set 'next' pointer:
-   *(pfn_next_ptr(w)) = p;
-
-   // Set neighbour's 'back' pointer to us:
-   if( NULL == *(pfn_back_ptr(p)))
-      *(pfn_back_ptr(p)) = w;
-}
-
-SsdWidget ssd_widget_select_nearest_neighbour(  
-      SsdWidget   w,       // Me
-      SsdWidget   option_a,   // Option a (current?)
-      SsdWidget   option_b)   // Option b (new?)
-{
-   int   max_width         = roadmap_canvas_width();
-   int   max_height        = roadmap_canvas_height() - roadmap_bar_bottom_height();
-   int   option_a_distance = GET_ABSOLUTE_X_DISTANCE(w,option_a) + GET_ABSOLUTE_Y_DISTANCE(w,option_a);
-   int   option_b_distance = GET_ABSOLUTE_X_DISTANCE(w,option_b) + GET_ABSOLUTE_Y_DISTANCE(w,option_b);
-
-   if( option_a_distance < option_b_distance)
-      return option_a;
-
-   return option_b;
-}
-
-// Consider other widget to be our nearest neighbour
-// If it is suited to be a neighbour, set it as a neighbour
-static void ssd_widget_consider_as_nieghbour( SsdWidget w, SsdWidget other)
-{
-   int   max_width            = roadmap_canvas_width();
-   int   max_height           = roadmap_canvas_height() - roadmap_bar_bottom_height();
-   int   absolute_x_distance  = GET_ABSOLUTE_X_DISTANCE(w,other);
-   int   absolute_y_distance  = GET_ABSOLUTE_Y_DISTANCE(w,other);
-   BOOL  x_axis               = (absolute_y_distance < absolute_x_distance);
-
-   if( w == other)
-      return;
-
-   if( x_axis)
-   {
-      if( OBJECT_IS_TO_THE_LEFT(w,other))
-         CONSIDER_A_NEW_NEIGHBOUR(left_tabstop,right_tabstop)
-      else if( OBJECT_IS_TO_THE_RIGHT(w,other))
-         CONSIDER_A_NEW_NEIGHBOUR(right_tabstop,left_tabstop)
-   }
-   else
-   {
-      if( OBJECT_IS_ABOVE(w,other))
-         CONSIDER_A_NEW_NEIGHBOUR(tabstop_above,tabstop_below)
-      else if( OBJECT_IS_BELOW(w,other))
-         CONSIDER_A_NEW_NEIGHBOUR(tabstop_below,tabstop_above)
-   }
-}
-
-SsdWidget*  get_back_left_ptr (SsdWidget w){ return &(w->right_tabstop);}
-SsdWidget*  get_next_left_ptr (SsdWidget w){ return &(w->left_tabstop);}
-SsdWidget*  get_back_right_ptr(SsdWidget w){ return &(w->left_tabstop);}
-SsdWidget*  get_next_right_ptr(SsdWidget w){ return &(w->right_tabstop);}
-SsdWidget*  get_back_above_ptr(SsdWidget w){ return &(w->tabstop_below);}
-SsdWidget*  get_next_above_ptr(SsdWidget w){ return &(w->tabstop_above);}
-SsdWidget*  get_back_below_ptr(SsdWidget w){ return &(w->tabstop_above);}
-SsdWidget*  get_next_below_ptr(SsdWidget w){ return &(w->tabstop_below);}
-// After left/right/above/below pointers were set, some corner widgets will not 
-// have anything to point at.
-// Why?  For example - the top-left cornered widget does not have anything above it
-//       or to the left of it.
-// The next method will search for these 'orphan' pointers, and set them to point
-// to other widgets:
-void ssd_widget_sort_gui_tab_order__fix_orphan_pointers( SsdWidget first)
-{
-   SsdWidget p = first;
-
-   do
-   {
-      ssd_widget_sort_gui_tab_order__fix_corners( p, get_back_left_ptr, get_next_left_ptr);
-      ssd_widget_sort_gui_tab_order__fix_corners( p, get_back_right_ptr,   get_next_right_ptr);
-      ssd_widget_sort_gui_tab_order__fix_corners( p, get_back_above_ptr,   get_next_above_ptr);
-      ssd_widget_sort_gui_tab_order__fix_corners( p, get_back_below_ptr,   get_next_below_ptr);
-
-      p = p->next_tabstop;
-
-   }  while( p != first);
-}
-
-void ssd_widget_sort_gui_tab_order( SsdWidget first)
-{
-   SsdWidget   w = first;
-   SsdWidget   next = NULL;
-
-   if(   !first || !first->next_tabstop)
-      return;
-
-   do
-   {
-      next = w->next_tabstop;
-
-      do
-      {
-         // Maybe neighbours?
-         ssd_widget_consider_as_nieghbour(w,next);
-
-         next = next->next_tabstop;
-
-      }  while( next != w);
-
-      w = w->next_tabstop;
-
-   }  while( w != first);
-
-   // See remarks above the next method for more info:
-   ssd_widget_sort_gui_tab_order__fix_orphan_pointers( first);
-}
-
-void ssd_widget_reset_tab_order_recursive( SsdWidget w)
-
-{
-   SsdWidget next;
-
-   w->prev_tabstop   = NULL;
-   w->next_tabstop   = NULL;
-   w->left_tabstop   = NULL;
-   w->right_tabstop  = NULL;
-   w->tabstop_above  = NULL;
-   w->tabstop_below  = NULL;
-   w->in_focus       = FALSE;
-
-   next = w->children;
-   while( next)
-   {
-      ssd_widget_reset_tab_order_recursive( next);
-      next = next->next;
-   }
-
-   if( (NULL == w->parent) && w->next)
-      ssd_widget_reset_tab_order_recursive( w->next);
-}
-
-void ssd_widget_reset_tab_order( SsdWidget head)
-{
-   if( head)
-      ssd_widget_reset_tab_order_recursive( head);
-}
-
-void ssd_widget_sort_tab_order_recursive( 
-      void*       parent_dialog,
-      SsdWidget   current_position,
-      SsdWidget*  previous_tabstop,
-      SsdWidget*  default_widget,
-      SsdWidget*  first_tabstop,
-      SsdWidget*  last_tabstop)
-{
-   SsdWidget next;
-
-   current_position->parent_dialog = parent_dialog;
-
-   if( (current_position->tab_stop) && !(SSD_WIDGET_HIDE & current_position->flags))
-   {
-      // Set first and last:
-      if( NULL == (*first_tabstop))
-         (*first_tabstop)  = current_position;
-      (*last_tabstop) = current_position;
-
-      // Tie-up the previous and the current:
-      if( NULL == (*previous_tabstop))
-         (*previous_tabstop)= current_position;
-      else
-      {
-         (*previous_tabstop)->next_tabstop= current_position;
-         current_position->prev_tabstop   = (*previous_tabstop);
-         (*previous_tabstop)              = current_position;
-      }
-   }
-
-   if( current_position->default_widget)
-   {
-      assert( NULL == (*default_widget)); // More then one default-widget in a construct?
-      (*default_widget) = current_position;
-   }
-
-   next = current_position->children;
-   while( next)
-   {
-      ssd_widget_sort_tab_order_recursive(
-            parent_dialog,
-            next, 
-            previous_tabstop,
-            default_widget,
-            first_tabstop,
-            last_tabstop);
-
-      next = next->next;
-   }
-
-   // Only for top-level widgets we need to check brothers.
-   // Other widgets brothers were already covered by the children-enumaration of their parent
-   if( (NULL == current_position->parent) && current_position->next)
-      ssd_widget_sort_tab_order_recursive(
-            parent_dialog,
-            current_position->next, 
-            previous_tabstop,
-            default_widget,
-            first_tabstop,
-            last_tabstop);
-}
-
-void switch_widgets_tab_order( SsdWidget a, SsdWidget b)
-{
-   struct ssd_widget a_data_with_b_pointers = *a;
-   struct ssd_widget b_data_with_a_pointers = *b;
-
-   a_data_with_b_pointers.prev_tabstop = b->prev_tabstop;
-   a_data_with_b_pointers.next_tabstop = b->next_tabstop;
-   b_data_with_a_pointers.prev_tabstop = a->prev_tabstop;
-   b_data_with_a_pointers.next_tabstop = a->next_tabstop;
-
-   *a = b_data_with_a_pointers;
-   *b = a_data_with_b_pointers;
-}
-
-void fix_widget_tab_order_sequence(SsdWidget widget)
-{
-   SsdWidget w = widget->next_tabstop;
-
-   while( w != widget)
-   {
-      if( w != w->next_tabstop)
-      {
-         int   my_seq      = w->tab_sequence;
-         int   my_next_seq = w->next_tabstop->tab_sequence;
-         int   w_seq       = w->tab_sequence;
-         BOOL  wrong_order = FALSE;
-
-         if( my_seq < my_next_seq)
-         {
-            if( (w_seq < my_next_seq) && (my_seq < w_seq))
-               wrong_order = TRUE;
-         }
-         else
-            if( w_seq < my_next_seq)
-               wrong_order = TRUE;
-
-         if( wrong_order)
-         {
-            assert(0 && "fix_tab_order_sequence() - unexpected order");
-            switch_widgets_tab_order( w->next_tabstop, w);
-         }
-      }
-
-      w = w->next_tabstop;
-   };
-}
-
-void fix_tab_order_sequence( SsdWidget widget)
-{
-   SsdWidget w = widget->next_tabstop;
-
-   while( w != widget)
-   {  
-      fix_widget_tab_order_sequence( w);
-      w = w->next_tabstop;
-   };
-}
-
-SsdWidget ssd_widget_sort_tab_order(void* parent_dialog, SsdWidget head)
-{
-   SsdWidget   previous_tabstop  = NULL;
-   SsdWidget   default_widget    = NULL;
-   SsdWidget   first_tabstop     = NULL;
-   SsdWidget   last_tabstop      = NULL;
-
-   if( !head)
-      return NULL;
-
-   // Sort internal items:
-   ssd_widget_sort_tab_order_recursive(parent_dialog,
-         head, 
-         &previous_tabstop,
-         &default_widget,
-         &first_tabstop,
-         &last_tabstop);
-
-#ifdef _DEBUG
-   // Check against bug in the code:
-   if( (last_tabstop && !first_tabstop) || (!last_tabstop && first_tabstop))
-   {
-      assert( 0);
-      return NULL;
-   }
-#endif   // _DEBUG   
-
-   // Found any?
-   if(!last_tabstop)
-      return NULL;   // No tab-stops found 
-
-   if( first_tabstop != last_tabstop)
-   {
-      // Make 'last' and 'first' point at each other:
-      last_tabstop->next_tabstop = first_tabstop;
-      first_tabstop->prev_tabstop= last_tabstop;
-
-      ///[BOOKMARK]:[VERIFY]:[PAZ] - See if next code is needed:
-      fix_tab_order_sequence( first_tabstop);
-   }
-if (!default_widget)   
-	default_widget = first_tabstop;
-#ifndef TOUCH_SCREEN
-   // Set first widget with focus:
-   if(default_widget)
-      ssd_widget_set_focus(default_widget);
-   else
-   {
-      ssd_widget_set_focus(first_tabstop);
-      
-   }
-#endif
-   return default_widget;
 }
 
 BOOL ssd_widget_on_key_pressed( SsdWidget w, const char* utf8char, uint32_t flags)
@@ -1632,7 +1288,7 @@ BOOL ssd_widget_on_key_pressed( SsdWidget w, const char* utf8char, uint32_t flag
 int ssd_widget_set_right_softkey_text(SsdWidget widget, const char *value) {
 
    widget->right_softkey = value;
-   
+
    switch (roadmap_softkeys_orientation ()) {
 
          case SOFT_KEYS_ON_BOTTOM:
@@ -1649,9 +1305,9 @@ int ssd_widget_set_right_softkey_text(SsdWidget widget, const char *value) {
       default:
               return -1;
     }
-    
+
     return 0;
-     
+
 }
 
 int ssd_widget_set_left_softkey_text(SsdWidget widget, const char *value) {
@@ -1677,7 +1333,7 @@ int ssd_widget_set_left_softkey_text(SsdWidget widget, const char *value) {
       default:
               return -1;
      }
-    
+
     return 0;
 }
 
@@ -1688,4 +1344,121 @@ void ssd_widget_set_left_softkey_callback (SsdWidget widget, SsdSoftKeyCallback 
 
 void ssd_widget_set_right_softkey_callback (SsdWidget widget, SsdSoftKeyCallback callback) {
    widget->right_softkey_callback = callback;
+}
+
+
+BOOL ssd_widget_contains_point(  SsdWidget widget, const RoadMapGuiPoint *point, BOOL use_offsets )
+{
+   SsdSize size;
+   BOOL res;
+   ssd_widget_get_size( widget, &size, NULL );
+
+   res =
+	   ( ( point->x >= ( widget->position.x + widget->click_offsets.left * use_offsets ) ) &&
+		 ( point->y >= ( widget->position.y + widget->click_offsets.top * use_offsets  ) ) &&
+		 ( point->x <= ( widget->position.x  + size.width -1 + widget->click_offsets.right * use_offsets ) ) &&
+		 ( point->y <= ( widget->position.y + size.height -1 + widget->click_offsets.bottom * use_offsets ) )
+	   );
+   return res;
+}
+
+int ssd_widget_pointer_down_force_click (SsdWidget widget,
+                                    const RoadMapGuiPoint *point)
+{
+   widget->force_click = TRUE;
+   // TODO :: Check return value
+   return 1;
+}
+
+
+int ssd_widget_pointer_up_force_click (SsdWidget widget,
+                                    const RoadMapGuiPoint *point) {
+
+   int ret_val = 0;
+   int movement = ABS_POINTS_DISTANCE( PressedPointerPoint, *point );
+   if ( widget->force_click &&
+		ssd_widget_contains_point( widget, point, TRUE ) &&
+		(  movement < FORCE_CLICK_MOVEMENT_THRESHOLD ) )
+   {
+	   if ( widget->long_click && roadmap_pointer_long_click_expired() )
+	   {
+		   ret_val = widget->long_click( widget, point );
+	   }
+	   else
+	   {
+		   if ( widget->short_click )
+			   ret_val = widget->short_click( widget, point );
+	   }
+	   widget->force_click = FALSE;
+   }
+   // TODO :: Check return value
+   return 1;
+}
+
+/*
+ * Updates the click offsets for the parent if the child click area
+ * is out of the borders of the parent widget
+ */
+void ssd_widget_update_click_offsets( SsdWidget parent, SsdWidget child )
+{
+   SsdSize size_parent, size_child;
+   if ( parent == NULL || child == NULL )
+	   return;
+
+   ssd_widget_get_size( child, &size_child, NULL );
+   ssd_widget_get_size( parent, &size_parent, NULL );
+   // Left offset
+   if ( parent->position.x > ( child->position.x + child->click_offsets.left ) )
+   {
+		   parent->click_offsets.left = child->position.x + child->click_offsets.left - parent->position.x;
+   }
+   // Top offset
+   if ( parent->position.y > ( child->position.y + child->click_offsets.top ) )
+   {
+		   parent->click_offsets.top = child->position.y + child->click_offsets.top - parent->position.y;
+   }
+   // Right
+   if ( ( parent->position.x + size_parent.width ) < ( child->position.x + size_child.width +
+										   child->click_offsets.right ) )
+   {
+		   parent->click_offsets.right = child->position.x + size_child.width +
+		   child->click_offsets.top - parent->position.x - size_parent.width;
+   }
+   // Bottom
+   if ( ( parent->position.y + size_parent.height ) < ( child->position.y + size_child.height +
+										   child->click_offsets.bottom ) )
+   {
+		   parent->click_offsets.bottom = child->position.y + size_child.height +
+						   child->click_offsets.bottom - parent->position.y - size_parent.height;
+   }
+}
+
+/*******************************
+ * This is workaround because of absence of flags.
+ * After the flags problem will be removed this should be
+ * placed in the new() of each relevant widget
+ *  *** AGA ***
+ */
+void ssd_widget_set_pointer_force_click( SsdWidget widget )
+{
+	widget->pointer_down =  ssd_widget_pointer_down_force_click;
+	widget->pointer_up =  ssd_widget_pointer_up_force_click;
+}
+
+void ssd_widget_set_click_offsets( SsdWidget widget, const SsdClickOffsets* offsets )
+{
+	widget->click_offsets = *offsets;
+}
+
+void ssd_widget_set_click_offsets_ext( SsdWidget widget, int left, int top, int right, int bottom )
+{
+   widget->click_offsets.left = left;
+   widget->click_offsets.top = top;
+   widget->click_offsets.right = right;
+   widget->click_offsets.bottom = bottom;
+}
+
+void ssd_widget_set_focus_highlight( SsdWidget widget, BOOL is_highlight )
+{
+	widget->focus_highlight = is_highlight;
 }

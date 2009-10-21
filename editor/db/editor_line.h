@@ -32,8 +32,11 @@
 #define ED_LINE_EXPLICIT_SPLIT  0x2 /* flag */
 #define ED_LINE_DIRTY           0x4 /* flag */
 #define ED_LINE_CONNECTION      0x8
+#define ED_LINE_NEW_DIRECTION   0x10
+
 
 typedef struct editor_db_line_s {
+	int update_timestamp;
    int point_from;
    int point_to;
    int trkseg;
@@ -73,6 +76,11 @@ void editor_line_reset_flag (int line, int flag);
 
 int editor_line_get_count (void);
 
+int editor_line_get_timestamp (int line_id);
+int editor_line_is_valid (int line_id);
+void editor_line_invalidate (int line_id);
+int editor_line_get_update_time (int line_id);
+
 int editor_line_get_street (int line, int *street);
 int editor_line_set_street (int line, int street);
 
@@ -88,6 +96,7 @@ void editor_line_confirm_commit (int id);
 int editor_line_items_pending (void);
 
 int editor_line_copy (PluginLine *line, int street);
+
 
 extern editor_db_handler EditorLinesHandler;
 

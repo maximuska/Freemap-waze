@@ -22,15 +22,23 @@
 #ifndef _SSD_GENERIC_LIST_DIALOG_H__
 #define _SSD_GENERIC_LIST_DIALOG_H__
 
+#ifdef ANDROID
+	#define SSD_GEN_LIST_ENTRY_HEIGHT 60
+#else
+	#define SSD_GEN_LIST_ENTRY_HEIGHT 40
+#endif
+
+
 typedef int(*PFN_ON_ITEM_SELECTED)(SsdWidget widget, const char* selection,const void *value, void* context);
-  
-void ssd_generic_list_dialog_show(	const char*				title, 
-												int						count, 
+
+void ssd_generic_list_dialog_show(	const char*				title,
+												int						count,
 												const char**			labels,
 												const void**			values,
 												PFN_ON_ITEM_SELECTED	on_item_selected,
 												PFN_ON_ITEM_SELECTED	on_item_deleted,
-												void*						context);
+												void*						context,
+												int                     list_height );
 
 void ssd_generic_icon_list_dialog_show(
                                   const char*			  title,
@@ -42,13 +50,13 @@ void ssd_generic_icon_list_dialog_show(
                                   PFN_ON_ITEM_SELECTED	  on_item_selected,
                                   PFN_ON_ITEM_SELECTED    on_item_deleted,
                                   void*					  context,
-                                  const char*             left_softkey_text, 
+                                  const char*             left_softkey_text,
                                   SsdSoftKeyCallback	  left_softkey_callback,
                                   int                     list_height,
                                   int                     dialog_flags,
                                   BOOL                    add_next_button);
 
-                                                         
+
 void ssd_generic_list_dialog_hide (void);
 
 void ssd_generic_list_dialog_hide_all (void);

@@ -88,6 +88,10 @@ void editor_track_reset (void);
 int editor_track_deflate (void);
 
 int editor_ignore_new_roads (void);
+int editor_track_is_new_direction_roads ();
+
+int editor_track_draw_new_direction_roads ();
+int editor_track_is_new_road();
 
 #endif // INCLUDE__EDITOR_TRACK_MAIN__H
 

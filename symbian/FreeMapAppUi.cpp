@@ -45,10 +45,13 @@
 
 extern "C" {
 #include "roadmap_start.h"
+#include "roadmap_lang.h"
 #include "editor/editor_main.h"
-extern TKeyResponse roadmap_main_process_key(TUint code, TEventCode aType);
+#include "roadmap_device_events.h"
+extern TKeyResponse roadmap_main_process_key( const TKeyEvent& aKeyEvent, TEventCode aType );
 }
 
+extern roadmap_input_type roadmap_input_type_get_mode( void );
 extern void roadmap_canvas_new (RWindow& aWindow, int initWidth, int initHeight);
 int global_FreeMapLock();
 int global_FreeMapUnlock();
@@ -95,10 +98,13 @@ int global_FreeMapUnlock()
 
 
 static void roadmap_start_event (int event) {
-   switch (event) {
-   case ROADMAP_START_INIT:
-      editor_main_check_map ();
-      break;
+   switch (event) 
+   {
+	   case ROADMAP_START_INIT:
+	   {
+		  editor_main_check_map ();
+		  break;
+	   }   
    }
 }
 
@@ -175,14 +181,23 @@ void CFreeMapAppUi::ConstructL()
 	// Create view object
 	iAppView = CFreeMapAppView::NewL( ApplicationRect() );
 	
+	// Check If qwerty is supported by the device
+    if ( !CFeatureDiscovery::IsFeatureSupportedL( KFeatureIdQwertyInput ) )
+	{
+		m_pQwertyKeyMappings = NULL;
+		m_pPtiEngine = NULL;
+		USING_PHONE_KEYPAD = 1;
+	}
+	else
+	{
+		USING_PHONE_KEYPAD = 0;
+	}
+	   
 	// View is fullscreen but we also want to hide the pane and softkeys
 	//StatusPane()->MakeVisible(EFalse);
 	//Cba()->MakeVisible(EFalse);
 	iAppView->SetMopParent(this);
 	AddToStackL(iAppView);
-	
-	// Init the qwerty mapping
-	InitQwertyMappingsL();
 	
 	// Init and start the backlight timer active object
     if ( m_pBLTimer == NULL ) 
@@ -201,7 +216,7 @@ void CFreeMapAppUi::ConstructL()
 	m_pStartTimer->Start();
   
 	global_FreeMapLock();
-   roadmap_start_subscribe (roadmap_start_event);
+    roadmap_start_subscribe (roadmap_start_event);
 	roadmap_start(0, NULL);
 	global_FreeMapUnlock();
 	}
@@ -210,10 +225,11 @@ void CFreeMapAppUi::ConstructL()
 // C++ default constructor can NOT contain any code, that might leave.
 // -----------------------------------------------------------------------------
 //
-CFreeMapAppUi::CFreeMapAppUi() : m_InputCapabilities( TCoeInputCapabilities::ENone )  
+CFreeMapAppUi::CFreeMapAppUi()   
 {
   	m_pStartTimer = NULL;
   	m_pBLTimer = NULL;
+  	m_InputCapabilities = TCoeInputCapabilities::ENavigation | TCoeInputCapabilities::EAllText; 
   	// No implementation required
 }
 
@@ -240,12 +256,7 @@ CFreeMapAppUi::~CFreeMapAppUi()
 		delete m_pBLTimer;
 		m_pBLTimer = NULL;
 	}	
-	if( m_pQwertyKeyMappings )
-	{
-		delete m_pQwertyKeyMappings;
-		m_pQwertyKeyMappings = NULL;
-	}
-	if( m_pPtiEngine )
+	if( m_pPtiEngine != NULL )
 	{
 		delete m_pPtiEngine;
 		m_pQwertyKeyMappings = NULL;				
@@ -276,7 +287,8 @@ TKeyResponse CFreeMapAppUi::HandleKeyEventL(const TKeyEvent& aKeyEvent,TEventCod
 	if (global_FreeMapLock() != 0) return EKeyWasNotConsumed;
 	TKeyResponse res = EKeyWasNotConsumed;
 	// Process the data
-	res = roadmap_main_process_key( aKeyEvent.iScanCode, aType );	
+	//	roadmap_log( ROADMAP_ERROR, "Key Data : %d, %d, %d, %d, %d", aKeyEvent.iCode, aKeyEvent.iModifiers, aKeyEvent.iRepeats, aKeyEvent.iScanCode, aType );
+	res = roadmap_main_process_key( aKeyEvent, aType );
 	global_FreeMapUnlock();
 	return res;
 }
@@ -304,7 +316,9 @@ void CFreeMapAppUi::HandleRotationChange(bool bInitOnly)
     roadmap_canvas_new (iAppView->GetWindow(), 
                         sizeAndRot.iPixelSize.iWidth,
                         sizeAndRot.iPixelSize.iHeight);
-    iAppView->Draw(ApplicationRect());  //  or just use roadmap_canvas_refresh();
+//    iAppView->Draw(ApplicationRect());  //  or just use roadmap_canvas_refresh();
+
+    roadmap_device_event_notification( device_event_window_orientation_changed );
   }
   //  keep for next time
   //m_Orientation = sizeAndRot.iRotation;
@@ -339,80 +353,208 @@ void CFreeMapAppUi::InitQwertyMappingsL()
 {
 	/* Currently hebrew only !!! */
 	/* TODO :: initialize the set of the languages */
-	TLanguage lang = ELangHebrew;
-    CPtiCoreLanguage* pCoreLanguage;    
-	
-    if ( !CFeatureDiscovery::IsFeatureSupportedL( KFeatureIdQwertyInput ) )
+   TLanguage lang = ELangEnglish;
+   CPtiCoreLanguage* pCoreLanguage;    
+   TInt err = KErrNone; 	
+   
+    // Instantiate the engine - no default user dictionary
+    m_pPtiEngine = CPtiEngine::NewL( EFalse );
+
+    if ( !USING_PHONE_KEYPAD )
 	{
-		m_pQwertyKeyMappings = NULL;
-		m_pPtiEngine = NULL;
-		USING_PHONE_KEYPAD = 1;
-		roadmap_log( ROADMAP_INFO, "InitQwertyMappingsL() - No qwerty - setting the phone keyboard" );
-		return;
+        /*
+         * Why upper ??
+         * m_pPtiEngine->SetCase(EPtiCaseUpper);
+         */
+    	m_pPtiEngine->SetCase( EPtiCaseLower );
+	}	
+    
+    // English is a default. Check what language is in the confiugration now: if rtl enabled - apply hebrew     
+    if ( roadmap_lang_rtl() )
+	{
+		lang = ELangHebrew;
 	}
+    
+    err = m_pPtiEngine->ActivateLanguageL( lang, EPtiEngineQwerty );
+    if ( err != KErrNone )
+	{
+		roadmap_log( ROADMAP_WARNING, "Error activating language. Error code: %d", err );
+	}
+    
+    // Get a pointer to the core language object
+    pCoreLanguage = static_cast<CPtiCoreLanguage*> ( m_pPtiEngine->GetLanguage( lang ) );
+    if ( pCoreLanguage == NULL )
+    {
+		roadmap_log( ROADMAP_ERROR, "Failed to obtain the language PTI object for the language: %d", lang );
+    }
+	// Get the keyboard mappings for the language
     else
     {
-    	roadmap_log( ROADMAP_INFO, "InitQwertyMappingsL() - Qwerty exists - setting the qwerty keyboard" );
-    	USING_PHONE_KEYPAD = 0;
+    	m_pQwertyKeyMappings = static_cast<CPtiQwertyKeyMappings*>( pCoreLanguage->GetQwertyKeymappings());
     }
-    // Instantiate the engine
-    m_pPtiEngine = CPtiEngine::NewL( ETrue );
-    
-	// Make a language object based on current language
-    pCoreLanguage = static_cast<CPtiCoreLanguage*> ( m_pPtiEngine->GetLanguage( lang ) );
-	
-	// Get the keyboard mappings for the language
-	m_pQwertyKeyMappings = static_cast<CPtiQwertyKeyMappings*>( pCoreLanguage->GetQwertyKeymappings());
-
-	
 }
 
-TBool  CFreeMapAppUi::GetUnicodeForScanCodeL( TInt aScanCode, TUint16 &aUnicodeOut ) const
+TBool  CFreeMapAppUi::GetUnicodeForScanCodeL( const TKeyEvent& aKeyEvent, TUint16 &aUnicodeOut )
 {
 	// Scan code of the key you are interested in
-    TPtiKey key = ( TPtiKey ) aScanCode;
     TBuf<20> iResUnicode;
     TBuf8<20> iResUtf8;
     TBool iRes = EFalse;
     
+    aUnicodeOut = 0x0;
     
-    // Exceptional cases handling 
-    switch ( key )
+    // The first call to the qwerty translator - initialize the engine
+    if ( m_pPtiEngine == NULL )
+	{
+		InitQwertyMappingsL();
+	}
+    
+	// Exceptional cases handling 
+    switch ( aKeyEvent.iScanCode )
 	{
     	case EPtiKeyQwertySpace:	// SPACE - return the utf8 0x20 
 		{
 			aUnicodeOut = 0x20;
 			return ETrue;
 		}
+    	case EStdKeyEnter:
+		{
+			aUnicodeOut = 0x0D;
+			return ETrue;
+		}
     	default: break;
 	}
     
-    
+    // If numeric - no translation is necessary.
+    // If success - return, Failure try to translate anyway
+    if ( roadmap_input_type_get_mode() == inputtype_numeric )
+	{
+		if ( GetUnicodeForScanCodeNumericL( aKeyEvent, aUnicodeOut ) )
+			return ETrue;
+	}
     // If no qwerty return false
     if ( m_pQwertyKeyMappings )
     {
-	    m_pQwertyKeyMappings->GetDataForKey( key, iResUnicode, EPtiCaseLower );
-	    
+    	TPtiTextCase textCase = ( aKeyEvent.iModifiers & EModifierShift ) ? EPtiCaseUpper : EPtiCaseLower;
+	    m_pQwertyKeyMappings->GetDataForKey( (TPtiKey) aKeyEvent.iScanCode, iResUnicode, textCase );
 	    // If the mapping fail return false
 	    if ( iResUnicode.Length() )
 		{
 			HBufC8* pTmpBuf;
 			TUint8 *ptr;
+			TInt len2copy;
 			
 			// Convert to UTF8
 			CnvUtfConverter::ConvertFromUnicodeToUtf8( iResUtf8, iResUnicode );
 			pTmpBuf = iResUtf8.AllocLC(); 
 			ptr = reinterpret_cast<TUint8*>( &aUnicodeOut );
-			Mem::Copy( ptr, pTmpBuf->Ptr(), iResUtf8.Length() );
+			// 2 bytes maximum for the english/hebrew and most ther languages
+			len2copy = ( ( (*pTmpBuf)[0] & 0xC0 ) == 0xC0 ) ? 2 : 1;
+			Mem::Copy( ptr, pTmpBuf->Ptr(), len2copy );			
 			CleanupStack::PopAndDestroy( pTmpBuf );
 	    	iRes = ETrue;
 		}
 	    else
     	{
-    		roadmap_log( ROADMAP_INFO, "GetUnicodeForScanCodeL(..) - No qwerty mapping for the ScanCode %d", aScanCode );
+    		roadmap_log( ROADMAP_INFO, "GetUnicodeForScanCodeL(..) - No qwerty mapping for the ScanCode %d", aKeyEvent.iScanCode );
     	}
     }
     return ( iRes ); 
+}
+
+
+TBool  CFreeMapAppUi::GetUnicodeForScanCodeNumericL( const TKeyEvent& aKeyEvent, TUint16 &aUnicodeOut )
+{
+	TPtiKey key = ( TPtiKey ) aKeyEvent.iScanCode;
+    TBool iRes = EFalse;
+    aUnicodeOut = 0x0;    
+    
+	// Exceptional cases handling 
+	switch ( key )
+	{
+
+		case EPtiKey0:
+		case EPtiKey1:
+		case EPtiKey2:
+		case EPtiKey3:
+		case EPtiKey4:
+		case EPtiKey5:
+		case EPtiKey6:
+		case EPtiKey7:    		
+		case EPtiKey8:
+		case EPtiKey9:		
+		{			
+			aUnicodeOut = key;
+			break;
+		}
+		case EPtiKeyQwertyM:
+		{
+			aUnicodeOut = '0';
+			break;
+		}
+		case EPtiKeyQwertyR:
+		{
+			aUnicodeOut = '1';
+			break;
+		}
+		case EPtiKeyQwertyT:
+		{
+			aUnicodeOut = '2';
+			break;
+		}
+		case EPtiKeyQwertyY:
+		{
+			aUnicodeOut = '3';
+			break;
+		}
+		case EPtiKeyQwertyF:
+		{
+			aUnicodeOut = '4';
+			break;
+		}
+		case EPtiKeyQwertyG:
+		{
+			aUnicodeOut = '5';
+			break;
+		}
+		case EPtiKeyQwertyH:
+		{
+			aUnicodeOut = '6';
+			break;
+		}
+		case EPtiKeyQwertyV:
+		{
+			aUnicodeOut = '7';
+			break;
+		}
+		case EPtiKeyQwertyB:
+		{
+			aUnicodeOut = '8';
+			break;
+		}
+		case EPtiKeyQwertyN:
+		{
+			aUnicodeOut = '9';
+			break;
+		}
+		case EPtiKeyQwertyU:
+		{
+			aUnicodeOut = '*';
+			break;
+		}
+		case EPtiKeyQwertyJ:
+		{
+			aUnicodeOut = '#';
+			iRes = ETrue;
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}	
+	iRes = ( aUnicodeOut != 0x0 );
+	return iRes;	
 }
 
 void CFreeMapAppUi::SetBackLiteOn( TBool aValue )
@@ -422,10 +564,14 @@ void CFreeMapAppUi::SetBackLiteOn( TBool aValue )
 
 
 TCoeInputCapabilities CFreeMapAppUi::InputCapabilities() const
-{	
-	TCoeInputCapabilities caps(  CCoeAppUi::InputCapabilities() );
-	caps.SetCapabilities( m_InputCapabilities );
-	return caps;
+{		
+/*
+ * The input capabilities API is not working proeperly on all devices - not in 
+ * use now
+ */
+//	TCoeInputCapabilities caps( CAknAppUi::InputCapabilities() );
+//	caps.SetCapabilities( caps.Capabilities() | m_InputCapabilities );
+	return CAknAppUi::InputCapabilities();
 }
 
 void CFreeMapAppUi::SetInputCapabilities( TUint aCapabilities )

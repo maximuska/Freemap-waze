@@ -34,6 +34,7 @@
 #include <http/MHTTPDataSupplier.h>
 #include <http/MHTTPTransactionCallback.h>
 
+#include <time.h>
 
 #define MAX_WRITE_BUFFERS 20
 
@@ -54,7 +55,7 @@ class CRoadMapNativeHTTP :  public CActive,
 public: 
   //  ctor/dtor
   virtual ~CRoadMapNativeHTTP();
-  static CRoadMapNativeHTTP* CRoadMapNativeHTTP::NewL(const char *http_type, const char *apHostname, int aPort, RoadMapNetConnectCallback apCallback, void* apContext);
+  static CRoadMapNativeHTTP* CRoadMapNativeHTTP::NewL(const char *http_type, const char *apHostname, int aPort, time_t tUpdate, RoadMapNetConnectCallback apCallback, void* apContext);
   
   //  From CRoadMapNativeNet
   virtual void OpenL(ENativeSockType aSockType);  
@@ -80,8 +81,8 @@ public:
   void SetReadyToSendData(bool aIsReady);
   
 protected:
-  CRoadMapNativeHTTP(const char *http_type, const char *apHostname, int aPort);
-  static CRoadMapNativeHTTP* CRoadMapNativeHTTP::NewLC(const char *http_type, const char *apHostname, int aPort, RoadMapNetConnectCallback apCallback, void* apContext);
+  CRoadMapNativeHTTP(const char *http_type, const char *apHostname, int aPort, time_t tUpdate);
+  static CRoadMapNativeHTTP* CRoadMapNativeHTTP::NewLC(const char *http_type, const char *apHostname, int aPort, time_t tUpdate, RoadMapNetConnectCallback apCallback, void* apContext);
   void ConstructL(RoadMapNetConnectCallback apCallback, void* apContext);
   int IssueCallback(TPtrC8 &data);
   
@@ -98,11 +99,13 @@ private:
   TInt TranslateToStringField(const char* aField);
   //void SetHttpVersion(HTTP::TStrings aHttpVersion);
   void SetConnectionParams();
+  void SetModifiedSince();
   void OpenSession();
   
   RHTTPSession m_Session;
   RHTTPTransaction m_Transaction;
   
+  HBufC8* m_AccumWriteBuffer;
   HBufC8* m_WriteBuffers[MAX_WRITE_BUFFERS];
   int m_NumWriteBuffers;
   int m_NumWriteSent;
@@ -119,6 +122,7 @@ private:
   void *m_apIO;	  
   CUri8* m_pUri8;
   const char *m_httpType;
+  time_t m_tModifiedSince;
   CActiveSchedulerWait iSchedulerWait;
 };
 

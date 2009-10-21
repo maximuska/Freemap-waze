@@ -43,8 +43,6 @@
 #include "navigate_graph.h"
 #include "navigate_instr.h"
 
-#define ENABLE_STRAIGHT_INSTRCUTION 0
-
 static int navigate_instr_azymuth_delta (int az1, int az2) {
    
    int delta;
@@ -67,7 +65,7 @@ static int navigate_instr_calc_azymuth (NavigateSegment *seg, int type) {
    start = seg->from_pos;
    end   = seg->to_pos;
 
-	roadmap_square_set_current (seg->line.square);
+	roadmap_square_set_current (seg->square);
    if (seg->first_shape > -1) {
 
       int last_shape;
@@ -86,7 +84,7 @@ static int navigate_instr_calc_azymuth (NavigateSegment *seg, int type) {
 
       for (shape = seg->first_shape; shape <= last_shape; shape++) {
 
-         seg->shape_itr (shape, shape_pos);
+         roadmap_shape_get_position (shape, shape_pos);
       }
    }
 
@@ -94,7 +92,7 @@ static int navigate_instr_calc_azymuth (NavigateSegment *seg, int type) {
 }
 
 
-static void navigate_fix_line_end (RoadMapPosition *position,
+void navigate_instr_fix_line_end (RoadMapPosition *position,
                                    NavigateSegment *segment,
                                    int type) {
 
@@ -108,7 +106,7 @@ static void navigate_fix_line_end (RoadMapPosition *position,
    RoadMapPosition seg_shape_initial = {0, 0};
    int i;
 
-	roadmap_square_set_current (segment->line.square);
+	roadmap_square_set_current (segment->square);
    if (segment->first_shape <= -1) {
       
       from = segment->from_pos;
@@ -119,7 +117,7 @@ static void navigate_fix_line_end (RoadMapPosition *position,
 
       for (i = segment->first_shape; i <= segment->last_shape; i++) {
 
-         segment->shape_itr (i, &to);
+         roadmap_shape_get_position (i, &to);
 
          distance =
             roadmap_math_get_distance_from_segment
@@ -189,23 +187,23 @@ static void navigate_fix_line_end (RoadMapPosition *position,
 
 static void navigate_instr_fill_segment (int square, int line, int reversed,
 													  NavigateSegment *segment) {
+	
+	int first_shape;
+	int last_shape;
 													  	
 	roadmap_square_set_current (square);
-   segment->line.plugin_id = ROADMAP_PLUGIN_ID;
-   segment->line.square = square;
-   segment->line.line_id = line;
-   segment->line.fips = roadmap_locator_active ();
-   segment->line.cfcc = roadmap_line_cfcc (line);
+   segment->square = square;
+   segment->line = line;
    segment->line_direction = reversed ?
    	ROUTE_DIRECTION_AGAINST_LINE :
    	ROUTE_DIRECTION_WITH_LINE;
+   segment->cfcc = roadmap_line_cfcc (line);
    	
-   roadmap_plugin_get_line_points (&segment->line,
-                                   &segment->from_pos,
-                                   &segment->to_pos,
-                                   &segment->first_shape,
-                                   &segment->last_shape,
-                                   &segment->shape_itr);
+   roadmap_line_shapes (line, &first_shape, &last_shape);
+   segment->first_shape = first_shape;
+   segment->last_shape = last_shape;
+   roadmap_line_from (line, &segment->from_pos);
+   roadmap_line_to (line, &segment->to_pos);
    segment->shape_initial_pos.longitude = segment->from_pos.longitude;
    segment->shape_initial_pos.latitude = segment->from_pos.latitude;
 }
@@ -248,21 +246,22 @@ static int navigate_instr_has_more_connections (NavigateSegment *seg1,
 	int junction_node_id;
 	struct successor successors[16];
 	int count;
-	                                             	
+	 
+	roadmap_square_set_current (seg1->square);                                            	
    if (seg1->line_direction == ROUTE_DIRECTION_WITH_LINE) {
       
       roadmap_line_points
-         (roadmap_plugin_get_line_id (&seg1->line),
+         (seg1->line,
           &i, &junction_node_id);
    } else {
       roadmap_line_points
-         (roadmap_plugin_get_line_id (&seg1->line),
+         (seg1->line,
           &junction_node_id, &i);
    }
 
    count = get_connected_segments
-           (roadmap_plugin_get_square (&seg1->line),
-            roadmap_plugin_get_line_id (&seg1->line),
+           (seg1->square,
+            seg1->line,
             seg1->line_direction != ROUTE_DIRECTION_WITH_LINE,
             junction_node_id,
             successors,
@@ -271,10 +270,10 @@ static int navigate_instr_has_more_connections (NavigateSegment *seg1,
 
    for (i = 0; i < count; ++i) {
    
-   	if ((successors[i].square_id != seg1->line.square ||
-   		  successors[i].line_id != seg1->line.line_id) &&
-   		 (successors[i].square_id != seg2->line.square ||
-   		  successors[i].line_id != seg2->line.line_id)) {
+   	if ((successors[i].square_id != seg1->square ||
+   		  successors[i].line_id != seg1->line) &&
+   		 (successors[i].square_id != seg2->square ||
+   		  successors[i].line_id != seg2->line)) {
    	
    		return 1;	  	
    	} 	
@@ -305,14 +304,14 @@ static void navigate_instr_check_neighbours (NavigateSegment *seg1,
       seg1_azymuth  = navigate_instr_calc_azymuth (seg1, LINE_END);
       /* TODO no plugin support */
       roadmap_line_points
-         (roadmap_plugin_get_line_id (&seg1->line),
+         (seg1->line,
           &i, &junction_node_id);
       junction = &seg1->to_pos;
    } else {
       seg1_azymuth  = 180 + navigate_instr_calc_azymuth (seg1, LINE_START);
       /* TODO no plugin support */
       roadmap_line_points
-         (roadmap_plugin_get_line_id (&seg1->line),
+         (seg1->line,
           &junction_node_id, &i);
       junction = &seg1->from_pos;
    }
@@ -325,15 +324,15 @@ static void navigate_instr_check_neighbours (NavigateSegment *seg1,
    }
 
    delta = navigate_instr_azymuth_delta (seg1_azymuth, seg2_azymuth);
-	delta_similarity = navigate_instr_compare_lines (seg1->street.street_id, seg1->line.cfcc,
-																	 seg2->street.street_id, seg2->line.cfcc,
+	delta_similarity = navigate_instr_compare_lines (seg1->street, seg1->cfcc,
+																	 seg2->street, seg2->cfcc,
 																	 delta);
    left_delta = right_delta = delta;
 
    /* TODO no plugin support */
    count = get_connected_segments
-           (roadmap_plugin_get_square (&seg1->line),
-            roadmap_plugin_get_line_id (&seg1->line),
+           (seg1->square,
+            seg1->line,
             seg1->line_direction != ROUTE_DIRECTION_WITH_LINE,
             junction_node_id,
             successors,
@@ -349,21 +348,21 @@ static void navigate_instr_check_neighbours (NavigateSegment *seg1,
       int line_similarity;
       int next_azymuth;
       
-      if (square != roadmap_plugin_get_square (&seg2->line)) {
+      if (square != seg2->square) {
       	/* this is not supposed to happen */
       	roadmap_log (ROADMAP_ERROR, "Invalid navigation route check from %d/%d to %d/%d",
-      					 roadmap_plugin_get_square (&seg1->line),
-      					 roadmap_plugin_get_line_id (&seg1->line),
-      					 roadmap_plugin_get_square (&seg2->line),
-      					 roadmap_plugin_get_line_id (&seg2->line));
+      					 seg1->square,
+      					 seg1->line,
+      					 seg2->square,
+      					 seg2->line);
       	seg1->instruction = CONTINUE;
       	return;				 
       }
       
       roadmap_square_set_current (square);
       
-      if (line == roadmap_plugin_get_line_id (&seg1->line) || 
-      	 line == roadmap_plugin_get_line_id (&seg2->line)) {
+      if (line == seg1->line || 
+      	 line == seg2->line) {
          continue;
       }
 
@@ -381,7 +380,7 @@ static void navigate_instr_check_neighbours (NavigateSegment *seg1,
                      
       if (line_delta < -45 || line_delta > 45) continue;
       
-		line_similarity = navigate_instr_compare_lines (seg1->street.street_id, seg1->line.cfcc,
+		line_similarity = navigate_instr_compare_lines (seg1->street, seg1->cfcc,
 																		roadmap_line_get_street (line),
 																		roadmap_line_cfcc (line),
 																		line_delta);
@@ -419,7 +418,7 @@ static void navigate_instr_set_road_instr (NavigateSegment *seg1,
    int delta;
    int minimum_turn_degree = 45; //SRUL - optimizing (was 15);
 
-	if (seg1->line.square != seg2->line.square) {
+	if (seg1->square != seg2->square) {
 		/* must be line crossing tile */
 		seg1->instruction = CONTINUE;
 		return;
@@ -491,12 +490,12 @@ int navigate_instr_calc_length (const RoadMapPosition *position,
    int total_length = 0;
    int result = 0;
 
-	roadmap_square_set_current (segment->line.square);
+	roadmap_square_set_current (segment->square);
    result =
       roadmap_math_calc_line_length (position,
                                      &segment->from_pos, &segment->to_pos,
                                      segment->first_shape, segment->last_shape,
-                                     segment->shape_itr,
+                                     NULL,
                                      &total_length);
 
    if (type == LINE_START) {
@@ -537,7 +536,7 @@ static int navigate_instr_classify_roundabout_azymuth
 static void navigate_instr_analyze_roundabout (NavigateSegment *segment_before, 
 														 NavigateSegment *segment_after,
 														 int *roundabout_is_standard,
-														 int *exit_number) {
+														 NavSmallValue *exit_number) {
 
 	int direction_count[4];
 	int direction_exit;
@@ -591,8 +590,8 @@ static void navigate_instr_analyze_roundabout (NavigateSegment *segment_before,
 		entry_azymuth = 180 + navigate_instr_calc_azymuth (segment_before, LINE_START);
 	} 
 	
-	curr_square = start_segment->line.square;
-	curr_line = start_segment->line.line_id;
+	curr_square = start_segment->square;
+	curr_line = start_segment->line;
 	curr_rev = start_segment->line_direction != ROUTE_DIRECTION_WITH_LINE;
 	next_roundabout_segment = start_segment + 1;
 	roundabout_count = 0;
@@ -648,8 +647,8 @@ static void navigate_instr_analyze_roundabout (NavigateSegment *segment_before,
 				
 				/* match route segments with roundabout segments */
 				if (next_roundabout_segment < segment_after) {
-					if (curr_square != next_roundabout_segment->line.square ||
-						 curr_line != next_roundabout_segment->line.line_id) {
+					if (curr_square != next_roundabout_segment->square ||
+						 curr_line != next_roundabout_segment->line) {
 						
 						/* route/roundabout mismatch */
 						*roundabout_is_standard = 0;
@@ -670,8 +669,8 @@ static void navigate_instr_analyze_roundabout (NavigateSegment *segment_before,
 				}
 				exit_count++;
 				
-				if (next->square_id == segment_after->line.square &&
-					 next->line_id == segment_after->line.line_id &&
+				if (next->square_id == segment_after->square &&
+					 next->line_id == segment_after->line &&
 					 (next->reversed ? 
 					 	segment_after->line_direction == ROUTE_DIRECTION_AGAINST_LINE :
 					 	segment_after->line_direction == ROUTE_DIRECTION_WITH_LINE)) {
@@ -718,8 +717,8 @@ static void navigate_instr_analyze_roundabout (NavigateSegment *segment_before,
 			return;
 		}
 	} while (continue_loop &&
-				(curr_square != start_segment->line.square ||
-				 curr_line != start_segment->line.line_id));
+				(curr_square != start_segment->square ||
+				 curr_line != start_segment->line));
 	
 	if (*roundabout_is_standard) {			
 		switch (direction_exit)	{
@@ -756,126 +755,116 @@ void navigate_instr_calc_cross_time (NavigateSegment *segments,
    navigate_cost_reset ();
 	for (segment = segments; segment <= last_segment; segment++) {
 	
-		roadmap_square_set_current (segment->line.square);
+		roadmap_square_set_current (segment->square);
 		segment->cross_time = 	
-         navigate_cost_time (segment->line.line_id,
+         navigate_cost_time (segment->line,
                  segment->line_direction != ROUTE_DIRECTION_WITH_LINE,
                  cur_cost,
                  prev_line_id,
                  is_prev_reversed);
                  
-      prev_line_id = segment->line.line_id;
+      prev_line_id = segment->line;
       is_prev_reversed = segment->line_direction != ROUTE_DIRECTION_WITH_LINE;
 
 		if (segment == segments || segment == last_segment) {
          segment->cross_time =
             (int) (1.0 * segment->cross_time * (segment->distance + 1) /
-               (roadmap_line_length (segment->line.line_id)+1));
+               (roadmap_line_length (segment->line)+1));
 		}
 
 		cur_cost += segment->cross_time;
 	}
 }
 
-int navigate_instr_prepare_segments (NavigateSegment *segments,
+int navigate_instr_prepare_segments (SegmentIterator get_segment,
                                      int count,
+                                     int count_new,
                                      RoadMapPosition *src_pos,
                                      RoadMapPosition *dst_pos) {
 
    int i;
-   int group_id = 0;
+   int group_id;
+   int group_count;
    NavigateSegment *segment;
+   int first_shape;
+   int last_shape;
 
-   for (i=0; i < count; i++) {
+   for (i=0; i < count_new; i++) {
 
-      roadmap_plugin_get_line_points (&segments[i].line,
-                                      &segments[i].from_pos,
-                                      &segments[i].to_pos,
-                                      &segments[i].first_shape,
-                                      &segments[i].last_shape,
-                                      &segments[i].shape_itr);
+		segment = get_segment (i);
+		roadmap_square_set_current (segment->square);
+	   roadmap_line_shapes (segment->line, &first_shape, &last_shape);
+	   segment->first_shape = first_shape;
+	   segment->last_shape = last_shape;
+	   roadmap_line_from (segment->line, &segment->from_pos);
+	   roadmap_line_to (segment->line, &segment->to_pos);
+	   segment->shape_initial_pos.longitude = segment->from_pos.longitude;
+	   segment->shape_initial_pos.latitude = segment->from_pos.latitude;
 
-      segments[i].shape_initial_pos.longitude = segments[i].from_pos.longitude;
-      segments[i].shape_initial_pos.latitude = segments[i].from_pos.latitude;
-
-      roadmap_plugin_get_street (&segments[i].line, &segments[i].street);
+      segment->street = roadmap_line_get_street (segment->line);
       
-      segments[i].context = roadmap_line_context (segments[i].line.line_id);
+      segment->context = roadmap_line_context (segment->line);
    }
 
-   for (i=0; i < count - 1; i++) {
+   for (i=0; i < count - 1 && i < count_new; i++) {
 
-      navigate_instr_set_road_instr (&segments[i], &segments[i+1]);
+      navigate_instr_set_road_instr (get_segment (i), get_segment (i+1));
    }
 
-   segments[i].instruction = APPROACHING_DESTINATION;
+	if (count == count_new) {
+   	get_segment (count - 1) ->instruction = APPROACHING_DESTINATION;
+	}
 
-   if (segments[0].line_direction == ROUTE_DIRECTION_WITH_LINE) {
-      navigate_fix_line_end (src_pos, &segments[0], LINE_START);
-   } else {
-      navigate_fix_line_end (src_pos, &segments[0], LINE_END);
-   }
+	if (count_new > 0) {
+		segment = get_segment (0);
+	   if (segment->line_direction == ROUTE_DIRECTION_WITH_LINE) {
+	      navigate_instr_fix_line_end (src_pos, segment, LINE_START);
+	   } else {
+	      navigate_instr_fix_line_end (src_pos, segment, LINE_END);
+	   }
+	}
 
-   if (segments[i].line_direction == ROUTE_DIRECTION_WITH_LINE) {
-      navigate_fix_line_end (dst_pos, &segments[i], LINE_END);
-   } else {
-      navigate_fix_line_end (dst_pos, &segments[i], LINE_START);
-   }
+	if (count == count_new) {
+		segment = get_segment (count - 1);
+	   if (segment->line_direction == ROUTE_DIRECTION_WITH_LINE) {
+	      navigate_instr_fix_line_end (dst_pos, segment, LINE_END);
+	   } else {
+	      navigate_instr_fix_line_end (dst_pos, segment, LINE_START);
+	   }
+	}
 
    /* assign group ids */
-   segment = segments;
-   while (segment < segments + count) {
+   for (i = 0, group_id = 0, group_count = 0; i < count; i++) {
 
-      int group_count = 0;
-
-      while (segment->instruction == CONTINUE) {
-
-         NavigateSegment *prev = segment;
-
-         /* Check if the previous segment is the last */
-         if (prev == (segments + count - 1)) {
-            break;
-         }
-
-         segment++;
-
-			// enabling this will issue a "continue straight" instrcution
-			// whenever the street/city name changes
-#if ENABLE_STRAIGHT_INSTRCUTION
-         if (prev->context != SEG_ROUNDABOUT &&
-         	 prev->line.square == segment->line.square &&
-         	 !roadmap_plugin_same_street (&prev->street, &segment->street)) {
-            segment = prev;
-            break;
-         }
-#endif
-
-         group_count++;
-      }
-
+		segment = get_segment (i);
+		
+		segment->group_id = group_id;
+      
 		if (segment->instruction == ROUNDABOUT_EXIT &&
-			 segment < segments + count - 1 &&
-			 segment - group_count -1 >= segments) {
+			 i < count_new - 1) {
 			
 			int standard; // future use
-			navigate_instr_analyze_roundabout (segment - group_count - 1, segment + 1, &standard, 
-														  &((segment - group_count - 1)->exit_no));
+			NavigateSegment *seg_before = get_segment (i - group_count);
+			NavigateSegment *seg_after = get_segment (i + 1);
+			//TODO: handle case where roundabout ends in old segments
+			navigate_instr_analyze_roundabout (seg_before, seg_after, &standard, 
+														  &(seg_before->exit_no));
 		}
 		
-      for (i = 0; i <= group_count; i++) {
-         (segment - i)->group_id = group_id;
+      if (segment->instruction != CONTINUE) {
+      	
+      	group_id++;
+      	group_count = 0;
       }
-
-      segment++;
-      group_id++;
+		group_count++;
    }
 
    /* Calculate lengths and ETA for each segment */
-   segment = segments;
+   for (i = 0; i < count_new; i++) {
 
-   while (segment < segments + count) {
-
-      if ((segment == segments) || (segment == (segments + count -1))) {
+		segment = get_segment (i);
+		
+      if ((i == 0) || (i == (count -1))) {
 
          if (segment->line_direction == ROUTE_DIRECTION_WITH_LINE) {
             segment->distance =
@@ -889,14 +878,15 @@ int navigate_instr_prepare_segments (NavigateSegment *segments,
          }
       } else {
 
-			roadmap_square_set_current (segment->line.square);
-         segment->distance = roadmap_line_length (segment->line.line_id);
+			roadmap_square_set_current (segment->square);
+         segment->distance = roadmap_line_length (segment->line);
       }
-
-      segment++;
+      
+      segment->is_instrumented = 1;
    }
 
-	navigate_instr_calc_cross_time (segments, count);
+	segment = get_segment (0);
+	navigate_instr_calc_cross_time (segment, count_new);
 	
    return 0;
 }

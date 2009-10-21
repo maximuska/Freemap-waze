@@ -42,6 +42,7 @@ void RTUserLocation_Init( LPRTUserLocation this)
    this->fSpeed           = 0.F;
    this->i64LastAccessTime= 0;
    this->bWasUpdated      = FALSE;
+   this->iMood            = -1;
    memset( this->sName, 0, sizeof(this->sName));
    memset( this->sGUIID,0, sizeof(this->sGUIID));
 }
@@ -104,8 +105,9 @@ BOOL RTUsers_Add( LPRTUsers this, LPRTUserLocation pUser)
    if( RTUsers_Exists( this, pUser->iID))
       return FALSE;
    
-   this->Users[this->iCount]            = (*pUser);
+   this->Users[this->iCount]   = (*pUser);
    this->Users[this->iCount].bWasUpdated= TRUE;
+   
    this->iCount++;
    gs_pfnOnAddUser( pUser);
    

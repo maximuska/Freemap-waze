@@ -81,7 +81,7 @@ int         ssd_icon_set_state(  SsdWidget   this,
 
 void        ssd_icon_set_unhandled_key_press(
                                  SsdWidget   this,
-                                 PFN_WIDGET_ONKEYPRESSED
+                                 CB_OnWidgetKeyPressed
                                              on_unhandled_key_pressed);
 
 #endif // __SSD_WIDGET_ICON_H__

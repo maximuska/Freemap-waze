@@ -177,6 +177,8 @@ int roadmap_city_find (const char *name) {
 	
 	if (!name) return -1;
 	
+	if (!*name) return -1;
+	
 	key = roadmap_city_hash_key (name);
 	index = roadmap_hash_get_first (RoadMapCityHash, key);
 	
@@ -224,13 +226,16 @@ const RoadMapCityId *roadmap_city_first (int index, RoadMapCityEntry *entry) {
 
 const RoadMapCityId *roadmap_city_next (int index, RoadMapCityEntry *entry) {
 
-	int cell_id = (*entry)->cell_id;
-	RoadMapCityData *data = (RoadMapCityData *)roadmap_hash_get_value (RoadMapCityHash, cell_id);
+	int cell_id;
+	RoadMapCityData *data;
 	
 	if (!*entry) {
 		return NULL;	
 	}
 
+	cell_id = (*entry)->cell_id;
+	data = (RoadMapCityData *)roadmap_hash_get_value (RoadMapCityHash, cell_id);
+	
 	*entry = (RoadMapCityEntry)ROADMAP_LIST_NEXT (&(*entry)->current);	
 	
 	if ((RoadMapListItem *)(*entry) == &data->list) {
@@ -246,6 +251,7 @@ const RoadMapCityId *roadmap_city_next (int index, RoadMapCityEntry *entry) {
 		*entry = (RoadMapCityEntry)ROADMAP_LIST_FIRST (&data->list);	
 	}
 
+	
 	return &(*entry)->id;
 }
 

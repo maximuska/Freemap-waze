@@ -1,8 +1,9 @@
-/* ssd_keyboard.c - Full screen keyboard
+
+/* ssd_keyboard.c
  *
  * LICENSE:
  *
- *   Copyright 2006 Ehud Shabtai
+ *   Copyright 2009 PazO
  *
  *   This file is part of RoadMap.
  *
@@ -20,534 +21,453 @@
  *   along with RoadMap; if not, write to the Free Software
  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * SYNOPSYS:
- *
- *   See ssd_keyboard.h.
  */
-
 #include <string.h>
-#include <stdlib.h>
 
-#include "roadmap_lang.h"
-#include "roadmap_path.h"
-#include "roadmap_utf8.h"
-#include "roadmap_res.h"
-#include "ssd_dialog.h"
-#include "ssd_text.h"
+#include "roadmap.h"
+
+#include "keyboards_layout/QWERTY.h"
+#include "keyboards_layout/GRID.h"
+#include "keyboards_layout/WIDEGRID.h"
 #include "ssd_container.h"
-#include "ssd_button.h"
-
+#include "roadmap_lang.h"
+#include "roadmap_config.h"
+#include "roadmap_device_events.h"
+#include "roadmap_canvas.h"
+#include "roadmap_native_keyboard.h"
 #include "ssd_keyboard.h"
 
-#define SSD_KEY_CHAR 1
-#define SSD_KEY_WORD 2
+extern BOOL roadmap_horizontal_screen_orientation();
 
-#define SSD_KEY_CONFIRM   0x1
-#define SSD_KEY_SPACE     0x2
-#define SSD_KEY_BACKSPACE 0x4
-#define SSD_KEY_SWITCH    0x8
+extern int  ssd_keyboard_get_value_index( SsdWidget   kb);
+extern void ssd_keyboard_set_value_index( SsdWidget   kb,
+                                          int         index);
+extern void ssd_keyboard_increment_value_index(
+                                          SsdWidget   kb);
 
-#define SSD_KEYBOARD_MULTI 0x1
-#define SSD_KEYBOARD_LTR   0x2
+extern int  ssd_keyboard_get_layout(      SsdWidget   kb);
+extern void ssd_keyboard_set_layout(      SsdWidget   kb,
+                                          int         layout);
 
-typedef struct key_set_t {
-   const char   *key_images[2];
-   const char   *action_images[2];
-   int size;
-} SsdKeySet;
-   
-static SsdKeySet key_sets[] = {
-   {
-      {"key1_large_up", "key1_large_down"},
-      {"key2_large_up", "key2_large_down"},
-      -1
-   },
-   {
-      {"key1_medium_up", "key1_medium_down"},
-      {"key2_medium_up", "key2_medium_down"},
-      -1
-   }
+static BOOL          first_time_round  = TRUE;
+static BOOL          enable_Hebrew     = TRUE;
+static int           orientation_id    = 0;
+static const char*   keyboard_name     = "ssd_embedded_keyboard";
+
+typedef struct tag_kb_ctx
+{
+   SsdWidget                  container;
+   SsdWidget                  keyboard;
+   CB_OnKeyboardButtonPressed cbOnKey;
+   CB_OnKeyboardCommand       cbOnSpecialButton;
+   const char*                special_button_name;
+   int                        orientation_id;
+   void*                      context;
+
+}  kb_ctx;
+
+static   buttons_layout_info* s_keyboards_layout[] =
+{
+   &QWERTY_BUTTONS_LAYOUT,
+   &GRID_BUTTONS_LAYOUT,
+   &WIDEGRID_BUTTONS_LAYOUT
 };
 
-typedef struct ssd_keyboard {
-   const char   *name;
-   int           type;
-   int           flags;
-   const char   *keys;
-   int           special_keys;
-   const char   *extra_key;
-   SsdWidget     widget;
-   SsdKeyboardCallback   callback;
-   void *context;
-   int key_set;
-} SsdKeyboard;
+#define  CONFIG_CLASS         ("Keyboard")
+#define  CONFIG_ENTRY_LAYOUT  ("Layout")
+#define  CONFIG_ENTRY_INPUT   ("Input")
 
-static SsdKeyboard *CurrentKeyboard = NULL;
+RoadMapConfigDescriptor last_cfg_layout =
+                           ROADMAP_CONFIG_ITEM(
+                                    CONFIG_CLASS,
+                                    CONFIG_ENTRY_LAYOUT);
 
-static void show_keyboard (SsdKeyboard *keyboard, const char *title,
-                           const char *value, const char *extra_key,
-                           SsdKeyboardCallback callback, void *context);
+RoadMapConfigDescriptor last_cfg_input =
+                           ROADMAP_CONFIG_ITEM(
+                                    CONFIG_CLASS,
+                                    CONFIG_ENTRY_INPUT);
 
-SsdKeyboard keyboards[] = {
-   {"letters",
-    SSD_KEYBOARD_LETTERS,
-    SSD_KEYBOARD_MULTI, 
-    "א1ב2ג3ד4ה5ו6ז7ח8ט9י0כךל_מםנןס-ע\"פףצץק'ר:ש,ת.||",
-    SSD_KEY_CONFIRM | SSD_KEY_SPACE | SSD_KEY_BACKSPACE | SSD_KEY_SWITCH,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    0},
+static void update_dynamic_buttons__Shift(SsdWidget   kb,
+                                          int         layout_index,
+                                          int         value_index)
+{
+   static
+   const char*    shift_image = "kb_shift";
+   static
+   unsigned long  shift_flags =  BUTTON_FLAG_ENABLED  |
+                                 BUTTON_FLAG_VISIBLE  |
+                                 BUTTON_FLAG_COMMAND  |
+                                 BUTTON_FLAG_BITMAP;
 
-   {"english",
-    SSD_KEYBOARD_LETTERS,
-    SSD_KEYBOARD_MULTI|SSD_KEYBOARD_LTR, 
-    "aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ||",
-    SSD_KEY_CONFIRM | SSD_KEY_SPACE | SSD_KEY_BACKSPACE | SSD_KEY_SWITCH,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    0},
+   unsigned long  new_flags   = 0;
+   const char*    new_values  = NULL;
 
-   {"digits",
-    SSD_KEYBOARD_DIGITS,
-    SSD_KEYBOARD_LTR,
-#ifdef IPHONE
-    "112233||445566||778899||00||",
-#else
-    "1122334455||6677889900||",
+
+   if( value_index < Hebrew)
+   {
+      new_flags   = shift_flags;
+      new_values  = shift_image;
+   }
+   else
+   {
+      if( qwerty_kb_layout != layout_index)
+      {
+         new_flags = BUTTON_FLAG_ENABLED|BUTTON_FLAG_VISIBLE;
+
+         if( Hebrew == value_index)
+            new_values = "ץ";
+         else
+         {
+            if( grid_kb_layout == layout_index)
+               new_values = "+";
+            else
+               new_values = "0";
+         }
+      }
+   }
+
+   ssd_keyboard_update_button_data( kb, "Shift", new_values, new_flags);
+}
+
+static void update_dynamic_buttons__Hebrew(  SsdWidget   kb,
+                                             int         layout_index,
+                                             int         value_index)
+{
+   unsigned long  new_flags   = 0;
+   const char*    new_values  = NULL;
+
+   if( qwerty_kb_layout != layout_index)
+      return;
+
+   if( Hebrew == value_index)
+   {
+      new_flags   = BUTTON_FLAG_ENABLED|BUTTON_FLAG_VISIBLE;
+      new_values  = "ץ";
+   }
+   else
+   {
+      new_flags   = 0;
+      new_values  = NULL;
+   }
+
+   ssd_keyboard_update_button_data( kb, "Hebrew", new_values, new_flags);
+}
+
+static void update_dynamic_buttons__Done( SsdWidget   kb,
+                                          int         layout_index,
+                                          int         value_index)
+{
+   kb_ctx* ctx = ssd_keyboard_get_context( kb);
+
+   if( NULL == ctx->cbOnSpecialButton)
+   {
+      ssd_keyboard_update_button_data( kb, "Done", NULL, 0);
+      return;
+   }
+
+   ssd_keyboard_update_button_data( kb,
+                                    "Done",
+                                    ctx->special_button_name,
+                                    (BUTTON_FLAG_ENABLED|
+                                    BUTTON_FLAG_VISIBLE|
+                                    BUTTON_FLAG_COMMAND|
+                                    BUTTON_FLAG_VALUE_IS_LABEL));
+}
+
+static void update_dynamic_buttons( SsdWidget kb)
+{
+   int   layout_index= ssd_keyboard_get_layout( kb);
+   int   value_index = ssd_keyboard_get_value_index( kb);
+
+   update_dynamic_buttons__Shift ( kb, layout_index, value_index);
+   update_dynamic_buttons__Hebrew( kb, layout_index, value_index);
+   update_dynamic_buttons__Done  ( kb, layout_index, value_index);
+}
+
+static void on_command( void* context, const char* command)
+{
+   kb_ctx* ctx = context;
+
+   if( !strcmp( command, "Done"))
+   {
+      ctx->cbOnSpecialButton( ctx->context, ctx->special_button_name);
+      return;
+   }
+
+   if( !strcmp( command, "Shift"))
+   {
+      int index = ssd_keyboard_get_value_index( ctx->keyboard);
+
+      switch( index)
+      {
+         case English_highcase:
+            ssd_keyboard_set_charset( ctx->keyboard, English_lowcase);
+            break;
+
+         case English_lowcase:
+            ssd_keyboard_set_charset( ctx->keyboard, English_highcase);
+            break;
+      }
+
+      return;
+   }
+
+   if( !strcmp( command, ".123"))
+   {
+      char value_index_str[12];
+
+      ssd_keyboard_increment_value_index( ctx->keyboard);
+
+      sprintf( value_index_str, "%d", ssd_keyboard_get_value_index( ctx->keyboard));
+      roadmap_config_set( &last_cfg_input, value_index_str);
+   }
+
+   else if( !strcmp( command, "Grid"))
+   {
+      int layout_index= ssd_keyboard_get_layout( ctx->keyboard);
+
+      if( qwerty_kb_layout == layout_index)
+         ssd_keyboard_set_grid_layout( ctx->keyboard);
+      else
+         ssd_keyboard_set_qwerty_layout( ctx->keyboard);
+   }
+
+   update_dynamic_buttons( ctx->keyboard);
+}
+
+SsdWidget ssd_get_keyboard( SsdWidget container)
+{ return ssd_widget_get( container, keyboard_name);}
+
+BOOL on_key( void* context, const char* utf8char, uint32_t flags)
+{
+   kb_ctx* ctx = context;
+
+   return ctx->cbOnKey( ctx->context, utf8char, flags);
+}
+
+void  ssd_keyboard_set_grid_layout( SsdWidget kb)
+{
+   int value_index;
+
+   value_index = ssd_keyboard_get_value_index( kb);
+   if( roadmap_horizontal_screen_orientation())
+      ssd_keyboard_set_layout( kb, widegrid_kb_layout);
+   else
+      ssd_keyboard_set_layout( kb, grid_kb_layout);
+
+   roadmap_config_set( &last_cfg_layout, "GRID");
+
+   ssd_keyboard_set_charset( kb, value_index);
+
+   update_dynamic_buttons( kb);
+}
+
+void ssd_keyboard_set_qwerty_layout( SsdWidget kb)
+{
+   int value_index = ssd_keyboard_get_value_index( kb);
+
+   ssd_keyboard_set_layout( kb, qwerty_kb_layout);
+   roadmap_config_set( &last_cfg_layout, "QWERTY");
+   ssd_keyboard_set_charset( kb, value_index);
+
+   update_dynamic_buttons( kb);
+}
+
+void ssd_keyboard_set_charset( SsdWidget kb, kb_characters_set cset)
+{
+   char value_index_str[12];
+
+   ssd_keyboard_set_value_index( kb, (int)cset);
+
+   sprintf( value_index_str, "%d", (int)cset);
+   roadmap_config_set( &last_cfg_input, value_index_str);
+}
+
+void  ssd_keyboard_verify_orientation( SsdWidget kb)
+{
+   int layout_index = ssd_keyboard_get_layout( kb);
+
+   if( qwerty_kb_layout != layout_index)
+      ssd_keyboard_set_grid_layout( kb);
+}
+
+static void on_draw_begin( void* context, int layout_index)
+{
+   kb_ctx* ctx = context;
+
+   if( ctx->orientation_id != orientation_id)
+   {
+      ssd_keyboard_verify_orientation( ctx->keyboard);
+      ctx->orientation_id = orientation_id;
+   }
+}
+
+static void on_draw_button( void* context, int layout_index, int button_index)
+{
+   kb_ctx* ctx = context;
+
+   // Hide line '1,2,3,..,0' if the NUMBERS-AND-DIGITS line is showing now
+   if( (layout_index != widegrid_kb_layout) && (button_index < 10))
+   {
+      buttons_layout_info* layout= s_keyboards_layout[layout_index];
+      button_info*         btn   = layout->buttons + button_index;
+
+      if( Nunbers_and_symbols == layout->value_index)
+         btn->flags &= ~BUTTON_FLAG_VISIBLE;
+      else
+         btn->flags |= BUTTON_FLAG_VISIBLE;
+   }
+}
+
+static void on_draw_end( void* context, int layout_index)
+{
+// kb_ctx* ctx = context;
+}
+
+static BOOL on_approve_value_type( void* context, int index_candidate)
+{
+   return (enable_Hebrew || ( Hebrew != index_candidate));
+}
+
+static void OnDeviceEvent( device_event event, void* context)
+{
+   if( device_event_window_orientation_changed == event)
+      orientation_id++;
+}
+
+static void reload_last_configuration( SsdWidget kb)
+{
+   const char* last_layout = roadmap_config_get( &last_cfg_layout);
+   // const char* last_input  = roadmap_config_get( &last_cfg_input);
+   int         input_index = English_lowcase;
+   int         cur_input   = -1;
+   if( enable_Hebrew)
+      input_index = Hebrew;
+
+   if( last_layout && (*last_layout))
+   {
+      BOOL qwerty_layout = (0 == strcmp( last_layout, "QWERTY"));
+
+      cur_input = ssd_keyboard_get_value_index( kb);
+
+      if( qwerty_layout)
+         ssd_keyboard_set_layout( kb, qwerty_kb_layout);
+      else
+      {
+         if( roadmap_horizontal_screen_orientation())
+            ssd_keyboard_set_layout( kb, widegrid_kb_layout);
+         else
+            ssd_keyboard_set_layout( kb, grid_kb_layout);
+      }
+   }
+
+   ssd_keyboard_set_value_index( kb, input_index);
+   /*if( last_input && (*last_input))
+   {
+      int input_index = atoi( last_input);
+
+      if( cur_input != input_index)
+         ssd_keyboard_set_value_index( kb, input_index);
+   }
+   else
+   {
+      if( -1 != cur_input)
+         ssd_keyboard_set_value_index( kb, cur_input);
+   }*/
+
+   update_dynamic_buttons( kb);
+}
+
+void  ssd_keyboard_reset_state( SsdWidget kb)
+{
+   reload_last_configuration( kb);
+}
+
+SsdWidget ssd_create_keyboard(SsdWidget                  container,
+                              CB_OnKeyboardButtonPressed cbOnKey,
+                              CB_OnKeyboardCommand       cbOnSpecialButton,
+                              const char*                special_button_name,
+                              void*                      context)
+{
+   SsdWidget   kb;
+
+   kb_ctx*     ctx = malloc( sizeof( kb_ctx));
+
+   memset( ctx, 0, sizeof( kb_ctx));
+
+   ctx->container          = container;
+   ctx->cbOnKey            = cbOnKey;
+   ctx->cbOnSpecialButton  = cbOnSpecialButton;
+   ctx->special_button_name= special_button_name;
+   ctx->context            = context;
+   ctx->orientation_id     = orientation_id;
+
+   kb = ssd_keyboard_layout_create(
+                     // SSD usage:
+                     keyboard_name,
+                     SSD_ALIGN_CENTER|SSD_END_ROW,
+                     // Layout(s) info:
+                     s_keyboards_layout,
+                     sizeof(s_keyboards_layout)/sizeof(buttons_layout_info*),
+                     // This module:
+                     on_key,
+                     on_command,
+                     on_draw_begin,
+                     on_draw_button,
+                     on_draw_end,
+                     on_approve_value_type,
+                     ctx);
+
+
+   ctx->keyboard = kb;
+
+   ssd_widget_add( container, kb);
+
+   if( first_time_round)
+   {
+      const char* system_lang = roadmap_lang_get( "lang");
+
+      enable_Hebrew = (0 == strcmp( system_lang, "Hebrew"));
+
+      roadmap_config_declare( "preferences",
+                              &last_cfg_layout,
+                              "",
+                              NULL);
+
+      roadmap_config_declare( "preferences",
+                              &last_cfg_input,
+                              "",
+                              NULL);
+
+      roadmap_device_events_register( OnDeviceEvent, NULL);
+      first_time_round = FALSE;
+   }
+
+   reload_last_configuration( kb);
+
+   return kb;
+}
+
+/*************************************************************************************************
+ * ssd_keyboard_edit_box_top_offset()
+ * Returns the offset from the top border for the edit box placement
+ * according to the platform and screen size
+ * TODO:: Check if the generic computation is possible
+ */
+int ssd_keyboard_edit_box_top_offset()
+{
+	int top_offset = 0;
+	BOOL is_portrait = ( roadmap_canvas_width() < roadmap_canvas_height() );
+
+#ifdef ANDROID
+	if ( roadmap_native_keyboard_enabled() )
+	{
+		if ( is_portrait )
+			top_offset = 40;
+		else
+			top_offset = 5;
+	}
 #endif
-    SSD_KEY_CONFIRM | SSD_KEY_BACKSPACE | SSD_KEY_SWITCH,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    0}
-};
 
-
-static void switch_type(SsdKeyboard *keyboard) {
-   SsdKeyboard *new_keyboard;
-   unsigned int i;
-
-   for (i=0; i < sizeof(keyboards) / sizeof(keyboards[0]); i++) {
-      if (&keyboards[i] == keyboard) break;
-   }
-
-   i = (i + 1) % (sizeof(keyboards) / sizeof(keyboards[0]));
-
-   new_keyboard = &keyboards[i];
-
-   show_keyboard (new_keyboard,
-                  ssd_widget_get_value (keyboard->widget, NULL),
-                  ssd_widget_get_value (keyboard->widget, "input"),
-                  keyboard->extra_key,
-                  keyboard->callback,
-                  keyboard->context);
-
-   ssd_dialog_hide (keyboard->name, dec_close);
-}
-
-
-static void calc_key_size (SsdKeyboard *keyboard, const char *keys, SsdSize *size) {
-
-   unsigned int set;
-   int i;
-   int count = utf8_strlen(keys);
-
-   for (set=0; set<sizeof(key_sets) / sizeof(SsdKeySet); set++) {
-      int key_size = key_sets[set].size;
-      int cur_x = 0;
-      int cur_y = 0;
-
-      if (key_size == -1) {
-         RoadMapImage image = (RoadMapImage)roadmap_res_get(
-                                 RES_BITMAP, RES_SKIN, key_sets[set].key_images[0]);
-
-         if (!image) continue;
-
-         key_size = roadmap_canvas_image_height(image);
-         if (roadmap_canvas_image_width(image) > key_size)
-            key_size = roadmap_canvas_image_width(image);
-
-         key_sets[set].size = key_size;
-      }
-
-      keyboard->key_set = set;
-
-      if (keyboard->special_keys) {
-         cur_y += key_size;
-      }
-
-      for (i=0; i<count/2; i++) {
-         char key1[20];
-
-         keys = utf8_get_next_char(keys, key1, sizeof(key1));
-         keys = utf8_get_next_char(keys, NULL, 0);
-
-         if (key1[0] == '|') {
-            cur_x = 0;
-            cur_y += key_size;
-            if (cur_y > size->height) break;
-            continue;
-         }
-
-         cur_x += key_size;
-         if (cur_x > size->width) {
-            cur_x = key_size;
-            cur_y += key_size;
-            if (cur_y > size->height) break;
-         }
-      }
-
-      if (i == count/2) return;
-   }
-}
-
-
-static int button_callback (SsdWidget widget, const char *new_value) {
-
-   char key_store[20];
-   char *key = key_store;
-   char text[255];
-   size_t	len;
-
-   SsdKeyboard *keyboard;
-   SsdWidget k = widget->parent;
-
-   keyboard = (SsdKeyboard *)k->context;
-
-   if (keyboard->extra_key && !strcmp (keyboard->extra_key, widget->name)) {
-      return (*keyboard->callback)
-               (SSD_KEYBOARD_EXTRA, ssd_dialog_get_value ("input"),
-               keyboard->context);
-
-   } else if (!strcmp (roadmap_lang_get ("Ok"), widget->name)) {
-      return (*keyboard->callback)
-               (SSD_KEYBOARD_OK, ssd_dialog_get_value ("input"),
-               keyboard->context);
-
-   } else if (!strcmp (roadmap_lang_get ("Del"), widget->name)) {
-      const char *t = ssd_dialog_get_value ("input");
-      size_t value_len = strlen(t);
-
-      if (!value_len) return 1;
-
-      strncpy_safe(text, t, sizeof(text));
-
-      utf8_remove_last_char(text);
-      ssd_dialog_set_value ("input", text);
-
-      return 1;
-
-   } else if (!strcmp (roadmap_lang_get ("SPC"), widget->name)) {
-      len = 1;
-      strcpy (key, " ");
-
-   } else if (!strcmp (roadmap_lang_get ("SWCH"), widget->name)) {
-      switch_type(keyboard);
-      return 1;
-
-   } else {
-
-      strncpy_safe(key, widget->value, sizeof(key_store));
-
-      if (!utf8_strlen(key)) return 1;
-
-      if (!strcmp(new_value, SSD_BUTTON_SHORT_CLICK)) {
-         if (keyboard->flags & SSD_KEYBOARD_MULTI) {
-            utf8_remove_last_char(key);
-            utf8_remove_last_char(key);
-         }
-
-      } else {
-
-         if (keyboard->flags & SSD_KEYBOARD_MULTI) {
-            key = (char *)utf8_get_next_char(key, NULL, 0);
-            key = (char *)utf8_get_next_char(key, NULL, 0);
-         }
-      }
-
-      len = strlen(key);
-   }
-
-   strncpy_safe(text, ssd_dialog_get_value ("input"), sizeof(text));
-
-   if ((strlen(text) + len) >= sizeof(text)) return 1;
-
-   strcat(text, key);
-
-   ssd_dialog_set_value ("input", text);
-
-   return 1;
-}
-
-
-static int input_callback (SsdWidget widget, const char *new_value) {
-   SsdKeyboard *keyboard;
-   SsdWidget k = widget->parent->parent;
-
-   keyboard = (SsdKeyboard *)k->context;
-
-   if (!keyboard) return 1;
-
-   return (*keyboard->callback) (0, new_value, keyboard->context);
-}
-
-
-static SsdWidget add_key (SsdWidget container,
-                          const char *key1, const char *key2, int type,
-                          int flags, int key_set) {
-
-   char name[255];
-   char value[255];
-   SsdWidget button;
-   const int KEY_TEXT_SIZE = 20;
-   int txt_offset = (key_sets[key_set].size - KEY_TEXT_SIZE) / 2 - 0;
-
-   strcpy(name, key1);
-   strcpy(value, key1);
-
-   if (type == SSD_BUTTON_KEY) {
-      strcat(value, "|");
-      strcat(value, key2);
-      button =
-         ssd_button_new (name, value, key_sets[key_set].key_images, 2,
-               SSD_ALIGN_CENTER|SSD_WS_TABSTOP|flags,
-               button_callback);
-   } else {
-      button =
-         ssd_button_new (name, value, key_sets[key_set].action_images, 2,
-               SSD_ALIGN_CENTER|SSD_WS_TABSTOP|flags,
-               button_callback);
-   }
-
-   if (type == SSD_BUTTON_KEY) {
-      SsdWidget wrapper;
-      SsdWidget w = ssd_text_new ("key1", key1, KEY_TEXT_SIZE, SSD_ALIGN_VCENTER|SSD_END_ROW);
-#ifdef IPHONE      
-      ssd_widget_set_color (w, "#ffffff", 0);
-#else      
-	  ssd_widget_set_color (w, "#000000", 0);
-#endif	 
-      wrapper = ssd_container_new("wapper1", NULL,
-                key_sets[key_set].size, key_sets[key_set].size/2, SSD_END_ROW);
-      if (flags & SSD_ALIGN_LTR) w->flags |= SSD_ALIGN_RIGHT;
-      
-      wrapper->bg_color = NULL;
-      ssd_widget_set_offset (w, txt_offset, 3);
-      ssd_widget_add (wrapper, w);
-      ssd_widget_add (button, wrapper);
-   } else {
-      ssd_widget_add (button, ssd_text_new ("key1", key1, 14, SSD_ALIGN_CENTER|SSD_ALIGN_VCENTER|SSD_END_ROW));
-   }
-
-   if ((type == SSD_BUTTON_KEY) && strcmp (key1, key2)) {
-
-      SsdWidget w = ssd_text_new ("key2", key2, 13, SSD_ALIGN_RIGHT|SSD_END_ROW);
-
-      if (flags & SSD_ALIGN_LTR) txt_offset = -txt_offset;
-      ssd_widget_set_color (w, "#838383", 0);
-      ssd_widget_set_offset (w, txt_offset, 3);
-      ssd_widget_add (button, w);
-   }
-
-   ssd_widget_add (container, button);
-   return button;
-}
-
-static void ssd_keyboard_new (SsdKeyboard *keyboard) {
-
-   SsdWidget dialog;
-   SsdWidget entry;
-   SsdWidget input;
-   SsdSize   size;
-   SsdSize   entry_size;
-
-   const char *keys = keyboard->keys;
-   int flags;
-   size_t	count;
-   size_t	i;
-
-   dialog = ssd_dialog_new (keyboard->name, "", NULL,
-		            SSD_CONTAINER_TITLE|SSD_DIALOG_GUI_TAB_ORDER);
-   keyboard->widget = dialog;
-#ifdef IPHONE   
-   ssd_widget_set_color (ssd_widget_get(dialog, "title_text"), "#ffffff", "#000000");
-   ssd_widget_set_color (dialog, "#ffffff", "#000000");
-#else   
-   ssd_widget_set_color (ssd_widget_get(dialog, "title_text"), "#000000", "#000000");
-   ssd_widget_set_color (dialog, "#ffffff", "#e4f1f9");
-#endif
-   entry = ssd_container_new ("entry", NULL, SSD_MAX_SIZE, 19,
-                             SSD_CONTAINER_BORDER|SSD_END_ROW);
-
-   ssd_widget_set_color (entry, "#000000", "#ffffff");
-
-   input = ssd_text_new ("input", "", 15, 0);
-   ssd_widget_set_callback (input, input_callback);
-
-   ssd_widget_add (entry, input);
-
-   ssd_widget_add (dialog, entry);
-
-   ssd_widget_get_size (dialog, &size, NULL);
-   ssd_widget_get_size (entry, &entry_size, NULL);
-
-   size.height -= entry_size.height;
-   size.height -= 28;
-
-   calc_key_size (keyboard, keys, &size);
-
-   flags = 0;
-   count = utf8_strlen(keys);
-   for (i=0; i<count/2; i++) {
-      char key1[20];
-      char key2[20];
-
-      keys = utf8_get_next_char(keys, key1, sizeof(key1));
-      keys = utf8_get_next_char(keys, key2, sizeof(key2));
-
-      if (key1[0] == '|') {
-         flags = SSD_START_NEW_ROW;
-         continue;
-      }
-
-      if (keyboard->flags & SSD_KEYBOARD_LTR) {
-         flags |= SSD_ALIGN_LTR;
-      }
-
-      if (keyboard->flags & SSD_KEYBOARD_MULTI) {
-         add_key (keyboard->widget, key1, key2, SSD_BUTTON_KEY, flags,
-                  keyboard->key_set);
-      } else {
-         add_key (keyboard->widget, key1, key2, SSD_BUTTON_TEXT, flags,
-                  keyboard->key_set);
-      }
-      flags = 0;
-   }
-
-   if (keyboard->special_keys & SSD_KEY_CONFIRM) {
-      add_key (keyboard->widget, roadmap_lang_get ("Ok"),
-               NULL, SSD_BUTTON_TEXT, flags, keyboard->key_set);
-      flags = 0;
-   }
-
-   if (keyboard->special_keys & SSD_KEY_BACKSPACE) {
-      add_key (keyboard->widget, roadmap_lang_get ("Del"),
-               NULL, SSD_BUTTON_TEXT, flags, keyboard->key_set);
-      flags = 0;
-   }
-
-   if (keyboard->special_keys & SSD_KEY_SPACE) {
-      add_key (keyboard->widget, roadmap_lang_get ("SPC"),
-               NULL, SSD_BUTTON_TEXT, flags, keyboard->key_set);
-      flags = 0;
-   }
-
-   if (keyboard->special_keys & SSD_KEY_SWITCH) {
-      add_key (keyboard->widget, roadmap_lang_get ("SWCH"),
-               NULL, SSD_BUTTON_TEXT, flags, keyboard->key_set);
-      flags = 0;
-   }
-}
-
-
-static void set_title (SsdWidget keyboard, const char *title) {
-   keyboard->set_value (keyboard, title);
-}
-
-
-static void set_value (SsdWidget keyboard, const char *title) {
-   ssd_widget_set_value (keyboard, "input", title);
-}
-
-
-static void hide_extra_key (SsdKeyboard *keyboard) {
-
-   SsdWidget key;
-
-   if (!keyboard->extra_key) return;
-
-   key = ssd_widget_get (keyboard->widget, keyboard->extra_key);
-
-   key->flags |= SSD_WIDGET_HIDE;
-}
-
-
-static void setup_extra_key (SsdKeyboard *keyboard) {
-
-   SsdWidget key;
-
-   if (!keyboard->extra_key) return;
-
-   key = ssd_widget_get (keyboard->widget, keyboard->extra_key);
-
-   if (!key) key = add_key (keyboard->widget,
-                            keyboard->extra_key, keyboard->extra_key,
-                            SSD_BUTTON_TEXT, 0, keyboard->key_set);
-
-   key->flags &= ~SSD_WIDGET_HIDE;
-   key->in_focus = TRUE;
-}
-
-
-static void show_keyboard (SsdKeyboard *keyboard, const char *title,
-                           const char *value, const char *extra_key,
-                           SsdKeyboardCallback callback, void *context) {
-
-   if (!keyboard->widget) {
-      ssd_keyboard_new (keyboard);
-   }
-
-   keyboard->callback = callback;
-   keyboard->context = context;
-   keyboard->extra_key = extra_key;
-
-   ssd_widget_set_context (keyboard->widget, keyboard);
-
-   set_title (keyboard->widget, title);
-   set_value (keyboard->widget, value);
-
-   setup_extra_key (keyboard);
-
-   CurrentKeyboard = keyboard;
-   ssd_dialog_activate (keyboard->name, NULL);
-
-   ssd_dialog_draw ();
-}
-
-
-void ssd_keyboard_show (int type, const char *title, const char *value,
-                        const char *extra_key, SsdKeyboardCallback callback,
-                        void *context) {
-
-   SsdKeyboard *keyboard;
-   unsigned int i;
-
-   for (i=0; i < sizeof(keyboards) / sizeof(keyboards[0]); i++) {
-      if (keyboards[i].type == type) break;
-   }
-
-   i = i % (sizeof(keyboards) / sizeof(keyboards[0]));
-
-   keyboard = &keyboards[i];
-
-   show_keyboard (keyboard, title, value, extra_key, callback, context);
-}
-
-
-void ssd_keyboard_hide (void) {
-
-   if (CurrentKeyboard) {
-      hide_extra_key (CurrentKeyboard);
-      ssd_dialog_hide (CurrentKeyboard->name, dec_close);
-      CurrentKeyboard = NULL;
-   }
-}
-
-void ssd_keyboard_hide_all(void){ 
-	ssd_dialog_hide_all (dec_close); 
+	return top_offset;
 }

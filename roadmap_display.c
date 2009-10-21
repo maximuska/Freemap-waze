@@ -33,6 +33,7 @@
 #include <time.h>
 
 #include "roadmap.h"
+#include "roadmap_lang.h"
 #include "roadmap_types.h"
 #include "roadmap_gui.h"
 #include "roadmap_math.h"
@@ -50,6 +51,7 @@
 #include "roadmap_res.h"
 #include "roadmap_bar.h"
 #include "roadmap_border.h"
+#include "roadmap_ticker.h"
 
 #include "navigate/navigate_bar.h"
 #include "ssd/ssd_widget.h"
@@ -84,12 +86,20 @@ static RoadMapConfigDescriptor RoadMapConfigActivityBackground =
 static RoadMapConfigDescriptor RoadMapConfigActivityForeground =
                         ROADMAP_CONFIG_ITEM("Activity", "Foreground");
 
+static RoadMapConfigDescriptor RoadMapConfigWarningBackground =
+                        ROADMAP_CONFIG_ITEM("Warning", "Background");
+
+static RoadMapConfigDescriptor RoadMapConfigWarningForeground =
+                        ROADMAP_CONFIG_ITEM("Warning", "Foreground");
+
 
 static RoadMapPen RoadMapMessageContour;
 static RoadMapPen RoadMapConsoleBackground;
 static RoadMapPen RoadMapConsoleForeground;
 static RoadMapPen RoadMapActivityBackground;
 static RoadMapPen RoadMapActivityForeground;
+static RoadMapPen RoadMapWarningBackground;
+static RoadMapPen RoadMapWarningForeground;
 
 
 #define SIGN_BOTTOM   0
@@ -102,13 +112,14 @@ static RoadMapPen RoadMapActivityForeground;
 
 #define ROADMAP_CONSOLE_REGULAR  0
 #define ROADMAP_CONSOLE_ACTIVITY 1
+#define ROADMAP_CONSOLE_WARNING 2
 
 typedef struct {
 
     const char *page;
     const char *title;
-	int type; 
-	
+	int type;
+
     char *content;
     char *id;
 
@@ -134,7 +145,7 @@ typedef struct {
     const char *default_foreground;
     char *image;
     PluginStreet street;
-    int style; 
+    int style;
     int pointer_type;
     int header_type;
 } RoadMapSign;
@@ -157,13 +168,13 @@ RoadMapSign RoadMapStreetSign[] = {
     ROADMAP_SIGN(NULL, "Info",  SIGN_TEXT,SIGN_CENTER, NULL, "#ffff00", "#000000",STYLE_NORMAL,POINTER_NONE, HEADER_NONE),
     ROADMAP_SIGN(NULL, "Error", SIGN_TEXT,SIGN_CENTER, NULL, "#ff0000", "#ffffff",STYLE_NORMAL,POINTER_NONE, HEADER_NONE),
     ROADMAP_SIGN("GPS", "Driving Instruction", SIGN_TEXT,SIGN_TOP, "In %D %I", "#ff0000", "#ffffff",STYLE_NORMAL,POINTER_NONE, HEADER_NONE),
-    ROADMAP_SIGN(NULL, "Real Time Alert Pop Up", SIGN_POP_UP,SIGN_TOP, "", "#e4f1f9", "#000000",STYLE_NORMAL,POINTER_POSITION, HEADER_RED),
-    ROADMAP_SIGN(NULL, "Approach Alert", SIGN_POP_UP,SIGN_TOP, "", "#e4f1f9", "#000000",STYLE_TRAP,POINTER_NONE, HEADER_NONE),
+    ROADMAP_SIGN(NULL, "Real Time Alert Pop Up", SIGN_POP_UP,SIGN_TOP, "", "#d2dfef", "#000000",STYLE_NORMAL,POINTER_POSITION, HEADER_RED),
+    ROADMAP_SIGN(NULL, "Approach Alert", SIGN_POP_UP,SIGN_TOP, "", "#e4f1f9", "#000000",STYLE_NORMAL,POINTER_NONE, HEADER_NONE),
     ROADMAP_SIGN(NULL, "Comment Pop Up", SIGN_POP_UP, SIGN_TOP,  "", "#e4f1f9", "#000000",STYLE_NORMAL,POINTER_COMMNET, HEADER_GREEN),
     ROADMAP_SIGN(NULL, "RTAlerts",  SIGN_TEXT, SIGN_BOTTOM, NULL, "#FF0000", "#FFFFFF",STYLE_NORMAL,POINTER_NONE, HEADER_NONE),
 	ROADMAP_SIGN(NULL, "Distance To Alert",  SIGN_TEXT, SIGN_TOP, NULL, "#FF0000", "#FFFFFF",STYLE_NORMAL,POINTER_NONE, HEADER_NONE),
 	ROADMAP_SIGN(NULL, "Shortcuts",  SIGN_IMAGE, SIGN_TOP, NULL, "", "",STYLE_NORMAL,POINTER_NONE, HEADER_NONE),
-	ROADMAP_SIGN(NULL, "Navigation list Pop Up", SIGN_POP_UP, SIGN_TOP, "", "#e4f1f9", "#000000",STYLE_NORMAL,POINTER_POSITION, HEADER_NONE),
+	ROADMAP_SIGN(NULL, "Navigation list Pop Up", SIGN_POP_UP, SIGN_TOP, "", "#e4f1f9", "#FFFFFF",STYLE_NORMAL,POINTER_POSITION, HEADER_NONE),
     ROADMAP_SIGN(NULL, NULL,0, 0, NULL, NULL, NULL,STYLE_NORMAL,POINTER_NONE, HEADER_NONE)
 };
 
@@ -226,6 +237,13 @@ static void roadmap_display_create_pens (void) {
     RoadMapActivityForeground =
         roadmap_display_new_pen (&RoadMapConfigActivityForeground);
 
+    RoadMapWarningBackground =
+        roadmap_display_new_pen (&RoadMapConfigWarningBackground);
+
+    RoadMapWarningForeground =
+        roadmap_display_new_pen (&RoadMapConfigWarningForeground);
+
+
     for (sign = RoadMapStreetSign; sign->title != NULL; ++sign) {
 
         sign->background =
@@ -249,12 +267,12 @@ static void roadmap_display_string
     int text_size = -1;
     int offset = 0;
 
-    // AVI-TODO
+    //
     if  (strchr(text, '\n') != 0){
-    	
+
     	while (strchr(text_line, '\n')){
     		pos = strchr(text_line,'\n')-text_line;
-    		if (pos >= sizeof(display_line)) 
+    		if (pos >= sizeof(display_line))
     			pos = sizeof(display_line) - 1;
     		strncpy(display_line, text_line, pos);
     		display_line[pos]=0;
@@ -264,6 +282,16 @@ static void roadmap_display_string
 	    		offset = strlen("<h1>");
 	    		roadmap_canvas_set_foreground("#ffffff");
 	    	}
+	    	else if (!strncmp("<h2>", display_line,strlen("<h2>"))){
+	    		text_size = 16;
+	    		offset = strlen("<h2>");
+#ifdef TOUCH_SCREEN
+				roadmap_canvas_set_foreground("#ffffff");
+#else
+	    		roadmap_canvas_set_foreground("#000000");
+#endif
+
+	    	}
 	    	else if (!strncmp("<r1>", display_line,strlen("<b1>"))){
 	    		text_size = 18;
 	    		offset = strlen("<r1>");
@@ -272,10 +300,10 @@ static void roadmap_display_string
 	    	else if (!strncmp("<b1>", display_line,strlen("<b1>"))){
 	    		text_size = 18;
 	    		offset = strlen("<b1>");
-	    		roadmap_canvas_set_foreground("#000000");
+				roadmap_canvas_set_foreground("#ffffff");
 	    	}
 	    	else if (!strncmp("<h3>", display_line,strlen("<h3>"))){
-	    		text_size = 13;
+	    		text_size = -1;
 	    		offset = strlen("<h3>");
 	    		roadmap_canvas_set_foreground("#000000");
 	    	}
@@ -321,6 +349,7 @@ static void roadmap_display_string
          * a space, either before of after the string midpoint,
          * whichever end with the shortest chunks.
          */
+
         char *text_end = text_line + strlen(text_line);
         char *p1 = text_line + (strlen(text_line) / 2);
         char *p2 = p1;
@@ -486,11 +515,14 @@ static void roadmap_display_sign (RoadMapSign *sign) {
 
 
        if (sign->where == SIGN_TOP || (points[0].y > height / 2)) {
+            points[1].y = sign_height + roadmap_bar_top_height() +roadmap_ticker_height()+5;
+            if (points[0].y < points[1].y){
+				points[0].x = points[1].x;
+				points[0].y = points[1].y;
+            }
+            points[3].y = roadmap_bar_top_height() +roadmap_ticker_height()+5;
 
-            points[1].y = sign_height + roadmap_bar_top_height() +3;
-            points[3].y = roadmap_bar_top_height() +3;
-
-            text_position.y = roadmap_bar_top_height() + 6;
+            text_position.y = roadmap_bar_top_height() + roadmap_ticker_height()+8;
         }
         else {
 
@@ -518,13 +550,13 @@ static void roadmap_display_sign (RoadMapSign *sign) {
 
         switch (sign->where)
         {
-           case SIGN_BOTTOM: 
- 
+           case SIGN_BOTTOM:
+
               points[0].y = height - sign_height - roadmap_bar_bottom_height();
               break;
 
            case SIGN_TOP:
-              points[0].y = roadmap_bar_top_height() +3;
+              points[0].y = roadmap_bar_top_height() +roadmap_ticker_height()+3;
               break;
 
            case SIGN_CENTER:
@@ -583,20 +615,20 @@ void roadmap_display_image_sign(RoadMapSign *sign) {
 	int screen_height;
 	RoadMapGuiPoint position;
 	RoadMapImage image;
-	
+
 	screen_width = roadmap_canvas_width();
 	screen_height = roadmap_canvas_height();
-	
+
 	if (sign->where == SIGN_TOP){
 		position.x = 3;
 		position.y = roadmap_bar_top_height() + 3;
 	}
-	
+
 	if (sign->image != NULL){
     		image =  (RoadMapImage) roadmap_res_get(RES_BITMAP, RES_SKIN, sign->image);
             roadmap_canvas_draw_image (image, &position, 0, IMAGE_NORMAL);
     }
-	
+
 }
 
 void roadmap_display_sign_pop_up(RoadMapSign *sign) {
@@ -611,39 +643,46 @@ void roadmap_display_sign_pop_up(RoadMapSign *sign) {
 	int sign_width;
 	int i;
 	int allign = ROADMAP_CANVAS_TOPLEFT;
-	
+
 	if (ssd_widget_rtl (NULL))
 		allign = ROADMAP_CANVAS_TOPRIGHT;
-	
-	
+
+
 	roadmap_canvas_get_text_extents
         (sign->content, -1, &width, &ascent, &descent, NULL);
-        
+
     text_height = ascent + descent + 5;
-    
+
 	screen_width = roadmap_canvas_width();
 
 
 	for (i = 0; sign->content[i] != '\0'; i++)
 		if (sign->content[i]=='\n')
 			lines++;
-			
+
 	if (lines < 2)
 		lines = 2;
-				
+
 	sign->deadline = -1;
 
 	top.x = 1;
 	top.y = roadmap_bar_top_height()+1;
-	
+
 	bottom.x = screen_width;
-	bottom.y = (lines+2) * 21;
+
+
+#ifdef TOUCH_SCREEN
+	bottom.y = (lines) * 21 + top.y + 8;
+	sign_width = roadmap_display_border(sign->style, sign->header_type, sign->pointer_type, &bottom, &top, "#d2dfef", &sign->position);
+#else
+	bottom.y = (lines) * 21 + top.y;
 	sign_width = roadmap_display_border(sign->style, sign->header_type, sign->pointer_type, &bottom, &top, "#e4f1f9", &sign->position);
-	 
+#endif
     if (sign->image != NULL){
+    		RoadMapImage close;
     		RoadMapImage image =  (RoadMapImage) roadmap_res_get(RES_BITMAP, RES_SKIN, sign->image);
     		if (image){
-    			
+
     			if (ssd_widget_rtl (NULL))
     				icon_screen_point.x =  top.x + 12;
     			else
@@ -652,6 +691,18 @@ void roadmap_display_sign_pop_up(RoadMapSign *sign) {
             	roadmap_canvas_draw_image (image, &icon_screen_point,
             					                                  0, IMAGE_NORMAL);
     		}
+
+    		close =  (RoadMapImage) roadmap_res_get(RES_BITMAP, RES_SKIN, "rm_quit");
+    		if (image){
+    			icon_screen_point.y = top.y + 4;
+    			if (ssd_widget_rtl (NULL))
+    				icon_screen_point.x =  top.x + 2;
+    			else
+    				icon_screen_point.x =  top.x + sign_width - 12 - roadmap_canvas_image_width(close);
+            	roadmap_canvas_draw_image (close, &icon_screen_point,
+            					                                  0, IMAGE_NORMAL);
+    		}
+
     }
 
 	roadmap_canvas_select_pen (sign->foreground);
@@ -659,10 +710,16 @@ void roadmap_display_sign_pop_up(RoadMapSign *sign) {
 		text_position.x = sign_width  - 10 ;
 	else
 		text_position.x = 10;
+
+#ifdef TOUCH_SCREEN
+	text_position.y =  roadmap_bar_top_height() + 5 ;
+#else
 	text_position.y =  roadmap_bar_top_height() + 9 ;
+#endif
+
     roadmap_display_string
        (sign->content, lines, text_height, &text_position, allign);
-	
+
 }
 
 
@@ -756,13 +813,13 @@ int roadmap_display_activate
     roadmap_message_set ('N', properties.street);
     //roadmap_message_set ('T', properties.street_t2s);
     roadmap_message_set ('C', properties.city);
-    
+
     if (!strcmp(title, "Current Street")){
     	roadmap_message_set ('Y', properties.street);
     	roadmap_message_set ('Z', properties.city);
     }
-    
-    if (! roadmap_message_format (text, sizeof(text), format)) {
+
+    if (! roadmap_message_format (text, sizeof(text), roadmap_lang_get(format))) {
         roadmap_log_pop ();
         *street = sign->street;
         return 0;
@@ -878,7 +935,7 @@ int roadmap_display_pop_up
    		sign->position.latitude = -1;
    		sign->position.longitude = -1;
    }
-   
+
    sign->was_visible=0;
    if (roadmap_config_get_integer (&RoadMapConfigDisplayDuration) == -1) {
       sign->deadline = -1;
@@ -901,16 +958,16 @@ int roadmap_display_pop_up
 int roadmap_activate_image_sign(const char *title,
          				   		const char *image){
    RoadMapSign *sign;
-             				   	
+
    sign = roadmap_display_search_sign (title);
    if (sign == NULL) {
         return -1;
    }
-    
+
    if (sign->type != SIGN_IMAGE){
       return -1;
    }
-   
+
    if (roadmap_config_get_integer (&RoadMapConfigDisplayDuration) == -1) {
       sign->deadline = -1;
 
@@ -920,13 +977,13 @@ int roadmap_activate_image_sign(const char *title,
           time(NULL)
               + roadmap_config_get_integer (&RoadMapConfigDisplayDuration);
    }
-   
+
    sign->image = strdup(image);
-             	
-   sign->content = sign->image;          	
+
+   sign->content = sign->image;
    return 0;
-}         				  
-         				   
+}
+
 
 void roadmap_display_hide (const char *title) {
 
@@ -958,28 +1015,60 @@ static void roadmap_display_console_box
     int width, ascent, descent;
     int i;
     static const char *shadow_bg = "#606060";
+    int warning_font_size = 13;
+    int offset = 62;
+
+#ifdef ANDROID
+    warning_font_size = 15;
+#endif
+
 
     RoadMapGuiPoint frame[4];
     RoadMapGuiPoint shadow_points[4];
     RoadMapPen shadow_pen;
 
+#ifdef _WIN32
+   offset = 33;
+#endif
+
     count = 4;
+#ifdef _WIN32
+	offset = 33;
+#endif
 
     if (! roadmap_message_format (text, sizeof(text), format)) {
         return;
     }
-
-    if (type == ROADMAP_CONSOLE_ACTIVITY) {
+    if ( type == ROADMAP_CONSOLE_WARNING ){
+        	roadmap_canvas_get_text_extents (text, warning_font_size, &width, &ascent, &descent, NULL);
+        	while (width > (roadmap_canvas_width()-10)){
+        	   warning_font_size--;
+        	   roadmap_canvas_get_text_extents (text, warning_font_size, &width, &ascent, &descent, NULL);
+        	}
+    }
+    else if (type == ROADMAP_CONSOLE_ACTIVITY ){
     	roadmap_canvas_get_text_extents (text, 12, &width, &ascent, &descent, NULL);
-    }else{
+    }
+    else
+    {
     	roadmap_canvas_get_text_extents (text, 16, &width, &ascent, &descent, NULL);
     }
 
     if (type == ROADMAP_CONSOLE_ACTIVITY) {
-    frame[2].x = roadmap_canvas_width() - 2;
-    frame[0].x = frame[2].x - width - 4;
+#ifdef TOUCH_SCREEN
+       if (roadmap_horizontal_screen_orientation())
+   		frame[2].x = roadmap_canvas_width() - offset;
+       else
+#endif
+          frame[2].x = roadmap_canvas_width() ;
+   		frame[0].x = frame[2].x - width - 4;
     } else if (corner & ROADMAP_CANVAS_RIGHT) {
-        frame[2].x = roadmap_canvas_width() - 5;
+#ifdef TOUCH_SCREEN
+       if (roadmap_horizontal_screen_orientation())
+        frame[2].x = roadmap_canvas_width() - 5-offset;
+       else
+#endif
+        frame[2].x = roadmap_canvas_width() - 5 ;
         frame[0].x = frame[2].x - width - 6;
     } else {
         frame[0].x = 5;
@@ -992,9 +1081,12 @@ static void roadmap_display_console_box
         frame[0].y = roadmap_canvas_height () - ascent - descent - 11 - 22;
         frame[1].y = roadmap_canvas_height () - 6 - 22;
     } else {
-       if (type == ROADMAP_CONSOLE_ACTIVITY) {
-          frame[0].y = roadmap_bar_top_height() +3;
-       } else {
+       if ( type == ROADMAP_CONSOLE_ACTIVITY || type == ROADMAP_CONSOLE_WARNING )
+       {
+    	   frame[0].y = roadmap_bar_top_height() + 3;
+       }
+       else
+       {
           frame[0].y = 40;
        }
 
@@ -1017,25 +1109,37 @@ static void roadmap_display_console_box
 
     count = 4;
 
-    if (type == ROADMAP_CONSOLE_ACTIVITY) {
+    if (type == ROADMAP_CONSOLE_WARNING ) {
+    	roadmap_canvas_select_pen (RoadMapWarningBackground);
+    }
+    else if (type == ROADMAP_CONSOLE_ACTIVITY) {
        roadmap_canvas_select_pen (RoadMapActivityBackground);
     } else {
        roadmap_canvas_select_pen (RoadMapConsoleBackground);
     }
-    
-  	roadmap_canvas_draw_multiple_polygons (1, &count, frame, 1, 0);
 
-    if (type == ROADMAP_CONSOLE_ACTIVITY) {
+   roadmap_canvas_draw_multiple_polygons (1, &count, frame, 1, 0);
+  	if (type == ROADMAP_CONSOLE_WARNING) {
+  		roadmap_canvas_select_pen (RoadMapWarningForeground);
+  	}
+  	else if (type == ROADMAP_CONSOLE_ACTIVITY) {
       roadmap_canvas_select_pen (RoadMapActivityForeground);
     } else {
        roadmap_canvas_select_pen (RoadMapConsoleForeground);
     }
-    
+
+   if (type != ROADMAP_CONSOLE_WARNING )
     roadmap_canvas_draw_multiple_polygons (1, &count, frame, 0, 0);
 
     frame[0].x = frame[3].x - 3;
     frame[0].y = frame[3].y + 3;
-	if (type == ROADMAP_CONSOLE_ACTIVITY)
+    if (type == ROADMAP_CONSOLE_WARNING )
+    {
+    	roadmap_canvas_draw_string_size (frame,
+    	        	    	                    ROADMAP_CANVAS_RIGHT|ROADMAP_CANVAS_TOP,
+    	        	    	                warning_font_size,text);
+    }
+    else if (type == ROADMAP_CONSOLE_ACTIVITY)
     	roadmap_canvas_draw_string_size (frame,
         	    	                    ROADMAP_CANVAS_RIGHT|ROADMAP_CANVAS_TOP,
             	    	                12,text);
@@ -1081,25 +1185,18 @@ void roadmap_display_signs (void) {
 
     roadmap_display_create_pens ();
 
-//    roadmap_display_console_box
-//        (ROADMAP_CONSOLE_REGULAR,
-//         ROADMAP_CANVAS_BOTTOM|ROADMAP_CANVAS_RIGHT,
-//         roadmap_config_get (&RoadMapConfigDisplayBottomRight));
-//
-//    roadmap_display_console_box
-//        (ROADMAP_CONSOLE_REGULAR,
-//         ROADMAP_CANVAS_BOTTOM|ROADMAP_CANVAS_LEFT,
-//         roadmap_config_get(&RoadMapConfigDisplayBottomLeft));
-//
-//    roadmap_display_console_box
-//        (ROADMAP_CONSOLE_REGULAR,
-//         ROADMAP_CANVAS_TOP|ROADMAP_CANVAS_RIGHT,
-//         roadmap_config_get(&RoadMapConfigDisplayTopRight));
-
-    roadmap_display_console_box
-        (ROADMAP_CONSOLE_ACTIVITY,
-         ROADMAP_CANVAS_RIGHT,
-         "%!");
+    if ( roadmap_message_is_set( 'w' ) )
+    {
+		/* Run over the console if warning exists *** AGA *** */
+		roadmap_display_console_box( ROADMAP_CONSOLE_WARNING,
+			 ROADMAP_CANVAS_RIGHT, "%w");
+    }
+    else
+    {
+    	roadmap_display_console_box
+    	        (ROADMAP_CONSOLE_ACTIVITY,
+    	         ROADMAP_CANVAS_RIGHT, "%!");
+    }
 
     for (sign = RoadMapStreetSign; sign->title != NULL; ++sign) {
 
@@ -1113,10 +1210,10 @@ void roadmap_display_signs (void) {
 				if (sign->type == SIGN_POP_UP)
 					roadmap_display_sign_pop_up (sign);
 				else if (sign->type == SIGN_IMAGE)
-					roadmap_display_image_sign(sign);	
+					roadmap_display_image_sign(sign);
                 else
                		roadmap_display_sign (sign);
-               
+
            }
         }
     }
@@ -1138,7 +1235,7 @@ void roadmap_display_initialize (void) {
     RoadMapSign *sign;
 
     roadmap_config_declare
-        ("preferences", &RoadMapConfigDisplayDuration, "10", NULL);
+        ("preferences", &RoadMapConfigDisplayDuration, "5", NULL);
     roadmap_config_declare
         ("preferences", &RoadMapConfigDisplayBottomRight, "%D (%W)|%D", NULL);
     roadmap_config_declare
@@ -1152,9 +1249,14 @@ void roadmap_display_initialize (void) {
         ("schema", &RoadMapConfigConsoleForeground, "#000000", NULL);
 
     roadmap_config_declare
-        ("schema", &RoadMapConfigActivityBackground, "#F0F8FF", NULL);
+        ("schema", &RoadMapConfigWarningBackground, "#d7d7d7", NULL);
     roadmap_config_declare
-        ("schema", &RoadMapConfigActivityForeground, "#000000", NULL);
+        ("schema", &RoadMapConfigWarningForeground, "#026d97", NULL);
+
+    roadmap_config_declare
+        ("schema", &RoadMapConfigActivityBackground, "#535252", NULL);
+    roadmap_config_declare
+        ("schema", &RoadMapConfigActivityForeground, "#FFFFFF", NULL);
 
     for (sign = RoadMapStreetSign; sign->title != NULL; ++sign) {
 

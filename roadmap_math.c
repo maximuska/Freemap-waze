@@ -32,6 +32,8 @@
  * or the distance between two points, given their position.
  */
 
+#define DECLARE_ROADMAP_MATH
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -39,15 +41,15 @@
 #include <ctype.h>
 
 #include "roadmap.h"
-#include "roadmap_math.h"
 #include "roadmap_square.h"
 #include "roadmap_state.h"
 #include "roadmap_config.h"
 #include "roadmap_layer.h"
+#include "roadmap_shape.h"
 
 #include "roadmap_trigonometry.h"
 
-#define ROADMAP_VISIBILITY_DISTANCE 80
+#include "roadmap_math.h"
 
 #define ROADMAP_BASE_IMPERIAL 0
 #define ROADMAP_BASE_METRIC   1
@@ -69,19 +71,19 @@ static RoadMapConfigDescriptor RoadMapConfigGeneralZoom =
 #define ROADMAP_REFERENCE_ZOOM 20
 
 
-typedef struct {
-    
+typedef struct RoadMapUnits_t {
+
     float unit_per_latitude;
     float unit_per_longitude;
     float speed_per_knot;
     float speed_per_m_p_s;
     float cm_to_unit;
     int    to_trip_unit;
-    
+    float  to_screen_unit;
     char  *length;
     char  *trip_distance;
     char  *speed;
-    
+
 } RoadMapUnits;
 
 
@@ -93,6 +95,7 @@ static RoadMapUnits RoadMapMetricSystem = {
 	3.6F,	  /* Kmh per m/s  */
     0.01F,    /* centimeters to meters. */
     1000,    /* meters per kilometer. */
+    1.0f,
     "m",
     "Km",
     "Kmh"
@@ -100,57 +103,19 @@ static RoadMapUnits RoadMapMetricSystem = {
 
 static RoadMapUnits RoadMapImperialSystem = {
 
-    0.36464F, /* Feet per latitude. */
+    0.11112F, /* Feet per latitude. */
     0.0f,     /* Feet per longitude (dynamic). */
     1.151f,   /* Mph per knot. */
     2.24F, 	  /* Mph per m/s */
-    0.03281f, /* centimeters to feet. */
-    5280,    /* Feet per mile. */
+    0.01f, /* centimeters to meters. */
+    1609,    /* Feet per mile. */
+    0.3048f,
     "ft",
     "Mi",
     "Mph",
 };
-    
 
-static struct {
-
-   unsigned short zoom;
-
-   /* The current position shown on the map: */
-   RoadMapPosition center;
-
-   /* The center point (current position), in pixel: */
-   int center_x;
-   int center_y;
-
-   /* The size of the area shown (pixels): */
-   int width;
-   int height;
-
-   /* The conversion ratio from position to pixels: */
-   int zoom_x;
-   int zoom_y;
-
-
-   RoadMapArea focus;
-   RoadMapArea upright_screen;
-   RoadMapArea current_screen;
-
-
-   /* Map orientation (0: north, 90: east): */
-
-   int orientation; /* angle in degrees. */
-
-   int sin_orientation; /* Multiplied by 32768. */
-   int cos_orientation; /* Multiplied by 32768. */
-
-   RoadMapUnits *units;
-
-   int _3D_horizon;
-
-} RoadMapContext;
-
-
+struct RoadMapContext_t RoadMapContext;
 
 static void roadmap_math_trigonometry (int angle, int *sine_p, int *cosine_p) {
 
@@ -186,13 +151,13 @@ static void roadmap_math_trigonometry (int angle, int *sine_p, int *cosine_p) {
 
 
 static int roadmap_math_arccosine (int cosine, int sign) {
-    
+
     int i;
     int low;
     int high;
     int result;
     int cosine_negative = 0;
-    
+
     if (cosine < 0) {
         cosine = 0 - cosine;
         cosine_negative = 1;
@@ -204,16 +169,16 @@ static int roadmap_math_arccosine (int cosine, int sign) {
         }
         cosine = 32767;
     }
-    
+
     high = 45;
     low  = 0;
-    
+
     if (cosine >= RoadMapTrigonometricTable[45].y) {
-        
+
         while (high > low + 1) {
-            
+
             i = (high + low) / 2;
-            
+
             if (cosine > RoadMapTrigonometricTable[i-1].y) {
                 high = i - 1;
             } else if (cosine < RoadMapTrigonometricTable[i].y) {
@@ -223,15 +188,15 @@ static int roadmap_math_arccosine (int cosine, int sign) {
                 break;
             }
         }
-        
+
         result = high;
-        
+
     } else {
-        
+
         while (high > low + 1) {
-            
+
             i = (high + low) / 2;
-            
+
             if (cosine >= RoadMapTrigonometricTable[i].x) {
                 low = i;
             } else if (cosine < RoadMapTrigonometricTable[i-1].y) {
@@ -241,12 +206,12 @@ static int roadmap_math_arccosine (int cosine, int sign) {
                 break;
             }
         }
-        
+
         result = 90 - high;
     }
-    
+
     result = sign * result;
-    
+
     if (cosine_negative) {
         result = 180 - result;
         if (result > 180) {
@@ -262,7 +227,7 @@ static void roadmap_math_compute_scale (void) {
    int orientation;
 
    int sine;
-   int cosine;
+   int cosine = 0;
 
    RoadMapGuiPoint point;
    RoadMapPosition position;
@@ -271,9 +236,13 @@ static void roadmap_math_compute_scale (void) {
    if (RoadMapContext.zoom == 0) {
        RoadMapContext.zoom = ROADMAP_REFERENCE_ZOOM;
    }
-   
-   roadmap_square_adjust_scale (RoadMapContext.zoom / 25);
-   
+
+   if (roadmap_screen_fast_refresh()) {
+      roadmap_square_adjust_scale (RoadMapContext.zoom / 7);
+   } else {
+      roadmap_square_adjust_scale (RoadMapContext.zoom / 25);
+   }
+
    RoadMapContext.center_x = RoadMapContext.width / 2;
    RoadMapContext.center_y = RoadMapContext.height / 2;
 
@@ -292,12 +261,12 @@ static void roadmap_math_compute_scale (void) {
 
    RoadMapMetricSystem.unit_per_longitude =
       (RoadMapMetricSystem.unit_per_latitude * cosine) / 32768;
-      
+
    RoadMapImperialSystem.unit_per_longitude =
       (RoadMapImperialSystem.unit_per_latitude * cosine) / 32768;
-      
-   RoadMapContext.zoom_y =
-      (int) ((RoadMapContext.zoom_y * cosine / 32768) + 0.5);
+
+   RoadMapContext.zoom_x =
+      (int) ((RoadMapContext.zoom_x * 32768 / cosine) + 0.5);
 
    RoadMapContext.upright_screen.west =
       RoadMapContext.center.longitude
@@ -400,7 +369,7 @@ static int roadmap_math_find_screen_intersection (const RoadMapPosition *from,
       return count;
 
    } else {
-      
+
       point.latitude = RoadMapContext.focus.north + ROADMAP_VISIBILITY_DISTANCE;
       point.longitude = (int) ((point.latitude - b) / a);
       count =
@@ -432,25 +401,6 @@ static int roadmap_math_find_screen_intersection (const RoadMapPosition *from,
    }
 
    return count;
-}
-
-
-static int roadmap_math_area_zoom (int area) {
-
-   int i;
-   int zoom = RoadMapContext.zoom;
-
-   if (RoadMapContext._3D_horizon == 0) {
-      return zoom;
-   }
-
-   for (i=1; i<=area; i++) {
-      zoom = (4 * zoom) / 3;
-   }
-
-   if (i == LAYER_PROJ_AREAS) zoom *= 2;
-
-   return zoom;
 }
 
 
@@ -520,7 +470,7 @@ void roadmap_math_unproject (RoadMapGuiPoint *point) {
    }
 
    /* unsqueeze the X axis */
-   point2.x = (int) (fDistFromCenterX / 
+   point2.x = (int) (fDistFromCenterX /
          ( fDistFromHorizon / fVisibleRange ) + RoadMapContext.width / 2);
 
    /* distance from bottom of screen */
@@ -547,7 +497,7 @@ void roadmap_math_project (RoadMapGuiPoint *point) {
 
    /* make the Y coordinate converge on the horizon as the
     * distance from the center goes to infinity */
-   point->y = (short) (RoadMapContext.height - 
+   point->y = (short) (RoadMapContext.height -
                (DistFromCenterY * VisibleRange) /
                         (abs(DistFromCenterY) + VisibleRange));
 
@@ -602,7 +552,7 @@ void roadmap_math_unproject (RoadMapGuiPoint *point) {
 
 static int roadmap_math_zoom_state (void) {
 
-   if (RoadMapContext.zoom == 
+   if (RoadMapContext.zoom ==
          roadmap_config_get_integer (&RoadMapConfigGeneralDefaultZoom)) {
 
       return MATH_ZOOM_RESET;
@@ -687,7 +637,7 @@ void roadmap_math_rotate_coordinates (int count, RoadMapGuiPoint *points) {
 }
 
 
-/* 
+/*
  * rotate the coordinates of a point to an arbitrary angle
  */
 void roadmap_math_rotate_point (RoadMapGuiPoint *point,
@@ -739,8 +689,8 @@ void roadmap_math_rotate_object
    int i;
    int x;
    int y;
-   int sin_o;
-   int cos_o;
+   int sin_o = 0;
+   int cos_o = 0;
    int total = (RoadMapContext.orientation + orientation) % 360;
 
 
@@ -766,6 +716,8 @@ void roadmap_math_rotate_object
 
 
 void roadmap_math_initialize (void) {
+
+    memset(&RoadMapContext, 0, sizeof(RoadMapContext));
 
     roadmap_config_declare ("session", &RoadMapConfigGeneralZoom, "0", NULL);
     roadmap_config_declare
@@ -804,68 +756,6 @@ void roadmap_math_set_focus (const RoadMapArea *focus) {
 void roadmap_math_release_focus (void) {
 
    RoadMapContext.focus = RoadMapContext.current_screen;
-}
-
-
-int roadmap_math_is_visible (const RoadMapArea *area) {
-
-   if (area->west > RoadMapContext.focus.east + ROADMAP_VISIBILITY_DISTANCE ||
-       area->east < RoadMapContext.focus.west - ROADMAP_VISIBILITY_DISTANCE ||
-       area->south > RoadMapContext.focus.north + ROADMAP_VISIBILITY_DISTANCE ||
-       area->north < RoadMapContext.focus.south - ROADMAP_VISIBILITY_DISTANCE)
-   {
-       return 0;
-   }
-
-   if (area->west >= RoadMapContext.focus.west - ROADMAP_VISIBILITY_DISTANCE &&
-       area->east < RoadMapContext.focus.east + ROADMAP_VISIBILITY_DISTANCE &&
-       area->south > RoadMapContext.focus.south - ROADMAP_VISIBILITY_DISTANCE &&
-       area->north <= RoadMapContext.focus.north + ROADMAP_VISIBILITY_DISTANCE)
-   {
-       return 1;
-   }
-
-   return -1;
-}
-
-
-int roadmap_math_line_is_visible (const RoadMapPosition *point1,
-                                  const RoadMapPosition *point2) {
-
-   if ((point1->longitude > RoadMapContext.focus.east + ROADMAP_VISIBILITY_DISTANCE) &&
-       (point2->longitude > RoadMapContext.focus.east + ROADMAP_VISIBILITY_DISTANCE)) {
-      return 0;
-   }
-
-   if ((point1->longitude < RoadMapContext.focus.west - ROADMAP_VISIBILITY_DISTANCE) &&
-       (point2->longitude < RoadMapContext.focus.west - ROADMAP_VISIBILITY_DISTANCE)) {
-      return 0;
-   }
-
-   if ((point1->latitude > RoadMapContext.focus.north + ROADMAP_VISIBILITY_DISTANCE) &&
-       (point2->latitude > RoadMapContext.focus.north + ROADMAP_VISIBILITY_DISTANCE)) {
-      return 0;
-   }
-
-   if ((point1->latitude < RoadMapContext.focus.south - ROADMAP_VISIBILITY_DISTANCE) &&
-       (point2->latitude < RoadMapContext.focus.south - ROADMAP_VISIBILITY_DISTANCE)) {
-      return 0;
-   }
-
-   return 1; /* Do not bother checking for partial visibility yet. */
-}
-
-
-int roadmap_math_point_is_visible (const RoadMapPosition *point) {
-
-   if ((point->longitude > RoadMapContext.focus.east + ROADMAP_VISIBILITY_DISTANCE) ||
-       (point->longitude < RoadMapContext.focus.west - ROADMAP_VISIBILITY_DISTANCE) ||
-       (point->latitude  > RoadMapContext.focus.north + ROADMAP_VISIBILITY_DISTANCE) ||
-       (point->latitude  < RoadMapContext.focus.south - ROADMAP_VISIBILITY_DISTANCE)) {
-      return 0;
-   }
-
-   return 1;
 }
 
 
@@ -1014,7 +904,7 @@ void roadmap_math_adjust_zoom	 (int square) {
 		} else {
 			roadmap_math_zoom_set (130);
 		}
-	}	 
+	}
 }
 
 
@@ -1026,14 +916,6 @@ void roadmap_math_zoom_reset (void) {
    roadmap_config_set_integer (&RoadMapConfigGeneralZoom, RoadMapContext.zoom);
 
    roadmap_math_compute_scale ();
-}
-
-
-int roadmap_math_declutter (int level, int area) {
-
-   int zoom = roadmap_math_area_zoom (area);
-
-   return (zoom < level);
 }
 
 
@@ -1066,8 +948,6 @@ int roadmap_math_thickness (int base, int declutter, int zoom_level,
       if (ratio > base) {
          ratio = (float)base;
       }
-   } else {
-      //ratio = (int) (1.0 * ROADMAP_REFERENCE_ZOOM / zoom + base);
    }
 
    if (zoom_level > 1) ratio -= (zoom_level - 1)*2;
@@ -1201,7 +1081,7 @@ float roadmap_math_get_angle (RoadMapGuiPoint *point0, RoadMapGuiPoint *point1) 
 }
 
 float roadmap_math_get_diagonal (RoadMapGuiPoint *point0, RoadMapGuiPoint *point1) {
-   float diagonal = sqrt(powf((abs(point0->x - point1->x) + 1),2) + 
+   float diagonal = sqrt(powf((abs(point0->x - point1->x) + 1),2) +
                          powf((abs(point0->y - point1->y) + 1),2));
    return (diagonal);
 }
@@ -1243,19 +1123,6 @@ void roadmap_math_to_position (const RoadMapGuiPoint *point,
 }
 
 
-void roadmap_math_coordinate (const RoadMapPosition *position,
-                              RoadMapGuiPoint *point) {
-
-   point->x =
-      ((position->longitude - RoadMapContext.upright_screen.west)
-             / RoadMapContext.zoom_x);
-
-   point->y =
-      ((RoadMapContext.upright_screen.north - position->latitude)
-             / RoadMapContext.zoom_y);
-}
-
-
 int roadmap_math_azymuth
        (const RoadMapPosition *point1, const RoadMapPosition *point2) {
 
@@ -1271,14 +1138,14 @@ int roadmap_math_azymuth
             * (point2->latitude  - point1->latitude);
 
     d = (float)sqrt ((x * x) + (y * y));
-    
+
     if (d > 0.0001 || d < -0.0001) {
         result = roadmap_math_arccosine
                     ((int) ((32768 * y) / d), (x > 0)?1:-1);
     } else {
         result = 0;
     }
-    
+
     return result;
 }
 
@@ -1295,14 +1162,14 @@ int roadmap_math_angle
     y = point2->y - point1->y;
 
     d = (float)sqrt ((x * x) + (y * y));
-    
+
     if (d > 0.0001 || d < -0.0001) {
         result = roadmap_math_arccosine
                     ((int) ((32768 * y) / d), (x > 0)?1:-1);
     } else {
         result = 0;
     }
-    
+
     return result;
 }
 
@@ -1376,7 +1243,7 @@ int roadmap_math_distance_convert(const char *string, int *was_explicit)
             distance /= other_units->cm_to_unit;
             distance *= my_units->cm_to_unit;
         } else {
-            roadmap_log (ROADMAP_WARNING, 
+            roadmap_log (ROADMAP_WARNING,
                 "dropping unknown units '%s' from '%s'", suffix, string);
             had_units = 0;
         }
@@ -1391,30 +1258,33 @@ int roadmap_math_distance_convert(const char *string, int *was_explicit)
 
 
 char *roadmap_math_distance_unit (void) {
-    
+
     return RoadMapContext.units->length;
 }
 
 
 char *roadmap_math_trip_unit (void) {
-    
+
     return RoadMapContext.units->trip_distance;
 }
 
 
 char *roadmap_math_speed_unit (void) {
-    
+
     return RoadMapContext.units->speed;
 }
 
+int roadmap_math_distance_to_current(int distance){
+	return (int)(distance / RoadMapContext.units->to_screen_unit);
+}
 
 int roadmap_math_to_trip_distance (int distance) {
-    
+
     return distance / RoadMapContext.units->to_trip_unit;
 }
 
 int roadmap_math_to_trip_distance_tenths (int distance) {
-    
+
     return (10 * distance) / RoadMapContext.units->to_trip_unit;
 }
 
@@ -1466,7 +1336,7 @@ int  roadmap_math_get_distance_from_segment
       }
 
    } else {
-      
+
       /* Equation of the line: */
 
       float a = (y1 - y2) / (x1 - x2);
@@ -1535,12 +1405,12 @@ int  roadmap_math_get_distance_from_segment
 
 
 int roadmap_math_to_speed_unit (int knots) {
-    
+
     return (int) (knots * RoadMapContext.units->speed_per_knot);
 }
 
 float roadmap_math_meters_p_second_to_speed_unit (float meters_per_second) {
-    
+
     return (float) (meters_per_second * RoadMapContext.units->speed_per_m_p_s);
 }
 
@@ -1803,7 +1673,7 @@ int roadmap_math_delta_direction (int direction1, int direction2) {
 }
 
 
-void roadmap_math_set_context (RoadMapPosition *position, int zoom) {
+void roadmap_math_set_context (const RoadMapPosition *position, int zoom) {
 
    RoadMapContext.center = *position;
 
@@ -1844,7 +1714,7 @@ int roadmap_math_calc_line_length (const RoadMapPosition *position,
    int i;
 
    if (first_shape <= -1) {
-      
+
       from = *from_pos;
       to = *to_pos;
    } else {
@@ -1854,7 +1724,10 @@ int roadmap_math_calc_line_length (const RoadMapPosition *position,
 
       for (i = first_shape; i <= last_shape; i++) {
 
-         shape_itr (i, &to);
+         if (shape_itr== NULL)
+            roadmap_shape_get_position(i, &to);
+         else
+            shape_itr (i, &to);
 
          distance =
             roadmap_math_get_distance_from_segment

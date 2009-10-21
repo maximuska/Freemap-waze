@@ -24,7 +24,7 @@
  * SYNOPSYS:
  *
  *   See add_alert.h
- */ 
+ */
 
 #include <string.h>
 #include <stdlib.h>
@@ -61,20 +61,21 @@
 #include "../export/editor_report.h"
 
 #include "ssd/ssd_menu.h"
+#include "ssd/ssd_confirm_dialog.h"
 
-#include "Realtime/Realtime.h" 
-#include "Realtime/RealtimeAlerts.h" 
+#include "Realtime/Realtime.h"
+#include "Realtime/RealtimeAlerts.h"
 
 #ifdef _WIN32
 	#define NEW_LINE "\r\n"
-#else 
+#else
 	#define NEW_LINE "\n"
 #endif
 
 static void alert_get_city_street(PluginLine *line, const char **city_name, const char **street_name);
 
 #define SPEED_CAM_NEW_ICON "rm_new_speed_cam"
-#define RED_LIGHT_NEW_ICON "rm_new_red_light"
+#define RED_LIGHT_NEW_ICON "rm_new_red_light_cam"
 
 #define ALERT_NAME        "Name"
 #define ALERT_DESCRIPTION "Description"
@@ -90,7 +91,7 @@ static void alert_get_city_street(PluginLine *line, const char **city_name, cons
 #define CITY_PREFIX   "City"
 
 
-static int extract_field(const char *note, const char *field_name, 
+static int extract_field(const char *note, const char *field_name,
 						 char *field, int size) {
 
 	const char *lang_field_name = roadmap_lang_get (field_name);
@@ -188,7 +189,7 @@ static int add_alert_export(int marker,
 
 	}
 
-	
+
 	return 0;
 }
 
@@ -210,15 +211,15 @@ static int remove_alert_export(int marker,
 	char field[255];
 	const char *note = editor_marker_note (marker);
 	*count = 0;
-	
+
 	*description = "";
-	
+
 	if (extract_field (note, ALERT_CATEGORY_PREFIX, field, sizeof(field)) != -1) {
 		keys[*count] = "category";
 		values[*count] = strdup(field);
 		(*count)++;
 	}
-	
+
 	return 0;
 }
 
@@ -375,13 +376,13 @@ void add_alert_initialize(void) {
 	RemoveAlertMarkerType = editor_marker_reg_type (&RemoveAlertMarker);
 }
 
- 
+
 
 static void add_speed_cam(int direction){
- 
 
-    const char *street;
-    const char *city;
+
+    const char *street = NULL;
+    const char *city = NULL;
     PluginLine line;
     RoadMapGpsPosition *CurrentGpsPoint;
     RoadMapPosition    CurrentFixedPosition;
@@ -392,23 +393,21 @@ static void add_speed_cam(int direction){
     int steering;
     int cfcc;
     char *speed;
-    
+
     CurrentGpsPoint = (RoadMapGpsPosition *)roadmap_trip_get_gps_position("AlertSelection");
-    
-    CurrentGpsPoint = (RoadMapGpsPosition *)roadmap_trip_get_gps_position("AlertSelection");
-    
+
     CurrentFixedPosition.longitude = CurrentGpsPoint->longitude;
     CurrentFixedPosition.latitude = CurrentGpsPoint->latitude;
-   
+
     layers_count = roadmap_layer_all_roads(layers, 128);
     count = roadmap_street_get_closest(&CurrentFixedPosition, 0, layers, layers_count,
-            &neighbours[0], 1);
-            
+            1, &neighbours[0], 1);
+
     if (count == -1) {
         return;
     }
     line = neighbours[0].line;
-   
+
     cfcc = roadmap_line_cfcc (line.line_id);
 	switch (cfcc) {
 	case ROADMAP_ROAD_FREEWAY:
@@ -425,9 +424,9 @@ static void add_speed_cam(int direction){
 		speed = "50";
 	}
 
-	steering = CurrentGpsPoint->steering; 
+	steering = CurrentGpsPoint->steering;
 	alert_get_city_street(&line, &city, &street);
-	
+
 	if (direction == OPPOSITE_DIRECTION){
         steering = CurrentGpsPoint->steering + 180;
         while (steering > 360)
@@ -435,87 +434,119 @@ static void add_speed_cam(int direction){
 	}
 
 	add_alert(&CurrentFixedPosition,steering, "", speed, roadmap_lang_get("Speed Cam"), "", city, street, SPEED_CAM_NEW_ICON);
-	roadmap_trip_restore_focus();   
+	roadmap_trip_restore_focus();
 	ssd_dialog_hide_all(dec_ok);
 }
 
-
-void add_speed_cam_my_direction(void){
-	add_speed_cam(MY_DIRECTION);
-}
-
-void add_speed_cam_opposite_direction(void){
-	add_speed_cam(OPPOSITE_DIRECTION);
-}
-
-static char const *DirectionQuickMenu[] = {
-
-   "mydirection",
-   RoadMapFactorySeparator,
-   "oppositedirection",
-   NULL,
-};
+static void add_red_light_cam(int direction){
 
 
-/**
- * Starts the Direction menu
- * @param actions - list of actions 
- * @return void
- */
-void  add_speed_cam_alert(){
-   RoadMapGpsPosition *CurrentGpsPoint;
-   
-   RoadMapAction SpeedCamActions[2] = {
-
-   {"mydirection", "My direction", "My direction", NULL,
-      "My direction", add_speed_cam_my_direction},
-
-   {"oppositedirection", "Opposite direction", "Opposite direction", NULL,
-      "Opposite direction", add_speed_cam_opposite_direction}
-   };
-   
-   if (!roadmap_gps_have_reception()) {
-      	roadmap_messagebox("Error", "No GPS reception!");
-      	return;
-   }
-   
-   CurrentGpsPoint = (RoadMapGpsPosition *)roadmap_trip_get_gps_position("AlertSelection");
-   if ((CurrentGpsPoint == NULL) || (CurrentGpsPoint->latitude <= 0) || (CurrentGpsPoint->longitude <= 0)) {
- 		roadmap_messagebox ("Error", "Can't find current street.");
- 		return;
-   }
-	
-   ssd_list_menu_activate ("speed_cam_direction_menu", NULL, DirectionQuickMenu, NULL, &SpeedCamActions[0],
-       					   SSD_DIALOG_FLOAT|SSD_DIALOG_TRANSPARENT|SSD_DIALOG_VERTICAL|SSD_ALIGN_VCENTER|SSD_BG_IMAGE);
-	
-}
-
-void add_red_light_cam_alert(void){
-    
-	const char *street;
-	const char *city;
-   PluginLine line;
+    const char *street = NULL;
+    const char *city = NULL;
+    PluginLine line;
     RoadMapGpsPosition *CurrentGpsPoint;
     RoadMapPosition    CurrentFixedPosition;
     int layers[128];
     int layers_count;
     RoadMapNeighbour neighbours[5];
     int count;
-    
+    int steering;
+
     CurrentGpsPoint = (RoadMapGpsPosition *)roadmap_trip_get_gps_position("AlertSelection");
+
     CurrentFixedPosition.longitude = CurrentGpsPoint->longitude;
     CurrentFixedPosition.latitude = CurrentGpsPoint->latitude;
-   
+
     layers_count = roadmap_layer_all_roads(layers, 128);
     count = roadmap_street_get_closest(&CurrentFixedPosition, 0, layers, layers_count,
-            &neighbours[0], 1);
-            
+            1, &neighbours[0], 1);
+
     if (count == -1) {
         return;
     }
-   line = neighbours[0].line;
-   alert_get_city_street(&line, &city, &street);
-	add_alert(&CurrentFixedPosition,CurrentGpsPoint->steering, "",  "", roadmap_lang_get("Red Light Cam"), "", city, street, RED_LIGHT_NEW_ICON);
+    line = neighbours[0].line;
+
+    steering = CurrentGpsPoint->steering;
+    alert_get_city_street(&line, &city, &street);
+
+    if (direction == OPPOSITE_DIRECTION){
+        steering = CurrentGpsPoint->steering + 180;
+        while (steering > 360)
+            steering -= 360;
+    }
+
+    add_alert(&CurrentFixedPosition,steering, "", "0", roadmap_lang_get("Red light cam"), "", city, street, RED_LIGHT_NEW_ICON);
+    roadmap_trip_restore_focus();
+    ssd_dialog_hide_all(dec_ok);
+}
+
+void add_speed_cam_my_direction(void){
+	add_speed_cam(MY_DIRECTION);
+}
+
+void add_red_light_cam_my_direction(void){
+   add_red_light_cam(MY_DIRECTION);
+}
+
+void add_speed_cam_opposite_direction(void){
+	add_speed_cam(OPPOSITE_DIRECTION);
+}
+
+static void add_speed_cam_callback(int exit_code, void *context){
+    if (exit_code != dec_yes)
+         return;
+
+    add_speed_cam_my_direction();
+}
+
+static void add_red_light_cam_callback(int exit_code, void *context){
+    if (exit_code != dec_yes)
+         return;
+
+    add_red_light_cam_my_direction();
+}
+
+/**
+ * Starts the Direction menu
+ * @param actions - list of actions
+ * @return void
+ */
+void  add_speed_cam_alert(){
+   RoadMapGpsPosition *CurrentGpsPoint;
+
+
+   if (!roadmap_gps_have_reception()) {
+      	roadmap_messagebox("Error", "No GPS connection. Make sure you are outdoors. Currently showing approximate location");
+      	return;
+   }
+
+   CurrentGpsPoint = (RoadMapGpsPosition *)roadmap_trip_get_gps_position("AlertSelection");
+   if ((CurrentGpsPoint == NULL) /*|| (CurrentGpsPoint->latitude <= 0) || (CurrentGpsPoint->longitude <= 0)*/) {
+ 		roadmap_messagebox ("Error", "Can't find current street.");
+ 		return;
+   }
+
+   ssd_confirm_dialog ("Speed cam", "Add speed camera on your lane?", TRUE, add_speed_cam_callback , NULL);
+
+}
+
+void add_red_light_cam_alert(void){
+
+    RoadMapGpsPosition *CurrentGpsPoint;
+
+    if (!roadmap_gps_have_reception()) {
+           roadmap_messagebox("Error", "No GPS connection. Make sure you are outdoors. Currently showing approximate location");
+           return;
+    }
+
+    CurrentGpsPoint = (RoadMapGpsPosition *)roadmap_trip_get_gps_position("AlertSelection");
+    if ((CurrentGpsPoint == NULL) /*|| (CurrentGpsPoint->latitude <= 0) || (CurrentGpsPoint->longitude <= 0)*/) {
+       roadmap_messagebox ("Error", "Can't find current street.");
+       return;
+    }
+
+
+    ssd_confirm_dialog ("Red light cam", "Add red light camera on your lane?", TRUE, add_red_light_cam_callback , NULL);
 }
 
 static void alert_get_city_street(PluginLine *line, const char **city_name, const char **street_name){
@@ -557,16 +588,16 @@ void request_speed_cam_delete(){
     RoadMapGpsPosition *CurrentGpsPoint;
     RoadMapPosition    CurrentFixedPosition;
     int steering;
-    
+
     CurrentGpsPoint = (RoadMapGpsPosition *)roadmap_trip_get_gps_position("AlertSelection");
-    
+
     CurrentFixedPosition.longitude = CurrentGpsPoint->longitude;
     CurrentFixedPosition.latitude = CurrentGpsPoint->latitude;
-   
-	steering = CurrentGpsPoint->steering; 
+
+	steering = CurrentGpsPoint->steering;
 
 	remove_alert(&CurrentFixedPosition,steering,roadmap_lang_get("Speed Cam"));
-	roadmap_trip_restore_focus();   
+	roadmap_trip_restore_focus();
 	ssd_dialog_hide_all(dec_ok);
-	
+
 }

@@ -54,7 +54,7 @@
 #include "ssd/ssd_dialog.h"
 #include "ssd/ssd_container.h"
 #include "ssd/ssd_button.h"
-#include "ssd/ssd_keyboard.h"
+#include "ssd/ssd_keyboard_dialog.h"
 #include "ssd/ssd_text.h"
 #endif
 
@@ -296,19 +296,22 @@ static void update_range (const char *updated_left, const char *updated_right,
 }
 
 #ifdef SSD
-static int keyboard_callback (int type, const char *new_value, void *context) {
+static BOOL keyboard_callback(int         exit_code, 
+                              const char* value,
+                              void*       context)
+{
    SsdWidget button = (SsdWidget)context;
 
-   if (type != SSD_KEYBOARD_OK) return 1;
+   if( dec_ok != exit_code)
+        return TRUE;
 
    if (!strcmp(button->name, "left_button")) {
-      ssd_widget_set_value (button->parent, UPDATE_LEFT, new_value);
+      ssd_widget_set_value (button->parent, UPDATE_LEFT, value);
    } else {
-      ssd_widget_set_value (button->parent, UPDATE_RIGHT, new_value);
+      ssd_widget_set_value (button->parent, UPDATE_RIGHT, value);
    }
 
-   ssd_keyboard_hide ();
-   return 1;
+   return TRUE;
 }
 
 static int button_callback (SsdWidget widget, const char *new_value) {
@@ -335,13 +338,17 @@ static int button_callback (SsdWidget widget, const char *new_value) {
       value = ssd_widget_get_value (widget->parent, UPDATE_RIGHT);
    }
 
-#ifdef __SYMBIAN32__
+
+#if (defined(__SYMBIAN32__) && !defined(TOUCH_SCREEN))
     ShowEditbox(title, "",
-            keyboard_callback, (void *)widget, EEditBoxStandard );
+            keyboard_callback, (void *)widget, EEditBoxStandard | EEditBoxNumeric );
 #else
 
-   ssd_keyboard_show (SSD_KEYBOARD_DIGITS,
-                      title, value, NULL, keyboard_callback, (void *)widget);
+   ssd_show_keyboard_dialog(  title,
+                              NULL,
+                              keyboard_callback,
+                              widget);
+
 #endif
    return 1;
 }
@@ -356,8 +363,8 @@ static void create_ssd_dialog (void) {
    SsdWidget text;
    int align = 0;
 
-   SsdWidget dialog = ssd_dialog_new ("Update street range",
-                  roadmap_lang_get ("Update street range"),NULL,
+   SsdWidget dialog = ssd_dialog_new ("Update house number",
+                  roadmap_lang_get ("Update house number"),NULL,
                   SSD_CONTAINER_BORDER|SSD_CONTAINER_TITLE|SSD_DIALOG_FLOAT|
                   SSD_ALIGN_CENTER|SSD_ALIGN_VCENTER|SSD_ROUNDED_CORNERS);
 
@@ -490,8 +497,8 @@ static int get_estimated_range(const PluginLine *line,
 static int fill_dialog(PluginLine *line, RoadMapPosition *pos,
                        int direction) {
 
-   const char *street_name;
-   const char *city_name;
+   const char *street_name = NULL;
+   const char *city_name = NULL;
    int fraddl;
    int toaddl;
    int fraddr;
@@ -620,7 +627,7 @@ void update_range_dialog(void) {
    CurrentFixedPosition = result.intersection;
 
 #ifndef SSD
-   if (roadmap_dialog_activate ("Update street range", NULL, 1)) {
+   if (roadmap_dialog_activate ("Update house number", NULL, 1)) {
 
       roadmap_dialog_new_label ("Update", STREET_PREFIX);
       roadmap_dialog_new_label ("Update", CITY_PREFIX);
@@ -635,9 +642,9 @@ void update_range_dialog(void) {
       roadmap_dialog_complete (roadmap_preferences_use_keyboard ());
    }
 #else
-   if (!ssd_dialog_activate ("Update street range", NULL)) {
+   if (!ssd_dialog_activate ("Update house number", NULL)) {
       create_ssd_dialog();
-      ssd_dialog_activate ("Update street range", NULL);
+      ssd_dialog_activate ("Update house number", NULL);
    }
 #endif
    fill_dialog (&line, &CurrentFixedPosition, direction);

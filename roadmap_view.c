@@ -77,17 +77,25 @@ void roadmap_view_refresh (void) {
    const char *focus = roadmap_trip_get_focus_name();
    RoadMapViewIsGpsFocus = focus && !strcmp(focus, "GPS");
 
-   if (!navigate_track_enabled()) {
+   if (!navigate_track_enabled() && !navigate_offtrack()) {
       set_state(VIEW_STATE_NORMAL);
+      return;
+   }
+
+   if (navigate_offtrack()) return;
+
+   if (!navigate_is_auto_zoom()) {
       return;
    }
 
    if (RoadMapViewState == VIEW_STATE_NORMAL) {
       roadmap_view_reset();
       set_state(VIEW_STATE_SHOW_ROUTE);
+      roadmap_screen_set_orientation_fixed();
    } else if (RoadMapViewState == VIEW_STATE_SHOW_ROUTE) {
       if ((time(NULL) - RoadMapViewStateTime) > SHOW_ROUTE_TIME) {
          set_state(VIEW_STATE_NAVIGATE);
+         roadmap_screen_set_orientation_dynamic();
       }
    }
 
@@ -96,8 +104,12 @@ void roadmap_view_refresh (void) {
    if (RoadMapViewState == VIEW_STATE_SHOW_ROUTE) {
       navigate_get_waypoint (-1, &RoadMapViewWayPoint);
       RoadMapViewDistance =
-         roadmap_math_distance(pos, &RoadMapViewWayPoint) * 2;
+         roadmap_math_distance(pos, &RoadMapViewWayPoint) * 9 / 4;
       RoadMapViewAzymuth = 360 - roadmap_math_azymuth(pos, &RoadMapViewWayPoint);
+		RoadMapViewWayPoint.longitude = (RoadMapViewWayPoint.longitude + pos->longitude) / 2;
+		RoadMapViewWayPoint.latitude = (RoadMapViewWayPoint.latitude + pos->latitude) / 2;
+      roadmap_screen_move_center (100);
+		roadmap_screen_update_center(&RoadMapViewWayPoint);
       return;
    }
 
@@ -139,17 +151,19 @@ int roadmap_view_get_orientation (void) {
 }
 
 int roadmap_view_get_scale (void) {
+   if (navigate_track_enabled() && navigate_offtrack()) return -1;
+
    if (!RoadMapViewIsGpsFocus || AutoZoomSuspended ||
          (RoadMapViewState == VIEW_STATE_NORMAL)) {
       return -1;
    }
 
-   if (RoadMapViewState == VIEW_STATE_SHOW_ROUTE) {
-      return RoadMapViewDistance;
-   }
-
    if (!navigate_is_auto_zoom()) {
       return -1;
+   }
+
+   if (RoadMapViewState == VIEW_STATE_SHOW_ROUTE) {
+      return RoadMapViewDistance;
    }
 
    if (RoadMapViewMode == VIEW_NAVIGATION) {
@@ -231,5 +245,9 @@ void roadmap_view_commute (void) {
 void roadmap_view_navigation (void) {
    roadmap_view_reset();
    RoadMapViewMode = VIEW_NAVIGATION;
+}
+
+int roadmap_view_hold (void) {
+   return RoadMapViewState == VIEW_STATE_SHOW_ROUTE;
 }
 

@@ -50,5 +50,7 @@ void report_accident_opposite_side_at_screen_point(void);
 
 int editor_screen_show_candidates (void);
 
+int editor_screen_gray_scale(void);
+char *editor_screen_overide_car();
 #endif // INCLUDE__EDITOR_SCREEN__H
 

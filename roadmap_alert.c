@@ -43,9 +43,11 @@
 #include "roadmap_alert.h"
 #include "roadmap_alerter.h"
 
-#define ALERT_AUDIO	"ApproachSpeedCam"
-#define ALERT_ICON 		"speed_cam_alert.png"
-#define WARN_ICON 		"speed_cam_warn.png"
+#define ALERT_AUDIO_SPEED_CAM		"ApproachSpeedCam"
+#define ALERT_AUDIO_RED_LIGHT    "ApproachRedLightCam"
+#define ALERT_ICON_SPEED_CAM 		"speed_cam_alert"
+#define WARN_ICON_SPEED_CAM 		"speed_cam_warn"
+#define ALERT_ICON_RED_LIGHT     "redlightcam_alert"
 
 
 static void *roadmap_alert_map (const roadmap_db_data_file *file);
@@ -89,12 +91,41 @@ roadmap_alert_providor RoadmapAlertProvidor = {
    roadmap_alert_is_cancelable,
    roadmap_alert_cancel
 };
+
+RoadMapAlert * roadmap_alert_get_alert(int record){
+   return RoadMapAlertActive->Alert + record;
+
+}
+
+RoadMapAlert *roadmap_alert_get_alert_by_id( int id)
+{
+   int i; 
+   RoadMapAlert *alert;
+   
+   if (RoadMapAlertActive == NULL)
+   	return NULL;
+   	
+   // Find alert:
+   for( i=0; i< RoadMapAlertActive->AlertCount; i++){
+      alert = roadmap_alert_get_alert(i);
+      if( alert->id == id)
+         return alert;
+   }
+   return NULL;
+}
+
 int roadmap_alert_is_cancelable(int alertId){
-	return TRUE;
+   return TRUE;
 } 
 
 int roadmap_alert_cancel(int alertId){
-	request_speed_cam_delete();
+   RoadMapAlert *pAlert; 
+   
+   request_speed_cam_delete();
+   pAlert = roadmap_alert_get_alert_by_id( alertId);
+   if (pAlert)
+      pAlert->category = 0;
+	
    return TRUE;
 }
 
@@ -162,24 +193,8 @@ int roadmap_alert_count (void) {
    return RoadMapAlertActive->AlertCount;
 }
 
-RoadMapAlert * roadmap_alert_get_alert(int record){
-   return RoadMapAlertActive->Alert + record;
 
-}
 
-RoadMapAlert *roadmap_alert_get_alert_by_id( int id)
-{
-	int i; 
-	RoadMapAlert *alert;
-	
-	//	Find alert:
-	for( i=0; i< RoadMapAlertActive->AlertCount; i++){
-		alert = roadmap_alert_get_alert(i);
-		if( alert->id == id)
-			return alert;
-	}
-	return NULL;
-}
 
 
 void roadmap_alert_get_position(int alert, RoadMapPosition *position, int *steering) {
@@ -222,28 +237,53 @@ int roadmap_alert_alertable(int record){
 	int alert_category = roadmap_alert_get_category(record);
 
 	switch (alert_category) {
-	case ALERT_CATEGORY_SPEED_CAM:
-		return 1;
-	default:
-		return 0;
+	   case ALERT_CATEGORY_SPEED_CAM:
+	      return 1;
+	      
+      case ALERT_CATEGORY_RED_LIGHT_CAM:
+         return 1;
+      
+      default:
+         return 0;
 	}
 }
 
 const char *  roadmap_alert_get_string(int id){
-	return "Speed trap" ;
+   RoadMapAlert *alert_st  = roadmap_alert_get_alert_by_id(id);
+   if (alert_st == NULL)
+      return NULL;
+   switch (alert_st->category) {
+      case ALERT_CATEGORY_SPEED_CAM: 
+         return "Speed trap" ;
+         
+      case ALERT_CATEGORY_RED_LIGHT_CAM:
+         return "Red light cam";
+      
+      default:
+         return  NULL; 
+   }
+
 }
 
 const char * roadmap_alert_get_map_icon(int id){
 	
 	RoadMapAlert *alert_st  = roadmap_alert_get_alert_by_id(id);
+   if (alert_st == NULL)
+      return NULL;
 
 	switch (alert_st->category) {
-	case ALERT_CATEGORY_SPEED_CAM: 
-		return "rm_speed_cam.png" ;
-	case ALERT_CATEGORY_DUMMY_SPEED_CAM:
-		return "rm_dummy_speed_cam.png";
-	default:
-		return  NULL; 
+	   
+	   case ALERT_CATEGORY_SPEED_CAM: 
+	      return "rm_speed_cam" ;
+		
+	   case ALERT_CATEGORY_DUMMY_SPEED_CAM:
+	      return "rm_dummy_speed_cam";
+		
+	   case ALERT_CATEGORY_RED_LIGHT_CAM:
+	      return "rm_red_light_cam";
+      
+	   default:
+	      return  NULL; 
 	}
 } 
 
@@ -252,17 +292,60 @@ int roadmap_alert_get_distance(int record){
 }
 
 const char *roadmap_alert_get_alert_icon(int Id){
-	return ALERT_ICON;
+   RoadMapAlert *alert_st  = roadmap_alert_get_alert_by_id(Id);
+   if (alert_st == NULL)
+      return NULL;
+
+   switch (alert_st->category) {
+
+      case ALERT_CATEGORY_SPEED_CAM: 
+         return ALERT_ICON_SPEED_CAM;
+
+      case ALERT_CATEGORY_RED_LIGHT_CAM:
+         return ALERT_ICON_RED_LIGHT;
+
+      default:
+         return  NULL; 
+   }
+   
 }
 
 const char *roadmap_alert_get_warning_icon(int Id){
-	return WARN_ICON;
+   RoadMapAlert *alert_st  = roadmap_alert_get_alert_by_id(Id);
+   if (alert_st == NULL)
+      return NULL;
+
+   switch (alert_st->category) {
+   
+   case ALERT_CATEGORY_SPEED_CAM: 
+      return WARN_ICON_SPEED_CAM;
+      
+   case ALERT_CATEGORY_RED_LIGHT_CAM:
+      return ALERT_ICON_RED_LIGHT;
+      
+   default:
+      return  NULL; 
+   }
 }
 
-RoadMapSoundList  roadmap_alert_get_alert_sound(int Id){
-		
-	RoadMapSoundList sound_list;
-		sound_list = roadmap_sound_list_create (0);
-		roadmap_sound_list_add (sound_list,  ALERT_AUDIO);
-		return sound_list;
+RoadMapSoundList roadmap_alert_get_alert_sound (int Id) {
+   
+   RoadMapSoundList sound_list;
+   RoadMapAlert *alert_st = roadmap_alert_get_alert_by_id (Id);
+   if (alert_st == NULL)
+      return NULL;
+   sound_list = roadmap_sound_list_create (0);
+   switch (alert_st->category) {
+      case ALERT_CATEGORY_SPEED_CAM: 
+         roadmap_sound_list_add (sound_list, ALERT_AUDIO_SPEED_CAM);
+         break;
+         
+      case ALERT_CATEGORY_RED_LIGHT_CAM:
+         roadmap_sound_list_add (sound_list, ALERT_AUDIO_RED_LIGHT);
+         break;
+         
+      default:
+         break;
+   }
+   return sound_list;
 }

@@ -34,6 +34,7 @@ extern "C" {
 #include "roadmap_path.h"
 #include "roadmap_symbian_porting.h"
 #include "roadmap.h"
+#include "roadmap_lang.h"
 }
 
 #include "Roadmap_NativeSound.h"
@@ -214,7 +215,7 @@ int CRoadMapNativeSound::PlayList(const RoadMapSoundList list)
      } else {
        char sound_filename[MAX_SOUND_NAME];
        char *path = roadmap_path_join (roadmap_path_user (), "sound");
-       snprintf(sound_filename, sizeof(sound_filename), "%s\\%s.mp3", path, name);
+       snprintf(sound_filename, sizeof(sound_filename), "%s\\%s\\%s.mp3", path, roadmap_lang_get_system_lang(), name);
        PlayFile (sound_filename);
      }
   }

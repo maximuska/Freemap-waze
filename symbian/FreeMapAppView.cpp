@@ -29,27 +29,59 @@
 
 #include "GSConvert.h"
 #include "FreeMapAppView.h"
+#include "FreeMapAppUi.h"
 #include "Roadmap_QueryDialog.h"
 
 #include <stdlib.h>
 
 extern "C" {
 #include "roadmap_canvas.h"
-#include "ssd_keyboard.h"
+#include "ssd_keyboard_dialog.h"
 }
 
 #include <FreeMap_0x2001EB29.rsg>
 
-static SsdKeyboardCallback kbd_callback = NULL;
+static CB_OnKeyboardDone kbd_callback = NULL;
 static void *kbd_context = NULL;
 static CRoadMapQueryDialog* pAddNoteDialog = NULL;
 
 #define EDITBOX_HEIGHT 20
 
-void ShowEditbox(const char* aTitleUtf8, const char* aTextUtf8, SsdKeyboardCallback callback, void *context, TEditBoxType aBoxType )
+void ShowEditbox(const char* aTitleUtf8, const char* aTextUtf8, CB_OnKeyboardDone callback, void *context, int aBoxType )
 {
-  kbd_callback = callback;
-  kbd_context = context;
+	kbd_callback = callback;
+	kbd_context = context;
+	TCoeInputCapabilities curCapabilities;
+	TUint newCapabilities = TCoeInputCapabilities::ENavigation | TCoeInputCapabilities::EAllText;
+	CFreeMapAppUi* pAppUi;
+
+	// Update the UI object
+	pAppUi = static_cast<CFreeMapAppUi*>( CEikonEnv::Static()->EikAppUi() );
+	curCapabilities = pAppUi->InputCapabilities();
+    // If the custom input type is requested  
+    if ( aBoxType & EEditBoxNumeric ) // Numeric
+    {
+		newCapabilities = TCoeInputCapabilities::ENavigation | 
+							TCoeInputCapabilities::EWesternNumericIntegerPositive;
+    }
+    if ( aBoxType & EEditBoxAlphabetic ) // Alphabetic
+    {
+		// Use the default capabilities
+		newCapabilities = TCoeInputCapabilities::ENavigation | TCoeInputCapabilities::EAllText;
+    }
+    if ( aBoxType & EEditBoxStandard ) // Standard
+    {
+		// Use the default capabilities
+		newCapabilities = TCoeInputCapabilities::ENavigation | TCoeInputCapabilities::EAllText;
+    }
+    if ( aBoxType & EEditBoxAlphaNumeric ) // Alphanumeric
+    {
+		// Use the default capabilities
+		newCapabilities = TCoeInputCapabilities::ENavigation | TCoeInputCapabilities::EAllText;
+    }
+    // Set the new input capabilities
+    // pAppUi->SetInputCapabilities( newCapabilities );
+        
   if ( pAddNoteDialog == NULL )
   {
     TBuf<128> enterText;
@@ -61,9 +93,9 @@ void ShowEditbox(const char* aTitleUtf8, const char* aTextUtf8, SsdKeyboardCallb
     CnvUtfConverter::ConvertToUnicodeFromUtf8( enterText, ptr );
     
     pAddNoteDialog = CRoadMapQueryDialog::NewL( enterText, CAknQueryDialog::ENoTone );
-    
-
-    if ( aBoxType == EEditBoxPassword )
+    pAddNoteDialog->SetInputCapabilities( newCapabilities );
+    // For the password box - another resource
+    if ( aBoxType & EEditBoxPassword )
 	{
 		// For password use the secured edit box
 		pAddNoteDialog->PrepareLC( R_ADD_NOTE_QUERY );
@@ -73,12 +105,14 @@ void ShowEditbox(const char* aTitleUtf8, const char* aTextUtf8, SsdKeyboardCallb
     	pAddNoteDialog->PrepareLC( R_ADD_NOTE_QUERY );
     	pAddNoteDialog->SetPredictiveTextInputPermitted(ETrue);
 	}
+    
     // Set prompt 
     pAddNoteDialog->SetPromptL(title);
     // Set the soft left key visible (in case of empty string ) 
     // 				for all types except the EEditBoxEmptyForbidden  
-    pAddNoteDialog->SetLeftSoftKeyVisible( !( aBoxType == EEditBoxEmptyForbidden ) );
+    pAddNoteDialog->SetLeftSoftKeyVisible( !( aBoxType & EEditBoxEmptyForbidden ) );
     
+
     TInt answer = pAddNoteDialog->RunLD();
     if(answer == EEikBidOk) 
     {
@@ -86,14 +120,18 @@ void ShowEditbox(const char* aTitleUtf8, const char* aTextUtf8, SsdKeyboardCallb
       unsigned char* textBuf = (unsigned char*)calloc(bits+1,1);
       TPtr8 textBufPtr(textBuf, bits);
       CnvUtfConverter::ConvertFromUnicodeToUtf8(textBufPtr, enterText);
-      kbd_callback(SSD_KEYBOARD_OK, (const char*) textBuf, kbd_context);
+      kbd_callback(dec_ok, (const char*) textBuf, kbd_context);
       free(textBuf);
     }
     else
     {
       //Do nothing
     }
+    
+    // Restore the old values
+    pAppUi->SetInputCapabilities( curCapabilities.Capabilities() );
     pAddNoteDialog = NULL;
+    
   }
 }
 
@@ -136,6 +174,13 @@ void CFreeMapAppView::ConstructL( const TRect& aRect )
 	// Create a window for this application view
 	CreateWindowL();
 
+#ifdef TOUCH_SCREEN
+    EnableDragEvents();
+    
+    iTouchFeedBack = MTouchFeedback::Instance();
+    iTouchFeedBack->SetFeedbackEnabledForThisApp(ETrue);
+#endif
+    
 	// Set the windows size
 	SetRect( aRect );
 
@@ -252,6 +297,34 @@ TInt CFreeMapAppView::CountComponentControls() const
   TInt num = 0;
   return num;
 }
+
+#ifdef TOUCH_SCREEN
+void roadmap_canvas_button_pressed(const TPoint *data);
+void roadmap_canvas_button_released(const TPoint *data);
+void roadmap_canvas_mouse_moved(const TPoint *data);
+
+void CFreeMapAppView::HandlePointerEventL(const TPointerEvent& aPointerEvent)
+    {
+  
+    if (aPointerEvent.iType == TPointerEvent::EButton1Down)
+        {
+        // Give feedback to user (vibration)
+        iTouchFeedBack->InstantFeedback(ETouchFeedbackBasic);
+        roadmap_canvas_button_pressed(&aPointerEvent.iPosition);
+        }
+    else if (aPointerEvent.iType == TPointerEvent::EDrag)
+        {
+        // Dragging...
+        roadmap_canvas_mouse_moved(&aPointerEvent.iPosition);
+        }
+    else if (aPointerEvent.iType == TPointerEvent::EButton1Up)
+        {
+        // Check CBA buttons
+        //if (iOptionsRect.Contains(aPointerEvent.iPosition))
+        roadmap_canvas_button_released(&aPointerEvent.iPosition);
+        }
+    }
+#endif
 
 
 // End of File

@@ -71,6 +71,8 @@ void roadmap_main_set_input    (RoadMapIO *io, RoadMapInput callback);
 void roadmap_main_set_output   (RoadMapIO *io, RoadMapInput callback);
 void roadmap_main_remove_input (RoadMapIO *io);
 
+RoadMapIO *roadmap_main_output_timedout(time_t timeout);
+
 void roadmap_main_set_periodic (int interval, RoadMapCallback callback);
 void roadmap_main_remove_periodic (RoadMapCallback callback);
 
@@ -85,13 +87,16 @@ void roadmap_main_exit (void);
 
 void roadmap_main_set_cursor (int cursor);
 
+void roadmap_gui_minimize();
+void roadmap_gui_maximize();
+void roadmap_main_minimize (void);
+
 #ifdef IPHONE
 
 int roadmap_main_should_mute ();
 const char* roadmap_main_get_proxy (const char* url);
 
 int roadmap_main_get_platform ();
-void roadmap_main_minimize (void);
 int roadmap_main_should_save_nav ();
 
 void roadmap_main_adjust_skin (int state);

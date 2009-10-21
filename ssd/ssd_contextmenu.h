@@ -40,6 +40,9 @@ void ssd_context_menu_show(int                  x,
                            ssd_contextmenu_ptr  menu,
                            SsdOnContextMenu     on_menu_closed,
                            void*                context,
-                           menu_open_direction  dir);
+                           menu_open_direction  dir,
+                           unsigned short       flags);
+
+void ssd_context_menu_set_size( int size);
 
 #endif // __SSD_CONTEXT_MENU_H__

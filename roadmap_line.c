@@ -24,8 +24,6 @@
  * SYNOPSYS:
  *
  *   int  roadmap_line_in_square (int square, int cfcc, int *first, int *last);
- *   int  roadmap_line_in_square2 (int square, int cfcc, int *first, int *last);
- *   int  roadmap_line_get_from_index2 (int index);
  *   void roadmap_line_from (int line, RoadMapPosition *position);
  *   void roadmap_line_to   (int line, RoadMapPosition *position);
  *
@@ -40,13 +38,14 @@
 #include <assert.h>
 #include <ctype.h>
 
+#define DECLARE_ROADMAP_LINE
+
 #include "roadmap.h"
 #include "roadmap_dbread.h"
 #include "roadmap_tile_model.h"
 #include "roadmap_db_line.h"
 
 #include "roadmap_point.h"
-#include "roadmap_line.h"
 #include "roadmap_math.h"
 #include "roadmap_shape.h"
 #include "roadmap_square.h"
@@ -54,58 +53,11 @@
 #include "roadmap_locator.h"
 #include "roadmap_range.h"
 
-#ifdef   WIN32_DEBUG
-static DWORD s_dwThreadID = INVALID_THREAD_ID;
-#define VERIFY_THREAD(_method_)                                                              \
-   if( INVALID_THREAD_ID == s_dwThreadID)                                                    \
-      s_dwThreadID = GetCurrentThreadId();                                                   \
-   else                                                                                      \
-   {                                                                                         \
-      DWORD dwThisThread = GetCurrentThreadId();                                             \
-                                                                                             \
-      if( s_dwThreadID != dwThisThread)                                                      \
-      {                                                                                      \
-         roadmap_log(ROADMAP_FATAL,                                                          \
-                     "roadmap_line.c::%s() - WRONG THREAD - Expected 0x%08X, Got 0x%08X",    \
-                     _method_, s_dwThreadID, dwThisThread);                                  \
-      }                                                                                      \
-   }
-   
-#else
-#define  VERIFY_THREAD(_method_)
-   
-#endif   // WIN32_DEBUG
+#include "roadmap_line.h"
 
 static char *RoadMapLineType = "RoadMapLineContext";
 
-typedef struct {
-
-   char *type;
-
-   RoadMapLine *Line;
-   int          LineCount;
-
-   RoadMapLineBySquare *LineBySquare1;
-   int                  LineBySquare1Count;
-
-	unsigned short		  *RoundaboutLine;
-	int						RoundaboutLineCount;
-	
-	unsigned short		  *BrokenLine;
-	int						BrokenLineCount;
-	
-   int *LineIndex2;
-   int  LineIndex2Count;
-
-   RoadMapLineBySquare *LineBySquare2;
-   int                  LineBySquare2Count;
-
-   RoadMapLongLine     *LongLines;
-   int                  LongLinesCount;
-
-} RoadMapLineContext;
-
-static RoadMapLineContext *RoadMapLineActive = NULL;
+RoadMapLineContext *RoadMapLineActive = NULL;
 
 
 static void *roadmap_line_map (const roadmap_db_data_file *file) {
@@ -177,10 +129,6 @@ static void *roadmap_line_map (const roadmap_db_data_file *file) {
 	   context->RoundaboutLineCount = 0;
 	}
 
-   context->LineIndex2Count = 0;
-   context->LineBySquare2Count = 0;
-   context->LongLinesCount = 0;
-
    return context;
 
 roadmap_line_map_abort:
@@ -218,65 +166,6 @@ roadmap_db_handler RoadMapLineHandler = {
    roadmap_line_activate,
    roadmap_line_unmap
 };
-
-
-int roadmap_line_in_square (int square, int cfcc, int *first, int *last) {
-
-   if (cfcc <= 0 || cfcc > ROADMAP_CATEGORY_RANGE) {
-      roadmap_log (ROADMAP_FATAL, "illegal cfcc %d", cfcc);
-   }
-   //square = roadmap_square_index(square);
-   if (square < 0) {
-      return 0;   /* This square is empty. */
-   }
-
-   roadmap_square_set_current(square);
-
-   if (RoadMapLineActive == NULL) return 0; /* No line. */
-
-	*first = RoadMapLineActive->LineBySquare1->next[cfcc - 1];
-	*last = RoadMapLineActive->LineBySquare1->next[cfcc] - 1;
-
-   return (*last) >= (*first);
-}
-
-
-int roadmap_line_in_square2 (int square, int cfcc, int *first, int *last) {
-
-   return 0; /* table canceled */
-}
-
-
-int roadmap_line_get_from_index2 (int index) {
-
-   return -1;//RoadMapLineActive->LineIndex2[index];
-}
-
-
-void roadmap_line_from (int line, RoadMapPosition *position) {
-
-   VERIFY_THREAD("roadmap_line_from")
-
-#ifdef DEBUG
-   if (line < 0 || line >= RoadMapLineActive->LineCount) {
-      roadmap_log (ROADMAP_FATAL, "illegal line index %d", line);
-   }
-#endif
-   roadmap_point_position (RoadMapLineActive->Line[line].from & POINT_REAL_MASK, position);
-}
-
-
-void roadmap_line_to   (int line, RoadMapPosition *position) {
-
-   VERIFY_THREAD("roadmap_line_to")
-
-#ifdef DEBUG
-   if (line < 0 || line >= RoadMapLineActive->LineCount) {
-      roadmap_log (ROADMAP_FATAL, "illegal line index %d", line);
-   }
-#endif
-   roadmap_point_position (RoadMapLineActive->Line[line].to & POINT_REAL_MASK, position);
-}
 
 
 int  roadmap_line_from_is_fake (int line) {
@@ -325,34 +214,6 @@ int roadmap_line_length (int line) {
    length += roadmap_math_distance (&p1, &p2);
 
    return length;
-}
-
-
-int roadmap_line_shapes (int line, int *first_shape, int *last_shape) {
-
-   int shape;
-   int count;
-
-   VERIFY_THREAD("roadmap_line_shapes")
-
-#ifdef DEBUG
-   if (line < 0 || line >= RoadMapLineActive->LineCount) {
-      roadmap_log (ROADMAP_FATAL, "illegal line index %d", line);
-   }
-#endif
-
-   *first_shape = *last_shape = -1;
-
-   shape = RoadMapLineActive->Line[line].first_shape;
-   if (shape == ROADMAP_LINE_NO_SHAPES) return -1;
-
-   /* the first shape is actually the count */
-   count = roadmap_shape_get_count (shape);
-
-   *first_shape = shape + 1;
-   *last_shape = *first_shape + count - 1;
-
-   return count;
 }
 
 
@@ -439,19 +300,6 @@ void roadmap_line_point_ids (int line, int *id_from, int *id_to) {
    *id_to = roadmap_point_db_id (RoadMapLineActive->Line[line].to & POINT_REAL_MASK);
 }
 
-
-int roadmap_line_long (int index, int *line_id, RoadMapArea *area, int *cfcc) {
-
-   return 0;
-
-   if (index >= RoadMapLineActive->LongLinesCount) return 0;
-
-   *line_id = RoadMapLineActive->LongLines[index].line;
-   *area = RoadMapLineActive->LongLines[index].area;
-   *cfcc = RoadMapLineActive->LongLines[index].cfcc;
-
-   return 1;
-}
 
 int roadmap_line_cfcc (int line_id) {
 

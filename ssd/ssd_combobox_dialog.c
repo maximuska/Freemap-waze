@@ -31,104 +31,102 @@
 #define  SSD_CBDLG_DIALOG_NAME      ("combobox dialog")
 
 
-typedef struct tag_ssd_combobox_context
+typedef struct tag_ssd_cmb_dlg_ctx
 {
    PFN_ON_INPUT_DIALOG_CLOSED on_combobox_closed;
-   PFN_ON_INPUT_CHANGED on_input_changed;
-   SsdSoftKeyCallback left_softkey_callback;
+   PFN_ON_INPUT_CHANGED       on_input_changed;
+   SsdSoftKeyCallback         left_softkey_callback;
    void*                      context;
 
-}  ssd_combobox_context, *ssd_combobox_context_ptr;
+}  ssd_cmb_dlg_ctx, *ssd_cmb_dlg_ctx_ptr;
 
-static SsdWidget              static_combo_dialog  = NULL;
-static BOOL                   dialog_is_active     = FALSE;
-static ssd_combobox_context   static_combobox_context;
+static SsdWidget        s_combo_dialog    = NULL;
+static BOOL             dialog_is_active  = FALSE;
+static ssd_cmb_dlg_ctx  s_ctx;
 
 static void on_dialog_closed( int exit_code, void* context)
 {
    dialog_is_active = FALSE;
    
-   if(static_combobox_context.on_combobox_closed)
-      static_combobox_context.on_combobox_closed( 
+   if(s_ctx.on_combobox_closed)
+      s_ctx.on_combobox_closed( 
                exit_code, 
-               ssd_combobox_get_text(static_combo_dialog), 
-               static_combobox_context.context);
+               ssd_combobox_get_text(s_combo_dialog), 
+               s_ctx.context);
 }
 
 static int combox_left_softkey_callback (SsdWidget widget, const char *new_value, void *context)
 {
-   ssd_combobox_context*	combobox_context	= (ssd_combobox_context *)ssd_combobox_get_context(widget);
-   if (combobox_context->left_softkey_callback != NULL)
-	return (*combobox_context->left_softkey_callback)(widget, new_value,  combobox_context->context);
-   else
-   	return 0;
+   ssd_cmb_dlg_ctx_ptr ctx = (ssd_cmb_dlg_ctx_ptr)ssd_combobox_get_context(widget);
+   
+   if( ctx->left_softkey_callback)
+      return ctx->left_softkey_callback( widget, new_value, ctx->context);
+      
+   return 0;
 }
 
 static void on_input_changed(const char* new_text, void* context){
-   ssd_combobox_context*	combobox_context	= (ssd_combobox_context *)context;
-   if (combobox_context->on_input_changed != NULL)
-		(*combobox_context->on_input_changed)(new_text,  combobox_context->context);
+   ssd_cmb_dlg_ctx_ptr ctx = (ssd_cmb_dlg_ctx_ptr)context;
+   
+   if(ctx->on_input_changed)
+      ctx->on_input_changed( new_text, ctx->context);
 }
 
 void ssd_combobox_dialog_show (
             const char*                title, 
             int                        count, 
             const char**               labels,
-            const void**                values,
-            const char**						icons,            
+            const void**               values,
+            const char**               icons,            
             PFN_ON_INPUT_CHANGED       on_text_changed,
             PFN_ON_INPUT_DIALOG_CLOSED on_combobox_closed,
-            SsdIconListCallback  on_list_selection,
+            SsdListCallback            on_list_selection,
             unsigned short             input_type,   //   txttyp_<xxx> combination from 'roadmap_text.h'
             void*                      context,
-            const char*            left_softkey_text, 
-            SsdSoftKeyCallback		left_softkey_callback)
+            const char*                left_softkey_text, 
+            SsdSoftKeyCallback         left_softkey_callback)
 {
    if( dialog_is_active)
       return;   //   Disable recursive instances
 
 
-   static_combobox_context.context           = context;
-   static_combobox_context.on_combobox_closed= on_combobox_closed;
-   static_combobox_context.left_softkey_callback = left_softkey_callback;
-	static_combobox_context.on_input_changed = on_text_changed;
-   if( !static_combo_dialog)
+   s_ctx.context              = context;
+   s_ctx.on_combobox_closed   = on_combobox_closed;
+   s_ctx.left_softkey_callback= left_softkey_callback;
+   s_ctx.on_input_changed     = on_text_changed;
+   if( !s_combo_dialog)
    {
-      static_combo_dialog = ssd_dialog_new(  SSD_CBDLG_DIALOG_NAME, 
-                                             title, 
-                                             on_dialog_closed,
-                                             SSD_CONTAINER_BORDER|SSD_CONTAINER_TITLE);
+      s_combo_dialog = ssd_dialog_new( SSD_CBDLG_DIALOG_NAME, 
+                                       title, 
+                                       on_dialog_closed,
+                                       SSD_DIALOG_GUI_TAB_ORDER|SSD_CONTAINER_BORDER|SSD_CONTAINER_TITLE);
       
       
-      ssd_combobox_new(  static_combo_dialog,
-                         title, 
-                         count, 
-                         labels,
-                         values,
-                         icons,
-                         on_input_changed,
-                         on_list_selection,
-			 NULL,
-                         input_type,   //   txttyp_<xxx> combination from 'roadmap_text.h'
-                         &static_combobox_context);
+      ssd_combobox_new( s_combo_dialog,
+                        title, 
+                        count, 
+                        labels,
+                        values,
+                        icons,
+                        on_input_changed,
+                        on_list_selection,
+                        NULL,
+                        input_type,
+                        &s_ctx);
    }
    else
-   {
- //     ssd_combobox_reset_state( static_combo_dialog);
-      ssd_combobox_update_list( static_combo_dialog, count, labels, values, icons);
-   }
+      ssd_combobox_update_list( s_combo_dialog, count, labels, values, icons);
 
-//ssd_widget_set_context (static_combo_dialog, &static_combobox_context);
-   ssd_widget_set_left_softkey_text(static_combo_dialog, left_softkey_text);
-   if (left_softkey_callback != NULL)
-      ssd_widget_set_left_softkey_callback(static_combo_dialog, combox_left_softkey_callback);
+   ssd_widget_set_left_softkey_text(s_combo_dialog, left_softkey_text);
+   if( left_softkey_callback)
+      ssd_widget_set_left_softkey_callback(s_combo_dialog, combox_left_softkey_callback);
 
-   static_combo_dialog->set_value( static_combo_dialog, title);
+   s_combo_dialog->set_value( s_combo_dialog, title);
       
    ssd_dialog_activate (SSD_CBDLG_DIALOG_NAME, NULL);
 
    ssd_dialog_draw ();
-   ssd_combobox_reset_focus( static_combo_dialog);
+   ssd_combobox_reset_focus( s_combo_dialog);
    
    dialog_is_active = TRUE;
 }
@@ -137,26 +135,25 @@ void ssd_combobox_dialog_show (
 void ssd_combobox_dialog_update_list(  int            count, 
                                        const char**   labels,
                                        const void**    values,
-                                       const char**	   icons)
-{  ssd_combobox_update_list( static_combo_dialog, count, labels, values, icons);}                              
+                                       const char**      icons)
+{  ssd_combobox_update_list( s_combo_dialog, count, labels, values, icons);}                              
 
-SsdWidget   ssd_combobox_dialog_get_textbox(){
-	return ssd_combobox_get_textbox(static_combo_dialog);
-		
+SsdWidget ssd_combobox_dialog_get_textbox(){
+   return ssd_combobox_get_textbox(s_combo_dialog);
 }
 
-void*       ssd_combobox_dialog_get_context(){
-	return ssd_combobox_get_context(static_combo_dialog);
+void* ssd_combobox_dialog_get_context(){
+   return ssd_combobox_get_context(s_combo_dialog);
 }
 
-SsdWidget   ssd_combobox_dialog_get_list(){
-	return ssd_combobox_get_list(static_combo_dialog);
+SsdWidget ssd_combobox_dialog_get_list(){
+   return ssd_combobox_get_list(s_combo_dialog);
 }
 
 const char* ssd_combobox_dialog_get_text(){
-	return ssd_combobox_get_text(static_combo_dialog);
+   return ssd_combobox_get_text(s_combo_dialog);
 }
 
-void  ssd_combobox_dialog_set_text(const char* text){
-	 ssd_combobox_set_text(static_combo_dialog, text);
+void ssd_combobox_dialog_set_text(const char* text){
+    ssd_combobox_set_text(s_combo_dialog, text);
 }

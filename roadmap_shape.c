@@ -36,10 +36,11 @@
 #include <string.h>
 #include <ctype.h>
 
+#define DECLARE_ROADMAP_SHAPE
+
 #include "roadmap.h"
 #include "roadmap_dbread.h"
 #include "roadmap_tile_model.h"
-#include "roadmap_db_shape.h"
 
 #include "roadmap_line.h"
 #include "roadmap_shape.h"
@@ -48,17 +49,10 @@
 
 static char *RoadMapShapeType = "RoadMapShapeContext";
 
-typedef struct {
+RoadMapShapeContext *RoadMapShapeActive = NULL;
 
-   char *type;
-
-   RoadMapShape *Shape;
-   int           ShapeCount;
-
-} RoadMapShapeContext;
-
-static RoadMapShapeContext *RoadMapShapeActive = NULL;
-
+int shape_cache_square = -1;
+int shape_cache_scale_factor = 1;
 
 static void *roadmap_shape_map (const roadmap_db_data_file *file) {
 
@@ -114,25 +108,4 @@ roadmap_db_handler RoadMapShapeHandler = {
    roadmap_shape_unmap
 };
 
-
-void roadmap_shape_get_position (int shape, RoadMapPosition *position) {
-
-   int scale_factor = roadmap_square_current_scale_factor ();
-   position->longitude += (int)RoadMapShapeActive->Shape[shape].delta_longitude * scale_factor;
-   position->latitude  += (int)RoadMapShapeActive->Shape[shape].delta_latitude * scale_factor;
-}
-
-
-int roadmap_shape_get_count (int shape) {
-
-   return RoadMapShapeActive->Shape[shape].delta_latitude;
-}
-
-
-int roadmap_shape_count (void) {
-
-   if (RoadMapShapeActive == NULL) return 0; /* No line. */
-
-   return RoadMapShapeActive->ShapeCount;
-}
 

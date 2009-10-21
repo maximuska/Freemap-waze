@@ -33,6 +33,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "roadmap.h"
 #include "roadmap_config.h"
@@ -53,6 +54,9 @@
 #include "roadmap_polygon.h"
 #include "roadmap_county.h"
 #include "roadmap_path.h"
+#include "roadmap_db_square.h"
+#include "roadmap_tile_manager.h"
+#include "roadmap_gzm.h"
 
 #include "roadmap_locator.h"
 
@@ -63,6 +67,7 @@ struct roadmap_cache_entry {
 
    int          fips;
    unsigned int last_access;
+   int			 gzm_id;
 };
 
 static struct roadmap_cache_entry *RoadMapCountyCache = NULL;
@@ -70,8 +75,11 @@ static struct roadmap_cache_entry *RoadMapCountyCache = NULL;
 static int RoadMapCountyCacheSize = 0;
 
 static int RoadMapActiveCounty = -2;
+static int RoadMapActiveMap = -1;
 
+#if 0
 static int RoadMapUsdirActive = 0;
+#endif
 
 //static roadmap_db_model *RoadMapUsModel;
 static roadmap_db_model *RoadMapCountyModel;
@@ -136,32 +144,13 @@ static void roadmap_locator_configure (void) {
 }
 
 
-static const char *roadmap_locator_get_map_name (int fips) {
-	
-   static char map_name[64];
-
-   snprintf (map_name, sizeof(map_name),
-             "map%05d", fips);
-   return map_name;
-}
-
-
-static const char *roadmap_locator_get_section_name (int scale, int lon, int lat) {
-	
-   static char section_name[9];
-
-   snprintf (section_name, sizeof (section_name), "%02x%03x%03x", scale, lon, lat);
-   return section_name;
-}
-
-
 static void roadmap_locator_remove (int index) {
-
-	const char *map_name = roadmap_locator_get_map_name (RoadMapCountyCache[index].fips);
-   roadmap_db_close (map_name, "        ");
 
    RoadMapCountyCache[index].fips = 0;
    RoadMapCountyCache[index].last_access = 0;
+   if (RoadMapCountyCache[index].gzm_id >= 0) {
+   	roadmap_gzm_close (RoadMapCountyCache[index].gzm_id);
+   }
 }
 
 
@@ -183,6 +172,7 @@ static unsigned int roadmap_locator_new_access (void) {
          }
       }
       RoadMapActiveCounty = 0;
+      RoadMapActiveMap = -1;
 
       RoadMapLocatorAccessCount += 1;
    }
@@ -196,9 +186,7 @@ static int roadmap_locator_open (int fips) {
    int i;
    int access;
    int oldest = 0;
-
-   const char *map_name;
-
+   char gzm_name[256];
 
    if (fips <= 0) {
       return ROADMAP_US_NOMAP;
@@ -208,16 +196,15 @@ static int roadmap_locator_open (int fips) {
    	return ROADMAP_US_OK;
    }
    
-   map_name = roadmap_locator_get_map_name (fips);
-
    /* Look for the oldest entry in the cache. */
 
    for (i = RoadMapCountyCacheSize-1; i >= 0; --i) {
 
       if (RoadMapCountyCache[i].fips == fips) {
 
-         roadmap_db_activate (map_name, "        ");
+         roadmap_db_activate (fips, -1);
          RoadMapActiveCounty = fips;
+         RoadMapActiveMap = RoadMapCountyCache[i].gzm_id;
 
          return ROADMAP_US_OK;
       }
@@ -233,12 +220,13 @@ static int roadmap_locator_open (int fips) {
        roadmap_locator_remove (oldest);
        if (RoadMapCountyCache[oldest].fips == RoadMapActiveCounty) {
            RoadMapActiveCounty = 0;
+           RoadMapActiveMap = -1;
        }
    }
 
    access = roadmap_locator_new_access ();
 
-   while (! roadmap_db_open (map_name, "        ", RoadMapCountyModel, "r")) {
+   while (! roadmap_db_open (fips, -1, RoadMapCountyModel, "r")) {
 
       if (! RoadMapDownload (fips)) {
          return ROADMAP_US_NOMAP;
@@ -248,9 +236,34 @@ static int roadmap_locator_open (int fips) {
    RoadMapCountyCache[oldest].fips = fips;
    RoadMapCountyCache[oldest].last_access = access;
 
+	snprintf (gzm_name, sizeof(gzm_name), "map%05d%s", fips, ROADMAP_GZM_TYPE);
+	RoadMapCountyCache[oldest].gzm_id = roadmap_gzm_open (gzm_name);
+	
    RoadMapActiveCounty = fips;
+   RoadMapActiveMap = RoadMapCountyCache[oldest].gzm_id;
    
    roadmap_square_load_index ();
+   return ROADMAP_US_OK;
+}
+
+
+int roadmap_locator_refresh (int fips) {
+
+	int n_tiles;
+	int i_tile;
+	int rc;
+	
+	rc = roadmap_locator_open (fips);
+	if (rc != ROADMAP_US_OK) {
+		return rc;
+	}
+	
+	n_tiles = roadmap_map_get_num_tiles (RoadMapActiveMap);
+	for (i_tile = 0; i_tile < n_tiles; i_tile++) {
+		int tile_id = roadmap_map_get_tile_id (RoadMapActiveMap, i_tile);
+		roadmap_db_remove (fips, tile_id);
+	}
+
    return ROADMAP_US_OK;
 }
 
@@ -268,19 +281,22 @@ void roadmap_locator_close (int fips) {
 
    if (RoadMapActiveCounty == fips) {
       RoadMapActiveCounty = 0;
+      RoadMapActiveMap = -1;
    }
 }
 
 
+#if 0
 void roadmap_locator_close_dir (void) {
 
    if (roadmap_config_get_integer(&RoadMapConfigStaticCounty) != 0) return;
 
    if (RoadMapUsdirActive) {
-      roadmap_db_close ("usdir", NULL);
+      roadmap_db_close ("usdir");
       RoadMapUsdirActive = 0;
    }
 }
+#endif
 
 
 static int roadmap_locator_allocate (int **fips) {
@@ -418,20 +434,44 @@ int roadmap_locator_static_county (void) {
 }
 
 
-int roadmap_locator_load_tile (int scale, int lon, int lat) {
+int roadmap_locator_load_tile (int index) {
 	
-   const char *map_name;
-   const char *section_name;
    int rc;
 
    if (RoadMapActiveCounty <= 0) {
       return ROADMAP_US_NOMAP;
    }
    
-   map_name = roadmap_locator_get_map_name (RoadMapActiveCounty);
-   section_name = roadmap_locator_get_section_name (scale, lon, lat);
+   rc = roadmap_db_open (RoadMapActiveCounty, index, RoadMapTileModel, "r");
    
-   rc = roadmap_db_open (map_name, section_name, RoadMapTileModel, "r");
+   if (! rc) {
+
+		if (RoadMapActiveMap >= 0) {
+			void *data;
+			int length;
+			
+			if (0 == roadmap_gzm_get_section (RoadMapActiveMap, index, &data, &length)) {
+   			rc = roadmap_db_open_mem (RoadMapActiveCounty, index, RoadMapTileModel, data, length);
+			}
+		}
+		
+		if (!rc)
+      	return ROADMAP_US_NOMAP;
+   }
+   
+   return ROADMAP_US_OK;
+}
+
+
+int roadmap_locator_load_tile_mem (int index, void *data, size_t size) {
+	
+   int rc;
+
+   if (RoadMapActiveCounty <= 0) {
+      return ROADMAP_US_NOMAP;
+   }
+   
+   rc = roadmap_db_open_mem (RoadMapActiveCounty, index, RoadMapTileModel, data, size);
    
    if (! rc) {
 
@@ -442,16 +482,11 @@ int roadmap_locator_load_tile (int scale, int lon, int lat) {
 }
 
 
-void roadmap_locator_unload_tile (int scale, int lon, int lat) {
+int roadmap_locator_unload_tile (int index) {
 	
-   const char *map_name;
-   const char *section_name;
-
    if (RoadMapActiveCounty <= 0) {
-      return;
+      return 0;
    }
-   map_name = roadmap_locator_get_map_name (RoadMapActiveCounty);
-   section_name = roadmap_locator_get_section_name (scale, lon, lat);
 
-   roadmap_db_close (map_name, section_name);
+   return roadmap_db_close (RoadMapActiveCounty, index);
 }

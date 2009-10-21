@@ -92,7 +92,6 @@ static void shift_one_item_up(cyclic_array_context_ptr   this,
    // From:       [8]   [7]   [6]
    // To:         [9]   [8]   [7]
    
-   ///[BOOKMARK]:[TODO]:[PAZ] - Replace loop with memmove...
    for( i=range_end; range_begin<i; i--)
    {
       void* item_to   = get_item_by_physical_index( this, i);

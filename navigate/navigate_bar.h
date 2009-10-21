@@ -37,5 +37,6 @@ void navigate_bar_set_speed ();
 void navigate_bar_set_street (const char *street);
 void navigate_bar_set_distance_to_destination (void);
 void navigate_bar_set_time_to_destination (void);
+void navigate_bar_set_draw_offsets ( int offset_x, int offset_y );
 #endif // INCLUDE__NAVIGATE_BAR__H
 

@@ -1,4 +1,4 @@
-/* roadmap_device.h - The interface for the client device settings functionality 
+/* roadmap_device.h - The interface for the client device settings functionality
  *
  * LICENSE:
  *
@@ -28,13 +28,10 @@ extern "C" {
 #endif
 
 
-
-
 int roadmap_device_initialize( void );
 void roadmap_device_set_backlight( int alwaysOn );
-
-
-
+int roadmap_device_get_battery_level( void );
+void roadmap_device_call_start_callback( void );
 
 #ifdef __cplusplus
 }

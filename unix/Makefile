@@ -12,14 +12,17 @@ RANLIB = $(IPHONE_TOOLS_DIR)/bin/arm-apple-darwin9-ranlib
 
 SOUNDSRC = 
 
-else
+else 
+ifeq ($(DESKTOP),ANDROID)
+include ../android/Makefile.in.android
 
+else
 RANLIB = ranlib
 
 SOUNDSRC = roadmap_sound.c
 
 endif
-
+endif
 
 HOST=`uname -s`
 ifeq ($(HOST),Darwin)
@@ -32,16 +35,17 @@ endif
 # --- RoadMap sources & targets --------------------------------------------
 
 OSLIBSRCSCORE=roadmap_file.c \
-              roadmap_path.c \
               roadmap_library.c \
               roadmap_net.c \
               ../md5.c \
               roadmap_serial.c \
-              roadmap_spawn.c \
               roadmap_device_events.c \
-              roadmap_device.c \
               roadmap_input_type.c \
               roadmap_time.c
+
+ifneq ($(DESKTOP),ANDROID)
+OSLIBSRCSCORE+= roadmap_path.c roadmap_spawn.c
+endif
 
 OSLIBSRCS=$(OSLIBSRCSCORE) $(SOUNDSRC)
 OSLIBOBJS=$(OSLIBSRCS:.c=.o)

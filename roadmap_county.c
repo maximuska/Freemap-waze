@@ -189,6 +189,7 @@ int roadmap_county_by_position
       if (static_fips &&
             (roadmap_locator_activate (static_fips) == ROADMAP_US_OK)) {
 
+/*
          RoadMapArea edges;
          roadmap_square_edges (ROADMAP_SQUARE_GLOBAL, &edges);
 
@@ -200,7 +201,7 @@ int roadmap_county_by_position
              pos->longitude = (edges.east + edges.west) / 2;
              pos->latitude = (edges.north + edges.south) / 2;
          }
-/*
+
          if (position->longitude > edges.east) return 0;
          if (position->longitude < edges.west) return 0;
          if (position->latitude  > edges.north)  return 0;

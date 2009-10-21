@@ -25,6 +25,14 @@
 #ifndef INCLUDED__ROADMAP_TYPES__H
 #define INCLUDED__ROADMAP_TYPES__H
 
+#if !defined(_WIN32) || defined(__SYMBIAN32__)
+#ifdef __cplusplus
+   #define EXTERN_C extern "C"
+#else
+   #define EXTERN_C
+#endif
+#endif   // ~EXTERN_C
+
 #define ROADMAP_INVALID_STRING ((unsigned short) -1)
 
 typedef unsigned short RoadMapZip;
@@ -82,7 +90,7 @@ typedef void (*RoadMapShapeItr) (int shape, RoadMapPosition *position);
 #define ROADMAP_AREA_HOSPITAL   13
 #define ROADMAP_AREA_AIRPORT    14
 #define ROADMAP_AREA_STATION    15
-#define ROADMAP_AREA_MALL       16
+#define ROADMAP_AREA_CITY       16
 
 #define ROADMAP_AREA_LAST       16
 

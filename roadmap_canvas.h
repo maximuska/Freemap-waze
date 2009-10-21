@@ -66,7 +66,7 @@ void roadmap_canvas_register_configure_handler
  * It is used to compute the positioning of things on the screen,
  * according to the current font.
  */
-void roadmap_canvas_get_text_extents 
+void roadmap_canvas_get_text_extents
         (const char *text, int size, int *width,
             int *ascent, int *descent, int *can_tilt);
 
@@ -126,11 +126,11 @@ void roadmap_canvas_erase_area (const RoadMapGuiRect *rect);
 void roadmap_canvas_draw_string  (RoadMapGuiPoint *position,
                                   int corner,
                                   const char *text);
-                                  
+
 void roadmap_canvas_draw_string_size (RoadMapGuiPoint *position,
                                  int corner,
                                  int size,
-                                 const char *text);                                 
+                                 const char *text);
 
 void roadmap_canvas_draw_string_angle (const RoadMapGuiPoint *position,
                                        RoadMapGuiPoint *center,
@@ -139,7 +139,7 @@ void roadmap_canvas_draw_string_angle (const RoadMapGuiPoint *position,
 
 void roadmap_canvas_draw_multiple_points (int count, RoadMapGuiPoint *points);
 
-void roadmap_canvas_draw_multiple_lines 
+void roadmap_canvas_draw_multiple_lines
          (int count, int *lines, RoadMapGuiPoint *points, int fast_draw);
 
 void roadmap_canvas_draw_multiple_polygons
@@ -180,6 +180,8 @@ void roadmap_canvas_copy_image (RoadMapImage dst_image,
 void roadmap_canvas_draw_image_text (RoadMapImage image,
                                      const RoadMapGuiPoint *position,
                                      int size, const char *text);
+
+RoadMapImage roadmap_canvas_image_from_buf( unsigned char* buf, int width, int height, int stride );
 
 void roadmap_canvas_free_image (RoadMapImage image);
 

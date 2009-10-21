@@ -154,6 +154,9 @@ int editor_track_filter_add (GPSFilter *filter,
 
    filter->normalized_gps_point.steering = azymuth;
 
+	//TODO is this better?
+   filter->normalized_gps_point.steering = gps_position->steering;
+
    /* ignore consecutive points which generate a big curve */
    if (roadmap_math_delta_direction (azymuth, filter->last_azymuth) > 90) {
 

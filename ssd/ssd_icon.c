@@ -92,7 +92,7 @@ typedef struct tag_icon_ctx
    int   height;   
    int   state;  
    BOOL  loaded;
-   PFN_WIDGET_ONKEYPRESSED
+   CB_OnWidgetKeyPressed
          on_unhandled_key_pressed;
 
 
@@ -206,9 +206,9 @@ BOOL  imageset_info_load(  imageset_info*       this,
    return TRUE;
 }
 
-static void draw_wimage( icon_ctx_ptr      ctx,
-                                 wimage_info*      ii,
-                                 RoadMapGuiPoint*  point)
+static void draw_wimage(icon_ctx_ptr      ctx,
+                        wimage_info*      ii,
+                        RoadMapGuiPoint*  point)
 {
    int            offset               = point->x;
    int            left_bitmap_width    = roadmap_canvas_image_width(ii->left);
@@ -439,7 +439,7 @@ int ssd_icon_set_state( SsdWidget this, int state)
 }
 
 void ssd_icon_set_unhandled_key_press( SsdWidget   this,
-                                       PFN_WIDGET_ONKEYPRESSED
+                                       CB_OnWidgetKeyPressed
                                                    on_unhandled_key_pressed)
 {
    icon_ctx_ptr ctx = (icon_ctx_ptr)this->data;

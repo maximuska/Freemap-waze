@@ -94,12 +94,14 @@ static void remove_softkey (const char *name, SoftKeyEntry *table) {
    }
 
    if (!found) {
-      roadmap_log (ROADMAP_ERROR, "Can't find a softkey to remove. softkey: %s", name);
+      roadmap_log (ROADMAP_DEBUG, "Can't find a softkey to remove. softkey: %s", name);
       return;
    }
 
    table[i].sk.callback = NULL;
    table[i].sk.text[0] = 0;
+   if (table[i].name)
+      free(table[i].name);
    table[i].name = NULL;
 }
 

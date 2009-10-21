@@ -367,8 +367,10 @@ RoadMapFile roadmap_file_open  (const char *name, const char *mode) {
 
    if (strcmp(mode, "r") == 0) {
       unix_mode = O_RDONLY;
-   } else if (strchr (mode, 'w') != NULL) {
+   } else if (strcmp (mode, "rw") == 0) {
       unix_mode = O_RDWR|O_CREAT;
+   } else if (strchr (mode, 'w') != NULL) {
+      unix_mode = O_RDWR|O_CREAT|O_TRUNC;
    } else if (strchr (mode, 'a') != NULL) {
       unix_mode = O_RDWR|O_CREAT|O_APPEND;
    } else {

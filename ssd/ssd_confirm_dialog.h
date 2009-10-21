@@ -24,12 +24,19 @@
 
 #ifndef __SSD_CONFIRM_DIALOG_H_
 #define __SSD_CONFIRM_DIALOG_H_
-  
-  
-  
-typedef void(*ConfirmDialogCallback)(int exit_code, void *context);
-  
-void ssd_confirm_dialog (const char *title, const char *text, BOOL default_yes,  ConfirmDialogCallback callback, void *context);
 
+
+
+typedef void(*ConfirmDialogCallback)(int exit_code, void *context);
+
+void ssd_confirm_dialog (const char *title, const char *text, BOOL default_yes,  ConfirmDialogCallback callback, void *context);
+void ssd_confirm_dialog_timeout (const char *title, const char *text, BOOL default_yes,  ConfirmDialogCallback callback, void *context,int seconds);
+void ssd_confirm_dialog_custom_timeout (const char *title, const char *text, BOOL default_yes, ConfirmDialogCallback callback, void *context,const char *textYes, const char *textNo, int seconds);
+
+/**
+ * Creates a confirm dialog, same as regluar ssd_confirm_dialog, but with customized button text.
+ */
+void ssd_confirm_dialog_custom (const char *title, const char *text, BOOL default_yes, ConfirmDialogCallback callback, void *context,const char *textYes, const char *textNo);
+void ssd_confirm_dialog_close( void );
 #endif // __SSD_CONFIRM_DIALOG_H_
 

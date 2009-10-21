@@ -45,11 +45,9 @@
 
 typedef struct {
 
-   RoadMapArea edges;
-   short scale_index;
-   short lon_index;
-   short lat_index;
-
+	int square_id;
+	int scale;
+   unsigned int timestamp;
 } RoadMapSquare;
 
 typedef struct {
@@ -57,6 +55,8 @@ typedef struct {
    RoadMapArea edges;
    int num_scales;
    int count_squares;  /* Necessary because empty squares have been removed. */
+   int step_longitude;
+   int step_latitude;
 
 } RoadMapGrid;
 
@@ -68,8 +68,8 @@ typedef struct {
 
 typedef struct {
 
-   int step_longitude;
-   int step_latitude;
+   int first_longitude;
+   int first_latitude;
 
    int count_longitude;
    int count_latitude;
@@ -77,9 +77,10 @@ typedef struct {
 	int scale_factor;
 } RoadMapScale;
 
+#define GZM_ENTRY_LEN	8		
 typedef struct {
 	
-	char		name[8];
+	char		name[GZM_ENTRY_LEN];
 	int		offset;
 	int		compressed_size;
 	int		raw_size;

@@ -23,8 +23,8 @@
  #ifndef ROADMAP_SEARCH_H_
 #define ROADMAP_SEARCH_H_
 
-#include "roadmap_address.h"
-
+#include "address_search/address_search.h"
+#include "ssd/ssd_widget.h"
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Context menu:
 typedef enum search_menu_context_menu_items
@@ -45,11 +45,11 @@ typedef enum search_menu_context_menu_items
 
 
 void roadmap_search_menu(void);
-
+SsdWidget create_quick_search_menu();
 void search_menu_search_history(void);
 void search_menu_search_favorites(void);
 void search_menu_search_address(void);
-
-void roadmap_search_register_nav (RoadMapAddressNav navigate);
+void search_menu_search_local(void);
+void search_menu_my_saved_places(void);
 
 #endif /*ROADMAP_SEARCH_H_*/

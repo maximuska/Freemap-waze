@@ -47,9 +47,12 @@ int navigate_route_get_segments (PluginLine *from_line,
                                  int from_point,
                                  PluginLine *to_line,
                                  int *to_point,
-                                 NavigateSegment *segments,
-                                 int *size,
-                                 int *result);
+                                 NavigateSegment **segments,
+                                 int *num_total,
+                                 int *num_new,
+                                 int *flags,
+                                 const NavigateSegment *prev_segments,
+                                 int num_prev_segments);
 
 #endif /* _NAVIGATE_ROUTE_H_ */
 

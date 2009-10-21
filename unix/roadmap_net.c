@@ -48,7 +48,8 @@
 #include "md5.h"
 #include "roadmap_net_mon.h"
 #include "roadmap_net.h"
-#include "../Realtime/WebServiceAddress.h"
+#include "../websvc_trans/websvc_address.h"
+#include "../websvc_trans/web_date_format.h"
 #include "roadmap_main.h"
 
 typedef struct roadmap_net_data_t {
@@ -59,6 +60,8 @@ typedef struct roadmap_net_data_t {
 
 static int initialized;
 
+static int RoadMapNetNumConnects;
+
 static const char* GetProxyAddress() {
 #ifdef IPHONE
    return (roadmap_main_get_proxy ("http://www.freemap.co.il"));
@@ -66,27 +69,53 @@ static const char* GetProxyAddress() {
    return NULL;
 }
 
+#define CONNECT_TIMEOUT_SEC 30
+
+static void connect_callback (RoadMapIO *io);
+static struct servent* roadmap_net_getservbyname( const char *name, const char *protocol );
+static void check_connect_timeout (void) {
+   RoadMapIO *io;
+
+   time_t timeout = time(NULL) - CONNECT_TIMEOUT_SEC;
+
+   while ((io = roadmap_main_output_timedout(timeout))) {
+      roadmap_log(ROADMAP_ERROR, "Connect time out");
+      roadmap_net_close(io->os.socket);
+      roadmap_main_remove_input(io);
+      io->os.socket = -1;
+      connect_callback(io);
+   }
+}
+
 static void connect_callback (RoadMapIO *io) {
 
    RoadMapNetData *data = io->context;
 	RoadMapSocket s;
 
-   if (*data->packet) {
-      if( -1 == roadmap_net_send(io->os.socket, data->packet,
+   s = io->os.socket;
+   if (s != -1) {
+      roadmap_main_remove_input(io);
+   }
+
+	RoadMapNetNumConnects--;
+
+	if (RoadMapNetNumConnects == 0) {
+      roadmap_main_remove_periodic(check_connect_timeout);
+   }
+
+   if ((s != -1) && *data->packet) {
+      if( -1 == roadmap_net_send(s, data->packet,
                                     (int)strlen(data->packet), 1)) {
          roadmap_log( ROADMAP_ERROR, "roadmap_net callback (HTTP) - Failed to send the 'POST' packet");
-         roadmap_net_close(io->os.socket);
-         io->os.socket = -1;
+         roadmap_net_close(s);
+         s = -1;
       }
    }
 
-   s = io->os.socket;
-   roadmap_main_remove_input(io);
-
    if (s == -1)
-   	 (*data->callback) (s, data->context, neterr_general_error);
+   	 (*data->callback) (s, data->context, err_net_failed);
    else
-   	(*data->callback) (s, data->context, neterr_success);
+   	(*data->callback) (s, data->context, succeeded);
    free(data);
 }
 
@@ -105,7 +134,7 @@ static RoadMapSocket create_socket (const char *protocol,
       initialized = 1;
       roadmap_net_mon_start ();
    }
-      
+
    roadmap_net_mon_connect ();
 
    addr->sin_family = AF_INET;
@@ -118,7 +147,7 @@ static RoadMapSocket create_socket (const char *protocol,
       struct servent *service = NULL;
 
 #ifndef IPHONE
-      service = getservbyname(separator+1, "tcp");
+      service = roadmap_net_getservbyname( separator+1, "tcp" );
 #endif
 
       if (service == NULL) {
@@ -149,6 +178,7 @@ static RoadMapSocket create_socket (const char *protocol,
    }
 
    if (!isdigit(hostname[0])) {
+      roadmap_log(ROADMAP_INFO, "Calling gethostbyname:%s", hostname);
       host = gethostbyname(hostname);
    }
 
@@ -209,13 +239,14 @@ static int create_connection (int s, struct sockaddr *addr) {
 static int create_async_connection (RoadMapIO *io, struct sockaddr *addr) {
 
    int s_flags;
+   int res;
 
    s_flags = fcntl(io->os.socket, F_GETFL, 0);
    if (fcntl(io->os.socket, F_SETFL, s_flags|O_NONBLOCK) == -1) {
       roadmap_log (ROADMAP_ERROR, "Can't set socket nonblocking, errno = %d", errno);
    }
 
-   if (connect (io->os.socket, addr, sizeof(*addr)) < 0) {
+   if ((res = connect (io->os.socket, addr, sizeof(*addr))) < 0) {
 
       if (errno != EINPROGRESS) {
          return -1;
@@ -228,23 +259,36 @@ static int create_async_connection (RoadMapIO *io, struct sockaddr *addr) {
    }
 
    roadmap_main_set_output(io, connect_callback);
+   RoadMapNetNumConnects++;
+
+   if (res == 0) {
+      /* Probably not realistic */
+      connect_callback(io);
+      return 0;
+   }
+
+	if (RoadMapNetNumConnects == 1) {
+      roadmap_main_set_periodic(CONNECT_TIMEOUT_SEC * 1000, check_connect_timeout);
+   }
 
    return 0;
 }
 #endif
 
 
-int roadmap_net_connect_internal (const char *protocol, const char *name, 
-                                  int default_port,
-                                  int async,
-                                  RoadMapNetConnectCallback callback,
-                                  void *context) {
+static int roadmap_net_connect_internal (const char *protocol, const char *name,
+			 		  time_t update_time,
+                                 		  int default_port,
+                                         int async,
+                                         RoadMapNetConnectCallback callback,
+                                         void *context) {
 
    char            server_url  [ WSA_SERVER_URL_MAXSIZE   + 1];
    char            service_name[ WSA_SERVICE_NAME_MAXSIZE + 1];
    int             server_port;
    const char*     proxy_address = GetProxyAddress();
-   char            packet[256];
+   char            packet[512];
+   char				 update_since[WDF_MODIFIED_HEADER_SIZE + 1];
    RoadMapSocket   res_socket;
    const char *   req_type = "GET";
    struct sockaddr addr;
@@ -261,7 +305,8 @@ int roadmap_net_connect_internal (const char *protocol, const char *name,
       }
    } else {
       // HTTP Connection, using system configuration for Proxy
-   
+
+   	WDF_FormatHttpIfModifiedSince (update_time, update_since);
       if (!strcmp(protocol, "http_post")) req_type = "POST";
 
       if( !WSA_ExtractParams( name,          //   IN        -   Web service full address (http://...)
@@ -272,28 +317,30 @@ int roadmap_net_connect_internal (const char *protocol, const char *name,
          roadmap_log( ROADMAP_ERROR, "roadmap_net_connect(HTTP) - Failed to extract information from '%s'", name);
          return -1;
       }
-      
+
       if (proxy_address) {
          int   proxy_port  = server_port;
          char* port_offset = strchr(proxy_address, ':');
          if (port_offset) proxy_port = atoi(port_offset + 1);
 
          res_socket = create_socket("tcp", proxy_address, proxy_port, &addr);
-         
-         sprintf(packet, 
+
+         sprintf(packet,
                  "%s %s HTTP/1.0\r\n"
                  "Host: %s\r\n"
-                 "User-Agent: FreeMap/%s\r\n",
-                 req_type, name, server_url, roadmap_start_version());
+                 "User-Agent: FreeMap/%s\r\n"
+                 "%s",
+                 req_type, name, server_url, roadmap_start_version(), update_since);
       } else {
 
-         res_socket = create_socket("tcp", server_url, server_port, &addr);
-      
-         sprintf(packet, 
+    	 res_socket = create_socket("tcp", server_url, server_port, &addr);
+
+         sprintf(packet,
                   "%s %s HTTP/1.0\r\n"
                   "Host: %s\r\n"
-                  "User-Agent: FreeMap/%s\r\n",
-                  req_type, service_name, server_url, roadmap_start_version());
+                  "User-Agent: FreeMap/%s\r\n"
+                  "%s",
+                  req_type, service_name, server_url, roadmap_start_version(), update_since);
       }
 
       if(-1 == res_socket) return -1;
@@ -323,7 +370,15 @@ int roadmap_net_connect_internal (const char *protocol, const char *name,
          roadmap_net_close(res_socket);
          return -1;
       }
- 
+
+#ifdef IPHONE
+      RoadMapNetNumConnects++;
+
+      if (RoadMapNetNumConnects == 1) {
+         roadmap_main_set_periodic(CONNECT_TIMEOUT_SEC * 1000, check_connect_timeout);
+      }
+#endif
+
    } else {
 
       /* Blocking connect */
@@ -342,32 +397,34 @@ int roadmap_net_connect_internal (const char *protocol, const char *name,
    }
 
    return res_socket;
-}                   
+}
 
 
-int roadmap_net_connect (const char *protocol, const char *name, 
+int roadmap_net_connect (const char *protocol, const char *name,
+								 time_t update_time,
                          int default_port,
-                         network_error* err) {
-                         	 
-   if (err != NULL)
- 	(*err) = neterr_success;                     	
+                         roadmap_result* err) {
 
-   RoadMapSocket s = roadmap_net_connect_internal(protocol, name,
+   if (err != NULL)
+ 	(*err) = succeeded;
+
+   RoadMapSocket s = roadmap_net_connect_internal(protocol, name, update_time,
                                                    default_port, 0, NULL, NULL);
-                                                   
+
+
    if ((s == -1) && (err != NULL))
-   	(*err) = neterr_general_error;                                                   
+   	(*err) = err_net_failed;
    return s;
 }
 
 
-int roadmap_net_connect_async (const char *protocol, const char *name, 
+int roadmap_net_connect_async (const char *protocol, const char *name,
+                                time_t update_time,
                                 int default_port,
                                 RoadMapNetConnectCallback callback,
                                 void *context) {
-
    RoadMapSocket s = roadmap_net_connect_internal
-                        (protocol, name, default_port, 1, callback, context);
+                        (protocol, name, update_time, default_port, 1, callback, context);
    return s;
 }
 
@@ -411,7 +468,7 @@ int roadmap_net_send (RoadMapSocket s, const void *data, int length, int wait) {
       res = send(s, data, length, 0);
 
       if (res < 0) {
-         roadmap_log (ROADMAP_ERROR, "Error sending data: %s", strerror(errno));
+         roadmap_log (ROADMAP_ERROR, "Error sending data: (%d) %s", errno, strerror(errno));
 
          roadmap_net_mon_error("Error in send - data.");
          return -1;
@@ -429,7 +486,9 @@ int roadmap_net_send (RoadMapSocket s, const void *data, int length, int wait) {
 
 int roadmap_net_receive (RoadMapSocket s, void *data, int size) {
 
-   int received = read ((int)s, data, size);
+
+   int received;
+   received = read ((int)s, data, size);
 
    if (received <= 0) {
       roadmap_net_mon_error("Error in recv.");
@@ -437,6 +496,7 @@ int roadmap_net_receive (RoadMapSocket s, void *data, int size) {
    }
 
    roadmap_net_mon_recv(received);
+
    return received;
 }
 
@@ -465,7 +525,7 @@ int roadmap_net_unique_id (unsigned char *buffer, unsigned int size) {
    time_t tm;
 
    time(&tm);
-      
+
    MD5Init (&context);
    MD5Update (&context, (unsigned char *)&tm, sizeof(tm));
    MD5Final (digest, &context);
@@ -475,6 +535,30 @@ int roadmap_net_unique_id (unsigned char *buffer, unsigned int size) {
 
    return size;
 }
+
+
+static struct servent* roadmap_net_getservbyname( const char *name, const char *protocol )
+{
+	static int has_bug = -1;	/* Android bug overriding (returns the port in the wrong order */
+	struct servent* service = NULL;
+
+#ifndef IPHONE
+	if ( has_bug < 0 )
+	{
+		service = getservbyname( "http", NULL );
+        has_bug = ( service == NULL || service->s_port == 80 );
+	}
+
+	service = getservbyname( name, protocol );
+    if ( service && has_bug )
+    {
+        service->s_port = htons( service->s_port );
+    }
+#endif
+
+	return service;
+}
+
 
 
 void roadmap_net_shutdown (void) {

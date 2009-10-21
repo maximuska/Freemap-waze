@@ -113,21 +113,34 @@ int roadmap_line_route_get_direction (int line, int who) {
    RoadMapLineRoute *route;
    if (RoadMapLineRouteActive == NULL) return 0; /* No data. */
    if (RoadMapLineRouteActive->LineRouteCount <= line) return 0;
-
+   
    route = &RoadMapLineRouteActive->LineRoute[line];
-
+      
    if ((route->from_flags & who) && (route->to_flags & who)) {
-
       return ROUTE_DIRECTION_ANY;
    } else if (!(route->from_flags & who) && !(route->to_flags & who)) {
       return ROUTE_DIRECTION_NONE;
    } else if (route->from_flags & who) {
-
       return ROUTE_DIRECTION_WITH_LINE;
    } else {
-
       return ROUTE_DIRECTION_AGAINST_LINE;
    }
+}
+
+
+int roadmap_line_route_is_low_weight (int line) {
+
+   RoadMapLineRoute *route;
+   if (RoadMapLineRouteActive == NULL) return 0; /* No data. */
+   if (RoadMapLineRouteActive->LineRouteCount <= line) return 0;
+   
+   route = &RoadMapLineRouteActive->LineRoute[line];
+      
+   if ((route->from_flags & ROUTE_LOW_WEIGHT) && (route->to_flags & ROUTE_LOW_WEIGHT)) {
+      return 1;
+   }
+
+   return 0;
 }
 
 
@@ -169,7 +182,10 @@ int roadmap_line_route_get_restrictions (int line, int against_dir) {
    RoadMapLineRoute *route;
 
    if (RoadMapLineRouteActive == NULL) return -1; /* No data. */
-   assert (line < RoadMapLineRouteActive->LineRouteCount);
+   if (line >= RoadMapLineRouteActive->LineRouteCount) {
+   	roadmap_log (ROADMAP_FATAL, "roadmap_line_route_get_restrictions(): line id %d is out of range (%d) for square %d",
+   						line, RoadMapLineRouteActive->LineRouteCount, roadmap_square_active ());	
+   }
 
    route = &RoadMapLineRouteActive->LineRoute[line];
 

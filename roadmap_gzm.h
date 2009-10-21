@@ -25,12 +25,15 @@
 #ifndef _ROADMAP_GZM__H_
 #define _ROADMAP_GZM__H_
 
-#define ROADMAP_GZM_TYPE   ".gzm"
+#define ROADMAP_GZM_TYPE   ".wzm"
 
 int roadmap_gzm_open (const char *name);
 void roadmap_gzm_close (int gzm_id);
 
-int roadmap_gzm_get_section (int gzm_id, const char *name,
+int roadmap_map_get_num_tiles (int gzm_id);
+int roadmap_map_get_tile_id (int gzm_id, int tile_no);
+
+int roadmap_gzm_get_section (int gzm_id, int tile_id,
 									  void **section, int *length);
 void roadmap_gzm_free_section (int gzm_id, void *section);
  

@@ -44,11 +44,11 @@
 #include "roadmap_start.h"
 #include "roadmap_state.h"
 #include "roadmap_pointer.h"
+#include "roadmap_screen.h"
 #include "roadmap_res.h"
 #include "roadmap_sound.h"
 #include "roadmap_main.h"
 #include "roadmap_softkeys.h"
-
 
 #include "roadmap_screen_obj.h"
 
@@ -57,12 +57,21 @@ typedef struct {
    int           min_screen_height;
 } ObjectFile;
 
+
+
+#ifdef _WIN32
 static ObjectFile RoadMapObjFiles[] = {
-   {"objects",      300},
-   {"objects_wide", 200},
+   {"objects", 320},
+   {"objects_wide", 210},
    {"objects",      100}
 };
-
+#else
+static ObjectFile RoadMapObjFiles[] = {
+   {"objects",      400},
+   {"objects_wide", 290},
+   {"objects",      100}
+};
+#endif
 static int screen_height;
 static int screen_width;
 static const char *current_object_name=NULL;
@@ -86,6 +95,10 @@ struct RoadMapScreenObjDescriptor {
    short                pos_x; /* position on screen */
    short                pos_y; /* position on screen */
 
+   short                offset_x; /* offset for this */
+   short                offset_y; /* position on screen */
+
+
    int                  flags;
 
    int                  opacity;
@@ -104,6 +117,7 @@ static RoadMapScreenObj RoadMapObjectList = NULL;
 static RoadMapScreenObj RoadMapScreenObjSelected = NULL;
 static int OffsetX = 0;
 static int OffsetY = 0;
+static BOOL initialized = FALSE;
 
 static char *roadmap_object_string (const char *data, int length) {
 
@@ -140,14 +154,14 @@ static void roadmap_screen_obj_decode_arg (char *output, int o_size,
    int size;
 
    o_size -= 1;
-      
+
    size = i_size < o_size ? i_size : o_size;
 
    strncpy (output, input, size);
    output[size] = '\0';
 }
 
-      
+
 static void roadmap_screen_obj_decode_icon
                         (RoadMapScreenObj object,
                          int argc, const char **argv, int *argl) {
@@ -275,10 +289,12 @@ static void roadmap_screen_obj_decode_position
    roadmap_screen_obj_decode_arg (arg, sizeof(arg), argv[1], argl[1]);
    pos = atoi(arg);
    object->pos_x = pos;
+   object->offset_x = 0;
 
    roadmap_screen_obj_decode_arg (arg, sizeof(arg), argv[2], argl[2]);
    pos = atoi(arg);
    object->pos_y = pos;
+   object->offset_y = 0;
 }
 
 
@@ -469,7 +485,7 @@ static void road_screen_objects_delete(){
 	RoadMapScreenObj cursor;
 	for (cursor = RoadMapObjectList; cursor != NULL; cursor = cursor->next) {
 		free(cursor);
-	
+
 	RoadMapObjectList=NULL;
 }
 
@@ -492,6 +508,10 @@ static void roadmap_screen_obj_pos (RoadMapScreenObj object,
    } else {
       pos->y += OffsetY;
    }
+
+   /* Apply local offsets */
+   pos->x += object->offset_x;
+   pos->y += object->offset_y;
 }
 
 
@@ -508,8 +528,15 @@ static RoadMapScreenObj roadmap_screen_obj_by_pos (RoadMapGuiPoint *point) {
           (point->x <= (pos.x + cursor->bbox.maxx)) &&
           (point->y >= (pos.y + cursor->bbox.miny)) &&
           (point->y <= (pos.y + cursor->bbox.maxy))) {
-
-         return cursor;
+            if (cursor->state_fn) {
+               int state = (*cursor->state_fn) ();
+               if ((state < 0) || (state >= MAX_STATES)){
+               }
+               else
+                  return cursor;
+            }
+            else
+               return cursor;
       }
    }
 
@@ -533,6 +560,13 @@ static int roadmap_screen_obj_pressed (RoadMapGuiPoint *point) {
 
    if (!RoadMapScreenObjSelected) return 0;
 
+   /* There is no draggable objects on the screen. In the future if there will be such an
+    * objects the short/long click handling for the small drag has to be in the drag_end event
+    * like in the ssd_dialog
+    */
+   roadmap_pointer_cancel_dragging();
+
+
    if (RoadMapScreenObjSelected->state_fn) {
       state = (*RoadMapScreenObjSelected->state_fn) ();
       if ((state < 0) || (state >= MAX_STATES)) return 1;
@@ -545,7 +579,7 @@ static int roadmap_screen_obj_pressed (RoadMapGuiPoint *point) {
       roadmap_canvas_draw_image (RoadMapScreenObjSelected->images[state], &pos,
                            RoadMapScreenObjSelected->opacity, IMAGE_SELECTED);
    }
-   
+
    roadmap_canvas_refresh ();
 
    if (RoadMapScreenObjSelected->flags & OBJ_FLAG_REPEAT) {
@@ -588,12 +622,12 @@ static int roadmap_screen_obj_short_click (RoadMapGuiPoint *point) {
    if (object->flags & OBJ_FLAG_REPEAT) return 1;
 
    RoadMapScreenObjSelected = NULL;
-   
+
    if (object->state_fn && (*object->state_fn)() < 0 ) return 0;
 
    if (object->action) {
       static RoadMapSoundList list;
-   
+
       if (!list) {
          list = roadmap_sound_list_create (SOUND_LIST_NO_FREE);
          roadmap_sound_list_add (list, "click");
@@ -601,9 +635,11 @@ static int roadmap_screen_obj_short_click (RoadMapGuiPoint *point) {
       }
 
       roadmap_sound_play_list (list);
-
       (*(object->action->callback)) ();
+      roadmap_screen_touched();
    }
+
+
 
    return 1;
 }
@@ -619,7 +655,7 @@ static int roadmap_screen_obj_long_click (RoadMapGuiPoint *point) {
    }
 
    if (RoadMapScreenObjSelected->flags & OBJ_FLAG_REPEAT) return 1;
-   
+
    if (object->state_fn && (*object->state_fn)() < 0 ) return 0;
 
    RoadMapScreenObjSelected = NULL;
@@ -651,7 +687,7 @@ static void roadmap_screen_obj_reload (void) {
    int height = roadmap_canvas_height ();
    int width = roadmap_canvas_width();
    const char *object_name = NULL;
-   
+
    RoadMapObjectList = NULL;
 
    screen_height = height;
@@ -680,7 +716,7 @@ static void roadmap_screen_obj_reload (void) {
    		else
    			return;
    }
-   
+
    for (cursor = roadmap_file_map ("skin", object_name, NULL, "r", &file);
         cursor != NULL;
         cursor = roadmap_file_map ("skin", object_name, cursor, "r", &file)) {
@@ -706,7 +742,15 @@ void roadmap_screen_obj_move (const char *name,
 }
 
 
-void roadmap_screen_obj_offset (int x, int y) {
+void roadmap_screen_obj_offset ( const char* obj_name, int offset_x, int offset_y )
+{
+   RoadMapScreenObj cursor = roadmap_screen_obj_search( obj_name );
+   cursor->offset_x = offset_x;
+   cursor->offset_y = offset_y;
+}
+
+
+void roadmap_screen_obj_global_offset (int x, int y) {
 
    OffsetX += x;
    OffsetY += y;
@@ -740,6 +784,8 @@ void roadmap_screen_obj_initialize (void) {
       (roadmap_screen_obj_long_click, POINTER_HIGH);
 
    roadmap_screen_obj_reload ();
+
+   initialized = TRUE;
 }
 
 
@@ -748,7 +794,10 @@ void roadmap_screen_obj_draw (void) {
    RoadMapScreenObj cursor;
    int height = roadmap_canvas_height ();
    int width = roadmap_canvas_width();
-   
+
+   if (!initialized)
+      return;
+
    if ((height != screen_height) && (width != screen_width)){
 	   roadmap_screen_obj_reload();
    }
@@ -776,7 +825,7 @@ void roadmap_screen_obj_draw (void) {
       }
 
       if (cursor->sprites[state]) {
-         
+
          if (cursor->flags & OBJ_FLAG_NO_ROTATE) {
             roadmap_sprite_draw (cursor->sprites[state], &pos,
                                  -roadmap_math_get_orientation());

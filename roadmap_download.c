@@ -30,7 +30,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#ifndef J2ME
 #include <zlib.h>
+#endif
 
 #include "roadmap.h"
 #include "roadmap_types.h"
@@ -365,6 +367,9 @@ int roadmap_download_blocked (int fips) {
 
 static int roadmap_download_uncompress (const char *tmp_file,
                                         const char *destination) {
+#ifdef J2ME
+	return 0;
+#else
    char *p;
    RoadMapFile source_file = 0;
    gzFile      source_file_gz = NULL;
@@ -435,6 +440,7 @@ end:
    }
 
    return res;
+#endif
 }
 
 
@@ -573,10 +579,10 @@ static int roadmap_download_usdir (RoadMapDownloadCallbacks *callbacks) {
    strncpy_safe (format+1, "usdir.rdm", sizeof(source) - (format - source + 1));
 
 #ifndef _WIN32
-   snprintf (destination, sizeof(destination), "%s/usdir.rdm", 
+   snprintf (destination, sizeof(destination), "%s/usdir.rdm",
          roadmap_config_get (&RoadMapConfigDestination));
 #else
-   snprintf (destination, sizeof(destination), "%s\\usdir.rdm", 
+   snprintf (destination, sizeof(destination), "%s\\usdir.rdm",
          roadmap_config_get (&RoadMapConfigDestination));
 #endif
 
@@ -595,7 +601,9 @@ static int roadmap_download_usdir (RoadMapDownloadCallbacks *callbacks) {
       if (strncmp (source, protocol->prefix, strlen(protocol->prefix)) == 0) {
 
          roadmap_start_freeze ();
+#if 0
          roadmap_locator_close_dir();
+#endif
 
          if (protocol->handler (callbacks, source, tmp_file)) {
 
@@ -669,7 +677,7 @@ int roadmap_download_next_county (RoadMapDownloadCallbacks *callbacks) {
 
    RoadMapDownloadFrom = source;
    roadmap_dialog_set_data (".file", "From", source);
-   
+
    dest = roadmap_path_join(roadmap_config_get (&RoadMapConfigDestination), basename + 1);
 
    RoadMapDownloadTo = dest;
@@ -684,7 +692,7 @@ int roadmap_download_next_county (RoadMapDownloadCallbacks *callbacks) {
       res = roadmap_download_start ("Download a Map", callbacks);
    }
 #endif
-   
+
    roadmap_path_free(dest);
    return res;
 }
@@ -1002,16 +1010,18 @@ int  roadmap_download_enabled (void) {
 
 void roadmap_download_initialize (void) {
 
+	char default_destination[256];
+	
 #ifdef __SYMBIAN32__
-   const char *default_destination = roadmap_db_map_path();
+	strncpy_safe (default_destination, roadmap_db_map_path(), sizeof (default_destination));
 #else
-   const char *default_destination = roadmap_path_join (roadmap_path_user(), "maps");
+   roadmap_path_format (default_destination, sizeof (default_destination), roadmap_path_user(), "maps");
 #endif
 
    roadmap_config_declare
       ("preferences",
       &RoadMapConfigSource,
-      "http://www.freemap.co.il/freemap/maps/tiles2/" FREEMAP_FILE_NAME_FORMAT,
+      "" FREEMAP_FILE_NAME_FORMAT,
       NULL);
 
    roadmap_config_declare

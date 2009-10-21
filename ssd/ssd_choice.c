@@ -43,6 +43,10 @@ struct ssd_choice_data {
    const void **values;
 };
 
+#define CHOICE_CLICK_OFFSETS_DEFAULT	{-30, -20, 30, 20 };
+
+static SsdClickOffsets sgChoiceOffsets = CHOICE_CLICK_OFFSETS_DEFAULT;
+
 
 static int list_callback(SsdWidget widget, const char* selection, const void *value, void* context)
 {
@@ -68,7 +72,7 @@ static int choice_callback (SsdWidget widget, const char *new_value) {
    data = (struct ssd_choice_data *)widget->data;
 
    ssd_generic_list_dialog_show ("", data->num_values, data->labels,
-                                 NULL, list_callback, NULL, widget);
+                                 NULL, list_callback, NULL, widget, SSD_GEN_LIST_ENTRY_HEIGHT );
    return 1;
 }
 
@@ -124,19 +128,32 @@ SsdWidget ssd_choice_new (const char *name, int count,
                           int flags,
                           SsdCallback callback) {
 
-   const char *edit_button[] = {"choice"};
-
+   const char *edit_button[] = {"edit_right", "edit_left"};
+   const char *buttons[2];
+   int rtl_flag = 0;
+   SsdWidget text_box;
+   SsdWidget choice;
+   SsdClickOffsets click_offsets = sgChoiceOffsets;
+   int txt_box_height = 40;
    struct ssd_choice_data *data =
       (struct ssd_choice_data *)calloc (1, sizeof(*data));
 
-   SsdWidget choice =
-      ssd_container_new (name, NULL, SSD_MIN_SIZE, SSD_MIN_SIZE, SSD_CONTAINER_BORDER | flags);
+   SsdWidget button, space;
+   
+#ifndef TOUCH_SCREEN
+   txt_box_height = 23;
+#endif
 
-   SsdWidget text_box =
+   choice =
+      ssd_container_new (name, NULL, SSD_MIN_SIZE, txt_box_height, SSD_CONTAINER_TXT_BOX |SSD_ALIGN_VCENTER| flags);
+
+   ssd_widget_set_pointer_force_click( choice );
+
+   text_box =
       ssd_container_new ("text_box", NULL, SSD_MIN_SIZE,
                          SSD_MIN_SIZE,
-                         SSD_WS_TABSTOP|SSD_ALIGN_VCENTER);
-
+                         SSD_ALIGN_VCENTER);
+   ssd_widget_set_pointer_force_click( text_box );
    data->callback = callback;
    data->num_values = count;
    data->labels = labels;
@@ -152,11 +169,29 @@ SsdWidget ssd_choice_new (const char *name, int count,
    text_box->callback = choice_callback;
    text_box->bg_color = NULL;
 
+   if (!ssd_widget_rtl(NULL))
+   	rtl_flag = SSD_ALIGN_RIGHT;
 
+   
    ssd_widget_add (text_box, ssd_text_new ("Label", labels[0], -1, 0));
+   if (!ssd_widget_rtl(NULL)){
+   	   buttons[0] = edit_button[0];
+   	   buttons[1] = edit_button[0];
+   	   click_offsets.left = -100;
+   }else{
+   	   buttons[0] = edit_button[1];
+   	   buttons[1] = edit_button[1];
+   	   click_offsets.right = 100;
+   }
+#ifdef TOUCH_SCREEN
+   button = ssd_button_new ("edit_button", "", &buttons[0], 2,
+        	                 SSD_ALIGN_VCENTER|SSD_ALIGN_RIGHT, choice_callback);
+   ssd_widget_add (choice, button);
+   ssd_widget_set_click_offsets( button, &click_offsets );
+
+   ssd_widget_set_click_offsets( choice, &click_offsets );
+#endif   
    ssd_widget_add (choice, text_box);
-   ssd_widget_add (choice, ssd_button_new ("edit_button", "", edit_button, 1,
-                   SSD_ALIGN_VCENTER, choice_callback));
 
    return choice;
 }

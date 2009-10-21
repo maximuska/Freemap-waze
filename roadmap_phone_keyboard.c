@@ -182,6 +182,8 @@ void phone_keyboard_load( phone_keyboard_ptr this)
       const char*             tag_name = phone_keys_tag_name( i);
       const char*             value    = roadmap_lang_get( tag_name);
       
+      if (value[0] == '^')
+         value++;
       mki->values = utf8_to_char_array( value, &mki->count);
       
       assert(mki->values);

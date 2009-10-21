@@ -24,6 +24,10 @@
 // INCLUDES
 #include <coecntrl.h>
 
+#ifdef TOUCH_SCREEN
+#include <touchfeedback.h>
+#include <touchlogicalfeedback.h>
+#endif
 
 // CLASS DECLARATION
 class CFreeMapAppView : public CCoeControl
@@ -93,6 +97,11 @@ private: // Constructors
 		* C++ default constructor.
 		*/
 		CFreeMapAppView();
+		
+#ifdef TOUCH_SCREEN
+			void HandlePointerEventL(const TPointerEvent& aPointerEvent);        
+			MTouchFeedback*      iTouchFeedBack;
+#endif
 		
 		CWsBitmap* iOffScreenBitmap;
 		CFbsBitmapDevice* iOffScreenDevice;

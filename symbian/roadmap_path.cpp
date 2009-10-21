@@ -56,7 +56,7 @@ struct RoadMapPathRecord {
 static RoadMapPathList RoadMapPaths = NULL;
 
 /* The hardcoded path for configuration files (the "config" path).
-*/ 
+*/
 static const char *RoadMapPathConfig[] = {
    "&",
    "C:\\private\\2001EB29",
@@ -66,9 +66,11 @@ static const char *RoadMapPathConfig[] = {
    NULL
 };
 
+static const char *RoadMapPathGps= "E:\\waze\\gps";
+
 static const char *RoadMapPathConfigPreferred = "E:\\private\\2001EB29";
 
-/* Skins directories */ 
+/* Skins directories */
 static const char *RoadMapPathSkin[] = {
    "&\\skins\\default",
    "&\\skins\\default\\day",
@@ -153,7 +155,7 @@ static RoadMapPathList roadmap_path_find (const char *name)
 /* Directory path strings operations. -------------------------------------- */
 
 static char *roadmap_path_cat (const char *s1, const char *s2)
-{ 
+{
    char *result = (char*)malloc (strlen(s1) + strlen(s2) + 4);
 
    roadmap_check_allocated (result);
@@ -191,6 +193,30 @@ char *roadmap_path_parent (const char *path, const char *name)
 }
 
 
+void roadmap_path_format (char *buffer, int buffer_size, const char *path, const char *name) {
+
+	int len1 = path ? strlen (path) + 1 : 0;
+	int len2 = name ? strlen (name) : 0;
+
+	if (len1 >= buffer_size) {
+		len1 = buffer_size - 1;
+	}
+	if (len1 + len2 >= buffer_size) {
+		len2 = buffer_size - 1 - len1;
+	}
+
+	// first copy file name, for the case where buffer and name are the same pointer
+	if (len2) {
+		memmove (buffer + len1, name, len2);
+	}
+	if (len1) {
+		memmove (buffer, path, len1 - 1);
+		buffer[len1 - 1] = '\\';
+	}
+	buffer[len1 + len2] = '\0';
+}
+
+
 char *roadmap_path_skip_directories (const char *name)
 {
    char *result = strrchr (name, '\\');
@@ -222,23 +248,60 @@ const char *roadmap_path_user (void)
 {
    static char *RoadMapUser = NULL;
 
-   if (RoadMapUser == NULL) 
+   if (RoadMapUser == NULL)
    {
      TFileName privatePath;
      CEikonEnv::Static()->FsSession().PrivatePath(privatePath);
      // CompleteWithAppPath works even without a filename
      CompleteWithAppPath(privatePath);
      privatePath.Delete(privatePath.Length()-1,1);
-     
+
      GSConvert::TDes16ToCharPtr(privatePath, &RoadMapUser);
-     
-     
+
+
    }
    return RoadMapUser;
 }
 
+const char *roadmap_path_gps (void)
+{
+   static const char *RoadMapGps = NULL;
+
+   if (RoadMapGps == NULL)
+   {
+	  RoadMapGps = RoadMapPathGps;
+      roadmap_path_create( RoadMapGps );
+   }
+   return RoadMapGps;
+}
+
+const char *roadmap_path_images( void )
+{
+   static char *RoadMapPathImages = NULL;
+
+   if ( RoadMapPathImages == NULL )
+   {
+	  RoadMapPathImages = roadmap_path_cat( roadmap_path_user(), "images" );
+	  roadmap_path_create( RoadMapPathImages );
+   }
+   return RoadMapPathImages;
+}
+
+
+const char *roadmap_path_debug( void )
+{
+   static char *RoadMapPathDebug = NULL;
+   
+   if ( RoadMapPathDebug == NULL )
+   {
+      RoadMapPathDebug = roadmap_path_join( roadmap_path_user(), "debug" );
+      roadmap_path_create( RoadMapPathDebug );
+   }
+   return RoadMapPathDebug;
+}
+
 const char *roadmap_path_trips (void)
-{   
+{
    static char  RoadMapDefaultTrips[] = "trips";
    static char *RoadMapTrips = NULL;
 
@@ -422,11 +485,16 @@ const char *roadmap_path_preferred (const char *name)
 
 void roadmap_path_create (const char *path)
 {
+  char pathSlash[256];
   if ( path == NULL ) {return;}
-  
+
+  strncpy_safe (pathSlash, path, sizeof (pathSlash) - 1);
+  if (pathSlash[strlen (pathSlash) - 1] != '\\')
+    strcat (pathSlash, "\\");
+
   TFileName pathName;
-  GSConvert::CharPtrToTDes16(path, pathName);
-  
+  GSConvert::CharPtrToTDes16(pathSlash, pathName);
+
   TInt err = CEikonEnv::Static()->FsSession().MkDirAll(pathName);
 }
 
@@ -438,35 +506,37 @@ char **roadmap_path_list (const char *path, const char *extension)
   TFileName strPath;
   TPtrC8 ptrPath((const unsigned char*)path, User::StringLength((const TUint8*)path));
   CnvUtfConverter::ConvertToUnicodeFromUtf8(strPath, ptrPath);
-
-  TFileName strExt;
-  TPtrC8 ptrExt((const unsigned char*)extension, User::StringLength((const TUint8*)extension));
-  CnvUtfConverter::ConvertToUnicodeFromUtf8(strExt, ptrExt);
-
+  TFileName strExt;  
+  if (extension != NULL){
+	  TPtrC8 ptrExt((const unsigned char*)extension, User::StringLength((const TUint8*)extension));
+	  CnvUtfConverter::ConvertToUnicodeFromUtf8(strExt, ptrExt);
+  }
+  
   TFileName strFullname;
   _LIT(KDelims, "\\*");
   strFullname = strPath;
   strFullname.Append(KDelims);
-  strFullname.Append(strExt);
-  
+  if (extension != NULL)
+	  strFullname.Append(strExt);
+
   char **result;
   char **cursor;
   CDir* fileList;
-  TInt err = CEikonEnv::Static()->FsSession().GetDir( strFullname, 
-                                                      KEntryAttNormal, 
-                                                      ESortNone, 
+  TInt err = CEikonEnv::Static()->FsSession().GetDir( strFullname,
+                                                      KEntryAttNormal,
+                                                      ESortNone,
                                                       fileList);
   if ( err != KErrNone )
   {
     return &RoadMapPathEmptyList;
   }
-  
-  int numOfFiles = fileList->Count(); 
+
+  int numOfFiles = fileList->Count();
   if (numOfFiles == 0)
   {
     return &RoadMapPathEmptyList;
   }
-  
+
   cursor = result = (char**)calloc (numOfFiles+1, sizeof(char *));
   roadmap_check_allocated (result);
 
@@ -479,7 +549,7 @@ char **roadmap_path_list (const char *path, const char *extension)
     *(cursor++) = (char*)textBuf;
   }
   delete fileList;
-  
+
   *cursor = NULL;
   return result;
 }
@@ -533,13 +603,13 @@ const char *roadmap_path_temporary (void) {
    return roadmap_path_user();
 }
 
-int roadmap_path_is_directory (const char *name) 
+int roadmap_path_is_directory (const char *name)
 {
   if ( name == NULL ) {return 0;}
-  
+
   TFileName pathName;
   GSConvert::CharPtrToTDes16(name, pathName);
-  
+
   TBool isFolder = false;
   TInt err = EikFileUtils::CheckWhetherFullNameRefersToFolder(pathName, isFolder);
   if ( err != KErrNone )
@@ -547,4 +617,10 @@ int roadmap_path_is_directory (const char *name)
     return 0;
   }
   return true; //AVI
+}
+
+
+const char *roadmap_path_config( void )
+{
+	return roadmap_path_user();
 }

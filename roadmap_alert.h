@@ -29,8 +29,9 @@
 #include "roadmap_dbread.h"
 #include "roadmap_alerter.h"
 
-#define ALERT_CATEGORY_SPEED_CAM       	2
+#define ALERT_CATEGORY_SPEED_CAM        2
 #define ALERT_CATEGORY_DUMMY_SPEED_CAM  3
+#define ALERT_CATEGORY_RED_LIGHT_CAM    4
 
 int roadmap_alert_count(void);
 int roadmap_alert_get_category(int alert);

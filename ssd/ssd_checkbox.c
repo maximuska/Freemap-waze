@@ -24,7 +24,7 @@
  *
  *   See ssd_checkbox.h.
  */
- 
+
 #include <string.h>
 #include <stdlib.h>
 
@@ -37,32 +37,37 @@
 
 struct ssd_checkbox_data {
    SsdCallback callback;
+   const char *checked_icon;
+   const char *unchecked_icon;
    BOOL selected;
    int style;
 };
 
+#define CHKBOX_CLICK_OFFSETS_DEFAULT	{-300, -20, 300, 20 };
+
+static SsdClickOffsets sgChkBoxOffsets = CHKBOX_CLICK_OFFSETS_DEFAULT;
 static const char *yesno[] = {"yes", "no"};
 
-static const char *checked_button[] = {"checkbox_on", "round_checkbox_checked"};
-static const char *unchecked_button[] = {"checkbox_off", "round_checkbox_unchecked"};
+static const char *checked_button[] = {"checkbox_on", "round_checkbox_checked", "default_checkbox_on" };
+static const char *unchecked_button[] = {"checkbox_off", "round_checkbox_unchecked", "default_checkbox_off"};
 
 
 static int choice_callback (SsdWidget widget, const char *new_value) {
 
    struct ssd_checkbox_data *data;
    SsdWidget widget_parent;
-   
+
    widget_parent = widget->parent;
 
    data = (struct ssd_checkbox_data *)widget_parent->data;
-   
+
    if (data->selected)
-   		ssd_button_change_icon(widget,&unchecked_button[data->style],1 );
+   		ssd_button_change_icon(widget,&data->unchecked_icon,1 );
    else
-	    ssd_button_change_icon(widget,&checked_button[data->style],1);
+	    ssd_button_change_icon(widget,&data->checked_icon,1);
 
    data->selected = !data->selected;
-   
+
    if (data->callback)
    	(*data->callback)(widget, new_value);
    return 1;
@@ -80,7 +85,7 @@ static const char *get_value (SsdWidget widget) {
    else
    	return yesno[1];
 }
- 
+
 
 static const void *get_data (SsdWidget widget) {
    struct ssd_checkbox_data *data = (struct ssd_checkbox_data *)widget->data;
@@ -105,40 +110,55 @@ static int set_value (SsdWidget widget, const char *value) {
 
 
 static int set_data (SsdWidget widget, const void *value) {
-   
+
    struct ssd_checkbox_data *data = (struct ssd_checkbox_data *)widget->data;
-   
+
 	if ((!strcmp((char *)value,"Yes")) ||  (!strcmp((char *)value,"yes"))){
+		const char *checked_icon;
+
 		data->selected = TRUE;
-		ssd_button_change_icon(widget->children,&checked_button[data->style],1 );
+
+		if ( data->checked_icon )
+			checked_icon = data->checked_icon;
+		else
+			checked_icon = checked_button[data->style];
+
+		ssd_button_change_icon( widget->children, &checked_icon, 1 );
 	}
 	else{
+		const char *unchecked_icon;
+
 		data->selected = FALSE;
-		ssd_button_change_icon(widget->children,&unchecked_button[data->style],1 );
+
+		if ( data->unchecked_icon )
+			unchecked_icon = data->unchecked_icon;
+		else
+			unchecked_icon = unchecked_button[data->style];
+
+		ssd_button_change_icon( widget->children, &unchecked_icon, 1 );
 	}
 	return 1;
-} 
+}
 
 
-SsdWidget ssd_checkbox_new (const char *name, 
+SsdWidget ssd_checkbox_new (const char *name,
                           BOOL Selected,
                           int flags,
                           SsdCallback callback,
+                          const char *checked_icon,
+                          const char *unchecked_icon,
                           int style) {
 
-   
+
    SsdWidget button;
+   SsdWidget choice;
 
    struct ssd_checkbox_data *data =
       (struct ssd_checkbox_data *)calloc (1, sizeof(*data));
 
-   SsdWidget choice =
+   choice =
       ssd_container_new (name, NULL, SSD_MIN_SIZE, SSD_MIN_SIZE, flags);
-
-   SsdWidget text_box =
-      ssd_container_new ("text_box", NULL, SSD_MIN_SIZE,
-                         SSD_MIN_SIZE,
-                         SSD_WS_TABSTOP|SSD_ALIGN_VCENTER);
+   ssd_widget_set_color(choice, NULL, NULL);
 
    data->callback = callback;
    data->selected = Selected;
@@ -150,17 +170,26 @@ SsdWidget ssd_checkbox_new (const char *name,
    choice->data = data;
    choice->bg_color = NULL;
 
-   text_box->callback = choice_callback;
-   text_box->bg_color = NULL;
+   if (checked_icon == NULL)
+   		data->checked_icon = checked_button[data->style];
+   else
+   		data->checked_icon = checked_icon;
+
+   if (unchecked_icon == NULL)
+   		data->unchecked_icon = unchecked_button[data->style];
+   else
+   		data->unchecked_icon = unchecked_icon;
+
 
    if (Selected)
-   	button = ssd_button_new ("checkbox_button", "", &checked_button[data->style], 1,
-                   SSD_ALIGN_VCENTER|SSD_WS_TABSTOP, choice_callback);
+   	button = ssd_button_new ("checkbox_button", "", &data->checked_icon, 1,
+                   SSD_ALIGN_VCENTER, choice_callback);
    else
-   	button = ssd_button_new ("checkbox_button", "", &unchecked_button[data->style], 1,
-                   SSD_ALIGN_VCENTER|SSD_WS_TABSTOP, choice_callback);
-   	
+   	button = ssd_button_new ("checkbox_button", "", &data->unchecked_icon, 1,
+                   SSD_ALIGN_VCENTER, choice_callback);
    ssd_widget_add (choice, button);
+   ssd_widget_set_click_offsets( button, &sgChkBoxOffsets );
+   ssd_widget_set_click_offsets( choice, &sgChkBoxOffsets );
 
    return choice;
 }

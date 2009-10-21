@@ -24,8 +24,8 @@
 #ifndef INCLUDE__EDITOR_TRACK_REPORT__H
 #define INCLUDE__EDITOR_TRACK_REPORT__H
 
-#include "roadmap_types.h"
-#include "roadmap_gps.h"
+#include "../roadmap_types.h"
+#include "../roadmap_gps.h"
 
 #define  INVALID_NODE_ID                     (-1)
 #define  INVALID_COORDINATE                  (-1)
@@ -47,7 +47,7 @@ typedef struct tagNodeInTime
 {
    int      node;
    time_t   GPS_time;
-   
+
 }  NodeInTime, *LPNodeInTime;
 
 // path information
@@ -69,7 +69,7 @@ typedef struct
 void editor_track_report_init (void);
 RTPathInfo *editor_track_report_begin_export (int offline);
 void editor_track_report_conclude_export (int success);
-int editor_track_report_get_current_position (RoadMapGpsPosition*  GPS_position, 
+int editor_track_report_get_current_position (RoadMapGpsPosition*  GPS_position,
                                			 		 int*                 from_node,
                                			 		 int*                 to_node,
                                			 		 int*                 direction);

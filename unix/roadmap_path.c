@@ -41,11 +41,7 @@
 #include "roadmap_file.h"
 #include "roadmap_path.h"
 
-#ifdef IPHONE
 #define HOME_PREFIX ".waze"
-#else
-#define HOME_PREFIX ".freemap"
-#endif
 
 typedef struct RoadMapPathRecord *RoadMapPathList;
 
@@ -83,7 +79,7 @@ static const char *RoadMapPathSkinPreferred = "~/"HOME_PREFIX"/skins";
 /* The hardcoded path for configuration files (the "config" path).
  * (Note that the user directory (~/.waze) does not appear here
  * as it is implicitely used by the callers--see above.)
- */ 
+ */
 static const char *RoadMapPathConfig[] = {
 #ifdef QWS
    /* This is for the Sharp Zaurus PDA.. */
@@ -106,6 +102,7 @@ static const char *RoadMapPathConfigPreferred =
                       "~/"HOME_PREFIX;
 #endif
 
+static const char *RoadMapPathGpsSuffix = "gps/";
 
 /* The default path for the map files (the "maps" path): */
 static const char *RoadMapPathMaps[] = {
@@ -198,7 +195,7 @@ static RoadMapPathList roadmap_path_find (const char *name) {
 /* Directory path strings operations. -------------------------------------- */
 
 static char *roadmap_path_cat (const char *s1, const char *s2) {
-    
+
     char *result = malloc (strlen(s1) + strlen(s2) + 4);
 
     roadmap_check_allocated (result);
@@ -206,7 +203,7 @@ static char *roadmap_path_cat (const char *s1, const char *s2) {
     strcpy (result, s1);
     strcat (result, "/");
     strcat (result, s2);
-    
+
     return result;
 }
 
@@ -233,6 +230,30 @@ char *roadmap_path_parent (const char *path, const char *name) {
    *separator = 0;
 
    return full_name;
+}
+
+
+void roadmap_path_format (char *buffer, int buffer_size, const char *path, const char *name) {
+
+	int len1 = path ? strlen (path) + 1 : 0;
+	int len2 = name ? strlen (name) : 0;
+
+	if (len1 >= buffer_size) {
+		len1 = buffer_size - 1;
+	}
+	if (len1 + len2 >= buffer_size) {
+		len2 = buffer_size - 1 - len1;
+	}
+
+	// first copy file name, for the case where buffer and name are the same pointer
+	if (len2) {
+		memmove (buffer + len1, name, len2);
+	}
+	if (len1) {
+		memmove (buffer, path, len1 - 1);
+		buffer[len1 - 1] = '/';
+	}
+	buffer[len1 + len2] = '\0';
 }
 
 
@@ -295,24 +316,24 @@ const char *roadmap_path_user (void) {
 
 
 const char *roadmap_path_trips (void) {
-    
+
     static char  RoadMapDefaultTrips[] = HOME_PREFIX"/trips";
     static char *RoadMapTrips = NULL;
-    
+
     if (RoadMapTrips == NULL) {
-        
+
         RoadMapTrips = getenv("ROADMAP_TRIPS");
-        
+
         if (RoadMapTrips == NULL) {
             RoadMapTrips =
                roadmap_path_cat (roadmap_path_home(), RoadMapDefaultTrips);
         }
-        
+
         mkdir (RoadMapTrips, 0770);
     }
     return RoadMapTrips;
 }
-            
+
 
 static char *roadmap_path_expand (const char *item, size_t length) {
 
@@ -487,10 +508,14 @@ const char *roadmap_path_preferred (const char *name) {
 
 void roadmap_path_create (const char *path) {
 
+#ifdef IPHONE
+   mkdir(path, 0755);
+#else
    char command[256];
 
    snprintf (command, sizeof(command), "mkdir -p %s", path);
    system (command);
+#endif
 }
 
 
@@ -529,7 +554,7 @@ char **roadmap_path_list (const char *path, const char *extension) {
       if (entry->d_name[0] == '.') continue;
 
       if (length > 0) {
-         
+
          match = entry->d_name + strlen(entry->d_name) - length;
 
          if (! strcmp (match, extension)) {
@@ -603,3 +628,43 @@ const char *roadmap_path_temporary (void) {
    return "/var/tmp";
 }
 
+const char *roadmap_path_gps( void )
+{
+   static char *RoadMapPathGps = NULL;
+
+   if (RoadMapPathGps == NULL)
+   {
+	  RoadMapPathGps = roadmap_path_join( roadmap_path_user(), RoadMapPathGpsSuffix );
+	  roadmap_path_create( RoadMapPathGps );
+   }
+   return RoadMapPathGps;
+}
+
+const char *roadmap_path_images( void )
+{
+   static char *RoadMapPathImages = NULL;
+
+   if ( RoadMapPathImages == NULL )
+   {
+	  RoadMapPathImages = roadmap_path_join( roadmap_path_user(), "images" );
+	  roadmap_path_create( RoadMapPathImages );
+   }
+   return RoadMapPathImages;
+}
+
+const char *roadmap_path_debug( void )
+{
+   static char *RoadMapPathDebug = NULL;
+   
+   if ( RoadMapPathDebug == NULL )
+   {
+      RoadMapPathDebug = roadmap_path_join( roadmap_path_user(), "debug" );
+      roadmap_path_create( RoadMapPathDebug );
+   }
+   return RoadMapPathDebug;
+}
+
+const char *roadmap_path_config( void )
+{
+	return roadmap_path_user();
+}

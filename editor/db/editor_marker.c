@@ -32,6 +32,8 @@
 
 #include "roadmap.h"
 #include "roadmap_path.h"
+#include "roadmap_square.h"
+#include "roadmap_tile.h"
 
 #include "../editor_log.h"
 
@@ -67,7 +69,8 @@ int editor_marker_add(int longitude,
    
    editor_db_marker marker;
    int id;
-
+   RoadMapPosition pos;
+   
 	while (steering < 0) {
 		steering += 360;
 	}
@@ -75,10 +78,14 @@ int editor_marker_add(int longitude,
 		steering -= 360;
 	}
 	
+	pos.longitude = longitude;
+	pos.latitude = latitude;
+	marker.tile_timestamp = (int)roadmap_square_timestamp (roadmap_tile_get_id_from_position (0, &pos));
+	
    marker.longitude = longitude;
    marker.latitude  = latitude;
    marker.steering  = steering;
-   marker.time      = time;
+   marker.time      = (int)time;
    marker.type      = type;
    marker.flags     = flags | ED_MARKER_DIRTY;
 
@@ -121,6 +128,20 @@ void editor_marker_position(int marker,
    position->latitude = marker_st->latitude;
 
    if (steering) *steering = marker_st->steering;
+}
+
+
+int editor_marker_is_obsolete(int marker) {
+	
+   editor_db_marker *marker_st =
+      editor_db_get_item (ActiveMarkersDB, marker, 0, 0);
+   RoadMapPosition pos;
+   
+   assert(marker_st != NULL);
+
+	pos.longitude = marker_st->longitude;
+	pos.latitude = marker_st->latitude;
+	return (int)roadmap_square_timestamp (roadmap_tile_get_id_from_position (0, &pos)) > marker_st->tile_timestamp;
 }
 
 
@@ -236,18 +257,15 @@ int editor_marker_reg_type(EditorMarkerType *type) {
 
 
 void editor_marker_voice_file(int marker, char *file, int size) {
-   char *path = roadmap_path_join (roadmap_path_user (), "markers");
+   
+   char path[512];
    char file_name[100];
-   char *full_name;
 
+   roadmap_path_format (path, sizeof (path), roadmap_path_user (), "markers");
    roadmap_path_create (path);
    snprintf (file_name, sizeof(file_name), "voice_%d.wav", marker);
 
-   full_name = roadmap_path_join (path, file_name);
-   strncpy_safe (file, full_name, size);
-
-   roadmap_path_free (full_name);
-   roadmap_path_free (path);
+   roadmap_path_format (file, size, path, file_name);
 }
 
 

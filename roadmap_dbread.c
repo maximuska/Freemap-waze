@@ -52,10 +52,21 @@
 
 #include "roadmap_file.h"
 
+#ifdef RIMAPI
+#include "rimapi.h"
+#include <device_specific.h>
+#elif defined (J2ME)
+#include "zlib/zlib.h"
+#include <device_specific.h>
+#else
+#include "zlib/zlib.h"
+#endif
+
 #include "roadmap.h"
 #include "roadmap_path.h"
+#include "roadmap_data_format.h"
+#include "roadmap_tile_storage.h"
 #include "roadmap_dbread.h"
-#include "roadmap_gzm.h"
 
 
 typedef struct roadmap_db_context_s {
@@ -69,11 +80,9 @@ typedef struct roadmap_db_context_s {
 
 typedef struct roadmap_db_database_s {
 
-   char *name;
-   char *section;
+   int fips;
+   int tile_index;
 
-   RoadMapFileContext file;
-   int gzm_id;
    roadmap_db_data_file data;
 
    struct roadmap_db_database_s *next;
@@ -107,12 +116,12 @@ static unsigned int roadmap_db_size (const roadmap_db_data_file *data, unsigned 
 
 static unsigned int roadmap_db_sector_size (const roadmap_db_data_file *data, const roadmap_db_sector *sector) {
 
-	return roadmap_db_size (data, sector->first, sector->last);	
+	return roadmap_db_size (data, sector->first, sector->last);
 }
 
 static unsigned int roadmap_db_entry_size (const roadmap_db_data_file *data, unsigned int entry_id) {
 
-	return roadmap_db_size (data, entry_id, entry_id);	
+	return roadmap_db_size (data, entry_id, entry_id);
 }
 
 
@@ -120,27 +129,27 @@ static int roadmap_db_call_map (roadmap_db_database *database) {
 
    roadmap_db_model *model;
    int res = 1;
-   
+
    for (model = database->model;
    	  model != NULL;
    	  model = model->next) {
-   
+
   		void *handler_context = NULL;
 		roadmap_db_context *context;
-  		
+
    	if (roadmap_db_sector_size (&(database->data), &model->sector)) {
-   	   		
+
    		handler_context = model->handler->map (&database->data);
    		if (!handler_context) res = 0;
    	}
-   	
-		context = (roadmap_db_context *) malloc (sizeof (roadmap_db_context));	
+
+		context = (roadmap_db_context *) malloc (sizeof (roadmap_db_context));
 		roadmap_check_allocated (context);
-			
+
 		context->model = model;
 		context->next = database->context;
 		context->handler_context = handler_context;
-	
+
                 database->context = context;
    }
 
@@ -167,7 +176,7 @@ static void roadmap_db_call_activate (const roadmap_db_database *database) {
 			context->model->handler->activate (context->handler_context);
 		}
    }
-}   
+}
 
 
 static void roadmap_db_call_unmap (roadmap_db_database *database) {
@@ -184,7 +193,7 @@ static void roadmap_db_call_unmap (roadmap_db_database *database) {
         context = next) {
 
 		next = context->next;
-		
+
 		if (context->model &&
 			 context->model->handler &&
 			 context->model->handler->unmap &&
@@ -194,7 +203,7 @@ static void roadmap_db_call_unmap (roadmap_db_database *database) {
 		}
 		free (context);
    }
-   
+
    database->context = NULL;
 }
 
@@ -203,14 +212,12 @@ static void roadmap_db_close_database (roadmap_db_database *database) {
 
    roadmap_db_call_unmap (database);
 
-	if (database->gzm_id >= 0) {
-		roadmap_gzm_free_section (database->gzm_id, database->data.header);
-		roadmap_gzm_close (database->gzm_id);
-	}
-	
-   if (database->file != NULL) {
-      roadmap_file_unmap (&database->file);
-   }
+#ifdef NO_MAP_COMPRESSION
+	unsigned char *ptr = (unsigned char *)(database->data.header) - sizeof(roadmap_data_file_header);
+	free (ptr);
+#else
+	free (database->data.header);
+#endif
 
    if (database->next != NULL) {
       database->next->previous = database->previous;
@@ -221,8 +228,6 @@ static void roadmap_db_close_database (roadmap_db_database *database) {
       database->previous->next = database->next;
    }
 
-	if (database->section) free (database->section);
-   free(database->name);
    free(database);
 }
 
@@ -248,156 +253,117 @@ roadmap_db_model *roadmap_db_register
 
 
 
-roadmap_db_database *roadmap_db_find (const char *name, const char *section) {
+roadmap_db_database *roadmap_db_find (int fips, int tile_index) {
 
    roadmap_db_database *database;
 
    for (database = RoadmapDatabaseFirst;
-        database != NULL;
-        database = database->next) {
+         database != NULL;
+         database = database->next) {
 
-      if (strcmp (name, database->name) == 0) {
-      	if ((section && database->section && strcmp (section, database->section) == 0) ||
-      		 (section == NULL && database->section == NULL)) {
-         	break;
-      	}
+      if ((tile_index == database->tile_index) &&
+            (fips == database->fips)) {
+      	break;
       }
    }
-   
+
    return database;
 }
 
 
 static int roadmap_db_fill_data (roadmap_db_database *database, void *base, unsigned int size) {
 
-	if (size < sizeof (roadmap_data_header)) {
+	roadmap_tile_file_header *tile_header = (roadmap_tile_file_header *) base;
+	roadmap_data_file_header *file_header = (roadmap_data_file_header *) tile_header;
+	unsigned char *compressed_data = (unsigned char *)(tile_header + 1);
+	unsigned char *raw_data;
+	unsigned long raw_data_size;
+	int status;
+
+	if (size < sizeof (roadmap_tile_file_header)) {
 	   roadmap_log (ROADMAP_ERROR, "data file open: header size %u too small", size);
 	   return 0;
 	}
-	
-	
-	database->data.header = (roadmap_data_header *)base;
-	
-	if (memcmp (database->data.header->signature, ROADMAP_DATA_SIGNATURE, sizeof (database->data.header->signature))) {
+
+	if (memcmp (file_header->signature, ROADMAP_DATA_SIGNATURE, sizeof (file_header->signature))) {
 	   roadmap_log (ROADMAP_ERROR, "data file open: invalid signature %c%c%c%c",
-	   					database->data.header->signature[0],
-	   					database->data.header->signature[1],
-	   					database->data.header->signature[2],
-	   					database->data.header->signature[3]);
+	   					file_header->signature[0],
+	   					file_header->signature[1],
+	   					file_header->signature[2],
+	   					file_header->signature[3]);
 	   return 0;
 	}
-	
-	if (database->data.header->endianness != ROADMAP_DATA_ENDIAN_CORRECT) {
-	   roadmap_log (ROADMAP_ERROR, "data file open: invalid endianness value %08ux", database->data.header->endianness);
+
+	if (file_header->endianness != ROADMAP_DATA_ENDIAN_CORRECT) {
+	   roadmap_log (ROADMAP_ERROR, "data file open: invalid endianness value %08ux", file_header->endianness);
 	   return 0;
 	}
-	if (database->data.header->version != ROADMAP_DATA_CURRENT_VERSION) {
-	   roadmap_log (ROADMAP_ERROR, "data file open: invalid version %08ux", database->data.header->version);
+	if (file_header->version != ROADMAP_DATA_CURRENT_VERSION) {
+	   roadmap_log (ROADMAP_ERROR, "data file open: invalid version 0x%x != 0x%x", file_header->version, ROADMAP_DATA_CURRENT_VERSION);
 	   return 0;
 	}
-	
+	if (tile_header->compressed_data_size != size - sizeof (roadmap_tile_file_header)) {
+	   roadmap_log (ROADMAP_ERROR, "data file size mismatch: expecting %d found %d",
+	   				 sizeof (roadmap_tile_file_header) + tile_header->compressed_data_size,
+	   				 size);
+	   return 0;
+
+	}
+
+	raw_data_size = tile_header->raw_data_size;
+
+#ifdef NO_MAP_COMPRESSION
+	// No compression
+	raw_data = (unsigned char *) compressed_data;
+#else
+	raw_data = malloc (raw_data_size);
+
+#ifdef RIMAPI
+	status = RIMAPI_ZLib_uncompress (raw_data, &raw_data_size, compressed_data, tile_header->compressed_data_size);
+#else
+	status = uncompress (raw_data, &raw_data_size, compressed_data, tile_header->compressed_data_size) == Z_OK;
+#endif
+
+	if (!status) {
+	   roadmap_log (ROADMAP_ERROR, "data file open: uncompress failed");
+		free (raw_data);
+		return 0;
+	}
+	if (raw_data_size != tile_header->raw_data_size) {
+	   roadmap_log (ROADMAP_ERROR, "uncompressed data size mismatch: expecting %d found %d",
+	   				 tile_header->raw_data_size, raw_data_size);
+		free (raw_data);
+		return 0;
+	}
+#endif
+
+	database->data.header = (roadmap_data_header *) raw_data;
+
 	database->data.byte_alignment_add = (1 << database->data.header->byte_alignment_bits) - 1;
 	database->data.byte_alignment_mask = ~database->data.byte_alignment_add;
-	
-	if (size < sizeof (roadmap_data_header) + 
+
+	if (raw_data_size < sizeof (roadmap_data_header) +
 				  database->data.header->num_sections * sizeof (roadmap_data_entry)) {
-	   roadmap_log (ROADMAP_ERROR, "data file open: size %u cannot contain index", size);
+	   roadmap_log (ROADMAP_ERROR, "data file open: size %lu cannot contain index", raw_data_size);
 	   return 0;
 	}
 	database->data.index = (roadmap_data_entry *)(database->data.header + 1);
-	
+
 	if (database->data.header->num_sections > 0 &&
-		 size < sizeof (roadmap_data_header) + 
+		 raw_data_size < sizeof (roadmap_data_header) +
 				  database->data.header->num_sections * sizeof (roadmap_data_entry) +
 				  database->data.index[database->data.header->num_sections - 1].end_offset) {
-				  	
-	   roadmap_log (ROADMAP_ERROR, "data file open: size %u cannot contain data", size);
+
+	   roadmap_log (ROADMAP_ERROR, "data file open: size %lu cannot contain data", raw_data_size);
 	   return 0;
 	}
 	database->data.data = (unsigned char *)(database->data.index + database->data.header->num_sections);
-	
-	return 1;			
+
+	return 1;
 }
 
 
-int roadmap_db_open (const char *name, const char *section, roadmap_db_model *model, const char* mode) {
-
-   char *full_name;
-   const char *type;
-   RoadMapFileContext file;
-   void *base = NULL;
-   int size = 0;
-
-   roadmap_db_database *database = roadmap_db_find (name, section);
-
-
-   if (database) {
-
-      roadmap_db_call_activate (database);
-      return 1; /* Already open. */
-   }
-
-	if (!section) {
-		type = ROADMAP_DATA_TYPE;
-	} else {
-		type = ROADMAP_GZM_TYPE;
-	}
-   full_name = malloc (strlen(name) + strlen(type) + 4);
-   roadmap_check_allocated(full_name);
-
-   strcpy (full_name, name);
-   strcat (full_name, type);
-
-	if (!section) {
-	   if (roadmap_file_map ("maps", full_name, NULL, mode, &file) == NULL) {
-	
-	      roadmap_log (ROADMAP_INFO, "cannot open database file %s", full_name);
-	      free (full_name);
-	      return 0;
-	   }
-	
-	   roadmap_log (ROADMAP_INFO, "Opening database file %s", full_name);
-	   database = malloc(sizeof(*database));
-	   roadmap_check_allocated(database);
-	
-	   database->file = file;
-	   database->name = strdup(name);
-	   base = roadmap_file_base (file);
-	   size = roadmap_file_size (file);
-	   database->gzm_id = -1;
-	   database->section = NULL;
-	} else {
-	   database = malloc(sizeof(*database));
-		database->gzm_id = roadmap_gzm_open (full_name);
-		if (database->gzm_id == -1) {
-	
-	      roadmap_log (ROADMAP_INFO, "cannot open map file %s", full_name);
-	      free (full_name);
-	      free (database);
-	      return 0;
-		}
-		if (roadmap_gzm_get_section (database->gzm_id, section, &base, &size) == -1) {
-	
-	      roadmap_log (ROADMAP_INFO, "cannot find section %s in map file %s", section, name);
-	      free (full_name);
-	      free (database);
-	      return 0;
-		}
-		
-		database->name = strdup (name);
-		database->section = strdup (section);
-		database->file = NULL;
-	}
-
-	if (!roadmap_db_fill_data (database, base, (unsigned int) size)) {
-	      
-	   roadmap_log (ROADMAP_INFO, "file %s has invalid format", full_name);
-      free (full_name);
-      free (database);
-      return 0;
-	}
-	
-   free (full_name);
+static int add_db_and_map (roadmap_db_database *database) {
 
    if (RoadmapDatabaseFirst != NULL) {
       RoadmapDatabaseFirst->previous = database;
@@ -405,10 +371,6 @@ int roadmap_db_open (const char *name, const char *section, roadmap_db_model *mo
    database->next       = RoadmapDatabaseFirst;
    database->previous   = NULL;
    RoadmapDatabaseFirst = database;
-
-
-   database->model = model;
-   database->context = NULL;
 
    if (! roadmap_db_call_map  (database)) {
       roadmap_db_close_database (database);
@@ -421,13 +383,101 @@ int roadmap_db_open (const char *name, const char *section, roadmap_db_model *mo
 }
 
 
-void roadmap_db_activate (const char *name, const char *section) {
+int roadmap_db_open (int fips, int tile_index, roadmap_db_model *model,
+                     const char* mode) {
 
-   roadmap_db_database *database = roadmap_db_find (name, section);
+   void *base = NULL;
+   size_t size = 0;
+
+   roadmap_db_database *database = roadmap_db_find (fips, tile_index);
 
    if (database) {
 
-      roadmap_log (ROADMAP_DEBUG, "Activating database %s", name);
+      roadmap_db_call_activate (database);
+      return 1; /* Already open. */
+   }
+
+   if (roadmap_tile_load(fips, tile_index, &base, &size) != 0) {
+
+      return 0;
+   }
+
+   roadmap_log (ROADMAP_INFO, "Opening database file fips:%d, index:%d", fips, tile_index);
+   database = malloc(sizeof(*database));
+   roadmap_check_allocated(database);
+
+   database->fips = fips;
+   database->tile_index = tile_index;
+
+	if (!roadmap_db_fill_data (database, base, (unsigned int) size)) {
+
+	   roadmap_log (ROADMAP_INFO, "tile %d (fips %d) has invalid format", tile_index, fips);
+	   free (base);
+      free (database);
+      roadmap_tile_remove (fips, tile_index);
+      return 0;
+	}
+
+#ifndef NO_MAP_COMPRESSION
+   // we use the base pointer as there's no compression.
+   free(base);
+#endif
+
+   database->model = model;
+   database->context = NULL;
+
+   return add_db_and_map(database);
+}
+
+
+int roadmap_db_open_mem (int fips, int tile_index, roadmap_db_model *model,
+                         void *data, size_t size) {
+
+   roadmap_db_database *database = roadmap_db_find (fips, tile_index);
+   assert(!database);
+
+   if (database) {
+      roadmap_db_close_database (database);
+   }
+
+   database = malloc(sizeof(*database));
+   roadmap_check_allocated(database);
+
+   database->fips = fips;
+   database->tile_index = tile_index;
+
+#ifdef NO_MAP_COMPRESSION
+   {
+      void *orig = data;
+      data = malloc(size);
+      memcpy(data, orig, size);
+   }
+#endif
+
+	if (!roadmap_db_fill_data (database, data, (unsigned int) size)) {
+
+	   roadmap_log (ROADMAP_INFO, "tile mem for index:%d (fips %d) has invalid format", tile_index, fips);
+#ifdef NO_MAP_COMPRESSION
+      free(data);
+#endif
+      free (database);
+      return 0;
+	}
+
+   database->model = model;
+   database->context = NULL;
+
+   return add_db_and_map(database);
+}
+
+
+void roadmap_db_activate (int fips, int tile_index) {
+
+   roadmap_db_database *database = roadmap_db_find (fips, tile_index);
+
+   if (database) {
+
+      roadmap_log (ROADMAP_DEBUG, "Activating tile %d (fips %d)", tile_index, fips);
 
       roadmap_db_call_activate (database);
 
@@ -435,54 +485,57 @@ void roadmap_db_activate (const char *name, const char *section) {
    }
 
    roadmap_log
-      (ROADMAP_ERROR, "cannot activate database %s (not found)", name);
+      (ROADMAP_ERROR, "cannot activate tile %d (fips %d) (not found)", tile_index, fips);
 }
 
 
 int	roadmap_db_exists (const roadmap_db_data_file *file, const roadmap_db_sector *sector) {
-	
+
 	return roadmap_db_sector_size (file, sector) > 0;
 }
 
 
-int	roadmap_db_get_data (const roadmap_db_data_file *file, 
+int	roadmap_db_get_data (const roadmap_db_data_file *file,
 									unsigned int data_id,
-									unsigned int item_size, 
-									void 			 **data, 
+									unsigned int item_size,
+									void 			 **data,
 									int 			 *num_items) {
 
 	unsigned int offset = roadmap_db_entry_offset (file, data_id);
 	unsigned int size = roadmap_db_entry_size (file, data_id);
 
 	assert (item_size > 0);
-		
+
 	if (size % item_size) {
       roadmap_log (ROADMAP_WARNING, "Invalid data size - item size %u data size %u", item_size, size);
       return 0;
-	}		
-	
+	}
+
 	if (data) {
 		if (size)	*data = file->data + offset;
 		else			*data = NULL;
 	}
 	if (num_items) *num_items = size / item_size;
-	return 1;								
+	return 1;
 }
 
 
-void roadmap_db_sync (char *name) {
+int roadmap_db_close (int fips, int tile_index) {
 
-   roadmap_db_database *database = roadmap_db_find (name, NULL);
+   roadmap_db_database *database = roadmap_db_find (fips, tile_index);
 
-   if (database) roadmap_file_sync (database->file);
+   if (database) {
+   	roadmap_db_close_database (database);
+   }
+
+   return database != NULL;
 }
 
 
-void roadmap_db_close (const char *name, const char *section) {
+void roadmap_db_remove (int fips, int tile_index) {
 
-   roadmap_db_database *database = roadmap_db_find (name, section);
-
-   if (database) roadmap_db_close_database (database);
+	roadmap_db_close (fips, tile_index);
+	roadmap_tile_remove (fips, tile_index);
 }
 
 
@@ -502,15 +555,32 @@ void roadmap_db_end (void) {
 const char *roadmap_db_map_path (void) {
 
    const char *map_path;
-#ifdef WIN32
-	map_path = roadmap_path_join (roadmap_path_user(), "maps");
-#else
-   map_path = roadmap_path_first ("maps");
-   while (map_path && !roadmap_file_exists (map_path,"")) {
-   	map_path = roadmap_path_next ("maps", map_path);
-   }
-#endif
+   static char map_path_static[512];
+   static int map_path_initialized = 0;
 
-   return map_path;
+   if (!map_path_initialized) {
+
+	#ifdef J2ME
+      map_path = "recordstore:/";
+		//strncpy_safe (map_path_static, map_path, sizeof (map_path_static));
+	#elif defined (WIN32) && !defined(__SYMBIAN32__)
+		map_path = roadmap_path_join (roadmap_path_user(), "maps");
+		strncpy_safe (map_path_static, map_path, sizeof (map_path_static));
+		roadmap_path_free (map_path);
+	#else
+	   map_path = roadmap_path_first ("maps");
+	   while (map_path && !roadmap_file_exists (map_path,"")) {
+	   	map_path = roadmap_path_next ("maps", map_path);
+	   }
+	   if (map_path) {
+			strncpy_safe (map_path_static, map_path, sizeof (map_path_static));
+	   } else {
+	   	map_path_static[0] = '\0';
+	   }
+	#endif
+		map_path_initialized = 1;
+   }
+
+   return map_path_static;
 }
 

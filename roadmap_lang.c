@@ -44,13 +44,15 @@ struct RoadMapLangItem {
    const char *value;
 };
 
+static BOOL initialized = FALSE;
 static struct RoadMapLangItem *RoadMapLangItems;
 static int RoadMapLangSize;
 static int RoadMapLangCount;
 static RoadMapHash *RoadMapLangHash;
 static int RoadMapLangLoaded = 0;
 static int RoadMapLangRTL = 0;
-
+static RoadMapConfigDescriptor RoadMapConfigSystemLanguage =
+                        ROADMAP_CONFIG_ITEM("System", "Language");
 
 static void roadmap_lang_allocate (void) {
 
@@ -94,11 +96,13 @@ static int roadmap_lang_load (const char *path) {
    char *p;
    FILE *file;
    char  line[1024];
-
+   char file_name[20];
+   
    char *name;
    char *value;
 
-   file = roadmap_file_fopen (path, "lang", "sr");
+   sprintf(file_name, "lang.%s", roadmap_lang_get_system_lang());
+   file = roadmap_file_fopen (path, file_name, "sr");
    if (file == NULL) return 0;
 
    while (!feof(file)) {
@@ -134,11 +138,19 @@ static int roadmap_lang_load (const char *path) {
     return 1;
 }
 
+void roadmap_lang_initialize_param(void){
+   roadmap_config_declare
+         ("user", &RoadMapConfigSystemLanguage, "eng", NULL);
+  
+}
 
 void roadmap_lang_initialize (void) {
 
    const char *p;
-
+   initialized = TRUE;
+   
+   roadmap_lang_initialize_param();
+   
    roadmap_lang_allocate ();
 
 #ifndef J2ME
@@ -174,6 +186,19 @@ const char* roadmap_lang_get (const char *name) {
    return name;
 }
 
+const char *roadmap_lang_get_system_lang(){
+   static const char* system_lang;
+   
+   return roadmap_config_get (&RoadMapConfigSystemLanguage);
+}
+
+void roadmap_lang_set_system_lang(const char *lang){
+   if (!initialized)
+      roadmap_lang_initialize_param();
+   
+   roadmap_config_set(&RoadMapConfigSystemLanguage, lang);
+   roadmap_config_save(TRUE);
+}
 
 int roadmap_lang_rtl (void) {
    return RoadMapLangRTL;

@@ -488,9 +488,9 @@ void CRoadMapNativeSocket::InvokeIOCallback(int aConnectionStatus)
     //  Set up the IO object
     //  Inform our client that we have a connection
 	if (aConnectionStatus == 0)
-		(*m_pConnectCallback)(this, m_context, neterr_success);
+		(*m_pConnectCallback)(this, m_context, succeeded);
 	else
-		(*m_pConnectCallback)(this, m_context, neterr_general_error);
+		(*m_pConnectCallback)(this, m_context, err_net_failed);
   }
 }
 

@@ -48,17 +48,17 @@ typedef struct {
    char *name;
    roadmap_alerts_count    					count;
    roadmap_alerts_get_alert_id 				get_id;
-   roadmap_alerts_get_position  			get_position;
+   roadmap_alerts_get_position  			   get_position;
    roadmap_alerts_get_speed					get_speed;
    roadmap_alerts_get_map_icon    			get_map_icon;
    roadmap_alerts_get_alert_icon    		get_alert_icon;
-   roadmap_alerts_get_warning_icon		    get_warning_icon;
+   roadmap_alerts_get_warning_icon		   get_warning_icon;
    roadmap_alerts_get_distance				get_distance;
    roadmap_alerts_get_sound					get_sound;
    roadmap_alerts_is_alertable				is_alertable;
-   roadmap_alerts_get_string				get_string;
-   roadmap_alerts_is_cancelable			    is_cancelable;
-   roadmap_alerts_cancel					cancel;   
+   roadmap_alerts_get_string				   get_string;
+   roadmap_alerts_is_cancelable			   is_cancelable;
+   roadmap_alerts_cancel					   cancel;   
 } roadmap_alert_providor;
 
 typedef struct {

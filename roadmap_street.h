@@ -119,7 +119,7 @@ int roadmap_street_get_distance
 
 int roadmap_street_get_closest
        (const RoadMapPosition *position, int scale, int *categories, int categories_count,
-        RoadMapNeighbour *neighbours, int max);
+        int max_shapes, RoadMapNeighbour *neighbours, int max);
 
 int roadmap_street_intersection (const char *state,
                                  const char *street1_name,

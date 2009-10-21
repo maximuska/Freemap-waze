@@ -126,6 +126,9 @@ RESOURCE DIALOG r_add_note_query
             lines = 1;
             maxlength = 100; 
             default_case = EAknEditorLowerCase;
+            default_input_mode = EAknEditorTextInputMode;
+            allowed_input_modes = EAknEditorTextInputMode;
+            numeric_keymap=EAknEditorAlphanumericNumberModeKeymap;
             //max_view_height_in_lines = 1; 
             //base_line_delta = 21; 
           };

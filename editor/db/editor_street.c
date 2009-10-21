@@ -106,7 +106,8 @@ static int editor_street_get_distance_with_shape
                int line,
                int square,
                int fips,
-               RoadMapNeighbour *neighbour) {
+               RoadMapNeighbour *neighbours,
+               int max) {
 
    RoadMapPosition from;
    RoadMapPosition to;
@@ -115,13 +116,12 @@ static int editor_street_get_distance_with_shape
    int cfcc;
    int trkseg;
    int i;
-   int smallest_distance;
    RoadMapNeighbour current;
+   int found = 0;
 
    editor_line_get (line, &from, &to, &trkseg, &cfcc, NULL);
 
    roadmap_plugin_set_line (&current.line, EditorPluginID, line, cfcc, square, fips);
-   smallest_distance = 0x7fffffff;
    current.from = from;
 
    editor_trkseg_get (trkseg, &i, &first_shape, &last_shape, NULL);
@@ -143,10 +143,7 @@ static int editor_street_get_distance_with_shape
                (position, &current.from,
                 &current.to, &current.intersection, NULL);
 
-         if (current.distance < smallest_distance) {
-            smallest_distance = current.distance;
-            *neighbour = current;
-         }
+			found = roadmap_street_replace (neighbours, found, max, &current);
       }
 
       current.from = current.to;
@@ -159,13 +156,10 @@ static int editor_street_get_distance_with_shape
          roadmap_math_get_distance_from_segment
             (position, &current.to, &current.from, &current.intersection, NULL);
 
-      if (current.distance < smallest_distance) {
-         smallest_distance = current.distance;
-         *neighbour = current;
-      }
+		found = roadmap_street_replace (neighbours, found, max, &current);
    }
 
-   return smallest_distance < 0x7fffffff;
+   return found;
 }
 
 
@@ -178,7 +172,8 @@ int editor_street_get_distance (const RoadMapPosition *position,
        roadmap_plugin_get_line_id (line),
        roadmap_plugin_get_square (line),
        roadmap_plugin_get_fips (line),
-       result);
+       result,
+       1);
 
 }
 
@@ -186,6 +181,7 @@ int editor_street_get_distance (const RoadMapPosition *position,
 int editor_street_get_closest (const RoadMapPosition *position,
                                int *categories,
                                int categories_count,
+                               int max_shapes,
                                RoadMapNeighbour *neighbours,
                                int count,
                                int max) {
@@ -193,10 +189,16 @@ int editor_street_get_closest (const RoadMapPosition *position,
    int i;
    int min_category = 256;
    int lines_count;
-   RoadMapNeighbour this;
    int found = 0;
    int fips = roadmap_locator_active ();
    int line;
+   RoadMapNeighbour this[3];
+   int max_possible_shapes = (int)(sizeof(this) / sizeof(this[0]));
+   
+   if (max_shapes > max_possible_shapes) {
+   	max_shapes = max_possible_shapes;
+   }
+
 
 	if (!editor_plugin_get_override ()) return count;
 	
@@ -223,10 +225,10 @@ int editor_street_get_closest (const RoadMapPosition *position,
       if (cfcc < min_category) continue;
 
       found = editor_street_get_distance_with_shape
-                           (position, line, -1, fips, &this);
+                           (position, line, -1, fips, this, max_shapes);
 
-      if (found) {
-         count = roadmap_street_replace (neighbours, count, max, &this);
+      for (i = 0; i < found; i++) {
+         count = roadmap_street_replace (neighbours, count, max, this + i);
       }
     }
 

@@ -43,6 +43,6 @@ typedef enum privacy_context_menu_items
 
 void RealtimePrivacyInit(void);
 void RealtimePrivacySettings(void);
-int  RealtimePrivacytState(void);
+int  RealtimePrivacyState(void);
 
 #endif /*REALTIMEPRIVACY_H_*/

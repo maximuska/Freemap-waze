@@ -53,44 +53,60 @@
 #define SSD_WS_DEFWIDGET    0x00200000
 #define SSD_TAB_CONTROL     0x00400000
 
-#define SSD_POINTER_NONE	0x01000000
-#define SSD_POINTER_COMMENT	0x02000000
-#define SSD_POINTER_MENU	0x04000000
-#define SSD_HEADER_GREEN    0x08000000
-#define SSD_HEADER_GRAY     0x10000000
+#define SSD_POINTER_LOCATION 0x00800000
+#define SSD_POINTER_NONE	  0x01000000
+#define SSD_POINTER_COMMENT  0x02000000
+#define SSD_POINTER_MENU	  0x04000000
+#define SSD_HEADER_GREEN     0x08000000
+#define SSD_ROUNDED_BLACK    0x10000000
+#define SSD_ROUNDED_WHITE    0x40000000
+#define SSD_HEADER_RED   	  0x80000000
 
 /* Draw flags */
 #define SSD_GET_SIZE           0x1
 #define SSD_GET_CONTAINER_SIZE 0x2
 
 /* Buttons flags */
-#define SSD_BUTTON_KEY        0x1000
-#define SSD_BUTTON_TEXT       0x2000
-#define SSD_BUTTON_TEXT_BELOW 0x4000
-#define SSD_BUTTON_NO_TEXT     0x8000
+#define SSD_BUTTON_KEY           0x1000
+#define SSD_BUTTON_TEXT          0x2000
+#define SSD_BUTTON_TEXT_BELOW    0x4000
+#define SSD_BUTTON_NO_TEXT       0x8000
 
 /* Dialogs */
 #define SSD_DIALOG_FLOAT          0x10000
 #define SSD_DIALOG_TRANSPARENT    0x20000
 #define SSD_DIALOG_GUI_TAB_ORDER  0x40000
 #define SSD_DIALOG_VERTICAL       0x80000
+#define SSD_DIALOG_NO_SCROLL      0x100000
+#define SSD_DIALOG_NO_BACK        0x200000
 
 /* Container flags */
-#define SSD_CONTAINER_BORDER 	0x1000
-#define SSD_CONTAINER_TITLE  	0x2000
-#define SSD_ROUNDED_CORNERS	    0x4000
-#define SSD_BG_IMAGE 		    0x8000
+#define SSD_CONTAINER_BORDER 	    0x1000
+#define SSD_CONTAINER_TITLE  	    0x2000
+#define SSD_ROUNDED_CORNERS	        0x4000
+#define SSD_NO_BG_IMAGE 		    0x8000
+#define SSD_CONTAINER_TXT_BOX     0x20000000
 
 /* Text flags */
 #define SSD_TEXT_LABEL    0x1000 /* Adds a ':' sign */
 #define SSD_TEXT_PASSWORD 0x2000
 #define SSD_TEXT_READONLY 0x4000
 
-#define  SSD_ROUNDED_CORNER_WIDTH            (10)
-#define  SSD_ROUNDED_CORNER_HEIGHT           (10)
+/* Context-menu flags   */
+#define SSD_CONTEXTMENU_ROUNDED              0x0000
+#define SSD_CONTEXTMENU_SIMPLE_LIST          0x0001
+#define SSD_CONTEXTMENU_DROP_DOWN            0x0002
+#define SSD_CONTEXTMENU_USE_SIZE             0x0004
+
+#define  SSD_ROUNDED_CORNER_WIDTH            (6)
+#define  SSD_ROUNDED_CORNER_HEIGHT           (6)
 
 #define  SOFT_MENU_BAR_HEIGHT                (24)
 #define  TITLE_BAR_HEIGHT                    (24)
+
+/** TODO:: These have to be configurable because the PPI differs for various screens !!! * AGA */
+#define SSD_DIALOG_OBJ_FRAME_OFFSET_X		35
+#define SSD_DIALOG_OBJ_FRAME_OFFSET_Y		35
 
 typedef enum {
 
@@ -100,7 +116,7 @@ typedef enum {
    FOCUS_RIGHT,
    FOCUS_UP,
    FOCUS_DOWN
-   
+
 } SSD_FOCUS_DIRECTION;
 
 typedef struct ssd_size {
@@ -113,6 +129,13 @@ typedef struct ssd_point {
    short y;
 } SsdPoint;
 
+typedef struct {
+   int left;
+   int top;
+   int right;
+   int bottom;
+} SsdClickOffsets;
+
 struct ssd_widget;
 typedef struct ssd_widget *SsdWidget;
 
@@ -121,7 +144,7 @@ typedef struct ssd_widget *SsdWidget;
  */
 typedef int (*SsdCallback) (SsdWidget widget, const char *new_value);
 typedef int (*SsdSoftKeyCallback) (SsdWidget widget, const char *new_value, void *context);
-typedef BOOL(*PFN_WIDGET_ONKEYPRESSED) (SsdWidget widget, const char* utf8char, uint32_t flags);
+typedef BOOL(*CB_OnWidgetKeyPressed) (SsdWidget widget, const char* utf8char, uint32_t flags);
 typedef void(*SsdDrawCallback)(SsdWidget widget, RoadMapGuiRect *rect, int flags);
 
 struct ssd_widget {
@@ -142,16 +165,17 @@ struct ssd_widget {
    int offset_y;
 
    int         flags;
-   BOOL        tab_stop;        //  Can we receive the focus?
-   BOOL        default_widget;  //  First this to receive the focus in the dialog
-   BOOL        in_focus;        //  Keyboard focus
-   BOOL        background_focus;//  Visability-only focus (nested context menus)
+   BOOL        tab_stop;        	//  Can we receive the focus?
+   BOOL        default_widget;  	//  First this to receive the focus in the dialog
+   BOOL        in_focus;        	//  Keyboard focus
+   BOOL        focus_highlight;  	//  Keyboard focus highlight ( TRUE by default )
+   BOOL        background_focus;	//  Visability-only focus (nested context menus)
    int         tab_sequence;
-   
+
    SsdWidget   prev_tabstop;    //  Previous this in the tab order
    SsdWidget   next_tabstop;    //  Next     this in the tab order
-   SsdWidget   left_tabstop;    //  GUI location tab-stop:   Left
-   SsdWidget   right_tabstop;   //  GUI location tab-stop:   Right
+   SsdWidget   tabstop_left;    //  GUI location tab-stop:   Left
+   SsdWidget   tabstop_right;   //  GUI location tab-stop:   Right
    SsdWidget   tabstop_above;   //  GUI location tab-stop:   Up
    SsdWidget   tabstop_below;   //  GUI location tab-stop:   Down
    void*       parent_dialog;   //  Parent dialog
@@ -165,10 +189,15 @@ struct ssd_widget {
    RoadMapGuiPoint position;
    const char *right_softkey;
    const char *left_softkey;
-   
+
+   BOOL force_click; /* Force click in case of motion in the click area */
+   SsdClickOffsets click_offsets;	/* Offsets added to the widget borders in order
+									 * to determine that the object was clicked
+									 */
+
    SsdSoftKeyCallback right_softkey_callback;
    SsdSoftKeyCallback left_softkey_callback;
-   
+
    void *data; /* Widget specific data */
 
    const char * (*get_value)(SsdWidget widget);
@@ -177,6 +206,7 @@ struct ssd_widget {
    int  (*set_data)        (SsdWidget widget, const void *value);
    void (*draw)            (SsdWidget widget, RoadMapGuiRect *rect, int flags);
    int  (*pointer_down)    (SsdWidget widget, const RoadMapGuiPoint *point);
+   int  (*pointer_up)      (SsdWidget widget, const RoadMapGuiPoint *point);
    int  (*short_click)     (SsdWidget widget, const RoadMapGuiPoint *point);
    int  (*long_click)      (SsdWidget widget, const RoadMapGuiPoint *point);
    int  (*drag_start)      (SsdWidget widget, const RoadMapGuiPoint *point);
@@ -187,7 +217,7 @@ struct ssd_widget {
         (*get_input_type)  (SsdWidget widget);
 };
 
-SsdWidget ssd_widget_new (const char *name, PFN_WIDGET_ONKEYPRESSED key_pressed, int flags);
+SsdWidget ssd_widget_new (const char *name, CB_OnWidgetKeyPressed key_pressed, int flags);
 SsdWidget ssd_widget_get (SsdWidget child, const char *name);
 void ssd_widget_draw (SsdWidget w, const RoadMapGuiRect *rect,
                       int parent_flags);
@@ -195,6 +225,7 @@ void ssd_widget_set_callback (SsdWidget widget, SsdCallback callback);
 int  ssd_widget_rtl (SsdWidget parent);
 
 int ssd_widget_pointer_down (SsdWidget widget, const RoadMapGuiPoint *point);
+int ssd_widget_pointer_up   (SsdWidget widget, const RoadMapGuiPoint *point);
 int ssd_widget_short_click  (SsdWidget widget, const RoadMapGuiPoint *point);
 int ssd_widget_long_click   (SsdWidget widget, const RoadMapGuiPoint *point);
 
@@ -202,11 +233,12 @@ void        ssd_widget_set_backgroundfocus( SsdWidget w, BOOL set);
 BOOL        ssd_widget_set_focus   (SsdWidget widget);
 void        ssd_widget_loose_focus (SsdWidget widget);
 SsdWidget   ssd_widget_move_focus (SsdWidget w, SSD_FOCUS_DIRECTION direction);
+SsdWidget   ssd_widget_get_next_focus( SsdWidget w);
 
 SsdWidget ssd_widget_sort_tab_order   (void* parent_dialog, SsdWidget head);
-void      ssd_widget_sort_gui_tab_order   (SsdWidget first_tab_stop);
+SsdWidget ssd_widget_sort_gui_tab_order(SsdWidget first_tab_stop);
 void      ssd_widget_reset_tab_order   (SsdWidget head);
-
+void      ssd_widget_reset_position (SsdWidget w);
 BOOL      ssd_widget_on_key_pressed (SsdWidget widget, const char* utf8char, uint32_t flags);
 
 const char *ssd_widget_get_value (const SsdWidget widget, const char *name);
@@ -239,10 +271,24 @@ void ssd_widget_hide (SsdWidget w);
 void ssd_widget_show (SsdWidget w);
 
 SsdWidget ssd_widget_find_by_pos (SsdWidget widget,
-                                  const RoadMapGuiPoint *point);
+                                  const RoadMapGuiPoint *point, BOOL use_offsets );
+
+BOOL ssd_widget_check_point_location(SsdWidget widget,
+                                  const RoadMapGuiPoint *point, int frame_offset_x, int frame_ofset_y );
+BOOL ssd_widget_find_clickable_by_pos (SsdWidget widget, const RoadMapGuiPoint *point,
+											SsdWidget* widget_short_click, SsdWidget* widget_long_click );
+
 
 int ssd_widget_set_left_softkey_text(SsdWidget widget, const char *value);
 int ssd_widget_set_right_softkey_text(SsdWidget widget, const char *value);
 void ssd_widget_set_right_softkey_callback (SsdWidget widget, SsdSoftKeyCallback callback);
 void ssd_widget_set_left_softkey_callback (SsdWidget widget, SsdSoftKeyCallback callback);
+int ssd_widget_pointer_down_force_click (SsdWidget widget, const RoadMapGuiPoint *point);
+int ssd_widget_pointer_up_force_click (SsdWidget widget, const RoadMapGuiPoint *point);
+void ssd_widget_set_pointer_force_click( SsdWidget widget );
+void ssd_widget_set_click_offsets( SsdWidget widget, const SsdClickOffsets* offsets );
+void ssd_widget_set_click_offsets_ext( SsdWidget widget, int left, int top, int right, int bottom );
+BOOL ssd_widget_contains_point(  SsdWidget widget, const RoadMapGuiPoint *point, BOOL use_offsets );
+void ssd_widget_set_focus_highlight( SsdWidget widget, BOOL is_highlight );
+
 #endif // __SSD_WIDGET_H_

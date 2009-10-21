@@ -24,23 +24,24 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #include <time.h>
-#include "RealtimeDefs.h"
+#include "Realtime/RealtimeDefs.h"
 #include "roadmap_net.h"
 #include "../roadmap_gps.h"
+
+#include "websvc_trans/websvc_trans.h"
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #define  RTNET_SESSION_TIME                     (75)  /* seconds */
-#define  RTNET_RESPONSE_TAG_MAXSIZE             (31)
 #define  RTNET_SERVERCOOKIE_MAXSIZE             (63)
 #define  RTNET_WEBSERVICE_ADDRESS               ("")
-#define  RTNET_PROTOCOL_VERSION                 (105)
+#define  RTNET_PROTOCOL_VERSION                 (115)
 #define  RTNET_PACKET_MAXSIZE                   MESSAGE_MAX_SIZE__AllTogether
 #define  RTNET_PACKET_MAXSIZE__dynamic(_GPSPointsCount_,_NodesPointsCount_)      \
                MESSAGE_MAX_SIZE__AllTogether__dynamic(_GPSPointsCount_,_NodesPointsCount_)
 
-#define  RTNET_HTTP_STATUS_STRING_MAXSIZE       (63)
+//efine  RTNET_HTTP_STATUS_STRING_MAXSIZE       (63)
 #define  RTTRK_GPSPATH_MAX_POINTS               (100)
 #define  RTTRK_NODEPATH_MAX_POINTS              (60)
 #define  RTTRK_CREATENEWROADS_MAX_TOGGLES       (40)
@@ -56,7 +57,7 @@
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-// BUFFER SIZES   // 
+// BUFFER SIZES   //
 ////////////////////
 
 // RTNet_HttpAsyncTransaction:
@@ -67,14 +68,6 @@
 //    thus maximum additional size is:  20 20 20 10 20 10 10      (110)
 //    To be on the safe-side, call it: 256
 #define  HttpAsyncTransaction_MAXIMUM_SIZE_NEEDED_FOR_ADDITIONAL_PARAMS    (256)
-
-#define  HTTP_HEADER_MAX_SIZE                                           \
-         /* POST /rtserver/Login HTTP/1.0\r\n         */    (60 +       \
-         /* Host: http://62.219.147.126:80\r\n        */     40 +       \
-         /* User-Agent: FreeMap/1.0.0.0\r\n           */     32 +       \
-         /* Content-type: binary/octet-stream\r\n     */     38 +       \
-         /* Content-Length: 10000\r\n                 */     32 +       \
-         /* \r\n                                      */      2)
 
 #define  CUSTOM_HEADER_MAX_SIZE              (20 + RTNET_SERVERCOOKIE_MAXSIZE)
 //             "UID,<%ddddddddd>,<RTNET_SERVERCOOKIE_MAXSIZE>\r\n"
@@ -102,7 +95,7 @@
 															 RT_USERNM_MAXSIZE * 2 + 1 + \
 															 10 + 1 + \
 															 64)
-															  
+
 
 #define  MESSAGE_MAX_SIZE__AllTogether             \
          (  HTTP_HEADER_MAX_SIZE                +  \
@@ -140,13 +133,13 @@
                            (RTNET_GPSPATH_BUFFERSIZE_single_row * RTTRK_GPSPATH_MAX_POINTS)
 #define  RTNET_GPSPATH_BUFFERSIZE_rows__dynamic(_n_)                    \
                            (RTNET_GPSPATH_BUFFERSIZE_single_row * _n_)
-                           
+
 #define  RTNET_GPSPATH_BUFFERSIZE                                       \
                            (RTNET_GPSPATH_BUFFERSIZE_command_name    +  \
                             RTNET_GPSPATH_BUFFERSIZE_time_offset     +  \
                             RTNET_GPSPATH_BUFFERSIZE_row_count       +  \
                             RTNET_GPSPATH_BUFFERSIZE_rows)
-                            
+
 #define  RTNET_GPSPATH_BUFFERSIZE__dynamic(_n_)                         \
                            (RTNET_GPSPATH_BUFFERSIZE_command_name    +  \
                             RTNET_GPSPATH_BUFFERSIZE_time_offset     +  \
@@ -155,10 +148,10 @@
 
 #define   RTNET_CREATENEWROADS_BUFFERSIZE                                  \
                            (MESSAGE_MAX_SIZE__CreateNewRoads * RTTRK_CREATENEWROADS_MAX_TOGGLES)
-                           
+
 #define   RTNET_CREATENEWROADS_BUFFERSIZE__dynamic(_n_)                    \
                            (MESSAGE_MAX_SIZE__CreateNewRoads * (_n_))
-                           
+
 
 // Buffer sizes for Node path string
 // ---------------------------------
@@ -175,117 +168,18 @@
                            (RTNET_NODEPATH_BUFFERSIZE_single_row * RTTRK_NODEPATH_MAX_POINTS)
 #define  RTNET_NODEPATH_BUFFERSIZE_rows__dynamic(_n_)                    \
                            (RTNET_NODEPATH_BUFFERSIZE_single_row * _n_)
-                           
+
 #define  RTNET_NODEPATH_BUFFERSIZE                                      \
                            (RTNET_NODEPATH_BUFFERSIZE_command_name    + \
                             RTNET_NODEPATH_BUFFERSIZE_time_offset     + \
                             RTNET_NODEPATH_BUFFERSIZE_row_count       + \
                             RTNET_NODEPATH_BUFFERSIZE_rows)
-                            
+
 #define  RTNET_NODEPATH_BUFFERSIZE__dynamic(_n_)                        \
                            (RTNET_NODEPATH_BUFFERSIZE_command_name    + \
                             RTNET_NODEPATH_BUFFERSIZE_time_offset     + \
                             RTNET_NODEPATH_BUFFERSIZE_row_count       + \
                             RTNET_NODEPATH_BUFFERSIZE_rows__dynamic(_n_))
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-//   POST requests from the server:
-typedef enum tagERTPacketRequest
-{
-   REQ_Login,
-   REQ_GuestLogin,
-   REQ_LogOut,
-   REQ_At,
-   REQ_MapDisplayed,
-   REQ_SeeMe,
-   REQ_StartFollowUsers,
-   REQ_StopFollowUsers,
-   
-   REQ__count,
-   REQ__invalid
-
-}  ERTPacketRequest;
-
-const char*       ERTPacketRequest_to_string( ERTPacketRequest e);
-ERTPacketRequest  ERTPacketRequest_from_string( const char* szE);
-
-//   Server responses to the above requests:
-typedef enum tagERTPacketResponse
-{
-   RES_LoginSuccessful,
-   RES_LoginError,
-   RES_LogoutSuccessful,
-   RES_AddUser,
-   RES_UpdateUserLocation,
-   RES_RmUser,
-   RES_ReturnAfter,
-   RES_Fatal,
-   RES_Warning,
-   RES_AddAlert,
-   RES_RemoveAlert,
-   RES_AddAlertComment,
-   RES_SystemMessage,
-   RES_VersionUpgrade,
-   RES_AddRoadInfo,
-   RES_RmRoadInfo,
-
-   /* Must be last! */
-   RES__count,
-   RES__invalid
- 
-}  ERTPacketResponse;
-
-const char*         ERTPacketResponse_to_string( ERTPacketResponse e);
-ERTPacketResponse   ERTPacketResponse_from_string( const char* szE);
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//   Response Parser State
-typedef enum tagEParserState
-{
-   PS_Initialized,
-   PS_StatusVerified,
-   PS_Completed
-
-}  EParserState;
-
-typedef enum tagERealtimeErrors
-{
-   ERR_Success,
-   
-   ERR_NoDataToSend,
-   ERR_GeneralError,
-   ERR_NetworkError,
-   ERR_Aborted,
-   ERR_SessionTimedout,
-   ERR_ParsingError,
-   ERR_LoginFailed,
-   ERR_WrongNameOrPassword,
-   ERR_WrongNetworkSettings,
-   ERR_UnknownLoginID            // Server lost link to our login-id (maybe server was restarted?)
-
-}  ERTErrorCode;
-
-const char* GetErrorString( ERTErrorCode e);
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//   Response Parser
-//      Structure to hold details of the custom status ("200 OK")
-typedef struct tagRTResponseStatus
-{
-   int   iRC;
-   char  RC[RTNET_HTTP_STATUS_STRING_MAXSIZE+1];
-
-}  RTResponseStatus, *LPRTResponseStatus;
-
-void                 RTResponseStatus_Init( LPRTResponseStatus this);
-ETransactionResult   RTResponseStatus_Load( LPRTResponseStatus this, const char* szResponse, int* pBytesRead);
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -302,9 +196,12 @@ typedef struct tagRTConnectionInfo
 /* 7*/   RoadMapArea          LastMapPosSent;
 /* 8*/   RTUsers              Users;
 /* 9*/   ETransactionStatus   eTransactionStatus;
-/*10*/   EParserState         eParserState;
-/*11*/   ERTErrorCode         LastError;
-/*12*/   int                  AdditionalErrorInfo;
+/*10*/   BOOL                 bStatusVerified;
+/*11*/   roadmap_result       LastError;
+/*12*/   int                  iMyRanking;
+/*13*/   int                  iMyTotalPoints;
+/*14*/   int                  iMyRating;
+/*15*/   int                  iMyPreviousRanking;
 
 }  RTConnectionInfo, *LPRTConnectionInfo;
 
@@ -317,103 +214,33 @@ void RTConnectionInfo_ResetParser      ( LPRTConnectionInfo this);
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#define  RESPONSE_BUFFER_SIZE       (2 * 1024)
-
-//   Response Parser
-//      Structure used to follow the parser state
-typedef struct tagResponseBuffer
-{
-                                       //   The data. 
-   BYTE  Data[RESPONSE_BUFFER_SIZE+1]; //      Data is a NULL-terminated string
-                                 
-                                       //   For each 'read' iteration:
-   int   iDataSize;                    //   o   Size of the data read into the buffer 'Data'
-   int   iProcessed;                   //   o   Out of 'iDataSize', how much was processed
-   
-                                       //   For the overall transaction:
-   int   iCustomDataSize;              //   o   Overall size of all custom data
-   int   iCustomDataProcessed;         //   o   Out of 'iCustomDataSize', how much was processed
-
-   //   Internal usage:
-   BYTE* pNextRead;
-   int   iFreeSize;
-   
-}   ResponseBuffer, *LPResponseBuffer;
-
-void ResponseBuffer_Init      ( LPResponseBuffer this);
-void ResponseBuffer_Recycle   ( LPResponseBuffer this);
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//   Prototype for parser callback method:
-typedef ETransactionResult(*PFN_ONDATARECEIVED)( LPResponseBuffer pRI, void* pContext);
-
-//   Callbacks for data processing:
-ETransactionResult   OnHttpResponse    ( LPResponseBuffer pRI, void* pContext);
-ETransactionResult   OnLoginResponse   ( LPResponseBuffer pRI, void* pContext);
-ETransactionResult   OnRegisterResponse( LPResponseBuffer pRI, void* pContext);
-ETransactionResult   OnLogOutResponse  ( LPResponseBuffer pRI, void* pContext);
-ETransactionResult   OnGeneralResponse ( LPResponseBuffer pRI, void* pContext);
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-#define   RTNET_PREPARE_NETPACKET_HTTPREQUEST(_hdrTag_,_data_)    \
-               snprintf(AsyncPacket,                              \
-                        AsyncPacketSize,                          \
-                        "Content-type: binary/octet-stream\r\n"   \
-                        "Content-Length: %ld\r\n"                 \
-                        "\r\n"                                    \
-                        "%s",                                     \
-                        strlen( _data_),                          \
-                        _data_);                                  \
-                                                                  \
-               snprintf(FullCommand,                              \
-                        sizeof(FullCommand),                      \
-                        "%s/%s",                                  \
-                        gs_WebServiceAddress,                     \
-                        _hdrTag_)
-
-#define   RTNET_FORMAT_NETPACKET_OUR_HEADER(_command_)                  \
-         "UID,%d,%s\r\n%s",                                             \
-         pCI->iServerID, pCI->ServerCookie,_command_
-         
-#define   RTNET_CALC_BYTES_PROCESSED(_CurrentOffset_)                   \
-         (int)((size_t)_CurrentOffset_ - (size_t)pRI->Data);
-
 #define   RTNET_ONRESPONSE_BEGIN(_method_,_expectedTag_)                \
    LPRTConnectionInfo   pCI = (LPRTConnectionInfo)pContext;             \
                                                                         \
    /* Verify status (OK), and verify the expected tag             */    \
-   if( PS_Initialized == pCI->eParserState)                             \
+   if( !pCI->bStatusVerified)                                           \
    {                                                                    \
-      ETransactionResult   Res;                                         \
-                                                                        \
       /* Verify we have any data:                                 */    \
-      Res = VerifyStatusAndTag( pRI, _expectedTag_, &(pCI->LastError)); \
-      if( transaction_succeeded != Res)                                 \
+      pNext = VerifyStatusAndTag(/* IN  */   pNext,                     \
+                                 /* IN  */   pContext,                  \
+                                 /* IN  */   _expectedTag_,             \
+                                 /* OUT */   more_data_needed,          \
+                                 /* OUT */   rc);                       \
+                                                                        \
+      if( !pNext || (*more_data_needed))                                \
       {                                                                 \
-         if( transaction_failed == Res)                                 \
+         if( !pNext)                                                    \
             roadmap_log( ROADMAP_ERROR, "RTNet::%s() - 'VerifyStatusAndTag()' had failed", _method_);   \
 /*       Else                                                   */      \
-/*          transaction_in_progress  (Keep on reading data...)  */      \
+/*          trans_in_progress  (Keep on reading data...)  */            \
                                                                         \
-         return Res;                                                    \
+         return pNext;                                                  \
       }                                                                 \
                                                                         \
-      pCI->eParserState = PS_StatusVerified;                            \
+      pCI->bStatusVerified = TRUE;                                      \
    }
 
-#define   RTNET_SERVER_REQUEST_HANDLER(_case_)                          \
-         case RES_##_case_:                                             \
-         {                                                              \
-            bHandlerRes = _case_( pRI, pCI, pNext);                     \
-            break;                                                      \
-         }
-
-
-#define  RTNET_FORMAT_NETPACKET_6Login                ("Login,%d,%s,%s,%d,%s,%s")
+#define  RTNET_FORMAT_NETPACKET_7Login                ("Login,%d,%s,%s,%d,%s,%s,%s")
 #define  RTNET_FORMAT_NETPACKET_3Register             ("Register,%d,%d,%s")
 #define  RTNET_FORMAT_NETPACKET_3GuestLogin           ("GuestLogin,%d,%d,%s")
 #define  RTNET_FORMAT_NETPACKET_3At                   ("At,%s,%d,%d\n")
@@ -424,65 +251,43 @@ ETransactionResult   OnGeneralResponse ( LPResponseBuffer pRI, void* pContext);
 #define  RTNET_FORMAT_NETPACKET_1ReportSegmentNoAttr  (",%d\n")
 #define  RTNET_FORMAT_NETPACKET_2CreateNewRoads       ("CreateNewRoads,%u,%s\n")
 #define  RTNET_FORMAT_NETPACKET_4NavigateTo           ("NavigateTo,%s,,%s,%s,%s\n")
-#define  RTNET_FORMAT_NETPACKET_5Auth		          ("Auth,%d,%s,%s,%d,%s\n")
-#define  RTNET_FORMAT_NETPACKET_1SendSMS	          ("BridgeTo,DOWNLOADSMS,send_download,2,phone_number,%s\n")
+#define  RTNET_FORMAT_NETPACKET_5Auth		            ("Auth,%d,%s,%s,%d,%s\n")
+#define  RTNET_FORMAT_NETPACKET_1SendSMS	            ("BridgeTo,DOWNLOADSMS,send_download,2,phone_number,%s\n")
+#define  RTNET_FORMAT_NETPACKET_3TwitterConnect       ("BridgeTo,TWITTER,twitter_connect,6,twitter_username,%s,twitter_password,%s,connect,%s\n")
+#define	RTNET_FORMAT_NETPACKET_2SelectRoute				("SelectRoute,%d,%d\n")
+#define  RTNET_FORMAT_NETPACKET_4CreateAccount        ("BridgeTo,CREATEACCOUNT,signup_mobile,6,user_name,%s,password,%s,email,%s,receive_mails,%s\n")
+#define  RTNET_FORMAT_NETPACKET_4UpdateProfile        ("BridgeTo,UPDATEPROFILE,update_profile_mobile,8,user_name,%s,password,%s,email,%s,receive_mails,%s\n")
+
+#define  RTNET_FORMAT_NETPACKET_4TripServerCreatePOI   		("BridgeTo,TRIPSERVER,CreatePOI,8,x,%d,y,%d,name,%s,override,%s\n")
+#define  RTNET_FORMAT_NETPACKET_1TripServerDeletePOI   		("BridgeTo,TRIPSERVER,DeletePOI,2,name,%s\n")
+#define  RTNET_FORMAT_NETPACKET_2TripServerFindTrip    		("BridgeTo,TRIPSERVER,FindTrip,4,x,%d,y,%d\n")
+#define  RTNET_FORMAT_NETPACKET_1TripServerGetTripRoutes   	("BridgeTo,TRIPSERVER,GetTripRoutes,2,tripId,%d\n")
+#define  RTNET_FORMAT_NETPACKET_1TripServerGetRouteSegments ("BridgeTo,TRIPSERVER,GetRouteSegments,2,tripId,%d\n")
+#define  RTNET_FORMAT_NETPACKET_4ReportMapError             ("BridgeTo,UPDATEMAP,send_update_request_mobile,8,lon,%d,lat,%d,type,%s,description,%s\n")
+#define  RTNET_FORMAT_NETPACKET_4GetGeoConfig               ("GetGeoServerConfig,%d,%s,%d,%s")
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-#include "RealtimePacket.h"
-
-typedef void(*PFN_ONASYNCCOMPLETED)(BOOL bResult);
-
-typedef struct tagHttpAsyncParserInfo
-{
-   ResponseBuffer RB;
-   EParserState   eParserState;
-   BOOL           bProcessingHttpHeader;
-
-}     HttpAsyncParserInfo, *LPHttpAsyncParserInfo;
-void  HttpAsyncParserInfo_Init( LPHttpAsyncParserInfo this);
-
-typedef struct tagHttpAsyncTransactionInfo
-{
-   LPRTConnectionInfo   pCI;
-   PFN_ONDATARECEIVED   pfnOnDataReceived;
-   PFN_ONASYNCCOMPLETED pfnOnAsyncCompleted;
-   RTPacket             Packet;
-   RoadMapSocket        Socket;
-   BOOL                 in_use;
-   HttpAsyncParserInfo  API;
-   BOOL                 async_receive_started;
-   time_t               starting_time;
-
-}     HttpAsyncTransactionInfo, *LPHttpAsyncTransactionInfo;
-void  HttpAsyncTransactionInfo_Init  ( LPHttpAsyncTransactionInfo this);
-void  HttpAsyncTransactionInfo_Reset ( LPHttpAsyncTransactionInfo this);
-
-typedef enum tag_transaction_type
-{
-   login_transaction,
-   command_transaction,
-   static_transaction
-
-}  transaction_type;
-
-BOOL RTNet_HttpAsyncTransaction(   
-               LPRTConnectionInfo   pCI,                 // Connection Info
-               transaction_type     type,                // Login | Command | Static | ...
-               PFN_ONDATARECEIVED   pfnOnDataReceived,   // Callback to handle data received
-               PFN_ONASYNCCOMPLETED pfnOnCompleted,      // Callback for a-sync trans completion
-               const char*          szFormat,            // Custom data for the HTTP request
-               ...);                                     // Parameters
-
-// Same function, but buffer is ready formatted:
-BOOL RTNet_HttpAsyncTransaction_FormattedBuffer(   
-               LPRTConnectionInfo   pCI,                 // Connection Info
-               transaction_type     type,                // Login | Command | Static | ...
-               PFN_ONDATARECEIVED   pfnOnDataReceived,   // Callback to handle data received
-               PFN_ONASYNCCOMPLETED pfnOnCompleted,      // Callback for a-sync trans completion
-               char*                Data);               // Custom data for the HTTP request
-
+// Realtime data parsers:
+DECLARE_WEBSVC_PARSER(VerifyStatus)
+DECLARE_WEBSVC_PARSER(AddUser)
+DECLARE_WEBSVC_PARSER(AddAlert)
+DECLARE_WEBSVC_PARSER(AddAlertComment)
+DECLARE_WEBSVC_PARSER(RemoveAlert)
+DECLARE_WEBSVC_PARSER(SystemMessage)
+DECLARE_WEBSVC_PARSER(VersionUpgrade)
+DECLARE_WEBSVC_PARSER(AddRoadInfo)
+DECLARE_WEBSVC_PARSER(RmRoadInfo)
+DECLARE_WEBSVC_PARSER(OnLoginResponse)
+DECLARE_WEBSVC_PARSER(OnRegisterResponse)
+DECLARE_WEBSVC_PARSER(OnLogOutResponse)
+DECLARE_WEBSVC_PARSER(BridgeToRes)
+DECLARE_WEBSVC_PARSER(ReportAlertRes)
+DECLARE_WEBSVC_PARSER(PostAlertCommentRes)
+DECLARE_WEBSVC_PARSER(MapUpdateTime)
+DECLARE_WEBSVC_PARSER(GeoLocation)
+DECLARE_WEBSVC_PARSER(onGeoConfigResponse)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 

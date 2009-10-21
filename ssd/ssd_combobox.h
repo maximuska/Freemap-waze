@@ -21,20 +21,20 @@
 #ifndef _SSD_COMBOBOX_H__
 #define _SSD_COMBOBOX_H__
 
-#include "ssd/ssd_dialog.h"
-#include "ssd/ssd_list.h"
+#include "ssd_dialog.h"
+#include "ssd_list.h"
 
-void ssd_combobox_new(  SsdWidget            main_cont,
-                        const char*          title, 
-                        int                  count, 
-                        const char**         labels,
-                        const void**         values,
+void ssd_combobox_new(  SsdWidget               main_cont,
+                        const char*             title, 
+                        int                     count, 
+                        const char**            labels,
+                        const void**            values,
                         const char**				icons,
-                        PFN_ON_INPUT_CHANGED on_text_changed,  // User modified edit-box text
-                        SsdIconListCallback  on_list_selection,// User selected iterm from list
-                        SsdIconListDeleteCallback  on_delete_list_item, // User is trying to delete an item from the list
-                        unsigned short       input_type,       // inputtype_<xxx> combination from 'roadmap_input_type.h'
-                        void*                context);
+                        PFN_ON_INPUT_CHANGED    on_text_changed,  // User modified edit-box text
+                        SsdListCallback         on_list_selection,// User selected iterm from list
+                        SsdListDeleteCallback   on_delete_list_item, // User is trying to delete an item from the list
+                        unsigned short          input_type,       // inputtype_<xxx> combination from 'roadmap_input_type.h'
+                        void*                   context);
 
 // Release context pointer
 void ssd_combobox_free( SsdWidget            main_cont); 
@@ -44,7 +44,7 @@ void ssd_combobox_update_list(
                         int                  count, 
                         const char**         labels,
                         const void**         values,
-                        const char**   icons);
+                        const char**         icons);
 
 // Reset sizes before re-using combobox
 void ssd_combobox_reset_state(

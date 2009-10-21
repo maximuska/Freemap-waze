@@ -1,0 +1,21 @@
+//
+// libRealTime makefile for the symbian platform
+//
+
+TARGET 			libRealTime.lib
+TARGETTYPE 		lib
+
+MACRO SSD
+MACRO SIMPLE_SCREEN
+//MACRO TOUCH_SCREEN
+//#define TOUCH_SCREEN
+
+SOURCEPATH ..\..\Realtime
+SOURCE Realtime.c RealtimeNet.c RealtimeNetDefs.c RealtimeNetRec.c RealtimeUsers.c RealtimeAlerts.c RealtimeAlertsList.c RealtimeMath.c RealtimeAlertCommentsList.c RealtimeDefs.c RealtimeSystemMessage.c RealtimeTrafficInfo.c RealtimeTrafficInfoPlugin.c RealtimePrivacy.c RealtimeOffline.c RealtimeAltRoutes.c
+
+SYSTEMINCLUDE		\epoc32\include
+SYSTEMINCLUDE		\epoc32\include\libc
+USERINCLUDE			..\..\ssd
+USERINCLUDE			..\..
+
+LIBRARY			estlib.lib	//	Symbian STDLIB

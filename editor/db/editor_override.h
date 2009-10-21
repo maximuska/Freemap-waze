@@ -29,16 +29,20 @@
 
 typedef struct editor_db_override_s {
    int square;
+   int timestamp;
    int line;
    int flags;
    int direction;
 } editor_db_override;
 
-int editor_override_line_get_flags (int line, int *flags);
-int editor_override_line_set_flag (int line, int flags);
-int editor_override_line_reset_flag (int line, int flags);
-int editor_override_line_get_direction (int line, int *direction);
-int editor_override_line_set_direction (int line, int direction);
+int editor_override_get_count (void);
+int editor_override_get (int index, int *line_id, int *square_id, int *direction, int *flags);
+int editor_override_line_get_flags (int line, int square, int *flags);
+int editor_override_line_set_flag (int line, int square, int flags);
+int editor_override_line_reset_flag (int line, int square, int flags);
+int editor_override_line_get_direction (int line, int square, int *direction);
+int editor_override_line_set_direction (int line, int square, int direction);
+int editor_override_exists (int line, int square);
 
 extern editor_db_handler EditorOverrideHandler;
 

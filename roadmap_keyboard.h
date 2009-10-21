@@ -35,6 +35,7 @@
 #define  KEYBOARD_VIRTUAL_KEY             (0x00000001)
 #define  KEYBOARD_ASCII                   (0x00000002)
 #define  KEYBOARD_REPLACEMENT_KEY         (0x00000004)
+#define  KEYBOARD_LONG_PRESS	          (0x00000008)
 
 // ASCII constant values
 #define  ENTER_KEY                        (0x0D)
@@ -45,7 +46,7 @@
 
 #define  KEY_EQUALS_CHAR(_char_)          \
    ((KEYBOARD_ASCII&flags) &&  (_char_==(*utf8char)))
-   
+
 #define  KEY_EQUALS_VCHAR(_char_)         \
    ((KEYBOARD_VIRTUAL_KEY&flags) &&  (_char_==(*utf8char)))
 
@@ -59,6 +60,8 @@
 #define  VKEY_IS_UP                       KEY_EQUALS_VCHAR(VK_Arrow_up)
 #define  VKEY_IS_DOWN                     KEY_EQUALS_VCHAR(VK_Arrow_down)
 
+#define  VKEY_IS_SOFTKEY_LEFT             KEY_EQUALS_VCHAR(VK_Softkey_left)
+#define  VKEY_IS_SOFTKEY_RIGHT            KEY_EQUALS_VCHAR(VK_Softkey_right)
 // Virtual keys:
 typedef enum tagEVirtualKey
 {
@@ -70,8 +73,9 @@ typedef enum tagEVirtualKey
    VK_Arrow_up,
    VK_Arrow_down,
    VK_Arrow_left,
-   VK_Arrow_right
-
+   VK_Arrow_right,
+   VK_Call_Start,
+   VK_Camera,
 }  EVirtualKey;
 
 const char* roadmap_keyboard_virtual_key_name( EVirtualKey key);
@@ -80,14 +84,18 @@ const char* roadmap_keyboard_virtual_key_name( EVirtualKey key);
 BOOL   roadmap_keyboard_handler__key_pressed( const char* utf8char, uint32_t flags);
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Tests whether the keyboard should be locked due to driving and shows the message warning if requested
+BOOL roadmap_keyboard_typing_locked( BOOL show_msg );
+void roadmap_keyboard_set_typing_lock_enable( BOOL is_enabled );
+BOOL roadmap_keyboard_get_typing_lock_enable( void );
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Callback type for 'key pressed':
-typedef BOOL(*PFN_ONKEYPRESSED)( const char* utf8char, uint32_t flags);
+typedef BOOL(*CB_OnKeyPressed)( const char* utf8char, uint32_t flags);
 
 // Register to 'key pressed' events:
-BOOL  roadmap_keyboard_register_to_event__key_pressed    ( PFN_ONKEYPRESSED pfnOnKeyPressed);
-BOOL  roadmap_keyboard_unregister_from_event__key_pressed( PFN_ONKEYPRESSED pfnOnKeyPressed);
+BOOL  roadmap_keyboard_register_to_event__key_pressed    ( CB_OnKeyPressed cbOnKeyPressed);
+BOOL  roadmap_keyboard_unregister_from_event__key_pressed( CB_OnKeyPressed cbOnKeyPressed);
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 

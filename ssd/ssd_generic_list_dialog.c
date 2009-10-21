@@ -18,7 +18,7 @@
  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <stdlib.h> 
+#include <stdlib.h>
 #include "roadmap_lang.h"
 #include "ssd_dialog.h"
 #include "ssd_list.h"
@@ -27,19 +27,19 @@
 
 
 typedef struct ssd_list_context {
-   PFN_ON_ITEM_SELECTED	on_item_selected;
-   PFN_ON_ITEM_SELECTED	on_item_deleted;
+   PFN_ON_ITEM_SELECTED   on_item_selected;
+   PFN_ON_ITEM_SELECTED   on_item_deleted;
    SsdSoftKeyCallback left_softkey_callback;
-   void*	context;
+   void*   context;
 
-}	SsdListContext;
+}   SsdListContext;
 
 
 static int list_callback (SsdWidget widget, const char *new_value, const void *value)
 {
-   SsdWidget		dialog	= widget->parent;
-   SsdListContext*	context	= (SsdListContext *)dialog->context;
-	
+   SsdWidget      dialog   = widget->parent;
+   SsdListContext*   context   = (SsdListContext *)dialog->context;
+
    if (context->on_item_selected == NULL)
      return 0;
 
@@ -48,8 +48,8 @@ static int list_callback (SsdWidget widget, const char *new_value, const void *v
 
 static int del_callback (SsdWidget widget, const char *new_value, const void *value)
 {
-   SsdWidget		dialog	= widget->parent;
-   SsdListContext*	context	= (SsdListContext *)dialog->context;
+   SsdWidget      dialog   = widget->parent;
+   SsdListContext*   context   = (SsdListContext *)dialog->context;
 
    if (context->on_item_deleted == NULL)
       return 0;
@@ -59,11 +59,11 @@ static int del_callback (SsdWidget widget, const char *new_value, const void *va
 
 static int list_left_softkey_callback (SsdWidget widget, const char *new_value, void *context)
 {
-   SsdListContext*	list_context	= (SsdListContext *)widget->context;
+   SsdListContext*   list_context   = (SsdListContext *)widget->context;
    if (list_context->left_softkey_callback != NULL)
-	return (*list_context->left_softkey_callback)(widget, new_value,  list_context->context);
+   return (*list_context->left_softkey_callback)(widget, new_value,  list_context->context);
    else
-   	return 0;
+      return 0;
 }
 
 static void on_dialog_closed( int type, void *context)
@@ -73,14 +73,14 @@ static void on_dialog_closed( int type, void *context)
 
 static SsdWidget GenericList = NULL;
 
-void ssd_generic_list_dialog_show(
-                                  const char*				title,
-                                  int						   count,
-                                  const char**			   labels,
-                                  const void**			   values,
-                                  PFN_ON_ITEM_SELECTED	on_item_selected,
-                                  PFN_ON_ITEM_SELECTED	on_item_deleted,
-                                  void*					   context)
+void ssd_generic_list_dialog_show(const char*            title,
+                                  int                    count,
+                                  const char**           labels,
+                                  const void**           values,
+                                  PFN_ON_ITEM_SELECTED   on_item_selected,
+                                  PFN_ON_ITEM_SELECTED   on_item_deleted,
+                                  void*                  context,
+                                  int                     list_height )
 {
    static SsdListContext list_context;
 
@@ -88,50 +88,50 @@ void ssd_generic_list_dialog_show(
 
    list_context.on_item_selected= on_item_selected;
    list_context.on_item_deleted = on_item_deleted;
-   list_context.context			= context;
+   list_context.context         = context;
    list_context.left_softkey_callback = NULL;
 
    if (!GenericList)
    {
       GenericList = ssd_dialog_new ("generic_list", "", on_dialog_closed,
-                                    SSD_CONTAINER_BORDER|SSD_CONTAINER_TITLE|SSD_ROUNDED_CORNERS);
+                                    SSD_CONTAINER_TITLE);
       list = ssd_list_new ("list", SSD_MAX_SIZE, SSD_MAX_SIZE, inputtype_none, 0, NULL);
 
       ssd_widget_add (GenericList, list);
    }
 
    list = ssd_widget_get (GenericList, "list");
-   ssd_dialog_set_drag(GenericList,list);
+   ssd_widget_set_offset(GenericList,0,0);
    
    ssd_widget_set_left_softkey_text(GenericList, roadmap_lang_get("Exit_key"));
    ssd_widget_set_left_softkey_callback(GenericList, NULL);
-	   
+
    GenericList->set_value (GenericList, title);
    ssd_widget_set_context (GenericList, &list_context);
 
    ssd_widget_reset_cache (list->parent);
-   ssd_list_resize (list, 40);
+   ssd_widget_reset_position(GenericList);
+   ssd_list_resize ( list, list_height );
    ssd_list_populate (list, count, labels, values, NULL, NULL, list_callback, del_callback, FALSE);
    ssd_dialog_activate ("generic_list", NULL);
-   ssd_dialog_resort_tab_order();
    ssd_dialog_draw ();
-}
+ }
 
 void ssd_generic_icon_list_dialog_show(
-                                  const char*			  title,
-                                  int					  count,
-                                  const char**			  labels,
-                                  const void**			  values,
-                                  const char** 		      icons,
-                                  const int*			  flags,
-                                  PFN_ON_ITEM_SELECTED	  on_item_selected,
-                                  PFN_ON_ITEM_SELECTED    on_item_deleted,
-                                  void*					  context,
-                                  const char*             left_softkey_text, 
-                                  SsdSoftKeyCallback	  left_softkey_callback,
-                                  int                     list_height,
-                                  int                     dialog_flags,
-                                  BOOL                    add_next_button)
+                                  const char*            title,
+                                  int                    count,
+                                  const char**           labels,
+                                  const void**           values,
+                                  const char**           icons,
+                                  const int*             flags,
+                                  PFN_ON_ITEM_SELECTED   on_item_selected,
+                                  PFN_ON_ITEM_SELECTED   on_item_deleted,
+                                  void*                  context,
+                                  const char*            left_softkey_text,
+                                  SsdSoftKeyCallback     left_softkey_callback,
+                                  int                    list_height,
+                                  int                    dialog_flags,
+                                  BOOL                   add_next_button)
 {
    static SsdListContext list_context;
 
@@ -139,34 +139,35 @@ void ssd_generic_icon_list_dialog_show(
 
    list_context.on_item_selected= on_item_selected;
    list_context.on_item_deleted = on_item_deleted;
-   list_context.context			= context;
+   list_context.context         = context;
    list_context.left_softkey_callback = left_softkey_callback;
    if (!GenericList)
    {
-      GenericList	= ssd_dialog_new ("generic_list", "", on_dialog_closed, SSD_CONTAINER_BORDER|SSD_CONTAINER_TITLE|SSD_ROUNDED_CORNERS|dialog_flags);
-      list			= ssd_list_new ("list", SSD_MAX_SIZE, SSD_MAX_SIZE, inputtype_none, 0, NULL);
+      GenericList   = ssd_dialog_new ("generic_list", "", on_dialog_closed, SSD_CONTAINER_TITLE|dialog_flags);
+      list         = ssd_list_new ("list", SSD_MAX_SIZE, SSD_MAX_SIZE, inputtype_none, 0, NULL);
 
       ssd_widget_add (GenericList, list);
    }
    else{
-   	  GenericList->flags &= ~SSD_HEADER_GREEN;
-	  GenericList->flags |= dialog_flags;
+     GenericList->flags &= ~SSD_HEADER_GREEN;
+     GenericList->flags |= dialog_flags;
    }
-   
+   ssd_widget_set_offset(GenericList,0,0);
    list = ssd_widget_get (GenericList, "list");
-   ssd_dialog_set_drag(GenericList, list);
    
-   GenericList->set_value (GenericList, title);
+   GenericList->set_value (GenericList->parent, title);
    ssd_widget_set_context (GenericList, &list_context);
 
-   
+
    ssd_widget_reset_cache (list->parent);
-   ssd_list_resize (list, list_height	);
+   ssd_widget_reset_position(GenericList);
+   ssd_list_resize (list, list_height   );
    ssd_list_populate (list, count, labels, values,icons,flags, list_callback, del_callback, add_next_button);
    ssd_widget_set_left_softkey_text(GenericList, left_softkey_text);
    if (left_softkey_callback != NULL)
       ssd_widget_set_left_softkey_callback(GenericList, list_left_softkey_callback);
 
+   
    ssd_dialog_activate ("generic_list", NULL);
    ssd_dialog_draw ();
 }
@@ -177,11 +178,11 @@ void* ssd_generic_list_dialog_get_context(){
 }
 
 const char* ssd_generic_list_dialog_selected_string (void){
-	return ssd_list_selected_string(ssd_widget_get (GenericList, "list"));
+   return ssd_list_selected_string(ssd_widget_get (GenericList, "list"));
 }
 
 const void* ssd_generic_list_dialog_selected_value  (void){
-	return ssd_list_selected_value(ssd_widget_get (GenericList, "list"));
+   return ssd_list_selected_value(ssd_widget_get (GenericList, "list"));
 }
 
 

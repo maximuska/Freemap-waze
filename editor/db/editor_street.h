@@ -53,6 +53,7 @@ int editor_street_get_distance
 int editor_street_get_closest (const RoadMapPosition *position,
                                int *categories,
                                int categories_count,
+                               int max_shapes,
                                RoadMapNeighbour *neighbours,
                                int count,
                                int max);

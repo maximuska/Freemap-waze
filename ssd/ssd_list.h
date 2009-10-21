@@ -25,19 +25,26 @@
 #ifndef __SSD_WIDGET_ICON_LIST_H_
 #define __SSD_WIDGET_ICON_LIST_H_
   
-#include "ssd/ssd_widget.h"
-typedef int (*SsdIconListCallback) (SsdWidget widget, const char *new_value, const void *value);
-typedef int (*SsdIconListDeleteCallback) (SsdWidget widget, const char *new_value, const void *value);
+#include "ssd_widget.h"
+typedef int (*SsdListCallback)      (SsdWidget widget, const char *new_value, const void *value);
+typedef int (*SsdListDeleteCallback)(SsdWidget widget, const char *new_value, const void *value);
 
 SsdWidget ssd_list_new( const char*             name,
                         int                     width,
                         int                     height,
                         roadmap_input_type      input_type,
                         int                     flags,
-                        PFN_WIDGET_ONKEYPRESSED on_unhandled_key_press);
+                        CB_OnWidgetKeyPressed   on_unhandled_key_press);
 
-void ssd_list_populate (SsdWidget list, int count, const char **labels, 
-                        const void **values, const char **icons, const int *flags, SsdIconListCallback callback, SsdIconListDeleteCallback del_callback, BOOL add_next_button);
+void ssd_list_populate( SsdWidget               list, 
+                        int                     count, 
+                        const char**            labels, 
+                        const void**            values, 
+                        const char**            icons, 
+                        const int*              flags, 
+                        SsdListCallback         callback, 
+                        SsdListDeleteCallback   del_callback, 
+                        BOOL                    add_next_button);
 
 SsdWidget   ssd_list_get_first_item(SsdWidget  list);
 
@@ -51,4 +58,8 @@ BOOL        ssd_list_move_focus      ( SsdWidget list, BOOL up /* or down */);
 BOOL        ssd_list_set_focus       ( SsdWidget list, BOOL first_item /* or last */);
 
 void        ssd_list_resize(SsdWidget list, int min_height);
+
+void ssd_list_populate_widgets (SsdWidget list, int count, const char **labels,
+                        const void **values, SsdWidget *icons, const int *flags, SsdListCallback callback, SsdListDeleteCallback del_callback, BOOL add_next_button);
+
 #endif // __SSD_ICON_WIDGET_LIST_H_

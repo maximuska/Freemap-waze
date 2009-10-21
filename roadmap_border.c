@@ -54,8 +54,8 @@ static const char* get_img_filename( border_images image_id)
 {
    switch( image_id)
    {
-	  case border_heading_red_left:		return "Header_Red_left";
-   	  case border_heading_red_right:	return "Header_Red_right";
+		  case border_heading_red_left:		return "Header_Red_left";
+   	  case border_heading_red_right:		return "Header_Red_right";
    	  case border_heading_red_middle:	return "Header_Red_Mid";
    	  case border_heading_green_left:	return "Header_Green_left";
    	  case border_heading_green_right:	return "Header_Green_right";
@@ -63,33 +63,41 @@ static const char* get_img_filename( border_images image_id)
    	  case border_heading_black_left:	return "Header_Black_left";
    	  case border_heading_black_right:	return "Header_Black_right";
    	  case border_heading_black_middle:	return "Header_Black_Mid";
-   	  case border_heading_gray_left:	return "Header_Gray_left";
+   	  case border_heading_gray_left:		return "Header_Gray_left";
    	  case border_heading_gray_right:	return "Header_Gray_right";
    	  case border_heading_gray_middle:	return "Header_Gray_Mid";
-      case border_image_top:   			return "Top";
-      case border_image_top_right:   	return "TopRight";
-      case border_image_top_left:   	return "TopLeft";
-      case border_image_bottom_no_frame: return "Bottom_NoFrame";
-      case border_image_bottom:   		return "Bottom";
-      case border_image_bottom_right:   return "BottomRight";
-      case border_image_bottom_left:   	return "BottomLeft";
-      case border_image_left:   		return "Left";
-      case border_image_right:   		return "Right";
+   	  case border_image_top:   			return "Top";
+   	  case border_image_top_right:   	return "TopRight";
+   	  case border_image_top_left:   		return "TopLeft";
+   	  case border_image_bottom_no_frame: return "Bottom_NoFrame";
+   	  case border_image_bottom:   		return "Bottom";
+   	  case border_image_bottom_right:   return "BottomRight";
+   	  case border_image_bottom_left:   	return "BottomLeft";
+   	  case border_image_left:   			return "Left";
+   	  case border_image_right:   			return "Right";
+   	  case border_white_top:   			return "border_white_top";
+   	  case border_white_top_right:   	return "border_white_top_right";
+   	  case border_white_top_left:   		return "border_white_top_left";
+   	  case border_white_bottom:   		return "border_white_bottom";
+   	  case border_white_bottom_right:   return "border_white_bottom_right";
+   	  case border_white_bottom_left:   	return "border_white_bottom_left";
+   	  case border_white_left:   			return "border_white_left";
+   	  case border_white_right:   			return "border_white_right";
+   	  case border_black_top:   			return "border_black_top";
+   	  case border_black_top_right:   	return "border_black_top_right";
+   	  case border_black_top_left:   		return "border_black_top_left";
+   	  case border_black_bottom:   		return "border_black_bottom";
+   	  case border_black_bottom_right:   return "border_black_bottom_right";
+   	  case border_black_bottom_left:   	return "border_black_bottom_left";
+   	  case border_black_left:   			return "border_black_left"; 
+   	  case border_black_right:   			return "border_black_right";
       
-      case border_trap_top:   			return "Trap_top";
-      case border_trap_top_right:   	return "Trap_top_right";
-      case border_trap_top_left:   		return "Trap_top_left";
-      case border_trap_bottom:   		return "Trap_bottom";
-      case border_trap_bottom_right:    return "Trap_bottom_right";
-      case border_trap_bottom_left:   	return "Trap_bottom_left";
-      case border_trap_left:   			return "Trap_left";
-      case border_trap_right:   		return "Trap_right";
-      
-      case border_pointer_comment:		return "PointerComment";
-      case border_pointer_menu:			return "PointerMenu";
-      
-      default:
-         break;
+   	  case border_pointer_comment:		return "PointerComment";
+   	  case border_pointer_menu:			return "PointerMenu";
+//   	  case border_pointer_balck:			return "PointerBlack";
+   	  
+   	  default:
+   		  break;
    }
 
    return NULL;
@@ -98,10 +106,10 @@ static const char* get_img_filename( border_images image_id)
 BOOL load_border_images()
 {
    static BOOL border_images_loaded = FALSE;
-   int   i;
+   int   i; 
 
    if( border_images_loaded)
-      return TRUE;
+      return TRUE; 
    
    for( i=0; i<border_img__count; i++)
    {
@@ -172,19 +180,16 @@ int roadmap_display_border(int style, int header, int pointer_type, RoadMapGuiPo
 		
 	if (header != HEADER_NONE){
     	roadmap_canvas_draw_image (s_images[header].image, &sign_top, 0, IMAGE_NORMAL);
-    	
-		left_point.x = sign_top.x-1;
-		right_point.x = sign_top.x + sign_width - s_images[header+2].width ;
-		
-		num_items = (int)ceil((right_point.x - left_point.x - s_images[header].width)/s_images[header+1].width)+1;
+		left_point.x = sign_top.x;
+		right_point.x = left_point.x + sign_width - s_images[header+2].width ;
+		num_items = (right_point.x - left_point.x - s_images[header].width)/s_images[header+1].width+1;
 		for (i = 0; i<num_items; i++){
 			point.x = left_point.x + s_images[header].width + i * s_images[header+1].width ;
 			point.y = sign_top.y;
 			roadmap_canvas_draw_image (s_images[header+1].image, &point, 0, IMAGE_NORMAL);
 		}
 			
-			
-		point.x = right_point.x -1;
+	
 		point.y = sign_top.y;
 		roadmap_canvas_draw_image (s_images[header+2].image, &point, 0, IMAGE_NORMAL);
 					
@@ -193,7 +198,11 @@ int roadmap_display_border(int style, int header, int pointer_type, RoadMapGuiPo
 	}
 	else{
 		 
-		left_point.x = sign_top.x;;
+#ifdef TOUCH_SCREEN
+		left_point.x = sign_top.x;
+#else    	 
+		left_point.x = sign_top.x-1;
+#endif		
 		right_point.x = sign_bottom.x - s_images[border_image_right+style].width;
 
 		start_sides_point.y = sign_top.y + s_images[border_image_top_right+style].height;
@@ -205,7 +214,7 @@ int roadmap_display_border(int style, int header, int pointer_type, RoadMapGuiPo
 		right_point.y = sign_top.y;
     	roadmap_canvas_draw_image (s_images[border_image_top_right+style].image, &right_point, 0, IMAGE_NORMAL);
     	
-		num_items = (int)ceil((right_point.x - left_point.x - s_images[border_image_left+style].width)/s_images[border_image_top+style].width);
+		num_items = (right_point.x - left_point.x - s_images[border_image_left+style].width)/s_images[border_image_top+style].width;
 		for (i = 0; i<num_items; i++){
 			point.x = left_point.x + s_images[border_image_top_left+style].width + i * s_images[border_image_top+style].width ;
 			point.y = left_point.y;
@@ -215,7 +224,7 @@ int roadmap_display_border(int style, int header, int pointer_type, RoadMapGuiPo
 		top_height = s_images[border_image_top+style].height;
 	}
 	
-	num_items = (int)ceil( sign_height - start_sides_point.y +sign_top.y - s_images[border_image_bottom+style].height ) / s_images[border_image_right+style].height;
+	num_items = ( sign_height - start_sides_point.y +sign_top.y - s_images[border_image_bottom+style].height ) / s_images[border_image_right+style].height;
 	
 		
 	for (i = 0; i<num_items; i++){
@@ -237,7 +246,7 @@ int roadmap_display_border(int style, int header, int pointer_type, RoadMapGuiPo
     roadmap_canvas_draw_image (s_images[border_image_bottom_right+style].image, &right_point, 0, IMAGE_NORMAL);
 	
 	if (pointer_type == POINTER_NONE){
-		num_items = (int)ceil((right_point.x  - s_images[border_image_bottom_left+style].width - left_point.x)/s_images[border_image_bottom+style].width) ;
+		num_items = (right_point.x  - s_images[border_image_bottom_left+style].width - left_point.x)/s_images[border_image_bottom+style].width ;
 	
 		for (i = 0; i<num_items; i++){
 			point.x = left_point.x + s_images[border_image_bottom_left+style].width + i * s_images[border_image_bottom+style].width ;
@@ -275,11 +284,13 @@ int roadmap_display_border(int style, int header, int pointer_type, RoadMapGuiPo
 				points[2].x = point.x+40;
 				points[2].y = point.y+s_images[border_image_bottom_no_frame+style].height-4;
     			
-    			pointer_pen = roadmap_canvas_create_pen ("fill_pop_up_pen");
-    			roadmap_canvas_set_foreground("#e4f1f9");
-    			roadmap_canvas_draw_multiple_polygons (1, &count, points, 1, 0);
-    			roadmap_canvas_set_foreground("#8f979c");
-    			roadmap_canvas_draw_multiple_polygons (1, &count, points, 0, 0);
+    			pointer_pen = roadmap_canvas_create_pen ("fill_pop_up_pen");  			
+
+    			roadmap_canvas_set_foreground("#d2dfef");
+				roadmap_canvas_draw_multiple_polygons (1, &count, points, 1, 0);
+				roadmap_canvas_set_foreground("#ffffff");
+				roadmap_canvas_draw_multiple_polygons (1, &count, points, 0, 0);
+    			
     			point.x += 1;
     			for (i=0; i<39; i++){
     				point.x = point.x + s_images[border_image_bottom_no_frame+style].width ;
@@ -298,7 +309,7 @@ int roadmap_display_border(int style, int header, int pointer_type, RoadMapGuiPo
 		
 		
 		
-		num_items = (int)ceil((right_point.x - start_pos_x )/s_images[border_image_bottom+style].width) ;
+		num_items = (right_point.x - start_pos_x )/s_images[border_image_bottom+style].width ;
 		for (i = 0; i<num_items; i++){
 			new_point.x = start_pos_x + i * s_images[border_image_bottom+style].width ;
 			new_point.y = point.y;
@@ -307,21 +318,33 @@ int roadmap_display_border(int style, int header, int pointer_type, RoadMapGuiPo
 	}
 
 	//Fill the 
-	fill_points[0].x =right_point.x+7 ;
-	fill_points[0].y =point.y +7;
-	fill_points[1].x =right_point.x +7;
-	fill_points[1].y = top->y + top_height -7;
-	fill_points[2].x = left_point.x + s_images[border_image_left+style].width -7;
-	fill_points[2].y = top->y + top_height - 7;
-	fill_points[3].x =left_point.x + s_images[border_image_left+style].width -7;
-	fill_points[3].y = point.y +7;
-	count = 4; 
-	
+	if (style == STYLE_NORMAL){
+		fill_points[0].x =right_point.x+7 ;
+		fill_points[0].y =point.y +7;
+		fill_points[1].x =right_point.x +7;
+		fill_points[1].y = top->y + top_height -7;
+		fill_points[2].x = left_point.x + s_images[border_image_left+style].width -7;
+		fill_points[2].y = top->y + top_height - 7;
+		fill_points[3].x =left_point.x + s_images[border_image_left+style].width -7;
+		fill_points[3].y = point.y +7;
+		count = 4; 
+	}
+	else{
+		fill_points[0].x =right_point.x+2 ;
+		fill_points[0].y =point.y +2;
+		fill_points[1].x =right_point.x +2;
+		fill_points[1].y = top->y + top_height -2;
+		fill_points[2].x = left_point.x + s_images[border_image_left+style].width -2;
+		fill_points[2].y = top->y + top_height - 2;
+		fill_points[3].x =left_point.x + s_images[border_image_left+style].width -2;
+		fill_points[3].y = point.y +2;
+		count = 4; 
+	}	
   	fill_pen = roadmap_canvas_create_pen ("fill_pop_up_pen");
     roadmap_canvas_set_foreground(background);
 	
 	roadmap_canvas_draw_multiple_polygons (1, &count, fill_points, 1,0 );
-	
+
 	return sign_width;
 	
 }

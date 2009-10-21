@@ -71,9 +71,8 @@ void editor_trkseg_get_time (int trkseg,
 }
 
 
-int editor_trkseg_add (int square,
-							  int line_id,
-                       int plugin_id,
+int editor_trkseg_add (int from_point_id,
+							  int to_point_id,
                        int p_from,
                        int first_shape,
                        int last_shape,
@@ -84,14 +83,13 @@ int editor_trkseg_add (int square,
    editor_db_trkseg track;
    int id;
 
-	track.square				 = square;
-   track.line_id            = line_id;
-   track.plugin_id          = plugin_id;
+	track.from_point_id		 = from_point_id;
+   track.to_point_id        = to_point_id;
    track.point_from         = p_from;
    track.first_shape        = first_shape;
    track.last_shape         = last_shape;
-   track.gps_start_time     = gps_start_time;
-   track.gps_end_time       = gps_end_time;
+   track.gps_start_time     = (int)gps_start_time;
+   track.gps_end_time       = (int)gps_end_time;
    track.flags              = flags;
 
    id = editor_db_add_item (ActiveTrksegDB, &track, 1);
@@ -118,7 +116,7 @@ void editor_trkseg_get (int trkseg,
 }
 
 
-void editor_trkseg_get_line (int trkseg, int *square, int *line_id, int *plugin_id) {
+void editor_trkseg_get_points (int trkseg, int *from_point_id, int *to_point_id) {
 
    editor_db_trkseg *track;
 
@@ -127,9 +125,8 @@ void editor_trkseg_get_line (int trkseg, int *square, int *line_id, int *plugin_
 
    assert (track != NULL);
 
-	*square = track->square;
-   *line_id = track->line_id;
-   *plugin_id = track->plugin_id;
+	*from_point_id = track->from_point_id;
+	*to_point_id = track->to_point_id;
 }
 
 

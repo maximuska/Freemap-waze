@@ -53,5 +53,5 @@ void        ssd_tabcontrol_set_title      ( SsdTcCtx tabcontrol, const char* tit
 
 void        ssd_tabcontrol_move_tab_left  ( SsdWidget dialog);
 void        ssd_tabcontrol_move_tab_right ( SsdWidget dialog);
-
+int         ssd_tabcontrol_get_height();
 #endif // __SSD_TABCONTROL_H__

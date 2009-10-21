@@ -36,6 +36,7 @@
 #include "../roadmap_line.h"
 #include "../roadmap_math.h"
 #include "../roadmap_res.h"
+#include "roadmap_screen.h"
 
 #include "Realtime.h"
 #include "RealtimeTrafficInfo.h"
@@ -46,7 +47,7 @@ static void RealtimeTrafficInfoScreenRepaint (int max_pen);
 #define MAX_SEGEMENTS 2500
 
 static int plugId;
-static  RoadMapPen pens[5];
+static  RoadMapPen pens[6];
 static  RoadMapPen speed_text_pen;
 static  RoadMapConfigDescriptor RouteInfoConfigRouteColorBad =
                     ROADMAP_CONFIG_ITEM("TrafficInfo", "RouteColorBad");
@@ -54,6 +55,8 @@ static  RoadMapConfigDescriptor RouteInfoConfigRouteColorMild =
                     ROADMAP_CONFIG_ITEM("TrafficInfo", "RouteColorMild");
 static  RoadMapConfigDescriptor RouteInfoConfigRouteColorGood =
                     ROADMAP_CONFIG_ITEM("TrafficInfo", "RouteColorGood");
+static  RoadMapConfigDescriptor RouteInfoConfigRouteColorStandStill =
+                    ROADMAP_CONFIG_ITEM("TrafficInfo", "RouteColorStandStill");
 
 RoadMapConfigDescriptor RouteInfoConfigDisplayTraffic =
                   ROADMAP_CONFIG_ITEM("TrafficInfo", "Display traffic info");
@@ -110,23 +113,29 @@ void RealtimeTrafficInfoPluginInit () {
       ("schema", &RouteInfoConfigRouteColorMild,  "#f57a24", NULL); //Orange
    roadmap_config_declare
       ("schema", &RouteInfoConfigRouteColorBad,  "#FF0000", NULL); //Red
-
+   roadmap_config_declare
+      ("schema", &RouteInfoConfigRouteColorStandStill,  "#c4251f", NULL); //Red
    roadmap_config_declare_enumeration
       ("preferences", &RouteInfoConfigDisplayTraffic, NULL, "yes", "no", NULL);
 
-   pens[TRAFFIC_OK] = roadmap_canvas_create_pen ("RealtimeTrafficInfoPenGood");
+   pens[LIGHT_TRAFFIC] = roadmap_canvas_create_pen ("RealtimeTrafficInfoPenGood");
    roadmap_canvas_set_foreground
       (roadmap_config_get (&RouteInfoConfigRouteColorGood));
    roadmap_canvas_set_thickness (TRAFFIC_PEN_WIDTH);
 
-   pens[TRAFFIC_MILD] = roadmap_canvas_create_pen ("RealtimeTrafficInfoPenMild");
+   pens[MODERATE_TRAFFIC] = roadmap_canvas_create_pen ("RealtimeTrafficInfoPenMild");
    roadmap_canvas_set_foreground
       (roadmap_config_get (&RouteInfoConfigRouteColorMild));
    roadmap_canvas_set_thickness (TRAFFIC_PEN_WIDTH);
 
-   pens[TRAFFIC_BAD] = roadmap_canvas_create_pen ("RealtimeTrafficInfoPenBad");
+   pens[HEAVY_TRAFFIC] = roadmap_canvas_create_pen ("RealtimeTrafficInfoPenBad");
    roadmap_canvas_set_foreground
       (roadmap_config_get (&RouteInfoConfigRouteColorBad));
+   roadmap_canvas_set_thickness (TRAFFIC_PEN_WIDTH);
+
+   pens[STAND_STILL_TRAFFIC] = roadmap_canvas_create_pen ("RealtimeTrafficInfoPenStandStill");
+   roadmap_canvas_set_foreground
+      (roadmap_config_get (&RouteInfoConfigRouteColorStandStill));
    roadmap_canvas_set_thickness (TRAFFIC_PEN_WIDTH);
 
    speed_text_pen = 	roadmap_canvas_create_pen("SpeedText");
@@ -186,7 +195,7 @@ static void RealtimeTrafficInfoScreenRepaint (int max_pen) {
 		RTTrafficInfoLines *pTrafficLine = RTTrafficInfo_GetLine(i);
 		RoadMapGuiPoint seg_middle;
 		RoadMapPen previous_pen;
-        RoadMapPen layer_pen;
+      RoadMapPen layer_pen;
 
 		roadmap_square_set_current(pTrafficLine->pluginLine.square);
 
@@ -198,19 +207,19 @@ static void RealtimeTrafficInfoScreenRepaint (int max_pen) {
 
 		layer_pen = roadmap_layer_get_pen (pTrafficLine->pluginLine.cfcc, 0, 0);
 
-        if (layer_pen)
-         	width = roadmap_canvas_get_thickness (layer_pen)+1;
-        else
+      if (layer_pen)
+         	width = roadmap_canvas_get_thickness (layer_pen)+2;
+      else
          	width = TRAFFIC_PEN_WIDTH;
 
-        if (width < TRAFFIC_PEN_WIDTH) {
+      if (width < TRAFFIC_PEN_WIDTH) {
             width = TRAFFIC_PEN_WIDTH;
-        }
+      }
 
-        previous_pen = roadmap_canvas_select_pen (pens[pTrafficLine->iType]);
-        roadmap_canvas_set_thickness (width);
+      previous_pen = roadmap_canvas_select_pen (pens[pTrafficLine->iType]);
+      roadmap_canvas_set_thickness (width);
 
-	    if (previous_pen) {
+      if (previous_pen) {
     	       roadmap_canvas_select_pen (previous_pen);
       	}
 
@@ -228,7 +237,7 @@ static void RealtimeTrafficInfoScreenRepaint (int max_pen) {
       	                            &pTrafficLine->positionFrom,
             	                    pTrafficLine->iFirstShape,
                	                    pTrafficLine->iLastShape,
-                  	                roadmap_shape_get_position,
+                  	                NULL,
                      	            &pens[pTrafficLine->iType],
                         	        1,
                                    -1,
@@ -236,14 +245,14 @@ static void RealtimeTrafficInfoScreenRepaint (int max_pen) {
                               	    &seg_middle,
                                  	NULL);
 
-      	if (width >= 4){
-      			static const char *direction_colors[3] = {"#fd9f0b", "#FFF380", "#FFFFFF"};
-		 		roadmap_screen_draw_line_direction (&pTrafficLine->positionFrom,
-       												&pTrafficLine->positionTo,
-       												&pTrafficLine->positionFrom,
+      	if ((width >= 4) && !roadmap_screen_fast_refresh()) {
+      			static const char *direction_colors[4] = {"#fd9f0b", "#FFF380", "#FFFFFF", "#FFFFFF"};
+	 		roadmap_screen_draw_line_direction (&pTrafficLine->positionFrom,
+   												&pTrafficLine->positionTo,
+   												&pTrafficLine->positionFrom,
                   									pTrafficLine->iFirstShape,
                   									pTrafficLine->iLastShape,
-                  									roadmap_shape_get_position,
+                  									NULL,
 		                  							width,
       		            							pTrafficLine->iDirection,
       		            							direction_colors[pTrafficLine->iType]);

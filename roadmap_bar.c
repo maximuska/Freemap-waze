@@ -21,13 +21,14 @@
  *   along with RoadMap; if not, write to the Free Software
  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
 #include "roadmap.h"
 #include "roadmap_canvas.h"
+#include "roadmap_lang.h"
 #include "roadmap_screen_obj.h"
 #include "roadmap_screen.h"
 #include "roadmap_file.h"
@@ -37,20 +38,25 @@
 #include "roadmap_state.h"
 #include "roadmap_message.h"
 #include "roadmap_bar.h"
-#include "roadmap_factory.h" 
+#include "roadmap_factory.h"
 #include "roadmap_start.h"
 #include "roadmap_pointer.h"
 #include "roadmap_softkeys.h"
 #include "roadmap_skin.h"
+#include "roadmap_mood.h"
 
 #include "Realtime/RealtimeAlerts.h"
 
-#define MAX_STATES 9
-#define TOP_BAR_IMAGE 		"top_bar_background" 
+#define MAX_STATES     40
+#define MAX_CONDITIONS 9
+#define TOP_BAR_IMAGE 		"top_bar_background"
 #define BOTTOM_BAR_IMAGE 	"bottom_bar_background"
- 
+
 static RoadMapImage TopBarBgImage;
 static RoadMapImage BottomBarBgImage;
+
+static BOOL gHideBottomBar = FALSE;
+static BOOL gHideTopBar = FALSE;
 
 void roadmap_bar_switch_skins(void);
 
@@ -67,6 +73,7 @@ const char * get_time_str(void);
 const char * get_current_street(void);
 const char * get_time_to_destination(void);
 const char * get_dist_to_destination(void);
+const char * get_current_num_comments(void);
 
 #define MAX_OBJECTS 40
 
@@ -75,25 +82,26 @@ typedef struct {
     const char *name;
 
     RoadMapPen foreground;
-    
-    const char *default_foreground;
-    
-    RoadMapBarTextFn bat_text_fn;
 
-} BarText; 
+    const char *default_foreground;
+
+    RoadMapBarTextFn bar_text_fn;
+
+} BarText;
 
 #define ROADMAP_TEXT(p,w,t) \
     {p, NULL, w, t}
-     
+
 BarText RoadMapTexts[] = {
 
-    ROADMAP_TEXT("clock", "#303030", get_time_str),
-    ROADMAP_TEXT("num_alerts", "#303030",RTAlerts_Count_Str),
-    ROADMAP_TEXT("left_softkey", "#303030",roadmap_softkeys_get_left_soft_key_text),
-    ROADMAP_TEXT("right_softkey", "#303030",roadmap_softkeys_get_right_soft_key_text),
-    ROADMAP_TEXT("right_softkey", "#303030",get_current_street),
-    ROADMAP_TEXT("time_to_dest", "#303030",get_time_to_destination),
-    ROADMAP_TEXT("dist_to_dest", "#303030",get_dist_to_destination),
+    ROADMAP_TEXT("clock", "#ffffff", get_time_str),
+    ROADMAP_TEXT("num_alerts", "#ffffff",RTAlerts_Count_Str),
+    ROADMAP_TEXT("left_softkey", "#ffffff",roadmap_softkeys_get_left_soft_key_text),
+    ROADMAP_TEXT("right_softkey", "#ffffff",roadmap_softkeys_get_right_soft_key_text),
+    ROADMAP_TEXT("right_softkey", "#ffffff",get_current_street),
+    ROADMAP_TEXT("time_to_dest", "#ffffff",get_time_to_destination),
+    ROADMAP_TEXT("dist_to_dest", "#ffffff",get_dist_to_destination),
+    ROADMAP_TEXT("current_num_comments", "#ffffff",get_current_num_comments),
     ROADMAP_TEXT(NULL, NULL, NULL)
 };
 
@@ -101,20 +109,22 @@ typedef struct {
    char           *name;
    const char     *image_file[MAX_STATES];
    int 			  pos_x;
-   int 			  pos_y;	
+   int 			  pos_y;
    RoadMapImage   images[MAX_STATES];
    RoadMapImage   image_selected[MAX_STATES];
    const char     *state;
-   int            states_count;		
+   int            states_count;
    RoadMapStateFn state_fn;
    BarText		  *bar_text;
    int			  font_size;
    int 			  text_alling;
    char 		  *text_color;
+   const char 	  *fixed_text;
    RoadMapGuiRect bbox;
    const RoadMapAction *action;
-   RoadMapStateFn  condition_fn;
-   int			   condition_value;
+   RoadMapStateFn  condition_fn[MAX_CONDITIONS];
+   int			   condition_value[MAX_CONDITIONS];
+   int 			   num_conditions;
    int 			   image_state;
 } BarObject;
 
@@ -128,6 +138,7 @@ typedef struct {
 static BarObjectTable_s TopBarObjectTable;
 static BarObjectTable_s BottomBarObjectTable;
 
+static BarObject* SelectedBarObject = NULL;
 
 static BarText * roadmap_bar_text_find(const char *name){
    BarText *text;
@@ -139,7 +150,7 @@ static BarText * roadmap_bar_text_find(const char *name){
     }
     roadmap_log (ROADMAP_ERROR, "unknown bar text '%s'", name);
     return NULL;
-	
+
 }
 
 static void roadmap_bar_pos (BarObject *object,
@@ -148,10 +159,10 @@ static void roadmap_bar_pos (BarObject *object,
    pos->x = object->pos_x;
    pos->y = object->pos_y;
 
-   if (pos->x < 0) 
+   if (pos->x < 0)
       pos->x += roadmap_canvas_width ();
 
-   if (pos->y < 0) 
+   if (pos->y < 0)
       pos->y += roadmap_canvas_height ();
 }
 
@@ -173,7 +184,7 @@ static void roadmap_bar_decode_arg (char *output, int o_size,
    int size;
 
    o_size -= 1;
-      
+
    size = i_size < o_size ? i_size : o_size;
 
    strncpy (output, input, size);
@@ -196,8 +207,8 @@ static void roadmap_bar_decode_integer (int *value, int argc,
 
    roadmap_bar_decode_arg (arg, sizeof(arg), argv[1], argl[1]);
    *value = atoi(arg);
-}  
-      
+}
+
 static void roadmap_bar_decode_position
                         (BarObject *object,
                          int argc, const char **argv, int *argl) {
@@ -238,7 +249,7 @@ static void roadmap_bar_decode_icon
    for (i = 1; i <= argc; ++i) {
       RoadMapImage image = NULL;
       char arg[256];
-      
+
       roadmap_bar_decode_arg (arg, sizeof(arg), argv[i], argl[i]);
 
       image = roadmap_res_get (RES_BITMAP, RES_SKIN, arg);
@@ -316,9 +327,15 @@ static void roadmap_bar_decode_condition
       return;
    }
 
+   if (object->num_conditions >= MAX_CONDITIONS){
+      roadmap_log (ROADMAP_ERROR, "roadmap bar:'%s' Too many conditions.",
+                  object->name);
+      return;
+   }
+
    roadmap_bar_decode_arg (arg, sizeof(arg), argv[1], argl[1]);
 
-   object->condition_fn = roadmap_state_find (arg);
+   object->condition_fn[object->num_conditions] = roadmap_state_find (arg);
 
    if (!object->condition_fn) {
       roadmap_log (ROADMAP_ERROR,
@@ -326,9 +343,10 @@ static void roadmap_bar_decode_condition
                   object->name);
       return;
    }
-   
+
    roadmap_bar_decode_arg (arg, sizeof(arg), argv[2], argl[2]);
-   object->condition_value = atoi(arg);
+   object->condition_value[object->num_conditions] = atoi(arg);
+   object->num_conditions++;
 }
 
 static void roadmap_bar_decode_text
@@ -347,6 +365,20 @@ static void roadmap_bar_decode_text
    roadmap_bar_decode_arg (arg, sizeof(arg), argv[1], argl[1]);
 
    object->bar_text = roadmap_bar_text_find (arg);
+
+}
+
+static void roadmap_bar_decode_fixed_text
+                        (BarObject *object,
+                         int argc, const char **argv, int *argl) {
+
+   char arg[255];
+
+   argc -= 1;
+
+   roadmap_bar_decode_arg (arg, sizeof(arg), argv[1], argl[1]);
+
+   object->fixed_text = strdup(roadmap_lang_get(arg));
 
 }
 static BarObject *roadmap_bar_new
@@ -414,7 +446,7 @@ static BarObject *roadmap_bar_by_pos (RoadMapGuiPoint *point, BarObjectTable_s *
 
    int i;
    int condition;
-   
+
    for (i = 0; i < table->count; i++) {
 
       RoadMapGuiPoint pos;
@@ -425,12 +457,18 @@ static BarObject *roadmap_bar_by_pos (RoadMapGuiPoint *point, BarObjectTable_s *
           (point->y >= (pos.y + table->object[i]->bbox.miny)) &&
           (point->y <= (pos.y + table->object[i]->bbox.maxy))) {
 
-			if (table->object[i]->condition_fn){
-				condition = (*table->object[i]->condition_fn) ();
-    			if (condition !=  table->object[i]->condition_value)
-    			continue;
+			if (table->object[i]->condition_fn[0]){
+				int j;
+				BOOL cond = TRUE;
+				for (j=0; j< table->object[i]->num_conditions;j++){
+					condition = (*table->object[i]->condition_fn[j]) ();
+    				if (condition !=  table->object[i]->condition_value[j])
+    					cond = FALSE;
+				}
+				if (!cond)
+					continue;
     		}
-				
+
          return table->object[i];
       }
    }
@@ -519,39 +557,42 @@ static void roadmap_bar_load (const char *data, int size, BarObjectTable_s *BarO
 
       case 'N':
          object = roadmap_bar_new (argc, argv, argl);
-         
+
          BarObjectTable->object[BarObjectTable->count] = object;
          BarObjectTable->count++;
          break;
       case 'C':
       	 roadmap_bar_decode_condition (object, argc, argv, argl);
          break;
-           
+
       case 'T':
       	roadmap_bar_decode_text (object, argc, argv, argl);
       	break;
-      	
+
       case 'F':
       	roadmap_bar_decode_integer (&object->font_size, argc, argv,
                                              argl);
         break;
-        
+      case 'E':
+      	roadmap_bar_decode_fixed_text (object, argc, argv, argl);
+        break;
+
      case 'L':
      	roadmap_bar_decode_integer(&object->text_alling, argc, argv,
-                                             argl);   
+                                             argl);
         break;
      case 'D':
       	roadmap_bar_decode_text_color (object, argc, argv, argl);
-        break;     
-        
+        break;
+
 	  case 'Y':
       	roadmap_bar_decode_integer (&BarObjectTable->draw_bg, argc, argv,
                                              argl);
-        break;	
+        break;
       }
 
 
-	  
+
       while (p < end && *p < ' ') p++;
       data = p;
    }
@@ -567,9 +608,20 @@ const char * get_current_street(void){
 	static char text[256];
 	roadmap_message_format (text, sizeof(text), "%Y");
 	return &text[0];
-	
+
 }
 
+const char * get_current_num_comments(void){
+	static char text[20];
+	int has_comments = RTAlerts_CurrentAlert_Has_Comments();
+	if (has_comments){
+		int num_comments = RTAlerts_Get_Number_of_Comments(RTAlerts_Get_Current_Alert_Id());
+		sprintf(text,"%d",num_comments);
+    	return &text[0];
+	}
+	else
+		return "";
+}
 
 const char *get_time_to_destination(void){
   static char text[256];
@@ -578,7 +630,7 @@ const char *get_time_to_destination(void){
   		return &text[0];
   	return "";
 }
-  	
+
 const char *get_dist_to_destination(void){
   static char text[256];
 
@@ -586,25 +638,31 @@ const char *get_dist_to_destination(void){
   		return &text[0];
   	return "";
 }
-  	
+
 void draw_objects(BarObjectTable_s *table){
    int font_size;
    int i;
    int state, condition;
    RoadMapGuiPoint TextLocation;
    int text_flag = ROADMAP_CANVAS_LEFT|ROADMAP_CANVAS_TOP ;
-   
+
 	for (i=0; i < table->count; i++) {
-    	RoadMapGuiPoint ObjectLocation; 
+    	RoadMapGuiPoint ObjectLocation;
     	if (table->object[i] == NULL)
     		continue;
-    	
-    	if (table->object[i]->condition_fn){
-    		condition = (*table->object[i]->condition_fn) ();
-    		if (condition !=  table->object[i]->condition_value)
-    			continue;
+
+    	if (table->object[i]->condition_fn[0]){
+				int j;
+				BOOL cond = TRUE;
+				for (j=0; j< table->object[i]->num_conditions;j++){
+					condition = (*table->object[i]->condition_fn[j]) ();
+    				if (condition !=  table->object[i]->condition_value[j])
+    					cond = FALSE;
+				}
+				if (!cond)
+					continue;
     	}
-    	
+
 		roadmap_bar_pos(table->object[i], &ObjectLocation);
 		if (table->object[i]->state_fn) {
       		state = (*table->object[i]->state_fn) ();
@@ -613,8 +671,8 @@ void draw_objects(BarObjectTable_s *table){
    			else{
    				if (table->object[i]->images[state] != NULL){
    					if ((table->object[i]->image_state == IMAGE_STATE_SELECTED) && (table->object[i]->image_selected[state] != NULL))
-   						roadmap_canvas_draw_image (table->object[i]->image_selected[state], &ObjectLocation, 0,IMAGE_NORMAL);	
-   					else 
+   						roadmap_canvas_draw_image (table->object[i]->image_selected[state], &ObjectLocation, 0,IMAGE_NORMAL);
+   					else
    						roadmap_canvas_draw_image (table->object[i]->images[state], &ObjectLocation, 0,IMAGE_NORMAL);
    				}
    			}
@@ -622,37 +680,34 @@ void draw_objects(BarObjectTable_s *table){
 		else{
 			if ((table->object[i]->image_state == IMAGE_STATE_SELECTED) && (table->object[i]->image_selected[0] != NULL)){
 				roadmap_canvas_draw_image (table->object[i]->image_selected[0], &ObjectLocation, 0,IMAGE_NORMAL);
-				
+
 			}
 			else if (table->object[i]->images[0])
 	   			roadmap_canvas_draw_image (table->object[i]->images[0], &ObjectLocation, 0,IMAGE_NORMAL);
 		}
 
     	if (table->object[i]->bar_text){
-    		
-    		if (table->object[i]->font_size != 0) 
+
+    		if (table->object[i]->font_size != 0)
     			font_size = table->object[i]->font_size;
     		else
     			font_size = 10;
-    		
+
     		if (table->object[i]->text_alling != -1){
     				text_flag = table->object[i]->text_alling;
     		}
     		else if (table->object[i]->pos_x < 0){
     			text_flag = ROADMAP_CANVAS_RIGHT|ROADMAP_CANVAS_TOP;
     		}
-    			
+
     		roadmap_canvas_create_pen (table->object[i]->bar_text->name);
     		if (table->object[i]->text_color){
     			roadmap_canvas_set_foreground (table->object[i]->text_color);
     		}
     		else{
-    			if (roadmap_skin_state())
-					roadmap_canvas_set_foreground ("#ffffff");		
-				else			    			
     				roadmap_canvas_set_foreground (table->object[i]->bar_text->default_foreground);
     		}
-    		
+
 			if (table->object[i]->state_fn) {
     	  		state = (*table->object[i]->state_fn) ();
       			if (state >0){
@@ -662,9 +717,9 @@ void draw_objects(BarObjectTable_s *table){
       				}
       				else
 						roadmap_bar_pos(table->object[i], &TextLocation);
-  					roadmap_canvas_draw_string_size (&TextLocation,
+  						roadmap_canvas_draw_string_size (&TextLocation,
        			    			                    text_flag,
-           			    			                font_size,(*table->object[i]->bar_text->bat_text_fn)());
+           			    			                font_size,(*table->object[i]->bar_text->bar_text_fn)());
       			}
 			}
 			else{
@@ -674,34 +729,76 @@ void draw_objects(BarObjectTable_s *table){
 				}
 				else
 					roadmap_bar_pos(table->object[i], &TextLocation);
-  				roadmap_canvas_draw_string_size (&TextLocation,
-       		    			                    text_flag,
-       			    			                font_size,(*table->object[i]->bar_text->bat_text_fn)());
-			}	
-    	}           		    	                
+  					roadmap_canvas_draw_string_size (&TextLocation,
+       		    				                    text_flag,
+       			    				                font_size,(*table->object[i]->bar_text->bar_text_fn)());
+			}
+    	}
+    	if (table->object[i]->fixed_text){
+
+    		if (table->object[i]->font_size != 0)
+    			font_size = table->object[i]->font_size;
+    		else
+    			font_size = 10;
+
+    		if (table->object[i]->text_alling != -1){
+    				text_flag = table->object[i]->text_alling;
+    		}
+    		else if (table->object[i]->pos_x < 0){
+    			text_flag = ROADMAP_CANVAS_RIGHT|ROADMAP_CANVAS_TOP;
+    		}
+
+    		roadmap_canvas_create_pen (table->object[i]->name);
+    		if (table->object[i]->text_color){
+    			roadmap_canvas_set_foreground (table->object[i]->text_color);
+    		}
+    		else{
+    			if (roadmap_skin_state())
+					roadmap_canvas_set_foreground ("#ffffff");
+				else
+    				roadmap_canvas_set_foreground ("#000000");
+    		}
+
+			if (table->object[i]->state_fn) {
+    	  		state = (*table->object[i]->state_fn) ();
+      			if (state >0){
+						roadmap_bar_pos(table->object[i], &TextLocation);
+  						roadmap_canvas_draw_string_size (&TextLocation,
+       			    			                    text_flag,
+           			    			                font_size,table->object[i]->fixed_text);
+      			}
+			}
+			else{
+					roadmap_bar_pos(table->object[i], &TextLocation);
+  					roadmap_canvas_draw_string_size (&TextLocation,
+       		    				                    text_flag,
+       			    				                font_size,table->object[i]->fixed_text);
+			}
+    	}
     }
 }
 
 void roadmap_bar_draw_top_bar (BOOL draw_bg) {
 	int i;
 	int num_images;
-	int image_width;
+	static int image_width = -1;
 	int width;
 
- 
 	width = roadmap_canvas_width ();
-	
-		
+
+
 	if (!bar_initialized)
 		return;
-		
+
+	if ( gHideTopBar )
+	      return;
+
 	if (TopBarObjectTable.draw_bg && draw_bg){
-	
-		
-		image_width = roadmap_canvas_image_width(TopBarBgImage);
-		
-		num_images = width / image_width;
-		
+	   if (image_width == -1)
+	      image_width = roadmap_canvas_image_width(TopBarBgImage);
+
+		num_images = width / image_width + 1;
+
 		for (i = 0; i < num_images; i++){
 			RoadMapGuiPoint BarLocation;
 			BarLocation.y = 0;
@@ -709,23 +806,20 @@ void roadmap_bar_draw_top_bar (BOOL draw_bg) {
 		   	roadmap_canvas_draw_image (TopBarBgImage, &BarLocation, 0,IMAGE_NORMAL);
 		}
 	}
-	draw_objects(&TopBarObjectTable);    
+	draw_objects(&TopBarObjectTable);
 }
 
-int roadmap_bar_short_click (RoadMapGuiPoint *point) {
-   
-   BarObject *object = roadmap_bar_by_pos(point, &TopBarObjectTable);
+int roadmap_bar_short_click (RoadMapGuiPoint *point)
+{
 
-   if (!object) {
-   	  object = roadmap_bar_by_pos(point, &BottomBarObjectTable);
-   	  if (!object)
-      	return 0;
-   }
+	if ( !SelectedBarObject )
+		return 0;
 
-   if (object->action) {
+   if ( SelectedBarObject->action )
+   {
       static RoadMapSoundList list;
-   
-	  object->state = IMAGE_STATE_NORMAL;
+
+      SelectedBarObject->image_state = IMAGE_STATE_SELECTED;
 	  roadmap_screen_redraw();
 
       if (!list) {
@@ -735,74 +829,88 @@ int roadmap_bar_short_click (RoadMapGuiPoint *point) {
       }
 
       roadmap_sound_play_list (list);
-	  
+
 	  roadmap_screen_redraw();
-	  
-      (*(object->action->callback)) ();
-      
+
+      (*(SelectedBarObject->action->callback)) ();
+
       roadmap_screen_redraw();
+
+      SelectedBarObject->image_state = IMAGE_STATE_NORMAL;
+
    }
 
    return 1;
 }
 
 int roadmap_bar_long_click (RoadMapGuiPoint *point) {
-   
-   BarObject *object = roadmap_bar_by_pos(point, &TopBarObjectTable);
 
-   if (!object) {
-   	  object = roadmap_bar_by_pos(point, &BottomBarObjectTable);
-   	  if (!object)
-      	return 0;
-   }
+	if ( !SelectedBarObject )
+		return 0;
 
-   if (object->action) {
-//      static RoadMapSoundList list;
-//   
-//      if (!list) {
-//         list = roadmap_sound_list_create (SOUND_LIST_NO_FREE);
-//         roadmap_sound_list_add (list, "click");
-//         roadmap_res_get (RES_SOUND, 0, "click");
-//      }
+   if ( SelectedBarObject->action ) {
+      static RoadMapSoundList list;
 
-//      roadmap_sound_play_list (list);
-	  
+      SelectedBarObject->image_state = IMAGE_STATE_SELECTED;
+   	  roadmap_screen_redraw();
+
+      if (!list) {
+         list = roadmap_sound_list_create (SOUND_LIST_NO_FREE);
+         roadmap_sound_list_add (list, "click");
+         roadmap_res_get (RES_SOUND, 0, "click");
+      }
+
+      roadmap_sound_play_list (list);
+
 	  roadmap_screen_redraw();
-      (*(object->action->callback)) ();
-      
+      (*(SelectedBarObject->action->callback)) ();
+
       roadmap_screen_redraw();
+
+      SelectedBarObject->image_state = IMAGE_STATE_NORMAL;
    }
 
    return 1;
 }
 
-int roadmap_bar_obj_pressed (RoadMapGuiPoint *point) {
-   
-   BarObject *object = roadmap_bar_by_pos(point, &TopBarObjectTable);
+int roadmap_bar_obj_pressed (RoadMapGuiPoint *point)
+{
+
+   BarObject *object = NULL;
+
+   if ( !gHideTopBar )
+	   object = roadmap_bar_by_pos(point, &TopBarObjectTable);
 
    if (!object) {
-   	  object = roadmap_bar_by_pos(point, &BottomBarObjectTable);
+	  if ( !gHideBottomBar )
+		  object = roadmap_bar_by_pos(point, &BottomBarObjectTable);
    	  if (!object)
       	return 0;
    }
-   
+
+   /* There is no dragging for the bar objects !!! */
+   roadmap_pointer_cancel_dragging();
+
    object->image_state = IMAGE_STATE_SELECTED;
+
+   // Save the selected object
+   SelectedBarObject = object;
+
    roadmap_screen_redraw();
+
    return 1;
 }
 
-int roadmap_bar_obj_released (RoadMapGuiPoint *point) {
-   
-   BarObject *object = roadmap_bar_by_pos(point, &TopBarObjectTable);
+int roadmap_bar_obj_released (RoadMapGuiPoint *point)
+{
+	// The release event causes the selected object in the press event to be unselected
+    if ( SelectedBarObject )
+	{
+	   SelectedBarObject->image_state = IMAGE_STATE_NORMAL;
+	   SelectedBarObject = NULL;
+	}
 
-   if (!object) {
-   	  object = roadmap_bar_by_pos(point, &BottomBarObjectTable);
-   	  if (!object)
-      	return 0;
-   }
-   
-   object->image_state = IMAGE_STATE_NORMAL;
-  roadmap_screen_redraw();
+   roadmap_screen_redraw();
    return 1;
 }
 
@@ -811,19 +919,18 @@ void roadmap_bar_draw_bottom_bar (BOOL draw_bg) {
 	int num_images;
 	int image_width, image_height;
 	int screen_width, screen_height;
-//	int width, ascent, descent;
-//	RoadMapGuiPoint TextLocation;
-//	char *text;
-	
+
 	screen_width = roadmap_canvas_width ();
 	screen_height = roadmap_canvas_height();
-	
+
 	if (!bar_initialized)
 		return;
-		
+
+   if (gHideBottomBar)
+      return;
 	image_width = roadmap_canvas_image_width(BottomBarBgImage);
 	image_height = roadmap_canvas_image_height(BottomBarBgImage);
-	
+
 	if (BottomBarObjectTable.draw_bg && draw_bg){
 		num_images = screen_width / image_width;
 		for (i = 0; i < num_images; i++){
@@ -833,23 +940,23 @@ void roadmap_bar_draw_bottom_bar (BOOL draw_bg) {
 		   roadmap_canvas_draw_image (BottomBarBgImage, &BarLocation, 0,
 	         IMAGE_NORMAL);
 		}
-	}	
-	draw_objects(&BottomBarObjectTable); 
-	
+	}
+	draw_objects(&BottomBarObjectTable);
+
 }
 
 void roadmap_bar_draw(void){
 	if (!bar_initialized)
 		return;
-		
+
 	roadmap_bar_draw_top_bar(TRUE);
-	roadmap_bar_draw_bottom_bar(TRUE);
+   roadmap_bar_draw_bottom_bar(TRUE);
 }
 
 void roadmap_bar_draw_objects(void){
 	if (!bar_initialized)
 		return;
-		
+
 	roadmap_bar_draw_bottom_bar(TRUE);
 }
 
@@ -861,21 +968,15 @@ void roadmap_bar_set_mode (int flags) {
    y_offset = roadmap_canvas_image_height (TopBarBgImage);
 
    if (flags & TOPBAR_FLAG) {
-      roadmap_screen_obj_offset (x_offset, y_offset);
-      roadmap_screen_move_center (-y_offset / 2);
-   } 
-   
+      roadmap_screen_obj_global_offset (x_offset, y_offset);
+      roadmap_screen_move_center ((-y_offset / 2)+15);
+   }
+
    if (flags & BOTTOM_BAR_FLAG){
-      roadmap_screen_obj_offset (-x_offset, -y_offset);
+      roadmap_screen_obj_global_offset (-x_offset, -y_offset);
       roadmap_screen_move_center (y_offset / 2);
    }
-   
-}
 
-static void roadmap_bar_after_refresh (void) {
-
-    roadmap_bar_draw ();
-    
 }
 
 void roadmap_bar_initialize(void){
@@ -884,16 +985,16 @@ void roadmap_bar_initialize(void){
 	int i;
 	const char *cursor;
     RoadMapFileContext file;
-   
+
 	TopBarObjectTable.count = 0;
-	
+
 	for (i=0; i< MAX_OBJECTS;i++){
 		TopBarObjectTable.object[i] = NULL;
 		BottomBarObjectTable.object[i] = NULL;
 	}
 	TopBarObjectTable.draw_bg = TRUE;
 	BottomBarObjectTable.draw_bg = TRUE;
-	
+
 	width = roadmap_canvas_width ();
 	TopBarBgImage = (RoadMapImage) roadmap_res_get(RES_BITMAP, RES_SKIN, TOP_BAR_IMAGE);
 	if (TopBarBgImage == NULL){
@@ -913,7 +1014,7 @@ void roadmap_bar_initialize(void){
 	}
 
     roadmap_bar_load(roadmap_file_base(file), roadmap_file_size(file), &TopBarObjectTable);
-    
+
     roadmap_file_unmap (&file);
 
     // Load bottom bar
@@ -922,35 +1023,37 @@ void roadmap_bar_initialize(void){
 		roadmap_log (ROADMAP_ERROR, "roadmap bottom top_bar file is missing");
 		return;
 	}
-    
+
     roadmap_bar_load(roadmap_file_base(file), roadmap_file_size(file), &BottomBarObjectTable);
-    
+
     roadmap_file_unmap (&file);
-       	
+
 	image_width = roadmap_canvas_image_width(TopBarBgImage);
-	
-	roadmap_screen_subscribe_after_refresh (roadmap_bar_after_refresh);
-	
+
 	roadmap_bar_set_mode(TOPBAR_FLAG);
-	
+
 	roadmap_pointer_register_short_click
       (roadmap_bar_short_click, POINTER_HIGH);
-	
+
 	roadmap_pointer_register_long_click
       (roadmap_bar_long_click, POINTER_HIGH);
 
 	roadmap_pointer_register_pressed
  		(roadmap_bar_obj_pressed, POINTER_HIGH);
-	
+
 	roadmap_pointer_register_released
  		(roadmap_bar_obj_released, POINTER_HIGH);
 
 	roadmap_skin_register (roadmap_bar_switch_skins);
-	
+
 	bar_initialized = TRUE;
 }
 
 int roadmap_bar_top_height(){
+
+	if ( gHideTopBar  )
+      return 0;
+
 	if (TopBarBgImage == NULL){
 		return 0;
 	}
@@ -959,7 +1062,10 @@ int roadmap_bar_top_height(){
 }
 
 int roadmap_bar_bottom_height(){
-	if (BottomBarBgImage == NULL){
+	if (gHideBottomBar)
+      return 0;
+
+   if (BottomBarBgImage == NULL){
 		return 0;
 	}
 	else
@@ -974,6 +1080,31 @@ void roadmap_bar_switch_skins(void){
 
 #ifdef IPHONE
    roadmap_main_adjust_skin (roadmap_skin_state());
-#endif //IPHONE	
+#endif //IPHONE
 
+}
+
+void roadmap_bottom_bar_hide(){
+   gHideBottomBar = TRUE;
+}
+
+void roadmap_bottom_bar_show(){
+   gHideBottomBar = FALSE;
+}
+
+BOOL roadmap_bottom_bar_shown(){
+   return !gHideBottomBar;
+}
+
+
+void roadmap_top_bar_hide(){
+   gHideTopBar = TRUE;
+}
+
+void roadmap_top_bar_show(){
+   gHideTopBar = FALSE;
+}
+
+BOOL roadmap_top_bar_shown(){
+	return !gHideTopBar;
 }

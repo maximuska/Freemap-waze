@@ -31,6 +31,7 @@
 void ssd_menu_activate (const char           *name,
                         const char           *items_file,
                         const char           *items[],
+                        SsdWidget 			 addition_conatiner,
                         PFN_ON_DIALOG_CLOSED on_dialog_closed,
                         const RoadMapAction  *actions,
                         int                   flags);
@@ -44,4 +45,5 @@ void ssd_list_menu_activate (const char      *name,
                         
 void ssd_menu_hide (const char *name);
 void ssd_menu_load_images(const char   *items_file, const RoadMapAction  *actions);
+void ssd_menu_set_right_text(char *name, char *item, char *text);
 #endif // __SSD_MENU_H_

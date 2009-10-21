@@ -33,20 +33,31 @@ extern "C"{
 #include "FreeMapAppUi.h"
 
 
+static roadmap_input_type sgInputMode = inputtype_numeric;
+
+roadmap_input_type roadmap_input_type_get_mode( void )
+{
+	return sgInputMode;
+}
 void roadmap_input_type_set_mode( roadmap_input_type mode )
 {
 	TUint newCapabilities;
 	CFreeMapAppUi* pAppUi;
+	
+	sgInputMode = mode;
+	
 	switch( mode )
 	{
 		case inputtype_alphabetic : 
 		case inputtype_alpha_spaces :
 		{
-			newCapabilities = TCoeInputCapabilities::EWesternAlphabetic;
+			// Use the default capabilities - Not working in E71x - qwerty problems					
+			newCapabilities = TCoeInputCapabilities::EAllText;
 			break;
 		}
-		case inputtype_numeric :
 		{
+		case inputtype_numeric :
+			// Not working in E71x - qwerty problems
 			newCapabilities = TCoeInputCapabilities::EWesternNumericIntegerPositive;
 			break;
 		}
@@ -54,13 +65,19 @@ void roadmap_input_type_set_mode( roadmap_input_type mode )
 		case inputtype_none :
 		default:
 		{
-			newCapabilities = TCoeInputCapabilities::ENone;
+			// Use the default capabilities
+			newCapabilities = TCoeInputCapabilities::EAllText;
 			break;
 		}
 	} // switch
 	// Update the UI object
+	/*
+	 * The input capabilities is not working properly on all devices - not in use now
+	 */
+	/*
 	pAppUi = static_cast<CFreeMapAppUi*>( CEikonEnv::Static()->EikAppUi() );
 	pAppUi->SetInputCapabilities( newCapabilities );
+	*/
 	
 	// Log the operation
 	roadmap_log( ROADMAP_DEBUG, "roadmap_text_set_input_mode() - Current capabilities : %d", newCapabilities );

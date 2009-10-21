@@ -40,12 +40,13 @@ extern "C" {
 #include "roadmap_net_mon.h"
 }
 
-CRoadMapNativeHTTP::CRoadMapNativeHTTP(const char *http_type, const char *apHostname, int aPort)
-  : CActive(EPriorityNormal), m_httpType(http_type), CRoadMapNativeNet(apHostname, aPort)
+CRoadMapNativeHTTP::CRoadMapNativeHTTP(const char *http_type, const char *apHostname, int aPort, time_t tUpdate)
+  : CActive(EPriorityNormal), CRoadMapNativeNet(apHostname, aPort), m_httpType(http_type), m_tModifiedSince(tUpdate)
 {
   m_isHttp = 1;
   m_IsLastChunk = false;
   m_NumWriteBuffers = 0;
+  m_AccumWriteBuffer = NULL;
   m_NumWriteSent = 0;
   m_ReadBuffer = NULL;
   m_Status = 0;
@@ -61,19 +62,20 @@ CRoadMapNativeHTTP::~CRoadMapNativeHTTP()
 		delete m_WriteBuffers[m_NumWriteBuffers];
 	}
 	
+	if (m_AccumWriteBuffer) delete m_AccumWriteBuffer;
 	if (m_ReadBuffer) delete m_ReadBuffer;
 }
 
-CRoadMapNativeHTTP* CRoadMapNativeHTTP::NewL(const char *http_type, const char *apHostname, int aPort, RoadMapNetConnectCallback apCallback, void* apContext)
+CRoadMapNativeHTTP* CRoadMapNativeHTTP::NewL(const char *http_type, const char *apHostname, int aPort, time_t tUpdate, RoadMapNetConnectCallback apCallback, void* apContext)
 {
-  CRoadMapNativeHTTP* self = CRoadMapNativeHTTP::NewLC(http_type, apHostname, aPort, apCallback, apContext);
+  CRoadMapNativeHTTP* self = CRoadMapNativeHTTP::NewLC(http_type, apHostname, aPort, tUpdate, apCallback, apContext);
   CleanupStack::Pop(self);
   return self;
 }
 
-CRoadMapNativeHTTP* CRoadMapNativeHTTP::NewLC(const char *http_type, const char *apHostname, int aPort, RoadMapNetConnectCallback apCallback, void* apContext)
+CRoadMapNativeHTTP* CRoadMapNativeHTTP::NewLC(const char *http_type, const char *apHostname, int aPort, time_t tUpdate, RoadMapNetConnectCallback apCallback, void* apContext)
 {
-  CRoadMapNativeHTTP* self = new ( ELeave ) CRoadMapNativeHTTP(http_type, apHostname, aPort);
+  CRoadMapNativeHTTP* self = new ( ELeave ) CRoadMapNativeHTTP(http_type, apHostname, aPort, tUpdate);
   CleanupStack::PushL(self);
   self->ConstructL(apCallback, apContext);
 //TODO use TRAPD with  User::LeaveIfError(aErrorCode);
@@ -134,14 +136,15 @@ void CRoadMapNativeHTTP::ConnectL(const TDesC& aHostname, int aPort)
   if (!strcmp(m_httpType, "GET")) http_method = HTTP::EGET;
   RStringF method = m_Session.StringPool().StringF(http_method, RHTTPSession::GetTable());
   SetConnectionParams();
+  SetModifiedSince();
   
   m_Transaction = m_Session.OpenTransactionL(m_pUri8->Uri(), *this, method);
   if ( m_pConnectCallback != NULL )
   {// since we got here it's obviously not null, but checking anyway
     //  Set up the IO object
     //  Inform our client that we have a connection
-   // roadmap_log(ROADMAP_DEBUG, "callback %x\n", m_context);
-    (*m_pConnectCallback)(dynamic_cast<CRoadMapNativeNet*>(this), m_context, neterr_success);
+   // roadmap_log(ROADMAP_DEBUG, "callback %x", m_context);
+    (*m_pConnectCallback)(dynamic_cast<CRoadMapNativeNet*>(this), m_context, succeeded);
   }
 }
 
@@ -384,16 +387,29 @@ TInt CRoadMapNativeHTTP::MHFRunError(TInt aError, RHTTPTransaction aTransaction,
   
 TBool CRoadMapNativeHTTP::GetNextDataPart(TPtrC8& aDataPart)
 {
-  if (m_NumWriteBuffers == 0) return EFalse;
+  if (m_NumWriteBuffers == 0) return ETrue;
   
-  aDataPart.Set(m_WriteBuffers[m_NumWriteSent]->Des());
-  
-  if ((m_NumWriteSent + 1) < m_NumWriteBuffers) {
-  	m_NumWriteSent++;
-  	return EFalse;
-  } else {
-  	return ETrue;
+  if (m_NumWriteBuffers == 1) {
+	  aDataPart.Set(m_WriteBuffers[0]->Des());
+	  return ETrue;
   }
+  
+  int i;
+  int len = 0;
+  
+  for (i=0; i<m_NumWriteBuffers; i++) {
+	  len += m_WriteBuffers[i]->Length();	  
+  }
+  
+  m_AccumWriteBuffer = HBufC8::NewL(len);
+
+  for (i=0; i<m_NumWriteBuffers; i++) {
+	  m_AccumWriteBuffer->Des().Append(m_WriteBuffers[i]->Des());	  
+  }  
+  
+  aDataPart.Set(m_AccumWriteBuffer->Des());
+  
+  return ETrue;  
 }
 
 void CRoadMapNativeHTTP::ReleaseData()
@@ -486,6 +502,19 @@ void CRoadMapNativeHTTP::SetConnectionParams()
 //                        THTTPHdrVal(strP.StringF(HTTP::EHttp10)));  
 }
 
+void CRoadMapNativeHTTP::SetModifiedSince()
+{
+  if (m_tModifiedSince == 0) return;
+  
+  RStringPool strP = m_Session.StringPool();
+  RHTTPHeaders hdrs = m_Session.RequestSessionHeadersL(); //m_Transaction.Request().GetHeaderCollection();
+  struct tm *tmVals = gmtime (&m_tModifiedSince);
+  THTTPHdrVal dateVal (TDateTime (1900 + tmVals->tm_year, TMonth(TInt(tmVals->tm_mon)), tmVals->tm_mday - 1,
+				                  tmVals->tm_hour, tmVals->tm_min, tmVals->tm_sec, 0));
+  
+  hdrs.SetFieldL(strP.StringF(HTTP::EIfModifiedSince,RHTTPSession::GetTable()), dateVal);
+}
+
 TInt CRoadMapNativeHTTP::ConnAsyncStart(TConnPref &aConnPrefs)
 {
   TInt err = KErrNone;
@@ -521,7 +550,7 @@ void CRoadMapNativeHTTP::OpenSession()
 
 void CRoadMapNativeHTTP::RunL()
 {
-  roadmap_log(ROADMAP_DEBUG, "CRoadMapNativeHTTP::RunL status=%d connStatus=%d\n", iStatus.Int() , (int)m_eConnStatus);
+  roadmap_log(ROADMAP_DEBUG, "CRoadMapNativeHTTP::RunL status=%d connStatus=%d", iStatus.Int() , (int)m_eConnStatus);
   if ( iStatus == KErrNone )
   {
     switch ( m_eConnStatus )

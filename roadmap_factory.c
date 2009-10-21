@@ -221,7 +221,7 @@ static BOOL roadmap_factory_load_menu_item(
          if((CONTEXT_MENU_FLAG_POPUP & existing_item->flags) &&  
             !strcmp( existing_item->label, new_item->label))
          {
-            popup_menu = existing_item->popup->menu;
+            popup_menu = existing_item->popup;
             break;
          }
       }
@@ -235,14 +235,12 @@ static BOOL roadmap_factory_load_menu_item(
          }
          
          menu->item_count++;
-         new_item->popup = malloc(sizeof(ssd_cm_popup_info));
-         memset( new_item->popup, 0, sizeof(ssd_cm_popup_info));
+         new_item->popup = malloc(sizeof(ssd_contextmenu));
+         memset( new_item->popup, 0, sizeof(ssd_contextmenu));
          
-         new_item->popup->menu = malloc(sizeof(ssd_contextmenu));
-         memset( new_item->popup->menu, 0, sizeof(ssd_contextmenu));
-         new_item->popup->menu->item = calloc( sizeof(ssd_cm_item), CONTEXT_MENU_MAX_ITEMS_COUNT);
+         new_item->popup->item = calloc( sizeof(ssd_cm_item), CONTEXT_MENU_MAX_ITEMS_COUNT);
          
-         popup_menu = new_item->popup->menu;
+         popup_menu = new_item->popup;
       }
 
       return roadmap_factory_load_menu_item( popup_menu, p+1, actions);

@@ -25,6 +25,9 @@
 #ifndef _ROADMAP_NET__H_
 #define _ROADMAP_NET__H_
 
+#include <time.h>
+#include "roadmap.h"
+
 #if defined (_WIN32) && !defined (__SYMBIAN32__)
 
 #include <winsock.h>
@@ -52,29 +55,18 @@ typedef int RoadMapSocket; /* UNIX style. */
 
 #define ROADMAP_NET_IS_VALID(s) (s != ROADMAP_INVALID_SOCKET)
 
-typedef enum tag_network_error
-{
-   neterr_success,
-   
-   neterr_general_error,
-   neterr_invalid_arg,
-   neterr_unknown_protocol,
-   neterr_remote_error,
-   neterr_request_pending,
-   neterr_no_path_to_destination,
+typedef void (*RoadMapNetConnectCallback) (RoadMapSocket socket, void *context, roadmap_result res);
 
-}  network_error;
-
-typedef void (*RoadMapNetConnectCallback) (RoadMapSocket socket, void *context, network_error err);
-
-RoadMapSocket roadmap_net_connect(  const char*    protocol,
-                                    const char*    name, 
-                                    int            default_port,
-                                    network_error* err); // Optional, can be NULL
+RoadMapSocket roadmap_net_connect(  const char*       protocol,
+                                    const char*       name, 
+                                    time_t			update_time, 
+                                    int               default_port,
+                                    roadmap_result*   res); // Optional, can be NULL
 
 // A-syncronious receive:
 int roadmap_net_connect_async (const char *protocol,
                                 const char *name, 
+                                time_t update_time,
                                 int default_port,
                                 RoadMapNetConnectCallback callback,
                                 void *context);

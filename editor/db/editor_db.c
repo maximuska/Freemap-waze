@@ -64,6 +64,8 @@
 #define TYPE_UPDATE_FLAG   	0x40000000
 #define TYPE_COMMITTED_FLAG	0x20000000
 
+static const int DB_SIGNATURE	= 0x3a2e0903;
+
 typedef struct {
 	int	generation;
 } editor_record_header;
@@ -351,15 +353,20 @@ static int editor_db_read (void) {
    int size = 0;
    editor_db_section *section;
    int error = 0;
+   int signature;
+   int res;
 
+	res = roadmap_file_read (EditorDataFile, &signature, sizeof (int));
+	if (res != sizeof (int) || signature != DB_SIGNATURE) return -1;
+	
    while (1) {
       char *head = buffer;
-      int res = roadmap_file_read(EditorDataFile, buffer + size,
-                                    sizeof(buffer) - size);
       int count;
       int item_id;
       int align;
 
+      res = roadmap_file_read (EditorDataFile, buffer + size,
+                               sizeof(buffer) - size);
       if (res <= 0) return error;
       size += res;
 
@@ -423,7 +430,7 @@ int editor_db_open (int map_id) {
 
    char name[100];
    const char *map_path;
-   char *file_name;
+   char file_name[512];
    int do_read = 0;
 
    editor_log_push ("editor_db_open");
@@ -438,7 +445,7 @@ int editor_db_open (int map_id) {
 
    snprintf (name, sizeof(name), "edt%05d.dat", map_id);
 
-   file_name = roadmap_path_join(map_path, name);
+   roadmap_path_format (file_name, sizeof (file_name), map_path, name);
 
    if (roadmap_file_exists (map_path, name)) {
       EditorDataFile = roadmap_file_open(file_name, "rw");  
@@ -446,16 +453,13 @@ int editor_db_open (int map_id) {
    } else {
       roadmap_path_create (map_path);
       EditorDataFile = roadmap_file_open(file_name, "w");
+      roadmap_file_write (EditorDataFile, &DB_SIGNATURE, sizeof (int));
    }
-#ifdef WIN32
-   roadmap_path_free(map_path);
-#endif
 
 	do {
 	   if (!ROADMAP_FILE_IS_VALID(EditorDataFile)) {
 	      editor_log (ROADMAP_ERROR, "Can't open/create new database: %s/%s",
 	            map_path, name);
-		   roadmap_path_free(file_name);
 	      editor_log_pop ();
 	      return -1;
 	   }
@@ -464,15 +468,16 @@ int editor_db_open (int map_id) {
    		do_read = 0;
 	   	if (editor_db_read () == -1) {
 	   		editor_db_free ();
-	   		roadmap_messagebox("Error", "Offline data file is currupt: Re-Initializing data");
+	   		//roadmap_messagebox("Error", "Offline data file is currupt: Re-Initializing data");
+	   		roadmap_log (ROADMAP_ERROR, "Offline data file is currupt: Re-Initializing data");
 	   		roadmap_file_close (EditorDataFile);
 	   		roadmap_file_remove (NULL, file_name);
 		      EditorDataFile = roadmap_file_open(file_name, "w");
+      		roadmap_file_write (EditorDataFile, &DB_SIGNATURE, sizeof (int));
 	   	}
 	   }
 	} while (do_read);
 
-   roadmap_path_free(file_name);
    EditorActiveMap = map_id;
    editor_log_pop ();
    return 0;
@@ -521,43 +526,30 @@ void editor_db_delete (int map_id) {
    char name[100];
   	const char *map_path;
 
-#ifdef WIN32
-	map_path = roadmap_path_join (roadmap_path_user(), "maps");
-#else
-   map_path = roadmap_path_first ("maps");
-   while (map_path && !roadmap_file_exists (map_path,"")) {
-   	map_path = roadmap_path_next ("maps", map_path);
-   }
-#endif
+   map_path = roadmap_db_map_path();
    snprintf (name, sizeof(name), "edt%05d.dat", map_id);
    
    if (roadmap_file_exists (map_path, name)) {
 
       char **files;
       char **cursor;
-      char *directory;
+      char directory[512];
+      char full_name[512];
 
       /* Delete notes wav files */
       /* FIXME this is broken for multiple counties */
-      directory = roadmap_path_join (roadmap_path_user (), "markers");
+      roadmap_path_format (directory, sizeof (directory), roadmap_path_user (), "markers");
       files = roadmap_path_list (directory, ".wav");
 
       for (cursor = files; *cursor != NULL; ++cursor) {
 
-         char *full_name = roadmap_path_join (directory, *cursor);
+         roadmap_path_format (full_name, sizeof (full_name), directory, *cursor);
          roadmap_file_remove (NULL, full_name);
-
-         free (full_name);
       }
-
-      free (directory);
 
       /* Remove the actual editor file */
       roadmap_file_remove (map_path, name);
    }
-#ifdef WIN32
-   roadmap_path_free(map_path);
-#endif
 }
 
 

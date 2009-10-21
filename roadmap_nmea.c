@@ -217,11 +217,12 @@ static int roadmap_nmea_decode_coordinate
 
 static char *roadmap_nmea_decode_unit (const char *original) {
 
-    if (strcasecmp (original, "M") == 0) {
+    if( original && (*original) && (strcasecmp (original, "M") == 0)) {
         return "cm";
     }
 
-    roadmap_log (ROADMAP_ERROR, "unknown distance unit '%s'", original);
+    if (original && *original)
+       roadmap_log (ROADMAP_DEBUG, "unknown distance unit (%s)", original);
     return "??";
 }
 
@@ -756,7 +757,7 @@ int roadmap_nmea_decode (void *user_context,
    if (*p != '$') return 0; /* Ignore this ill-formed sentence. */
 
    sentence = p++;
-
+   roadmap_log (ROADMAP_ERROR, "NMEA: '%s'", sentence);
    while ((*p != '*') && (*p >= ' ')) {
       checksum ^= *p;
       p += 1;

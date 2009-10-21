@@ -43,9 +43,8 @@
 typedef struct editor_db_trkseg_s {
    int gps_start_time;
    int gps_end_time;
-   int square;
-   int line_id;
-   int plugin_id;
+   int from_point_id;
+   int to_point_id;
    int point_from;
    int first_shape;
    int last_shape;
@@ -54,9 +53,8 @@ typedef struct editor_db_trkseg_s {
 
 //void editor_trkseg_set_line (int trkseg, int line_id, int plugin_id);
 
-int editor_trkseg_add (int square,
-							  int line_id,
-                       int plugin_id,
+int editor_trkseg_add (int from_point_id,
+							  int to_point_id,
                        int p_from,
                        int first_shape,
                        int last_shape,
@@ -70,7 +68,7 @@ void editor_trkseg_get (int trkseg,
                         int *last_shape,
                         int *flags);
 
-void editor_trkseg_get_line (int trkseg, int *square, int *line_id, int *plugin_id);
+void editor_trkseg_get_points (int trkseg, int *from_point_id, int *to_point_id);
 
 void editor_trkseg_get_time (int trkseg,
                              time_t *start_time,

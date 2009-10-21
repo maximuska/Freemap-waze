@@ -1,3 +1,0 @@
-#!/bin/bash
-waze=$(dirname "$0")
-exec "${waze}"/waze_

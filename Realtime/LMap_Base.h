@@ -26,20 +26,16 @@
 #ifndef	BYTE
 	typedef unsigned char       BYTE;
 #endif	//	BYTE
-
-typedef enum tagETransactionResult
-{
-   transaction_succeeded,
-   transaction_failed,
-   transaction_in_progress
-   
-}  ETransactionResult;
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #if defined (__SYMBIAN32__)
-#define	RT_DEVICE_ID							(10)
+#ifndef TOUCH_SCREEN
+#define  RT_DEVICE_ID                     (10)
+#else
+#define  RT_DEVICE_ID                     (11)
+#endif
 
 #elif defined (IPHONE)
 #define	RT_DEVICE_ID							(20)
@@ -54,8 +50,11 @@ typedef enum tagETransactionResult
 #elif defined (_WIN32)
 #define	RT_DEVICE_ID							(40)
 
-#elif defined (__linux__)
+#elif defined (ANDROID)
 #define	RT_DEVICE_ID							(50)
+
+#elif defined (__linux__)
+#define	RT_DEVICE_ID							(90)
 
 #else
 #error UNKNOWN DEVICE

@@ -21,10 +21,10 @@
  *   along with RoadMap; if not, write to the Free Software
  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 #ifndef ROADMAP_BAR_H_
 #define ROADMAP_BAR_H_
-
+#include "roadmap_gui.h"
 typedef const char * (*RoadMapBarTextFn) (void);
 
 int roadmap_bar_bottom_height();
@@ -36,4 +36,12 @@ void roadmap_bar_draw_bottom_bar (BOOL drwa_bg);
 void roadmap_bar_draw(void);
 void roadmap_bar_draw_objects(void);
 int roadmap_bar_short_click (RoadMapGuiPoint *point);
+void roadmap_bottom_bar_hide();
+void roadmap_bottom_bar_show();
+void roadmap_top_bar_hide();
+void roadmap_top_bar_show();
+BOOL roadmap_bottom_bar_shown();
+BOOL roadmap_top_bar_shown();
+void roadmap_top_bar_set_clickable( BOOL val );
+
 #endif /*ROADMAP_BAR_H_*/

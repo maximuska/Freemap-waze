@@ -32,5 +32,6 @@ void roadmap_view_navigation (void);
 int roadmap_view_show_labels (int cfcc, RoadMapPen *pens, int num_projs);
 void roadmap_view_auto_zoom_suspend (void);
 void roadmap_view_reset (void);
+int roadmap_view_hold (void);
 
 #endif /*ROADMAP_VIEW_H_*/

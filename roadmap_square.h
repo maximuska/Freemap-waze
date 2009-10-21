@@ -32,9 +32,54 @@
 #define ROADMAP_SQUARE_GLOBAL -1
 #define ROADMAP_SQUARE_OTHER  -2
 
-time_t	roadmap_square_global_timestamp (void);
+#define ROADMAP_SQUARE_ATTR_ON_SCREEN	0x0001
+extern int RoadMapSquareCurrent;
+extern int RoadMapScaleCurrent;
 
-int   roadmap_square_range  (void);
+struct RoadMapSquareContext_t;
+extern struct RoadMapSquareContext_t *RoadMapSquareActive;
+
+#if defined(FORCE_INLINE) || defined(DECLARE_ROADMAP_SQUARE)
+#if !defined(INLINE_DEC)
+#define INLINE_DEC
+#endif
+
+INLINE_DEC int roadmap_square_get_screen_scale (void) {
+
+   return RoadMapScaleCurrent;
+}
+
+
+INLINE_DEC int roadmap_square_active (void) {
+
+   return RoadMapSquareCurrent;
+}
+
+
+int roadmap_square_set_current_internal (int square);
+
+INLINE_DEC int roadmap_square_set_current (int square) {
+
+   if (square < 0) return 0;
+
+   if (square == RoadMapSquareCurrent) return 1;
+
+   return roadmap_square_set_current_internal(square);
+}
+#endif // inline
+
+time_t	roadmap_square_global_timestamp (void);
+time_t	roadmap_square_timestamp (int square);
+
+int	roadmap_square_version (int square);
+
+void 	roadmap_square_delete_reference (int square);
+
+int 	roadmap_square_set_attribute (int square, int attribute);
+int 	roadmap_square_reset_attribute (int square, int attribute);
+int 	roadmap_square_get_attribute (int square, int attribute);
+
+void 	roadmap_square_request_location (const RoadMapPosition *position);
 int   roadmap_square_search (const RoadMapPosition *position, int scale_index);
 int 	roadmap_square_find_neighbours (const RoadMapPosition *position, int scale_index, int squares[9]);
 void  roadmap_square_min    (int square, RoadMapPosition *position);
@@ -42,6 +87,7 @@ void  roadmap_square_min    (int square, RoadMapPosition *position);
 void  roadmap_square_edges  (int square, RoadMapArea *edges);
 int   roadmap_square_cross_pos (RoadMapPosition *position);
 
+void 	roadmap_square_force_next_update (void);
 int   roadmap_square_view (int *square, int size);
 int   roadmap_square_first_point  (int square);
 int   roadmap_square_points_count (int square);

@@ -38,17 +38,28 @@ typedef enum border_images
    border_image_left,
    border_image_right,
 
-   border_trap_top,
-   border_trap_top_right,
-   border_trap_top_left,
+   border_white_top,
+   border_white_top_right,
+   border_white_top_left,
 
-   border_trap_bottom,
-   border_trap_bottom_right,
-   border_trap_bottom_left,
+   border_white_bottom,
+   border_white_bottom_right,
+   border_white_bottom_left,
    
-   border_trap_left,
-   border_trap_right,
-   
+   border_white_left,
+   border_white_right,
+
+   border_black_top,
+   border_black_top_right,
+   border_black_top_left,
+
+   border_black_bottom,
+   border_black_bottom_right,
+   border_black_bottom_left,
+
+   border_black_left,
+   border_black_right,
+
    border_heading_red_left,
    border_heading_red_middle,
    border_heading_red_right,
@@ -80,7 +91,8 @@ typedef enum border_images
 }  border_images;
 
 #define STYLE_NORMAL  border_image_top
-#define STYLE_TRAP 	  border_trap_top
+#define STYLE_WHITE   border_white_top
+#define STYLE_BLACK   border_black_top
 
 #define POINTER_NONE 	 -1
 #define POINTER_POSITION 0
@@ -90,7 +102,7 @@ typedef enum border_images
 #define HEADER_NONE		 -1
 #define HEADER_GREEN 	 border_heading_green_left
 #define HEADER_RED		 border_heading_red_left
-#define HEADER_BLACK	 border_heading_black_left
+#define HEADER_BLACK	    border_heading_black_left
 #define HEADER_GRAY		 border_heading_gray_left
 
 

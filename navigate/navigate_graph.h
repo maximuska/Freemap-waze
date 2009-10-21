@@ -25,7 +25,7 @@
 #ifndef _NAVIGATE_GRAPH_H_
 #define _NAVIGATE_GRAPH_H_
 
-#define REVERSED (1 << 15)
+#define REVERSED (1 << 31)
 
 struct successor {
 	int square_id;
@@ -40,7 +40,7 @@ int get_connected_segments (int square,
                             int max, int use_restrictions, int use_directions);
 
 int navigate_graph_get_line (int node, int line_no);
-void navigate_graph_clear (void);
+void navigate_graph_clear (int square);
 
 #endif /* _NAVIGATE_GRAPH_H_ */
 

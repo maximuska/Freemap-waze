@@ -50,7 +50,6 @@
 #include "roadmap_shape.h"
 #include "roadmap_square.h"
 #include "roadmap_locator.h"
-#include "roadmap_address.h"
 #include "roadmap_preferences.h"
 
 #include "../db/editor_db.h"
@@ -79,19 +78,7 @@ static const char *def_values[3] = {"", "", ""};
 
 #ifdef SSD
 static int editor_dialog_city_cb (SsdWidget widget, const char *new_value) {
-/*/[BOOKMARK]:[VERIFY]:[PAZ] - Is this needed?
-   if (!strcmp(new_value, def_values[1])) {
-
-      roadmap_address_search_dialog
-         (NULL, editor_dialog_city_result, widget->context);
-
-      return 0;
-   }*/
-
-//   ssd_dialog_set_value ("City", new_value);
-//   def_values[0] = ssd_dialog_get_value ("City");
    def_values[0] = new_value;
-
    return 1;
 }
 
@@ -180,7 +167,7 @@ static void editor_segments_apply (const char *name, void *context) {
 				editor_line_copy (&line->line, street_id);	
 			}
 			roadmap_square_set_current (line->line.square);
-			editor_override_line_set_flag (line->line.line_id, ED_LINE_DELETED);
+			editor_override_line_set_flag (line->line.line_id, line->line.square,  ED_LINE_DELETED);
       } else {
       
       	editor_line_modify_properties (line->line.line_id, cfcc, ED_LINE_DIRTY);
@@ -216,13 +203,17 @@ static void activate_dialog (const char *name,
       static const char *lang_categories[ROADMAP_ROAD_LAST - ROADMAP_ROAD_FIRST + 1];
       SsdWidget dialog;
       SsdWidget group;
+      SsdWidget container;
 
       if (!def_values[1][0]) {
          def_values[1] = roadmap_lang_get ("Search");
       }
 
       dialog = ssd_dialog_new (name, roadmap_lang_get (name), NULL,
-                               SSD_CONTAINER_BORDER|SSD_CONTAINER_TITLE|SSD_ROUNDED_CORNERS);
+                               SSD_CONTAINER_TITLE);
+
+      container = ssd_container_new ("Conatiner Group", NULL, SSD_MAX_SIZE, SSD_MIN_SIZE,
+              SSD_WIDGET_SPACE|SSD_END_ROW|SSD_ROUNDED_CORNERS|SSD_ROUNDED_WHITE|SSD_CONTAINER_BORDER|SSD_POINTER_NONE);
 
       group = ssd_container_new ("Length group", NULL,
                   SSD_MIN_SIZE, SSD_MIN_SIZE, SSD_WIDGET_SPACE|SSD_END_ROW);
@@ -231,7 +222,7 @@ static void activate_dialog (const char *name,
          ssd_text_new ("Label", roadmap_lang_get("Length"), -1,
                         SSD_TEXT_LABEL));
       ssd_widget_add (group, ssd_text_new ("Length", "", -1, 0));
-      ssd_widget_add (dialog, group);
+      ssd_widget_add (container, group);
 
       group = ssd_container_new ("Speed group", NULL,
                   SSD_MIN_SIZE, SSD_MIN_SIZE, SSD_WIDGET_SPACE|SSD_END_ROW);
@@ -240,7 +231,7 @@ static void activate_dialog (const char *name,
          ssd_text_new ("Label", roadmap_lang_get("Speed"), -1,
                         SSD_TEXT_LABEL));
       ssd_widget_add (group, ssd_text_new ("Speed", "", -1, 0));
-      ssd_widget_add (dialog, group);
+      ssd_widget_add (container, group);
 
       group = ssd_container_new ("Time group", NULL,
                   SSD_MIN_SIZE, SSD_MIN_SIZE, SSD_WIDGET_SPACE|SSD_END_ROW);
@@ -249,7 +240,7 @@ static void activate_dialog (const char *name,
          ssd_text_new ("Label", roadmap_lang_get("Time"), -1,
                         SSD_TEXT_LABEL));
       ssd_widget_add (group, ssd_text_new ("Time", "", -1, SSD_END_ROW));
-      ssd_widget_add (dialog, group);
+      ssd_widget_add (container, group);
 
       roadmap_layer_get_categories_names (&categories, &i);
       values = malloc ((count+1) * sizeof (long));
@@ -271,7 +262,7 @@ static void activate_dialog (const char *name,
                                  (const char **)lang_categories,
                                  (const void**)values,
                                  SSD_END_ROW|SSD_ALIGN_VCENTER, NULL));
-      ssd_widget_add (dialog, group);
+      ssd_widget_add (container, group);
 
       group = ssd_container_new ("Name group", NULL,
                   SSD_MIN_SIZE, SSD_MIN_SIZE, SSD_WIDGET_SPACE|SSD_END_ROW);
@@ -280,8 +271,8 @@ static void activate_dialog (const char *name,
                         SSD_TEXT_LABEL|SSD_ALIGN_VCENTER));
 
       ssd_widget_add (group,
-         ssd_entry_new ("Name", "", SSD_ALIGN_VCENTER, 0));
-      ssd_widget_add (dialog, group);
+         ssd_entry_new ("Name", "", SSD_ALIGN_VCENTER, 0,180, SSD_MIN_SIZE,""));
+      ssd_widget_add (container, group);
 
       group = ssd_container_new ("Text to Speech group", NULL,
                   SSD_MIN_SIZE, SSD_MIN_SIZE, SSD_WIDGET_SPACE|SSD_END_ROW);
@@ -290,8 +281,8 @@ static void activate_dialog (const char *name,
                         SSD_TEXT_LABEL|SSD_ALIGN_VCENTER));
 
       ssd_widget_add (group,
-         ssd_entry_new ("Text to Speech", "", SSD_ALIGN_VCENTER, 0));
-      ssd_widget_add (dialog, group);
+         ssd_entry_new ("Text to Speech", "", SSD_ALIGN_VCENTER, 0,180, SSD_MIN_SIZE,""));
+      ssd_widget_add (container, group);
 
       group = ssd_container_new ("City group", NULL,
                   SSD_MIN_SIZE, SSD_MIN_SIZE, SSD_WIDGET_SPACE|SSD_END_ROW);
@@ -308,12 +299,14 @@ static void activate_dialog (const char *name,
                           SSD_END_ROW|SSD_ALIGN_VCENTER,
                           editor_dialog_city_cb));
 
-      ssd_widget_add (dialog, group);
+      ssd_widget_add (container, group);
 
-      ssd_widget_add (dialog,
+      ssd_widget_add (container,
          ssd_button_label ("confirm", roadmap_lang_get ("Ok"),
                         SSD_ALIGN_CENTER|SSD_START_NEW_ROW,
                         editor_segments_apply));
+
+      ssd_widget_add (dialog, container);
 
       ssd_dialog_activate (name, selected_lines);
    }
@@ -456,7 +449,7 @@ static const char *editor_segments_find_city
    if (plugin_id == EditorPluginID) {
       editor_line_get (line, &point, NULL, NULL, NULL, NULL);
    } else {
-   	roadmap_square_set_current (square);
+   	  roadmap_square_set_current (square);
       roadmap_line_from (line, &point);
    }
 
@@ -467,11 +460,12 @@ static const char *editor_segments_find_city
             0,
             layers,
             layers_count,
+            1,
             neighbours,
             sizeof(neighbours) / sizeof(RoadMapNeighbour));
 
    count = roadmap_plugin_get_closest
-               (&point, layers, layers_count, neighbours, count,
+               (&point, layers, layers_count, 1, neighbours, count,
                 sizeof(neighbours) / sizeof(RoadMapNeighbour));
 
    for (i = 0; i < count; ++i) {
@@ -705,23 +699,23 @@ void editor_segments_properties (SelectedLine *lines, int lines_count) {
       int avg_speed = roadmap_line_speed_get_avg_speed (line, 0);
       int cur_speed = roadmap_line_speed_get_speed (line, 0);
 
-      snprintf (str, sizeof(str), "%d (%d)",
-                avg_speed, cur_speed);
+      snprintf (str, sizeof(str), " : %d (%d)",
+               roadmap_math_to_speed_unit(avg_speed), roadmap_math_to_speed_unit(cur_speed));
       ssd_dialog_set_value ("Speed", str);
    } else {
       ssd_dialog_set_value ("Speed", "");
    }
 #endif   
 
-   snprintf (str, sizeof(str), "%d %s",
-             total_length, roadmap_lang_get("meters"));
+   snprintf (str, sizeof(str), "  : %d %s",
+            roadmap_math_distance_to_current(total_length), roadmap_lang_get(roadmap_math_distance_unit()));
 #ifdef SSD
    ssd_dialog_set_value ("Length", str);
 #else   
    roadmap_dialog_set_data ("Info", "Length", str);
 #endif   
 
-   snprintf (str, sizeof(str), "%d %s",
+   snprintf (str, sizeof(str), "  : %d %s",
              total_time, roadmap_lang_get("seconds"));
 
 #ifdef SSD

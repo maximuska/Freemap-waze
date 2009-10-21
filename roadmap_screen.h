@@ -45,6 +45,7 @@ void roadmap_screen_zoom_in    (void);
 void roadmap_screen_zoom_out   (void);
 void roadmap_screen_zoom_reset (void);
 
+void roadmap_screen_move       (int dx, int dy);
 void roadmap_screen_move_up    (void);
 void roadmap_screen_move_down  (void);
 void roadmap_screen_move_right (void);
@@ -53,8 +54,12 @@ void roadmap_screen_move_left  (void);
 void roadmap_screen_move_center (int dy);
 
 void roadmap_screen_toggle_view_mode (void);
+void roadmap_screen_set_view(int view_mode);
+void roadmap_screen_restore_view(void);
+int  roadmap_screen_get_view_mdode(void);
 void roadmap_screen_toggle_orientation_mode (void);
 void roadmap_screen_set_orientation_fixed (void);
+void roadmap_screen_set_orientation_dynamic (void);
 void roadmap_screen_increase_horizon (void);
 void roadmap_screen_decrease_horizon (void);
 int roadmap_screen_get_orientation_mode (void);
@@ -114,6 +119,15 @@ int  is_screen_wide (void);
 void roadmap_screen_add_focus_on_me_softkey(void);
 
 int roadmap_screen_height (void);
+
+int roadmap_screen_touched_state(void);
+int roadmap_screen_not_touched_state(void);
+
+void roadmap_screen_touched(void);
+void roadmap_screen_touched_off(void);
+
+void roadmap_screen_mark_redraw (void);
+int roadmap_screen_show_icons_only_when_touched(void);
 
 #define DBG_TIME_FULL 0
 #define DBG_TIME_DRAW_SQUARE 1

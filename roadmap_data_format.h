@@ -28,15 +28,47 @@
 #define ROADMAP_DATA_SIGNATURE	"WZDF"
 
 #define ROADMAP_DATA_ENDIAN_CORRECT		0x00000001
-#define ROADMAP_DATA_ENDIAN_REVERSED	0x01000000
+#define ROADMAP_DATA_ENDIAN_REVERSED	0x10000000
 
-#define ROADMAP_DATA_CURRENT_VERSION	0x00020000
+#define ROADMAP_DATA_CURRENT_VERSION	0x00030000
+
+#define ROADMAP_MAP_SIGNATURE		"WGZM"
+#define ROADMAP_MAP_CURRENT_VERSION		0x00030000
 
 typedef struct {
 
 	char				signature[4];
 	unsigned int	endianness;
-	unsigned int	version;
+	unsigned int	version;	
+} roadmap_data_file_header;
+
+typedef struct {
+
+	roadmap_data_file_header	map_general_header;
+	roadmap_data_file_header	tile_general_header;
+	int								min_lon;
+	int								min_lat;
+	int								max_lon;
+	int								max_lat;
+	int								num_tiles;
+}	roadmap_map_file_header;
+
+typedef struct {
+	
+	int				tile_id;
+	unsigned int	offset;
+	unsigned int	compressed_size;
+	unsigned int	raw_size;
+} roadmap_map_entry;
+	
+typedef struct {
+
+	roadmap_data_file_header	general_header;
+	unsigned int					compressed_data_size;
+	unsigned int					raw_data_size;
+} roadmap_tile_file_header;
+		
+typedef struct {
 	unsigned int	num_sections;
 	unsigned int	byte_alignment_bits;	
 } roadmap_data_header;

@@ -27,5 +27,7 @@
 void roadmap_lang_initialize (void);
 const char* roadmap_lang_get (const char *name);
 int roadmap_lang_rtl (void);
+const char *roadmap_lang_get_system_lang();
+void roadmap_lang_set_system_lang(const char *lang);
 
 #endif // __ROADMAP_LANG__H

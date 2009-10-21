@@ -43,7 +43,7 @@ typedef struct tag_bitmap_info
    const char*    bitmap_name;
    RoadMapImage   bitmap;
    int            width;
-   int            height;   
+   int            height;
 
 }  bitmap_info, *bitmap_info_ptr;
 
@@ -60,47 +60,102 @@ static void draw (SsdWidget this, RoadMapGuiRect *rect, int flags)
 {
    bitmap_info_ptr bi = (bitmap_info_ptr)this->data;
    RoadMapGuiPoint point;
-   
+
+   point.x = rect->minx;
+   point.y = rect->miny;
+
    if( -1 == bi->width)
    {
       bi->width = roadmap_canvas_image_width ( bi->bitmap);
       bi->height= roadmap_canvas_image_height( bi->bitmap);
    }
-   
-   rect->maxx = rect->minx + bi->width;
-   rect->maxy = rect->miny + bi->height;
-   
-   if( SSD_GET_SIZE & flags)
+
+   if ((flags & SSD_GET_SIZE)){
       return;
-  
-   point.x = rect->minx;
-   point.y = rect->miny;
+   }
+
    roadmap_canvas_draw_image( bi->bitmap, &point, 0, IMAGE_NORMAL);
 }
 
-SsdWidget ssd_bitmap_new(  const char *name, 
-                           const char *bitmap, 
+static int set_value( SsdWidget widget, const char *value )
+{
+   bitmap_info_ptr   bi = (bitmap_info_ptr) malloc(sizeof(bitmap_info) );
+
+   bitmap_info_init( bi);
+
+   if ( widget->data )
+	   free( widget->data );
+
+   bi->bitmap_name = value;
+   bi->bitmap     = (RoadMapImage) roadmap_res_get(
+									RES_BITMAP,
+									RES_SKIN|RES_LOCK,
+									value );
+   widget->data        = bi;
+
+   if (bi->bitmap != NULL)
+   {
+	  widget->size.height = roadmap_canvas_image_height( bi->bitmap );
+	  widget->size.width  = roadmap_canvas_image_width( bi->bitmap );
+   }
+   return 1;
+}
+
+
+// Bitmap from file
+SsdWidget ssd_bitmap_new(  const char *name,
+                           const char *bitmap,
                            int         flags)
 {
-   bitmap_info_ptr   bi = (bitmap_info_ptr)malloc(sizeof(bitmap_info));
    SsdWidget         w  = ssd_widget_new(name, NULL, flags);
-   
-   bitmap_info_init( bi);
-   
-   bi->bitmap_name= bitmap;
-   bi->bitmap     = (RoadMapImage)roadmap_res_get( 
-                                    RES_BITMAP, 
-                                    RES_SKIN|RES_LOCK, 
-                                    bitmap);
+
+
    w->_typeid     = "Bitmap";
    w->draw        = draw;
    w->flags       = flags;
-   w->data        = bi;
-   
+   w->set_value   = set_value;
+
+   set_value( w, bitmap );
+
    return w;
 }
 
 
+// Bitmap from image
+SsdWidget ssd_bitmap_image_new(  const char *name,
+                                 RoadMapImage image,
+                                 int         flags)
+{
+   bitmap_info_ptr   bi = (bitmap_info_ptr)malloc(sizeof(bitmap_info));
+   SsdWidget         w  = ssd_widget_new(name, NULL, flags);
+
+   bitmap_info_init( bi);
+
+   bi->bitmap_name = name;
+   bi->bitmap     = image;
+   w->_typeid     = "Bitmap";
+   w->draw        = draw;
+   w->flags       = flags;
+   w->data        = bi;
+   w->set_value   = set_value;
+
+   return w;
+}
+
+void ssd_bitmap_image_update(SsdWidget widget, RoadMapImage image )
+{
+   bitmap_info_ptr   bi =  (bitmap_info_ptr) widget->data;
+   bitmap_info_init( bi );
+   bi->bitmap = image;
+}
+void ssd_bitmap_update(SsdWidget widget, const char *bitmap){
+   bitmap_info_ptr   bi = (bitmap_info_ptr)widget->data;
+   bi->bitmap_name= bitmap;
+   bi->bitmap     = (RoadMapImage)roadmap_res_get(
+                                    RES_BITMAP,
+                                    RES_SKIN|RES_LOCK,
+                                    bitmap);
+}
 static void close_splash (void) {
 
 	roadmap_main_remove_periodic (close_splash);
@@ -109,17 +164,22 @@ static void close_splash (void) {
 }
 
 void ssd_bitmap_splash(const char *bitmap, int seconds){
-   
+
    SsdWidget dialog;
-   
+
    dialog = ssd_dialog_new ("splash_image", "", NULL,
          SSD_DIALOG_FLOAT|SSD_ALIGN_CENTER|SSD_ALIGN_VCENTER);
 
    ssd_widget_set_color (dialog, "#000000", "#ff0000000");
-   
+
    ssd_widget_add(dialog,
    				  ssd_bitmap_new("splash_image", bitmap, SSD_ALIGN_CENTER|SSD_ALIGN_VCENTER));
    ssd_dialog_activate ("splash_image", NULL);
-   
+
    roadmap_main_set_periodic (seconds * 1000, close_splash);
+}
+
+const char *ssd_bitmap_get_name(SsdWidget widget){
+	bitmap_info_ptr   bi = (bitmap_info_ptr)widget->data;
+	return bi->bitmap_name;
 }

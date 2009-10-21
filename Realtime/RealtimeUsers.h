@@ -43,6 +43,7 @@ typedef struct tagRTUserLocation
    int         iAzimuth;                     // User Azimuth
    double      fSpeed;                       // User Speed
    long long   i64LastAccessTime;            // Last access time
+   int		   iMood;
    BOOL        bWasUpdated;                  // New user, OR user location was changed
 
 }  RTUserLocation, *LPRTUserLocation;

@@ -39,7 +39,7 @@ CLEANLIB : do_nothing
 
 RESOURCE :	
 	mifconv $(ICONTARGETFILENAME) \
-		/c32 $(ICONDIR)\qgn_menu_FreeMap.svg
+		/X /c32 $(ICONDIR)\qgn_menu_FreeMap.svg
 		
 FREEZE : do_nothing
 

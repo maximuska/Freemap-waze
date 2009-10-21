@@ -105,8 +105,8 @@ int roadmap_geocode_address (RoadMapGeocode **selections,
       switch (count) {
       case ROADMAP_STREET_NOADDRESS:
          RoadMapGeocodeLastErrorString =
-            roadmap_lang_get ("No such address could be found on that street");
-         RoadMapGeocodeLastErrorCode = geo_error_no_house_number;
+            roadmap_lang_get ("Address could not be found");
+         RoadMapGeocodeLastErrorCode = geo_error_no_address;
          break;
       case ROADMAP_STREET_NOCITY:
          RoadMapGeocodeLastErrorString =
@@ -170,7 +170,7 @@ int roadmap_geocode_address (RoadMapGeocode **selections,
       free (results);
       if (number_image[0] != 0) {
          RoadMapGeocodeLastErrorString =
-            roadmap_lang_get ("No such address could be found on that street");
+            roadmap_lang_get ("House number was not found in that street. Please enter a valid house number, or erase the house number entry");
          RoadMapGeocodeLastErrorCode = geo_error_no_house_number;
       } else {
          RoadMapGeocodeLastErrorString = roadmap_lang_get ("No valid street was found");

@@ -19,6 +19,7 @@
 
 #include "ssd/ssd_tabcontrol.h"
 #include "roadmap_address_tc.h"
+#include "address_search/address_search.h"
 
 // A.T.C == Address Tab-Control
 
@@ -91,19 +92,6 @@ static void       insert_history_into_city_list(BOOL force_reload);
 static void       insert_city_history_into_street_list();
 static atcctx_ptr get_atcctx();
    
-// Definitions for 'roadmap_history.h' API
-typedef enum tag_address_history_item
-{
-   ahi_house_number,
-   ahi_street,
-   ahi_city,
-   ahi_state,
-   ahi_name,
-   ahi__count,
-   ahi__invalid
-
-}  address_history_item;
-
 // Context menu:
 typedef enum tag_context_menu_items
 {

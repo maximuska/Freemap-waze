@@ -25,20 +25,29 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef RIMAPI
+#include "rimapi.h"
+#include <device_specific.h>
+#elif defined (J2ME)
+#include "zlib/zlib.h"
+#include <device_specific.h>
+#else
 #include "zlib.h"
+#endif
 
 #include "roadmap_gzm.h"
 #include "roadmap.h"
-#include "roadmap_db_square.h"
+#include "roadmap_data_format.h"
 #include "roadmap_path.h"
 #include "roadmap_file.h"
 #include "roadmap_path.h"
+#include "roadmap_tile.h"
 
 typedef struct gzm_file_s {
 
 	char *name;
-	RoadMapSquareIndex *index;
-	int num_entries;
+	roadmap_map_file_header header;
+	roadmap_map_entry *index;
 	int ref_count;
 	
 	RoadMapFile file;
@@ -55,7 +64,7 @@ int roadmap_gzm_open (const char *name) {
 	int id;
 	const char *map_path;
 	char *full_path;
-	RoadMapSquareIndex first;
+	int index_size;
 	
 	/* look for already open file */
 	for (id = 0; id < GzmMax; id++) {
@@ -89,20 +98,39 @@ int roadmap_gzm_open (const char *name) {
 		return -1;
 	}
 	
-	/* read first entry to calculate size */
-	if ((!roadmap_file_read (GzmFile[id].file, &first, sizeof (first))) ||
-		 (first.offset % sizeof (first))) {
+	/* read and confirm file header */
+	if (roadmap_file_read (GzmFile[id].file, &GzmFile[id].header, sizeof (roadmap_map_file_header)) !=  sizeof (roadmap_map_file_header)) {
 		roadmap_log (ROADMAP_ERROR, "bad map file format of %s", name);
 		roadmap_file_close (GzmFile[id].file);
 		return -1;
 	}
+	if (memcmp (GzmFile[id].header.map_general_header.signature, ROADMAP_MAP_SIGNATURE, sizeof (GzmFile[id].header.map_general_header.signature))) {
+		roadmap_log (ROADMAP_ERROR, "bad map file format of %s: invalid signature %.4s", name, GzmFile[id].header.map_general_header.signature);
+		roadmap_file_close (GzmFile[id].file);
+		return -1;
+	}
+	if (GzmFile[id].header.map_general_header.endianness != ROADMAP_DATA_ENDIAN_CORRECT) {
+		roadmap_log (ROADMAP_ERROR, "bad map file format of %s: endianness is %x", name, GzmFile[id].header.map_general_header.endianness);
+		roadmap_file_close (GzmFile[id].file);
+		return -1;
+	}
+	if (GzmFile[id].header.map_general_header.version != ROADMAP_MAP_CURRENT_VERSION) {
+		roadmap_log (ROADMAP_ERROR, "bad map file format of %s: version is %x", name, GzmFile[id].header.map_general_header.version);
+		roadmap_file_close (GzmFile[id].file);
+		return -1;
+	}
 	
-	GzmFile[id].num_entries = first.offset / sizeof (first);
+	index_size = GzmFile[id].header.num_tiles * sizeof (roadmap_map_entry);
+	GzmFile[id].index = malloc (index_size);
+
+	if (roadmap_file_read (GzmFile[id].file, GzmFile[id].index, index_size) != index_size) {
+		roadmap_log (ROADMAP_ERROR, "Cannot read index from map file %s", name);
+		free (GzmFile[id].index);
+		roadmap_file_close (GzmFile[id].file);
+		return -1;
+	}
+	
 	GzmFile[id].name = strdup (name);
-	GzmFile[id].index = malloc (first.offset);
-	GzmFile[id].index[0] = first;
-	roadmap_file_read (GzmFile[id].file, GzmFile[id].index + 1, first.offset - sizeof (first));
-	
 	GzmFile[id].ref_count = 1;
 	if (id >= GzmMax) GzmMax = id + 1;
 	return id;
@@ -122,16 +150,37 @@ void roadmap_gzm_close (int gzm_id) {
 }
 
 
-static RoadMapSquareIndex *roadmap_gzm_locate_entry (int gzm_id, const char *name) {
+int roadmap_map_get_num_tiles (int gzm_id) {
 
-	int hi = GzmFile[gzm_id].num_entries - 1;
+	return GzmFile[gzm_id].header.num_tiles;	
+}
+
+
+int roadmap_map_get_tile_id (int gzm_id, int tile_no) {
+
+	return GzmFile[gzm_id].index[tile_no].tile_id;	
+}
+
+
+static roadmap_map_entry *roadmap_gzm_locate_entry (int gzm_id, int tile_id) {
+
+	int hi = GzmFile[gzm_id].header.num_tiles - 1;
 	int lo = 0;
-	RoadMapSquareIndex *index = GzmFile[gzm_id].index;
+	roadmap_map_entry *index = GzmFile[gzm_id].index;
+	int west, east, south, north;
+	
+	roadmap_tile_edges (tile_id, &west, &east, &south, &north);
+	if (west > GzmFile[gzm_id].header.max_lon ||
+		 east < GzmFile[gzm_id].header.min_lon ||
+		 south > GzmFile[gzm_id].header.max_lat ||
+		 north < GzmFile[gzm_id].header.min_lat) {
+		return NULL;
+	}
 	
 	while (hi >= lo) {
 	
 		int mid = (hi + lo) / 2;
-		int dir = strncmp (name, index[mid].name, 8);
+		int dir = tile_id - index[mid].tile_id;
 		
 		if (dir < 0) {
 			hi = mid - 1;
@@ -146,41 +195,57 @@ static RoadMapSquareIndex *roadmap_gzm_locate_entry (int gzm_id, const char *nam
 }
 
 
-int roadmap_gzm_get_section (int gzm_id, const char *name,
+int roadmap_gzm_get_section (int gzm_id, int tile_id,
 									  void **section, int *length) {
 									  	
-	RoadMapSquareIndex *entry = roadmap_gzm_locate_entry (gzm_id, name);
-	void *compressed_buf;
+	roadmap_map_entry *entry = roadmap_gzm_locate_entry (gzm_id, tile_id);
 	int success;
 	unsigned long ul;
+	roadmap_tile_file_header *tile;
 	
 	if (!entry) {
-		roadmap_log (ROADMAP_ERROR, "failed to find tile %s", name);
+		roadmap_log (ROADMAP_INFO, "failed to find tile %d", tile_id);
 		return -1;
 	}
-	
-	ul = *length = entry->raw_size;
-	*section = malloc (*length);
-	compressed_buf = malloc (entry->compressed_size);
+
+	ul = *length = entry->compressed_size + sizeof (roadmap_tile_file_header);
+
+#if defined(J2ME) && defined(CIBYL_MEM_POOLS)
+   tile = (roadmap_tile_file_header *)NOPH_DeviceSpecific_allocChunk(*length);
+#else
+	tile = malloc (*length);
+#endif
 	
 	success = 
 		roadmap_file_seek (GzmFile[gzm_id].file, entry->offset, ROADMAP_SEEK_START) > 0 &&
-		roadmap_file_read (GzmFile[gzm_id].file, compressed_buf, entry->compressed_size) == entry->compressed_size &&
-		uncompress (*section, &ul, compressed_buf, entry->compressed_size) == Z_OK;
-		
-	free (compressed_buf);
+		roadmap_file_read (GzmFile[gzm_id].file, (tile + 1), entry->compressed_size) == (int)entry->compressed_size;
+
 	if (!success) {
-		roadmap_log (ROADMAP_ERROR, "failed to load tile %s", name);
-		free (*section);
+		roadmap_log (ROADMAP_ERROR, "failed to load tile %d", tile_id);
+
+#if defined(J2ME) && defined(CIBYL_MEM_POOLS)
+                NOPH_DeviceSpecific_freeChunk((int)tile);
+#else
+		free (tile);
+#endif
 		return -1;
 	} 
-	
+
+	memcpy (&tile->general_header, &GzmFile[gzm_id].header.tile_general_header, sizeof (roadmap_data_file_header));
+	tile->compressed_data_size = entry->compressed_size;
+	tile->raw_data_size = entry->raw_size;	
+
+	*section = (void *)tile;
 	return 0;
 }
 
 
 void roadmap_gzm_free_section (int gzm_id, void *section) {
 
+#if defined(J2ME) && defined(CIBYL_MEM_POOLS)
+        NOPH_DeviceSpecific_freeChunk((int)section);
+#else
 	free (section);	
+#endif
 }
 

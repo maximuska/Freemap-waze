@@ -68,9 +68,13 @@ roadmap_db_model *roadmap_db_register
      (roadmap_db_model *model, const roadmap_db_sector *sector, roadmap_db_handler *handler);
 
 
-int	roadmap_db_open (const char *name, const char *section, roadmap_db_model *model, const char* mode);
+int  roadmap_db_open (int fips, int tile_index, roadmap_db_model *model,
+                     const char* mode);
 
-void	roadmap_db_activate (const char *name, const char *section);
+int  roadmap_db_open_mem (int fips, int tile_index, roadmap_db_model *model,
+                         void *data, size_t size);
+
+void roadmap_db_activate (int fips, int tile_index);
 
 int	roadmap_db_exists (const roadmap_db_data_file *file, const roadmap_db_sector *sector);
 
@@ -80,8 +84,8 @@ int	roadmap_db_get_data (const roadmap_db_data_file *file,
 									void 			 **data, 
 									int 			 *num_items);
 
-void roadmap_db_sync (char *name);
-void roadmap_db_close (const char *name, const char *section);
+int  roadmap_db_close (int fips, int tile_index);
+void roadmap_db_remove (int fips, int tile_index);
 void roadmap_db_end   (void);
 
 const char *roadmap_db_map_path (void);

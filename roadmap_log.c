@@ -41,10 +41,13 @@
 
 #include "roadmap.h"
 #include "roadmap_path.h"
+#include "roadmap_dbread.h"
 #include "roadmap_file.h"
 #include "roadmap_messagebox.h"
 
-#if defined(IPHONE) || defined(unix)
+static FILE *sgLogFile = NULL;
+
+#if defined(IPHONE) || defined(unix) && !defined(J2ME)
 #include <sys/timeb.h>
 #endif
 
@@ -53,6 +56,8 @@
 #endif   // FREEZE_ON_FATAL_ERROR
 
 #define ROADMAP_LOG_STACK_SIZE 256
+#define MAX_SIZE_LOG_FILE 10000 // 10 megabytes for now 
+#define TO_KEEP_LOG_SIZE 1000 // keep the last megabyte
 
 static const char *RoadMapLogStack[ROADMAP_LOG_STACK_SIZE];
 static int         RoadMapLogStackCursor = 0;
@@ -80,6 +85,7 @@ void roadmap_log_register_msgbox (roadmap_log_msgbox_handler handler) {
 }
 
 
+#ifndef J2ME
 void roadmap_log_push (const char *description) {
 
    if (RoadMapLogStackCursor < ROADMAP_LOG_STACK_SIZE) {
@@ -93,6 +99,7 @@ void roadmap_log_pop (void) {
       RoadMapLogStackCursor -= 1;
    }
 }
+#endif
 
 void roadmap_log_reset_stack (void) {
 
@@ -101,9 +108,9 @@ void roadmap_log_reset_stack (void) {
 
 
 void roadmap_log_save_all (void) {
-    
+
     int i;
-    
+
     for (i = 0; RoadMapMessageHead[i].level > 0; ++i) {
         RoadMapMessageHead[i].save_to_file = 1;
     }
@@ -111,9 +118,9 @@ void roadmap_log_save_all (void) {
 
 
 void roadmap_log_save_none (void) {
-    
+
     int i;
-    
+
     for (i = 0; RoadMapMessageHead[i].level > 0; ++i) {
         RoadMapMessageHead[i].save_to_file = 0;
     }
@@ -125,13 +132,73 @@ int  roadmap_log_enabled (int level, char *source, int line) {
    return (level >= roadmap_verbosity());
 }
 
+#if(defined WIN32PC && defined _DEBUG)
+#define ODS_BUFFER_SIZE    (300)
+static void show_logs_in_debugger( struct roadmap_message_descriptor *category, const char *format, va_list ap)
+{
+   char message   [ODS_BUFFER_SIZE + 1];
+   char formatted [ODS_BUFFER_SIZE + 100];
+
+   message[ODS_BUFFER_SIZE] = '\0';
+   vsnprintf( message, ODS_BUFFER_SIZE, format, ap);
+
+   sprintf( formatted, "[LOG] %s\t%s\r\n", category->prefix, message);
+   OutputDebugStringA( formatted);
+}
+#endif   // WIN32PC Debug
+
+const char *roadmap_log_access_mode()
+{
+#if defined (__SYMBIAN32__)
+   return ("a+");
+#elif defined(ANDROID)
+   return ("a+");
+#elif !defined (J2ME)
+   return ("sa");
+#else
+   //return ("w");
+#endif
+   
+}
+
+const char *roadmap_log_path()
+{
+#if defined (__SYMBIAN32__)
+#if defined (WINSCW)
+   return ("C:\\");
+#else
+   return (roadmap_db_map_path());
+#endif
+#elif defined(ANDROID)
+   // Only sdcard can be accessed for reading
+   // For the debug purposes the log is appended
+   return ( roadmap_path_sdcard());
+#elif !defined (J2ME)
+   return (roadmap_path_user());
+#else
+   //return ("file:///e:/FreeMap");
+#endif
+}   
+
+const char *roadmap_log_filename()
+{
+#if defined (__SYMBIAN32__)
+   return ("waze_log.txt");
+#elif defined(ANDROID)
+   return ("waze_log.txt");
+#elif !defined (J2ME)
+   return ("postmortem");
+#else
+   //return ("logger.txt");
+#endif
+}
 
 static void roadmap_log_one (struct roadmap_message_descriptor *category,
                              FILE *file,
                              char  saved,
-                             char *source,
+                             const char *source,
                              int line,
-                             char *format,
+                             const char *format,
                              va_list ap) {
 
    int i;
@@ -139,8 +206,8 @@ static void roadmap_log_one (struct roadmap_message_descriptor *category,
 #ifdef J2ME
    fprintf (file, "%d %c%s %s, line %d ",
          time(NULL), saved, category->prefix, source, line);
-         
 #elif defined (__SYMBIAN32__)
+
    time_t now;
    struct tm *tms;
 
@@ -149,6 +216,19 @@ static void roadmap_log_one (struct roadmap_message_descriptor *category,
 
    fprintf (file, "%02d:%02d:%02d %c%s %s, line %d ",
          tms->tm_hour, tms->tm_min, tms->tm_sec,
+         saved, category->prefix, source, line);
+#elif defined(ANDROID)
+
+   time_t now;
+   struct tm *tms;
+   char date_buf[128];
+
+   time (&now);
+   tms = localtime (&now);
+   strftime( date_buf, sizeof( date_buf ), "%d/%m/%y", tms );
+
+   fprintf (file, "%s %02d:%02d:%02d %c%s %s, line %d ",
+		   date_buf, tms->tm_hour, tms->tm_min, tms->tm_sec,
          saved, category->prefix, source, line);
 
 #elif defined (_WIN32)
@@ -171,13 +251,13 @@ static void roadmap_log_one (struct roadmap_message_descriptor *category,
          tms->tm_hour, tms->tm_min, tms->tm_sec, tp.millitm,
          saved, category->prefix, source, line);
 #endif
+
    if (!category->show_stack && (RoadMapLogStackCursor > 0)) {
       fprintf (file, "(%s): ", RoadMapLogStack[RoadMapLogStackCursor-1]);
    }
 
-#ifdef _DEBUG   
-   if( format && (*format) && ('\n' == format[strlen(format)-1]))
-      assert(0);  // Please remove '\n' from logged message end...
+#ifdef _DEBUG
+  // if( format && (*format) && ('\n' == format[strlen(format)-1]))
 #endif   // _DEBUG
 
    vfprintf(file, format, ap);
@@ -200,12 +280,12 @@ static void roadmap_log_one (struct roadmap_message_descriptor *category,
       char msg[256];
 #ifdef   FREEZE_ON_FATAL_ERROR
       const char* title = "Fatal Error - Process awaits debugger";
-      
+
 #else
       const char* title = "Fatal Error";
-      
+
 #endif   // FREEZE_ON_FATAL_ERROR
-         
+
       vsprintf(msg, format, ap);
       sprintf (str, "%c%s %s, line %d %s",
          saved, category->prefix, source, line, msg);
@@ -213,9 +293,8 @@ static void roadmap_log_one (struct roadmap_message_descriptor *category,
    }
 }
 
-void roadmap_log (int level, char *source, int line, char *format, ...) {
+void roadmap_log (int level, const char *source, int line, const char *format, ...) {
 
-   static FILE *file;
    va_list ap;
    char saved = ' ';
    struct roadmap_message_descriptor *category;
@@ -240,27 +319,20 @@ void roadmap_log (int level, char *source, int line, char *format, ...) {
    if (category->save_to_file) {
       static int open_file_attemped = 0;
 
-      if ((file == NULL) && (!open_file_attemped)) {
+      if ((sgLogFile == NULL) && (!open_file_attemped)) {
          open_file_attemped = 1;
 
-#if defined (__SYMBIAN32__)
-#if defined (WINSCW)
-         file = roadmap_file_fopen ("C:\\", "waze_log.txt", "w");
-#else
-         file = roadmap_file_fopen ("E:\\", "waze_log.txt", "w");         
-#endif
-#elif !defined (J2ME)
-         file = roadmap_file_fopen (roadmap_path_user(), "postmortem", "sa");
-#else
-         //file = roadmap_file_fopen ("file:///e:/FreeMap", "logger.txt", "w");
-#endif
-         if (file) fprintf (file, "*** Starting log file %d ***", (int)time(NULL));
+         sgLogFile = roadmap_file_fopen (roadmap_log_path(),
+                                         roadmap_log_filename(),
+                                         roadmap_log_access_mode());
+
+         if (sgLogFile) fprintf (sgLogFile, "*** Starting log file %d ***", (int)time(NULL));
       }
 
-      if (file != NULL) {
+      if (sgLogFile != NULL) {
 
-         roadmap_log_one (category, file, ' ', source, line, format, ap);
-         fflush (file);
+         roadmap_log_one (category, sgLogFile, ' ', source, line, format, ap);
+         fflush (sgLogFile);
          //fclose (file);
 
          va_end(ap);
@@ -273,6 +345,11 @@ void roadmap_log (int level, char *source, int line, char *format, ...) {
 #ifdef __SYMBIAN32__
    //roadmap_log_one (category, __stderr(), saved, source, line, format, ap);
 #else
+
+#if(defined WIN32PC && defined _DEBUG)
+   show_logs_in_debugger( category, format, ap);
+#endif   // WIN32PC Debug
+
    roadmap_log_one (category, stderr, saved, source, line, format, ap);
 #endif
 
@@ -283,17 +360,17 @@ void roadmap_log (int level, char *source, int line, char *format, ...) {
    {
       int beep_times =   20;
       int sleep_time = 1000;
-   
+
       do
       {
          Sleep( sleep_time);
-      
+
          if( beep_times)
          {
-            fprintf( file, ">>> FATAL ERROR - WAITING FOR PROCESS TO BE ATTACHED BY A DEBUGGER...\r\n");
+            fprintf( sgLogFile, ">>> FATAL ERROR - WAITING FOR PROCESS TO BE ATTACHED BY A DEBUGGER...\r\n");
             MessageBeep(MB_OK);
             beep_times--;
-            
+
             if(!beep_times)
                sleep_time = 5000;
          }
@@ -315,9 +392,94 @@ void roadmap_log_purge (void) {
 
 
 void roadmap_check_allocated_with_source_line
-                (char *source, int line, const void *allocated) {
+                (const char *source, int line, const void *allocated) {
 
     if (allocated == NULL) {
         roadmap_log (ROADMAP_MESSAGE_FATAL, source, line, "no more memory");
     }
 }
+
+/*
+ * Logging of the raw data without any formatting and additional information
+ * The logger file has to be opened before !
+ */
+BOOL roadmap_log_raw_data ( const char* data )
+{
+	BOOL ret_val = FALSE;
+	if ( sgLogFile && data )
+	{
+		ret_val = roadmap_log_raw_data_fmt( "%s", data );
+	}
+	return FALSE;
+}
+
+
+
+
+/*
+ * Logging of the formatted raw data without any additional information
+ * The logger file has to be opened before !
+ */
+BOOL roadmap_log_raw_data_fmt( const char *format, ... )
+{
+	va_list ap;
+	BOOL ret_val = FALSE;
+	if ( sgLogFile && format )
+	{
+		va_start( ap, format );
+		vfprintf( sgLogFile, format, ap );
+		ret_val = TRUE;
+		va_end( ap );
+	}
+	return FALSE;
+}
+
+#if 0
+void roadmap_log_init(){
+	long fileSize;
+	const char *log_path;
+	const char *log_path_temp;
+	const char * path;
+	const char * name;
+	char lineFromLog[300];
+#if defined (__SYMBIAN32__)
+	#if defined (WINSCW)
+      path = "C:\\";
+      name = "waze_log.txt";
+	#else
+	  path = roadmap_db_map_path();
+      name = "waze_log.txt";
+	#endif
+#elif defined(ANDROID)
+      roadmap_path_sdcard();
+      name = "waze_log.txt";
+#elif !defined (J2ME)
+      path = roadmap_path_user();
+      name = "postmortem";
+#endif
+    
+	fileSize = roadmap_file_length(path,name);
+	if (fileSize > 0 ){ // file exists
+		if(fileSize>MAX_SIZE_LOG_FILE){
+		   FILE * LogFile = roadmap_file_fopen(path,name,"sa+");
+		   FILE * tempLogFile = roadmap_file_fopen(path,"temp_log_file.txt","sa+");
+		   fseek(LogFile, 0, SEEK_END-TO_KEEP_LOG_SIZE);
+		   fgets (lineFromLog,300, LogFile );  
+		   while (1){
+		   	    fgets (lineFromLog,300, LogFile );
+		   	    if(feof(LogFile))
+		   	    	break;
+		   		fputs (lineFromLog,tempLogFile ); 
+		   }
+		   fclose(LogFile);
+		   fclose(tempLogFile);
+		   log_path = roadmap_path_join (path, name);
+		   log_path_temp = roadmap_path_join (path, "temp_log_file.txt");
+	  	   roadmap_file_remove (path, name);
+	  	   rename(log_path_temp,log_path);
+	  	   roadmap_path_free (log_path);
+	  	   roadmap_path_free (log_path_temp);
+	    }
+	}
+}
+#endif

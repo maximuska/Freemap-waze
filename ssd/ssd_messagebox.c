@@ -36,10 +36,17 @@
 #include "roadmap_lang.h"
 #include "roadmap_main.h"
 #include "roadmap_res.h"
-
 #include "roadmap_messagebox.h"
+#include "roadmap_screen.h"
 
+#define DLG_MSG_BOX_NAME "message_box"
+#define DLG_MSG_BOX_TITLE_FONT_SIZE_DFLT	20
+#define DLG_MSG_BOX_TEXT_FONT_SIZE_DFLT	16
 static RoadMapCallback MessageBoxCallback = NULL;
+static messagebox_closed MessageBoxClosedCallback = NULL;
+static SsdWidget s_gMsgBoxDlg;
+static int g_seconds;
+
 struct ssd_messagebox_data {
    const char *bitmaps;
 };
@@ -47,83 +54,188 @@ struct ssd_messagebox_data {
 void roadmap_messagebox_cb(const char *title, const char *message,
          messagebox_closed on_messagebox_closed)
 {
+	MessageBoxClosedCallback = on_messagebox_closed;
    roadmap_messagebox( title, message);
-}         
+}
 
 static void kill_messagebox_timer (void) {
-	
+
 	if (MessageBoxCallback) {
 		roadmap_main_remove_periodic (MessageBoxCallback);
 		MessageBoxCallback = NULL;
-	}	
+	}
 }
 
+
+static void restore_messagebox_defaults (void)
+{
+	SsdWidget widget_title, widget_text;
+
+	widget_title = ssd_widget_get( s_gMsgBoxDlg, "title_text" );
+	ssd_text_set_font_size( widget_title, DLG_MSG_BOX_TITLE_FONT_SIZE_DFLT );
+    ssd_text_set_color( widget_title, NULL );
+
+	widget_text = ssd_widget_get( s_gMsgBoxDlg, "text" );
+	ssd_text_set_lines_space_padding( widget_text, 0 );
+	ssd_text_set_font_size( widget_text, DLG_MSG_BOX_TEXT_FONT_SIZE_DFLT );
+   ssd_text_set_color( widget_text, NULL );
+}
+
+static void update_button(void){
+   char button_txt[20];
+   SsdWidget button = ssd_widget_get(s_gMsgBoxDlg, "confirm");
+   if (g_seconds != -1)
+      sprintf(button_txt, "%s (%d)", roadmap_lang_get ("Ok"), g_seconds);
+   else
+      sprintf(button_txt, "%s", roadmap_lang_get ("Ok"));
+   ssd_button_change_text(button,button_txt );
+   if (!roadmap_screen_refresh())
+      roadmap_screen_redraw();
+}
 
 static void close_messagebox (void) {
 
-	kill_messagebox_timer ();
-	ssd_dialog_hide ("message_box", dec_ok);
+   g_seconds--;
+   if (g_seconds > 0){
+      update_button();
+      return;
+   }
+   
+   kill_messagebox_timer ();
+	ssd_dialog_hide ( DLG_MSG_BOX_NAME, dec_ok );
+	restore_messagebox_defaults();
+   if (!roadmap_screen_refresh())
+      roadmap_screen_redraw();
 }
 
+static int button_callback ( SsdWidget widget, const char *new_value ) {
 
-static int button_callback (SsdWidget widget, const char *new_value) {
-
-	close_messagebox ();
+   kill_messagebox_timer ();
+   ssd_dialog_hide ( DLG_MSG_BOX_NAME, dec_ok );
+   restore_messagebox_defaults();
+   if (!roadmap_screen_refresh())
+      roadmap_screen_redraw();
+	if ( MessageBoxClosedCallback )
+	{
+		MessageBoxClosedCallback( 0 );
+	}
+	MessageBoxClosedCallback = NULL;
    return 0;
 }
 
-static void create_messagebox (void) {
+static SsdWidget create_messagebox ( const char* mb_name )
+{
 
-   SsdWidget dialog;
-   
-   dialog = ssd_dialog_new ("message_box", "", NULL,
+   SsdWidget dialog, text;
+   char button_txt[20];
+   dialog = ssd_dialog_new ( mb_name, "", NULL,
          SSD_CONTAINER_BORDER|SSD_CONTAINER_TITLE|SSD_DIALOG_FLOAT|
          SSD_ALIGN_CENTER|SSD_ALIGN_VCENTER|SSD_ROUNDED_CORNERS);
 
    ssd_widget_set_color (dialog, "#000000", "#ff0000000");
+
    ssd_widget_add (dialog,
       ssd_container_new ("spacer1", NULL, 0, 10, SSD_END_ROW));
 
-   ssd_widget_add (dialog,
-      ssd_text_new ("text", "", 13, SSD_END_ROW|SSD_WIDGET_SPACE));
+   text =  ssd_text_new ("text", "", DLG_MSG_BOX_TEXT_FONT_SIZE_DFLT, SSD_END_ROW|SSD_WIDGET_SPACE);
+   ssd_widget_add (dialog,text);
 
    /* Spacer */
    ssd_widget_add (dialog,
-      ssd_container_new ("spacer2", NULL, 0, 20, SSD_END_ROW));
+      ssd_container_new ("spacer2", NULL, 0, 10, SSD_END_ROW));
 
-   ssd_widget_add (dialog,
-      ssd_button_label ("confirm", roadmap_lang_get ("Ok"),
-                        SSD_ALIGN_CENTER|SSD_START_NEW_ROW|SSD_WS_DEFWIDGET|
-                        SSD_WS_TABSTOP, 
-                        button_callback));
+   if (g_seconds != -1)
+      sprintf(button_txt, "%s (%d)", roadmap_lang_get ("Ok"), g_seconds);
+   else
+      sprintf(button_txt, "%s", roadmap_lang_get ("Ok"));
    
+   ssd_widget_add (dialog,
+      ssd_button_label ("confirm", button_txt,
+                        SSD_ALIGN_CENTER|SSD_START_NEW_ROW|SSD_WS_DEFWIDGET|
+                        SSD_WS_TABSTOP|SSD_END_ROW,
+                        button_callback));
+
+   /* Spacer */
+   ssd_widget_add (dialog,
+      ssd_container_new ("spacer3", NULL, 0, 10, SSD_END_ROW));
+
+   s_gMsgBoxDlg = dialog;
+
+   return dialog;
+}
+
+static void roadmap_messagebox_t (const char *title, const char *text)
+{
+   roadmap_messagebox_custom( title, text, DLG_MSG_BOX_TITLE_FONT_SIZE_DFLT, NULL, DLG_MSG_BOX_TEXT_FONT_SIZE_DFLT, NULL );
+}
+
+void roadmap_messagebox (const char *title, const char *text)
+{
+   g_seconds = -1;
+	roadmap_messagebox_custom( title, text, DLG_MSG_BOX_TITLE_FONT_SIZE_DFLT, NULL, DLG_MSG_BOX_TEXT_FONT_SIZE_DFLT, NULL );
 }
 
 
-void roadmap_messagebox (const char *title, const char *text) {
-
-   SsdWidget dialog = ssd_dialog_activate ("message_box", NULL);
+void roadmap_messagebox_custom( const char *title, const char *text,
+				int title_font_size, char* title_color, int text_font_size, char* text_color )
+{
+   SsdWidget dialog = s_gMsgBoxDlg;
+   SsdWidget widget_title, widget_text;
    title = roadmap_lang_get (title);
    text  = roadmap_lang_get (text);
 
-   if (!dialog) {
-      create_messagebox ();
-      dialog = ssd_dialog_activate ("message_box", NULL);
+   if ( !dialog )
+   {
+	   dialog = create_messagebox ( DLG_MSG_BOX_NAME );
+	   if ( !dialog )
+	   {
+		   roadmap_log( ROADMAP_ERROR, "Error creating message box! " );
+		   return;
+	   }
+   }
+   else{
+      update_button();
    }
 
-   dialog->set_value (dialog, title);
-   ssd_widget_set_value (dialog, "text", text);
+   if (title[0] == 0){
+      ssd_widget_hide(ssd_widget_get(dialog, "title_bar"));  
+   }
+   else{
+      ssd_widget_show(ssd_widget_get(dialog, "title_bar"));
+   }
+   widget_title = ssd_widget_get( dialog, "title_text" );
+   ssd_text_set_font_size( widget_title, title_font_size );
+   if ( title_color != NULL )
+   {
+	   ssd_text_set_color( widget_title, title_color );
+   }
 
-	kill_messagebox_timer ();
+   dialog->set_value( dialog, title );
+
+   widget_text = ssd_widget_get( dialog, "text" );
+
+   ssd_text_set_lines_space_padding( widget_text, 3 );
+
+   ssd_text_set_font_size( widget_text, text_font_size );
+   if ( text_color != NULL )
+   {
+	   ssd_text_set_color( widget_text, text_color );
+   }
+
+   ssd_text_set_text( widget_text, text );
+
+   kill_messagebox_timer ();
+   ssd_dialog_activate( DLG_MSG_BOX_NAME, NULL );
    ssd_dialog_draw ();
 }
 
 
 void roadmap_messagebox_timeout (const char *title, const char *text, int seconds) {
 
-	roadmap_messagebox (title, text);	
+   g_seconds = seconds;
+   roadmap_messagebox_t (title, text);
 	MessageBoxCallback = close_messagebox;
-	roadmap_main_set_periodic (seconds * 1000, close_messagebox);
+	roadmap_main_set_periodic (1000, close_messagebox);
 }
 
 
