@@ -6,9 +6,9 @@ B -20 -16 20 16
 A toggleorientation
 
 N Compass_north
-I north_off
+I empty_image
 I north
-P 7 8
+P 10 6
 S orientation_mode
 
 N Compass_bg

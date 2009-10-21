@@ -1,41 +1,86 @@
+N illustrated
+I Top_illustrated
+P 0 0
+C skin_state 0
+C wide_screen 0
+
+N illustrated_night
+I Top_illustrated_night
+P 0 0
+C skin_state 1
+C wide_screen 0
+
+N illustrated
+I Top_illustrated_wide
+P 0 0
+C skin_state 0
+C wide_screen 1
+
+N illustrated_night
+I Top_illustrated_night_wide
+P 0 0
+C skin_state 1
+C wide_screen 1
+
 N logo
 I top_logo
 P 0 0
 B -4 -4 22 22
 A about
 
-N seperator
-I bar_separator
-P 27 0
-C skin_state 0
-
 N gps_reception
 I top_satellite_off
 I top_satellite_off
 I top_satellite_on
 I top_satellite_on
-P 28 1
+P 40 9
 S GPS_reception
 
-N seperator
-I bar_separator
-P 48 0
-C skin_state 0
-
 N privacy
-I top_privacy_invisible
+I top_privacy_offline
 I top_privacy_invisible
 I top_privacy_nickname
 I top_privacy_anonymous
-P 51 2
+P 68 9
 B -4 -4 22 22
 S privacy_state
 A privacy_settings
 
-N seperator
-I bar_separator
-P 72 0
-C skin_state 0
+N moods
+S mood_state
+I top_mood_disabled
+I top_mood_happy
+I top_mood_sad
+I top_mood_mad
+I top_mood_bored
+I top_mood_speedy
+I top_mood_starving
+I top_mood_sleepy
+I top_mood_cool
+I top_mood_inlove
+I top_mood_LOL
+I top_mood_peaceful2
+I top_mood_singing
+I top_mood_wondering
+I top_mood_happy
+I top_mood_sad
+I top_mood_mad
+I top_mood_bored
+I top_mood_speedy
+I top_mood_starving
+I top_mood_sleepy
+I top_mood_cool
+I top_mood_inlove
+I top_mood_LOL
+I top_mood_peaceful
+I top_mood_singing
+I top_mood_wondering
+P 92 5
+
+N crown
+C user_addon_state 1
+I top_mood_crown
+P 92 5
 
 N alerts 
 I top_alerts
@@ -43,65 +88,43 @@ I top_alerts
 I top_alerts
 I top_alerts
 I top_alerts
-P 74 1
+P 120 8
 S alerts_state
-B -4 -4 22 39
-A real_time_alerts_list
+C real_time_state 1
 
 N num_alerts
 T num_alerts
-P 90 8
-F 10
+P 134 14
+F 12
 S alerts_state
-
-N seperator
-I bar_separator
-P 106 0
-C skin_state 0
-
-N responses
-I top_responses
-P 110 1
-C alerts_state 3
-
-N seperator
-I bar_separator
-P 129 0
-C skin_state 0
-
-N sound
-I top_mute
-P 131 1
-S navigation_guidance_state
-
-N seperator
-I bar_separator
-P 151 0
-S navigation_guidance_state
-C skin_state 0
+C real_time_state 1
 
 N on_line
 I top_not_connected
-P 152 1
+P 125 10
 C real_time_state 0
+
+N sound
+I top_mute
+P 153 7
+S navigation_guidance_state
 
 N clock
 T clock
-P -12 3
+P -8 10
 F 14
 C softkeys_state 0
 
 N clock
 T clock
-P -82 3
+P -100 10
 F 14
 C softkeys_state 1
 
 N right_softkey
 T right_softkey
-P -7 2
+P -8 10
 A right_softkey
-B -61 -4 4 22
 F 16
 C softkeys_state 1
 

@@ -1,4 +1,5 @@
 search_favorites
-search_history
 search_address
-stop_navigate
+search_local
+search_history
+search_marked_locations

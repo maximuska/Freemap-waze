@@ -28,6 +28,7 @@ P 125 -12
 F 16
 L 4
 C wide_screen 1
+D #d7ff00
 
 N dist_to_dest
 T dist_to_dest
@@ -35,14 +36,6 @@ P 190 -12
 F 16
 L 4
 C wide_screen 1
+D #d7ff00
 
-N seperator
-I bar_separator
-P 100 -20
-C wide_screen 1
-
-N seperator
-I bar_separator
-P -100 -20
-C wide_screen 1
-
+Y 1
