@@ -21,6 +21,7 @@ PRJ_MMPFILES
 ..\libpng\libpng.mmp
 gnumakefile icons_scalable_dc.mk
 gnumakefile ..\help\build_help.mk
+gnumakefile Resources.mk
 FreeMap.mmp
 ..\libRealTime\libRealTime.mmp
 

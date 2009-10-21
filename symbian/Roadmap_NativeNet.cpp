@@ -48,7 +48,7 @@ extern "C"{
 
 #include "Roadmap_NativeNet.h"
 
-#include <FreeMap_0x2001EB29.rsg>
+#include <FreeMap.rsg>
 
 RSocketServ* CRoadMapNativeNet::m_pSocketServer = NULL;
 RConnection* CRoadMapNativeNet::m_pConnection = NULL;

@@ -10,7 +10,8 @@
 #ifndef __FREEMAP_HRH__
 #define __FREEMAP_HRH__
 
-#define _UID3 0x2001EB29
+#define _UID3      0xE001EB29
+#define _UID3_STR "0xE001EB29"
 
 // FreeMap enumerate command codes
 enum TFreeMapIds

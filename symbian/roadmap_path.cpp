@@ -41,6 +41,8 @@ extern "C"{
 #include "roadmap_path.h"
 }
 
+#include "FreeMap.hrh"
+
 typedef struct RoadMapPathRecord *RoadMapPathList;
 
 struct RoadMapPathRecord {
@@ -59,19 +61,19 @@ static RoadMapPathList RoadMapPaths = NULL;
 */
 static const char *RoadMapPathConfig[] = {
    "&",
-   "C:\\private\\2001EB29",
-   "E:\\private\\2001EB29",
-   "Z:\\private\\2001EB29",
+   "C:\\private\\" _UID3_STR,
+   "E:\\private\\" _UID3_STR,
+   "Z:\\private\\" _UID3_STR,
    "C:\\Data\\Others",
    NULL
 };
 
 static const char *RoadMapPathGps= "E:\\waze\\gps";
-
-static const char *RoadMapPathConfigPreferred = "E:\\private\\2001EB29";
+static const char *RoadMapPathConfigPreferred = "E:\\private\\" _UID3_STR;
 
 /* Skins directories */
 static const char *RoadMapPathSkin[] = {
+   "E:\\Data\\Freemap\\skins\\default",
    "&\\skins\\default",
    "&\\skins\\default\\day",
    "&", //fallback
@@ -82,17 +84,18 @@ static const char *RoadMapPathSkinPreferred = "&\\skins";
 
 /* The default path for the map files (the "maps" path): */
 static const char *RoadMapPathMaps[] = {
-   "C:\\Data\\Others\\maps",
+   "E:\\Data\\Freemap\\maps",
    "E:\\Data\\Others\\maps",
+   "C:\\Data\\Others\\maps",
    "&\\maps",
-   "C:\\private\\2001EB29\\maps",
-   "E:\\private\\2001EB29\\maps",
-   "Z:\\private\\2001EB29\\maps",
+   "C:\\private\\" _UID3_STR "\\maps",
+   "E:\\private\\" _UID3_STR "\\maps",
+   "Z:\\private\\" _UID3_STR "\\maps",
    "&", //fallback
    NULL
 };
 
-static const char *RoadMapPathMapsPreferred = "E:\\private\\2001EB29\\maps";
+static const char *RoadMapPathMapsPreferred = "E:\\private\\" _UID3_STR "\\maps";
 
 /* We don't have a user directory in wince so we'll leave this one empty */
 static const char *RoadMapPathUser[] = {
@@ -581,7 +584,7 @@ const char *roadmap_path_search_icon (const char *name)
    sprintf (result, "%s\\icons\\rm_%s.png", roadmap_path_user(), name);
    if (roadmap_file_exists(NULL, result)) return result;
 
-   sprintf (result, "z:\\private\\2001EB29\\roadmap\\icons\\rm_%s.png", name);
+   sprintf (result, "z:\\private\\" _UID3_STR "\\roadmap\\icons\\rm_%s.png", name);
    if (roadmap_file_exists(NULL, result)) return result;
 
    return NULL; /* Not found. */

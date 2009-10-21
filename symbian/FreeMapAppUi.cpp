@@ -27,7 +27,7 @@
 #include <s32file.h>
 #include <hlplch.h>
 
-#include <FreeMap_0x2001EB29.rsg>
+#include <FreeMap.rsg>
 
 //@@ #include "FreeMap_0x2001EB29.hlp.hrh"
 #include "FreeMap.hrh"

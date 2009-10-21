@@ -14,7 +14,7 @@ ZDIR=$(EPOCROOT)epoc32\data\z
 endif
 
 TARGETDIR=$(ZDIR)\resource\apps
-ICONTARGETFILENAME=$(TARGETDIR)\FreeMap_0x2001EB29.mif
+ICONTARGETFILENAME=$(TARGETDIR)\FreeMap_aif.mif
 
 ICONDIR=..\gfx
 
@@ -39,8 +39,8 @@ CLEANLIB : do_nothing
 
 RESOURCE :	
 	mifconv $(ICONTARGETFILENAME) \
-		/X /c32 $(ICONDIR)\qgn_menu_FreeMap.svg
-		
+		/c32 /X $(ICONDIR)\qgn_menu_FreeMap.svg
+
 FREEZE : do_nothing
 
 SAVESPACE : do_nothing
