@@ -39,6 +39,8 @@
 
 #include "roadmap_net_mon.h"
 
+#include "Realtime/Realtime.h"
+
 #define ACTIVITY_TIMEOUT_SEC  3
 
 static size_t RecvBytesCount;
@@ -49,13 +51,7 @@ static const char *LastErrorText = "";
 static ROADMAP_NET_MON_STATE CurrentState = NET_MON_DISABLED;
 
 static void periodic_callack (void) {
-
-   if(
-#ifndef   _WIN32
-      (CurrentState == NET_MON_IDLE) &&
-#endif   // _WIN32
-         ((time(NULL) - LastActivityTime) > ACTIVITY_TIMEOUT_SEC)) {
-
+   if( (time(NULL) - LastActivityTime) > ACTIVITY_TIMEOUT_SEC ) {
       roadmap_message_unset('!');
       LastActivityTime = 0;
       roadmap_main_remove_periodic(periodic_callack);
@@ -177,7 +173,15 @@ size_t roadmap_net_mon_get_count (void) {
  */
 void roadmap_net_mon_offline (void) {
    CurrentState = NET_MON_OFFLINE;
+
+   // TURNNING OFF REALTIME
+   roadmap_log( ROADMAP_WARNING, "INFO: roadmap_net_mon_offline(): Disabling real-time network services" );
+   Realtime_Stop( FALSE /* Enable Logout? */);
+
+   // Notify connection status change
    roadmap_message_set('!', roadmap_lang_get("Offline"));
-   roadmap_start_exit ();
+   update_activity();
+
+   //roadmap_start_exit ();
 }
 

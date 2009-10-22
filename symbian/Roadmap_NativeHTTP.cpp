@@ -380,7 +380,7 @@ switch (aEvent.iStatus)
   }  
 }
 
-TInt CRoadMapNativeHTTP::MHFRunError(TInt aError, RHTTPTransaction aTransaction, const THTTPEvent &aEvent)
+TInt CRoadMapNativeHTTP::MHFRunError(TInt aError, RHTTPTransaction aTransaction, const THTTPEvent& aEvent)
 {
   return KErrNone;
 }
@@ -571,7 +571,7 @@ void CRoadMapNativeHTTP::RunL()
   else if ( iStatus == KErrCancel )
 	  {
 	  roadmap_net_mon_offline();
-	  roadmap_main_exit();
+	  return;
 	  }
   else if  ( iStatus == KErrNotFound ||
 	  		( iStatus >= -30180 && iStatus <= -30170 ) ) // Exceptional cases. The errors returned in case of access point connection problems
