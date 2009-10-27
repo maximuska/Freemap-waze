@@ -1,0 +1,22 @@
+System.Language: heb
+Connection.AutoConnect: no
+Connection.IAP: 0
+Trip.Car: car_blue
+Map.Orientation: 2D
+Map Icons.Show on screen on tap: no
+Display.BackLight: yes
+Voice.Volume Control: 2
+Twitter.Send Twitts: Disabled
+User.Show points ticker: yes
+Routing.Auto zoom: yes
+Navigation.Navigation guidance: yes
+Routing.Type: Fastest
+Routing.Avoid primaries: no
+Routing.Avoid tolls: no
+Routing.Prefer same street: no
+Routing.Avoid trails: Don't allow
+Routing.Allow unknown directions: yes
+Display.Auto night mode: yes
+Realtime.Visability Group: Anonymous
+Realtime.Visability Driving: ReportNickname
+Realtime.Random user: 1

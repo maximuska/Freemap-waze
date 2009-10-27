@@ -249,6 +249,9 @@ char *roadmap_path_remove_extension (const char *name)
 
 const char *roadmap_path_user (void)
 {
+#ifdef __WINS__
+	return "c:\\private\\" _UID3_STR;
+#else
    static char *RoadMapUser = NULL;
 
    if (RoadMapUser == NULL)
@@ -264,6 +267,7 @@ const char *roadmap_path_user (void)
 
    }
    return RoadMapUser;
+#endif
 }
 
 const char *roadmap_path_gps (void)
@@ -294,7 +298,7 @@ const char *roadmap_path_images( void )
 const char *roadmap_path_debug( void )
 {
    static char *RoadMapPathDebug = NULL;
-   
+
    if ( RoadMapPathDebug == NULL )
    {
       RoadMapPathDebug = roadmap_path_join( roadmap_path_user(), "debug" );
@@ -509,12 +513,12 @@ char **roadmap_path_list (const char *path, const char *extension)
   TFileName strPath;
   TPtrC8 ptrPath((const unsigned char*)path, User::StringLength((const TUint8*)path));
   CnvUtfConverter::ConvertToUnicodeFromUtf8(strPath, ptrPath);
-  TFileName strExt;  
+  TFileName strExt;
   if (extension != NULL){
 	  TPtrC8 ptrExt((const unsigned char*)extension, User::StringLength((const TUint8*)extension));
 	  CnvUtfConverter::ConvertToUnicodeFromUtf8(strExt, ptrExt);
   }
-  
+
   TFileName strFullname;
   _LIT(KDelims, "\\*");
   strFullname = strPath;
