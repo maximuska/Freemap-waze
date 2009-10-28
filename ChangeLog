@@ -1,0 +1,12 @@
+1Aug2009 Release -mk3
+- Added support for gzip Content Encoding in Symbian HTTP.
+- Rewrote parts of Symbian networking code.
+- Fixed shared networking code to handle HTTP sessions without Content-Lengh header.
+
+2009 Release -mk2
+- Moving sounds files to a publically accessible folder (Symbian).
+
+2009 Release -mk1
+- Modifications to fix build problems (Symbian).
+- Changing application UID to the one from the test-range (Symbian).
+- Fixing the program to work in unconnected mode (Symbian).
