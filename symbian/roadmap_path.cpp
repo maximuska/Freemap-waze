@@ -73,8 +73,9 @@ static const char *RoadMapPathConfigPreferred = "E:\\private\\" _UID3_STR;
 
 /* Skins directories */
 static const char *RoadMapPathSkin[] = {
-   "E:\\Data\\Freemap\\skins\\default",
-   "&\\skins\\default",
+   "C:\\Data\\Freemap\\skins\\default", //mk: Skins are not yet completely loadable from here.
+   "E:\\Data\\Freemap\\skins\\default", // Some of the files are searched under <roadmap_path_user()>\skins\default
+   "&\\skins\\default",                 // no matter what. TODO later, if will be requested.
    "&\\skins\\default\\day",
    "&", //fallback
    NULL
@@ -84,13 +85,11 @@ static const char *RoadMapPathSkinPreferred = "&\\skins";
 
 /* The default path for the map files (the "maps" path): */
 static const char *RoadMapPathMaps[] = {
+   "C:\\Data\\Freemap\\maps",
    "E:\\Data\\Freemap\\maps",
-   "E:\\Data\\Others\\maps",
    "C:\\Data\\Others\\maps",
+   "E:\\Data\\Others\\maps",
    "&\\maps",
-   "C:\\private\\" _UID3_STR "\\maps",
-   "E:\\private\\" _UID3_STR "\\maps",
-   "Z:\\private\\" _UID3_STR "\\maps",
    "&", //fallback
    NULL
 };
@@ -592,6 +591,39 @@ const char *roadmap_path_search_icon (const char *name)
    if (roadmap_file_exists(NULL, result)) return result;
 
    return NULL; /* Not found. */
+}
+
+
+int roadmap_construct_res_path(
+		/* IN/OUT */	char* out_path,
+		/* IN */   		size_t out_sz,
+		/* IN */   		const char *filename,
+		/* IN */   		const char *suffix,
+		/* IN */   		const char* prefix )
+{
+	/* The path prefix searched for public resources sub-folders */
+	const char *RoadMapPathPubResources[] = {
+		"C:\\Data\\Freemap", // Internal memory goes first to save power.
+		"E:\\Data\\Freemap",
+		roadmap_path_user()  // Private dir goes last to allow users to override resources easily 
+	};
+
+	if( out_path == NULL or filename == NULL )
+		return KErrArgument;
+	if( suffix == NULL ) suffix = "";
+	if( prefix == NULL ) prefix = "";
+
+	for( TUint i = 0; i < sizeof(RoadMapPathPubResources)/sizeof(char*); ++i ) {
+		snprintf( out_path, out_sz, "%s\\%s%s%s",
+				  RoadMapPathPubResources[i],
+				  prefix,
+				  filename,
+				  suffix );
+		if( roadmap_file_exists( NULL, out_path ) )
+			return KErrNone;
+	}
+
+	return KErrNotFound;
 }
 
 

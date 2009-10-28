@@ -1,7 +1,7 @@
 # ============================================================================
 #
-#  Description: This is file for ..
-# 
+#  Description: This is file for copying resoures 
+#   required for the program to run correctly in WINSCW emulator. 
 # ============================================================================
 
 
@@ -10,7 +10,7 @@ SOURCEDIR=..\\..\\resources
 
 CDIR=$(EPOCROOT)epoc32\winscw\c
 TARGETDIR=$(CDIR)\private\E001EB29
-MAPS_DIR=$(CDIR)\Data\Others\Maps
+FREEMAP_DIR=$(CDIR)\Data\Freemap
 
 do_nothing :
 	@rem do_nothing
@@ -19,18 +19,20 @@ MAKMAKE :  do_nothing
 
 BLD :
 ifeq (WINS,$(findstring WINS, $(PLATFORM)))
-	echo xcopy /Y /E /D $(SOURCEDIR)\\* $(TARGETDIR)
+	echo xcopy /YEID $(SOURCEDIR)\* $(TARGETDIR)
 	if NOT exist $(TARGETDIR) mkdir $(TARGETDIR)
-	xcopy /Y /E /D $(SOURCEDIR)\\* $(TARGETDIR)
+	xcopy /YID $(SOURCEDIR)\\* $(TARGETDIR)
 
-	if NOT exist $(MAPS_DIR) mkdir $(MAPS_DIR)
-	xcopy /Y /E /D ..\\..\\Maps\\* $(MAPS_DIR)
+	xcopy /YEID $(SOURCEDIR)\\Skins $(TARGETDIR)\\Skins
+
+	xcopy /YEID ..\\..\\Maps $(FREEMAP_DIR)\\Maps
+	xcopy /YEID $(SOURCEDIR)\\Sound $(FREEMAP_DIR)\\Sound
 else
 	@rem do_nothing
 endif
 
 CLEAN :
-	del /Q $(TARGETDIR)
+	del /Q $(TARGETDIR) $(CDIR)
 
 LIB : do_nothing
 
