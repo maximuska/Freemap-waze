@@ -277,7 +277,7 @@ RESOURCE LOCALISABLE_APP_INFO r_localisable_app_info
 		caption = qtn_caption_string;
 
 		number_of_icons = 1;
-	   	icon_file = "\\resource\\apps\\FreeMap.mif";
+		icon_file = "\\resource\\apps\\FreeMapWaze_aif.mif";
 		};
 	}
 

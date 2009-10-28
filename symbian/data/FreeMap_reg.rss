@@ -15,7 +15,6 @@
 UID2 KUidAppRegistrationResourceFile
 UID3 _UID3
 
-#define qtn_loc_resource_file_1 "\\resource\\apps\\FreeMap_" _UID3_STR
 
 RESOURCE APP_REGISTRATION_INFO
 	{

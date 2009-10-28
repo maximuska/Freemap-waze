@@ -14,7 +14,7 @@ ZDIR=$(EPOCROOT)epoc32\data\z
 endif
 
 TARGETDIR=$(ZDIR)\resource\apps
-ICONTARGETFILENAME=$(TARGETDIR)\FreeMap_aif.mif
+ICONTARGETFILENAME=$(TARGETDIR)\FreeMapWaze_aif.mif
 
 ICONDIR=..\gfx
 
@@ -39,7 +39,7 @@ CLEANLIB : do_nothing
 
 RESOURCE :	
 	mifconv $(ICONTARGETFILENAME) \
-		/c32 /X $(ICONDIR)\qgn_menu_FreeMap.svg
+		/c32 /X $(ICONDIR)\qgn_menu_FreeMap2.svg
 
 FREEZE : do_nothing
 
