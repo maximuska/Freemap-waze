@@ -2,6 +2,7 @@
  *
  * LICENSE:
  *
+ *   Copyright 2009 Maxim Kalaev
  *   Copyright 2008 Ehud Shabtai
  *
  *   RoadMap is free software; you can redistribute it and/or modify
@@ -29,7 +30,6 @@
 
 #include <FreeMap.rsg>
 
-//@@ #include "FreeMap_0x2001EB29.hlp.hrh"
 #include "FreeMap.hrh"
 #include "FreeMap.pan"
 #include "FreeMapApplication.h"
@@ -55,7 +55,6 @@ extern roadmap_input_type roadmap_input_type_get_mode( void );
 extern void roadmap_canvas_new (RWindow& aWindow, int initWidth, int initHeight);
 int global_FreeMapLock();
 int global_FreeMapUnlock();
-static RMutex* pSyncMutex = NULL; 
 static int FM_ref = 0;
 
 #define BACKLIGHT_DISABLE_INTERVAL	2000		// Miliseconds 
@@ -65,51 +64,32 @@ static int FM_ref = 0;
 
 int global_FreeMapLock()
 {
-  if ( pSyncMutex == NULL )
-  {
-    pSyncMutex = new RMutex();
-    if ( pSyncMutex == NULL )
-    {
-      roadmap_log(ROADMAP_ERROR, "Mutex not created!");
-      return KErrGeneral;
-    }
-    pSyncMutex->CreateLocal();
-  }
-  
+    // Current Symbian implementation is based on active scheduler,
+    //  such that no mutexes are required as there is only one thread in the system.
+    // Actually, it's not clear why the function is not empty, checkme later.
   if (FM_ref > 0) {
     return 1;
   }
   FM_ref++;
-  pSyncMutex->Wait();
   return KErrNone;
 }
 
 int global_FreeMapUnlock()
 {
-  if ( pSyncMutex == NULL )
-  {
-    //ERROR!
-    roadmap_log(ROADMAP_ERROR, "Mutex not initialized!");
-  }
   FM_ref--;
-  pSyncMutex->Signal();
   return KErrNone;
 }
-
 
 static void roadmap_start_event (int event) {
    switch (event) 
    {
-	   case ROADMAP_START_INIT:
+   case ROADMAP_START_INIT:
 	   {
-		  editor_main_check_map ();
-		  break;
-	   }   
+      editor_main_check_map ();
+      break;
+   }
    }
 }
-
-
-
 
 
 CStartTimer::CStartTimer(TInt aPriority)
@@ -216,7 +196,7 @@ void CFreeMapAppUi::ConstructL()
 	m_pStartTimer->Start();
   
 	global_FreeMapLock();
-    roadmap_start_subscribe (roadmap_start_event);
+   roadmap_start_subscribe (roadmap_start_event);
 	roadmap_start(0, NULL);
 	global_FreeMapUnlock();
 	}
@@ -354,9 +334,9 @@ void CFreeMapAppUi::InitQwertyMappingsL()
 	/* Currently hebrew only !!! */
 	/* TODO :: initialize the set of the languages */
    TLanguage lang = ELangEnglish;
-   CPtiCoreLanguage* pCoreLanguage;    
+    CPtiCoreLanguage* pCoreLanguage;    
    TInt err = KErrNone; 	
-   
+	
     // Instantiate the engine - no default user dictionary
     m_pPtiEngine = CPtiEngine::NewL( EFalse );
 
@@ -367,13 +347,13 @@ void CFreeMapAppUi::InitQwertyMappingsL()
          * m_pPtiEngine->SetCase(EPtiCaseUpper);
          */
     	m_pPtiEngine->SetCase( EPtiCaseLower );
-	}	
+	}
     
     // English is a default. Check what language is in the confiugration now: if rtl enabled - apply hebrew     
     if ( roadmap_lang_rtl() )
-	{
+    {
 		lang = ELangHebrew;
-	}
+    }
     
     err = m_pPtiEngine->ActivateLanguageL( lang, EPtiEngineQwerty );
     if ( err != KErrNone )
@@ -390,7 +370,7 @@ void CFreeMapAppUi::InitQwertyMappingsL()
 	// Get the keyboard mappings for the language
     else
     {
-    	m_pQwertyKeyMappings = static_cast<CPtiQwertyKeyMappings*>( pCoreLanguage->GetQwertyKeymappings());
+	m_pQwertyKeyMappings = static_cast<CPtiQwertyKeyMappings*>( pCoreLanguage->GetQwertyKeymappings());
     }
 }
 
@@ -409,7 +389,7 @@ TBool  CFreeMapAppUi::GetUnicodeForScanCodeL( const TKeyEvent& aKeyEvent, TUint1
 		InitQwertyMappingsL();
 	}
     
-	// Exceptional cases handling 
+    // Exceptional cases handling 
     switch ( aKeyEvent.iScanCode )
 	{
     	case EPtiKeyQwertySpace:	// SPACE - return the utf8 0x20 
@@ -564,7 +544,7 @@ void CFreeMapAppUi::SetBackLiteOn( TBool aValue )
 
 
 TCoeInputCapabilities CFreeMapAppUi::InputCapabilities() const
-{		
+{	
 /*
  * The input capabilities API is not working proeperly on all devices - not in 
  * use now

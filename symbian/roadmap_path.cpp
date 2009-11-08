@@ -58,20 +58,22 @@ struct RoadMapPathRecord {
 static RoadMapPathList RoadMapPaths = NULL;
 
 /* The hardcoded path for configuration files (the "config" path).
-*/
+*/ 
 static const char *RoadMapPathConfig[] = {
-   "&",
+   "C:\\Data\\Freemap",
+   "E:\\Data\\Freemap",
    "C:\\private\\" _UID3_STR,
    "E:\\private\\" _UID3_STR,
    "Z:\\private\\" _UID3_STR,
    "C:\\Data\\Others",
+   "&",
    NULL
 };
 
 static const char *RoadMapPathGps= "E:\\waze\\gps";
 static const char *RoadMapPathConfigPreferred = "E:\\private\\" _UID3_STR;
 
-/* Skins directories */
+/* Skins directories */ 
 static const char *RoadMapPathSkin[] = {
    "C:\\Data\\Freemap\\skins\\default", //mk: Skins are not yet completely loadable from here.
    "E:\\Data\\Freemap\\skins\\default", // Some of the files are searched under <roadmap_path_user()>\skins\default
@@ -157,7 +159,7 @@ static RoadMapPathList roadmap_path_find (const char *name)
 /* Directory path strings operations. -------------------------------------- */
 
 static char *roadmap_path_cat (const char *s1, const char *s2)
-{
+{ 
    char *result = (char*)malloc (strlen(s1) + strlen(s2) + 4);
 
    roadmap_check_allocated (result);
@@ -253,17 +255,17 @@ const char *roadmap_path_user (void)
 #else
    static char *RoadMapUser = NULL;
 
-   if (RoadMapUser == NULL)
+   if (RoadMapUser == NULL) 
    {
      TFileName privatePath;
      CEikonEnv::Static()->FsSession().PrivatePath(privatePath);
      // CompleteWithAppPath works even without a filename
      CompleteWithAppPath(privatePath);
      privatePath.Delete(privatePath.Length()-1,1);
-
+     
      GSConvert::TDes16ToCharPtr(privatePath, &RoadMapUser);
-
-
+     
+     
    }
    return RoadMapUser;
 #endif
@@ -307,7 +309,7 @@ const char *roadmap_path_debug( void )
 }
 
 const char *roadmap_path_trips (void)
-{
+{   
    static char  RoadMapDefaultTrips[] = "trips";
    static char *RoadMapTrips = NULL;
 
@@ -493,14 +495,14 @@ void roadmap_path_create (const char *path)
 {
   char pathSlash[256];
   if ( path == NULL ) {return;}
-
+  
   strncpy_safe (pathSlash, path, sizeof (pathSlash) - 1);
   if (pathSlash[strlen (pathSlash) - 1] != '\\')
     strcat (pathSlash, "\\");
 
   TFileName pathName;
   GSConvert::CharPtrToTDes16(pathSlash, pathName);
-
+  
   TInt err = CEikonEnv::Static()->FsSession().MkDirAll(pathName);
 }
 
@@ -514,8 +516,8 @@ char **roadmap_path_list (const char *path, const char *extension)
   CnvUtfConverter::ConvertToUnicodeFromUtf8(strPath, ptrPath);
   TFileName strExt;
   if (extension != NULL){
-	  TPtrC8 ptrExt((const unsigned char*)extension, User::StringLength((const TUint8*)extension));
-	  CnvUtfConverter::ConvertToUnicodeFromUtf8(strExt, ptrExt);
+  TPtrC8 ptrExt((const unsigned char*)extension, User::StringLength((const TUint8*)extension));
+  CnvUtfConverter::ConvertToUnicodeFromUtf8(strExt, ptrExt);
   }
 
   TFileName strFullname;
@@ -523,26 +525,26 @@ char **roadmap_path_list (const char *path, const char *extension)
   strFullname = strPath;
   strFullname.Append(KDelims);
   if (extension != NULL)
-	  strFullname.Append(strExt);
-
+  strFullname.Append(strExt);
+  
   char **result;
   char **cursor;
   CDir* fileList;
-  TInt err = CEikonEnv::Static()->FsSession().GetDir( strFullname,
-                                                      KEntryAttNormal,
-                                                      ESortNone,
+  TInt err = CEikonEnv::Static()->FsSession().GetDir( strFullname, 
+                                                      KEntryAttNormal, 
+                                                      ESortNone, 
                                                       fileList);
   if ( err != KErrNone )
   {
     return &RoadMapPathEmptyList;
   }
-
-  int numOfFiles = fileList->Count();
+  
+  int numOfFiles = fileList->Count(); 
   if (numOfFiles == 0)
   {
     return &RoadMapPathEmptyList;
   }
-
+  
   cursor = result = (char**)calloc (numOfFiles+1, sizeof(char *));
   roadmap_check_allocated (result);
 
@@ -555,7 +557,7 @@ char **roadmap_path_list (const char *path, const char *extension)
     *(cursor++) = (char*)textBuf;
   }
   delete fileList;
-
+  
   *cursor = NULL;
   return result;
 }
@@ -642,13 +644,13 @@ const char *roadmap_path_temporary (void) {
    return roadmap_path_user();
 }
 
-int roadmap_path_is_directory (const char *name)
+int roadmap_path_is_directory (const char *name) 
 {
   if ( name == NULL ) {return 0;}
-
+  
   TFileName pathName;
   GSConvert::CharPtrToTDes16(name, pathName);
-
+  
   TBool isFolder = false;
   TInt err = EikFileUtils::CheckWhetherFullNameRefersToFolder(pathName, isFolder);
   if ( err != KErrNone )

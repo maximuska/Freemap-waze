@@ -27,6 +27,9 @@ ifeq (WINS,$(findstring WINS, $(PLATFORM)))
 
 	xcopy /YEID ..\\..\\Maps $(FREEMAP_DIR)\\Maps
 	xcopy /YEID $(SOURCEDIR)\\Sound $(FREEMAP_DIR)\\Sound
+	
+	del $(TARGETDIR)\preferences
+	xcopy /YID $(SOURCEDIR)\\preferences $(FREEMAP_DIR)\\
 else
 	@rem do_nothing
 endif

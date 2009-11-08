@@ -2,6 +2,7 @@
 - Added support for gzip Content Encoding in Symbian HTTP.
 - Rewrote parts of Symbian networking code.
 - Fixed shared networking code to handle HTTP sessions without Content-Lengh header.
+- Exposing preferences config file in the !\Data\Freemap folder.
 
 2009 Release -mk2
 - Moving sounds files to a publically accessible folder (Symbian).
