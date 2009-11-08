@@ -43,7 +43,7 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 #define  RT_CFG_TYPE                   ("preferences")
-#define  RT_USER_TYPE				      ("user")
+#define  RT_USER_TYPE				   ("user")
 #define  RT_CFG_TAB                    ("Realtime")
 
 //   User name
@@ -79,12 +79,12 @@
 #define  RT_CFG_PRM_RANDOM_USERT_Default ("0")
 
 //   Refresh rate
-#define  RT_CFG_PRM_REFRAT_Var         	RTPrm_RefreshRate
-#define  RT_CFG_PRM_REFRAT_Name        	("Refresh rate (minutes)")
+#define  RT_CFG_PRM_REFRAT_Var         RTPrm_RefreshRate
+#define  RT_CFG_PRM_REFRAT_Name        ("Refresh rate (minutes)")
 #ifdef J2ME
 #define  RT_CFG_PRM_REFRAT_Default     	("1.5")
 #else
-#define  RT_CFG_PRM_REFRAT_Default     	("0.5")
+#define  RT_CFG_PRM_REFRAT_Default     ("0.5")
 #endif
 #define  RT_CFG_PRM_HIRESREFRAT_Var    	RTPrm_HiResRefreshRate
 #define  RT_CFG_PRM_HIRESREFRAT_Name   	("Hi-Res Refresh rate (minutes)")
@@ -95,16 +95,16 @@
 #define  RT_CFG_PRM_COMMCHECK_Var    		RTPrm_CommCheckPeriod
 #define  RT_CFG_PRM_COMMCHECK_Name   		("Comm Check period (minutes)")
 #define  RT_CFG_PRM_COMMCHECK_Default		("1.2")
-#define  RT_CFG_PRM_REFRAT_iMin        	(0.1F)
+#define  RT_CFG_PRM_REFRAT_iMin        (0.1F)
 #define  RT_CFG_PRM_REFRAT_iMax        	(90.F)
-#define  RT_CFG_PRM_REFRAT_iDef        	(4.F)
+#define  RT_CFG_PRM_REFRAT_iDef        (4.F)
 #define  RT_CFG_PRM_COMMCHECK_iMax       	(90.F)
 #define  RT_CFG_PRM_COMMCHECK_iDef        (1.F)
 #define  RT_CFG_PRM_HIRESREFRAT_iMin   	(0.01F)
 #define  RT_CFG_PRM_HIRESREFRAT_iDef   	(0.1F)
 #define  RT_CFG_PRM_SUMMARY_iMin   			(0.1F)
 #define  RT_CFG_PRM_SUMMARY_iDef   			(1.F)
-#define  RT_CFG_PRM_REFRAT_iWD         	(15.F)   //   Watchdog
+#define  RT_CFG_PRM_REFRAT_iWD         (15.F)   //   Watchdog
 
 //   Remote web-service address
 #define  RT_CFG_PRM_WEBSRV_Var         RTPrm_WebServiceAddress
@@ -147,7 +147,7 @@ typedef enum tagERTVisabilityGroup
 
    VisGrp__count,
    VisGrp__invalid
-
+   
 }  ERTVisabilityGroup;
 
 
@@ -155,13 +155,13 @@ typedef enum tagERTVisabilityGroup
 // Visability Report group:
 typedef enum tagERTVisabilityReport
 {
-
+   
    VisRep_Anonymous = 1,
    VisRep_NickName ,
-
+   
    VisRep__count,
    VisRep__invalid
-
+   
 }  ERTVisabilityReport;
 
 const char*          ERTVisabilityGroup_to_string  ( ERTVisabilityGroup e);
@@ -180,7 +180,7 @@ const char*          ERTVisabilityReport_to_string( ERTVisabilityReport e);
 typedef enum tagEVersionUpgradeSeverity
 {
    VUS_NA,
-
+   
    VUS_Low,
    VUS_Medium,
    VUS_Hi
@@ -224,7 +224,7 @@ typedef enum tagETransactionStatus
    TS_Idle,
    TS_Active,
    TS_Stopping,
-
+   
    TS__count,
    TS__invalid
 

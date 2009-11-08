@@ -47,11 +47,11 @@
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-static char       gs_WebServiceAddress [ WSA_STRING_MAXSIZE       + 1];
-static char       gs_WebServerURL      [ WSA_SERVER_URL_MAXSIZE   + 1];
-static char       gs_WebServiceName    [ WSA_SERVICE_NAME_MAXSIZE + 1];
-static int        gs_WebServerPort;
-static BOOL       gs_WebServiceParamsLoaded = FALSE;
+static char                      gs_WebServiceAddress [ WSA_STRING_MAXSIZE       + 1];
+static char                      gs_WebServerURL      [ WSA_SERVER_URL_MAXSIZE   + 1];
+static char                      gs_WebServiceName    [ WSA_SERVICE_NAME_MAXSIZE + 1];
+static int                       gs_WebServerPort;
+static BOOL                      gs_WebServiceParamsLoaded = FALSE;
 static wst_handle gs_WST = NULL;
 
 static wst_parser login_parser[] =
@@ -139,27 +139,27 @@ void  RTNet_Term()
 void convert_int_coordinate_to_float_string(char* buffer, int value)
 {
    /* Buffer minimum size is COORDINATE_VALUE_STRING_MAXSIZE  */
-
+   
    int   precision_part;
    int   integer_part;
    BOOL  negative = FALSE;
-
+   
    if( !value)
    {
       strcpy( buffer, "0");
       return;
    }
-
+   
    if( value < 0)
    {
       negative = TRUE;
       value   *= -1;
    }
-
+   
    precision_part= value%MEGA;
    integer_part  = value/MEGA;
-
-   if( negative)
+   
+   if( negative) 
       sprintf( buffer, "-%d.%06d", integer_part, precision_part);
    else
       sprintf( buffer,  "%d.%06d", integer_part, precision_part);
@@ -169,7 +169,7 @@ void convert_int_coordinate_to_float_string(char* buffer, int value)
 void format_RoadMapPosition_string( char* buffer, const RoadMapPosition* position)
 {
    char  float_string[COORDINATE_VALUE_STRING_MAXSIZE+1];
-
+   
    convert_int_coordinate_to_float_string( float_string, position->longitude);
    sprintf( buffer, "%s,", float_string);
    convert_int_coordinate_to_float_string( float_string, position->latitude);
@@ -183,11 +183,11 @@ void format_RoadMapGpsPosition_string( char* buffer, const RoadMapGpsPosition* p
    char  float_string_longitude[COORDINATE_VALUE_STRING_MAXSIZE+1];
    char  float_string_latitude [COORDINATE_VALUE_STRING_MAXSIZE+1];
    char  float_string_altitude [COORDINATE_VALUE_STRING_MAXSIZE+1];
-
+   
    convert_int_coordinate_to_float_string( float_string_longitude, position->longitude);
    convert_int_coordinate_to_float_string( float_string_latitude , position->latitude);
    convert_int_coordinate_to_float_string( float_string_altitude , position->altitude);
-   sprintf( buffer,
+   sprintf( buffer, 
             "%s,%s,%s,%d,%d",
             float_string_longitude,
             float_string_latitude,
@@ -202,11 +202,11 @@ void format_DB_point_string( char* buffer, int longitude, int latitude, time_t t
 
    char  float_string_longitude[COORDINATE_VALUE_STRING_MAXSIZE+1];
    char  float_string_latitude [COORDINATE_VALUE_STRING_MAXSIZE+1];
-
+   
    convert_int_coordinate_to_float_string( float_string_longitude, longitude);
    convert_int_coordinate_to_float_string( float_string_latitude , latitude);
-
-   sprintf( buffer,
+   
+   sprintf( buffer, 
             "%d,%s,%s,%d",
             db_id,
             float_string_longitude,
@@ -220,11 +220,11 @@ void format_point_string( char* buffer, int longitude, int latitude, time_t time
 
    char  float_string_longitude[COORDINATE_VALUE_STRING_MAXSIZE+1];
    char  float_string_latitude [COORDINATE_VALUE_STRING_MAXSIZE+1];
-
+   
    convert_int_coordinate_to_float_string( float_string_longitude, longitude);
    convert_int_coordinate_to_float_string( float_string_latitude , latitude);
-
-   sprintf( buffer,
+   
+   sprintf( buffer, 
             ",%s,%s,%d",
             float_string_longitude,
             float_string_latitude,
@@ -239,14 +239,14 @@ void format_RoadMapArea_string( char* buffer, const RoadMapArea* area)
    char  float_string_north[COORDINATE_VALUE_STRING_MAXSIZE+1];
    char  float_string_west [COORDINATE_VALUE_STRING_MAXSIZE+1];
    char  float_string_south[COORDINATE_VALUE_STRING_MAXSIZE+1];
-
+   
    convert_int_coordinate_to_float_string( float_string_east , area->east );
    convert_int_coordinate_to_float_string( float_string_north, area->north);
    convert_int_coordinate_to_float_string( float_string_west , area->west );
    convert_int_coordinate_to_float_string( float_string_south, area->south);
 
    // Note: Order expected by server:  West, South, East, North
-   sprintf( buffer,
+   sprintf( buffer, 
             "%s,%s,%s,%s",
             float_string_west ,
             float_string_south,
@@ -256,22 +256,22 @@ void format_RoadMapArea_string( char* buffer, const RoadMapArea* area)
 
 
 BOOL format_ParamPair_string( char*       buffer,
-                              int         iBufSize,
+                              int         iBufSize, 
                               int         nParams,
                               const char*   szParamKey[],
                               const char*   szParamVal[])
 {
    int   iParam;
    int   iBufPos = 0;
-
+   
    sprintf( buffer, "%d", nParams * 2);
    iBufPos = strlen( buffer );
-
+   
    for (iParam = 0; iParam < nParams; iParam++)
    {
-      if (szParamKey[iParam] && (*szParamKey[iParam]) &&
+      if (szParamKey[iParam] && (*szParamKey[iParam]) && 
           szParamVal[iParam] && (*szParamVal[iParam]))
-      {
+      {  
          if (iBufPos == iBufSize)
          {
             roadmap_log( ROADMAP_ERROR, "format_ParamPair_string() - Failed to print params");
@@ -279,7 +279,7 @@ BOOL format_ParamPair_string( char*       buffer,
             return FALSE;
          }
          buffer[iBufPos++] = ',';
-
+         
          if(!PackNetworkString( szParamKey[iParam], buffer + iBufPos, iBufSize - iBufPos))
          {
             roadmap_log( ROADMAP_ERROR, "format_ParamPair_string() - Failed to print params");
@@ -287,7 +287,7 @@ BOOL format_ParamPair_string( char*       buffer,
             return FALSE;
          }
          iBufPos += strlen (buffer + iBufPos);
-
+         
          if (iBufPos == iBufSize)
          {
             roadmap_log( ROADMAP_ERROR, "format_ParamPair_string() - Failed to print params");
@@ -295,7 +295,7 @@ BOOL format_ParamPair_string( char*       buffer,
             return FALSE;
          }
          buffer[iBufPos++] = ',';
-
+         
          if(!PackNetworkString( szParamVal[iParam], buffer + iBufPos, iBufSize - iBufPos))
          {
             roadmap_log( ROADMAP_ERROR, "format_ParamPair_string() - Failed to print params");
@@ -304,9 +304,9 @@ BOOL format_ParamPair_string( char*       buffer,
          }
          iBufPos += strlen (buffer + iBufPos);
       }
-   }
-
-   return TRUE;
+   } 
+   
+   return TRUE;  
 }
 
 
@@ -323,27 +323,27 @@ BOOL RTNet_LoadParams()
          gs_WebServiceName))  //   OUT,OPT   -   Web service name
       {
          roadmap_log( ROADMAP_ERROR, "RTNet_LoadParams() - Invalid web-service address (%s)", szWebServiceAddress);
-
+         
          //   Web-Service address string is invalid...
-         return FALSE;
+         return FALSE;   
       }
-
+      
       //   Copy full address:
       strncpy_safe( gs_WebServiceAddress, szWebServiceAddress, sizeof (gs_WebServiceAddress));
-
+      
       gs_WebServiceParamsLoaded = TRUE;
    }
-
+   
    return TRUE;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-BOOL RTNet_Login( LPRTConnectionInfo   pCI,
-                  const char*          szUserName,
-                  const char*          szUserPW,
-                  const char*          szUserNickname,
+BOOL RTNet_Login( LPRTConnectionInfo   pCI, 
+                  const char*          szUserName, 
+                  const char*          szUserPW, 
+                  const char*          szUserNickname, 
                   CB_OnWSTCompleted pfnOnCompleted)
 {
    //   Do we have a name/pw
@@ -352,7 +352,7 @@ BOOL RTNet_Login( LPRTConnectionInfo   pCI,
       roadmap_log( ROADMAP_ERROR, "RTNet_Login() - name and/or password were not supplied");
       return FALSE;
    }
-
+   
    //   Verify sizes:
    if( (RT_USERNM_MAXSIZE < strlen(szUserName))   ||
        (RT_USERPW_MAXSIZE < strlen(szUserPW)))
@@ -361,7 +361,7 @@ BOOL RTNet_Login( LPRTConnectionInfo   pCI,
                   RT_USERNM_MAXSIZE,RT_USERPW_MAXSIZE);
       return FALSE;
    }
-
+   
    //   Copy name/pw
    PackNetworkString( szUserName,      pCI->UserNm, RT_USERNM_MAXSIZE);
    PackNetworkString( szUserPW,        pCI->UserPW, RT_USERPW_MAXSIZE);
@@ -379,15 +379,15 @@ BOOL RTNet_Login( LPRTConnectionInfo   pCI,
                         pfnOnCompleted,
                         pCI,
                         RTNET_FORMAT_NETPACKET_7Login,// Custom data for the HTTP request
-                           RTNET_PROTOCOL_VERSION,
+            RTNET_PROTOCOL_VERSION, 
                            pCI->UserNm,
                            pCI->UserPW,
-                           RT_DEVICE_ID,
-                           roadmap_start_version(),
+            RT_DEVICE_ID,
+            roadmap_start_version(),
                            pCI->UserNk,
                            roadmap_geo_config_get_version()))
       return TRUE;
-
+   
    memset( pCI->UserNm, 0, sizeof(pCI->UserNm));
    memset( pCI->UserPW, 0, sizeof(pCI->UserPW));
    return FALSE;
@@ -399,7 +399,7 @@ BOOL RTNet_RandomUserRegister( LPRTConnectionInfo pCI, CB_OnWSTCompleted pfnOnCo
    memset( pCI->UserNm, 0, sizeof(pCI->UserNm));
    memset( pCI->UserPW, 0, sizeof(pCI->UserPW));
    memset( pCI->UserNk, 0, sizeof(pCI->UserNk));
-
+   
    // Perform WebService Transaction:
    return wst_start_trans( gs_WST,
                            "static",
@@ -407,10 +407,10 @@ BOOL RTNet_RandomUserRegister( LPRTConnectionInfo pCI, CB_OnWSTCompleted pfnOnCo
                            sizeof(register_parser)/sizeof(wst_parser),
                            pfnOnCompleted,
                            pCI,
-                           RTNET_FORMAT_NETPACKET_3Register,
-                              RTNET_PROTOCOL_VERSION,
-                              RT_DEVICE_ID,
-                              roadmap_start_version());
+         RTNET_FORMAT_NETPACKET_3Register, 
+         RTNET_PROTOCOL_VERSION, 
+         RT_DEVICE_ID,
+         roadmap_start_version());
 }
 
 BOOL RTNet_GuestLogin( LPRTConnectionInfo pCI, CB_OnWSTCompleted pfnOnCompleted)
@@ -419,7 +419,7 @@ BOOL RTNet_GuestLogin( LPRTConnectionInfo pCI, CB_OnWSTCompleted pfnOnCompleted)
    memset( pCI->UserNm, 0, sizeof(pCI->UserNm));
    memset( pCI->UserPW, 0, sizeof(pCI->UserPW));
    memset( pCI->UserNk, 0, sizeof(pCI->UserNk));
-
+   
    // Perform WebService Transaction:
    return wst_start_trans( gs_WST,
                            "login",
@@ -427,10 +427,10 @@ BOOL RTNet_GuestLogin( LPRTConnectionInfo pCI, CB_OnWSTCompleted pfnOnCompleted)
                            sizeof(login_parser)/sizeof(wst_parser),
                            pfnOnCompleted,
                            pCI,
-                           RTNET_FORMAT_NETPACKET_3GuestLogin,
-                              RTNET_PROTOCOL_VERSION,
-                              RT_DEVICE_ID,
-                              roadmap_start_version());
+         RTNET_FORMAT_NETPACKET_3GuestLogin, 
+         RTNET_PROTOCOL_VERSION, 
+         RT_DEVICE_ID,
+         roadmap_start_version());
 }
 
 /*    Method:  wst_start_session_trans()
@@ -527,28 +527,28 @@ BOOL RTNet_At( LPRTConnectionInfo   pCI,
                char*                packet_only)
 {
    char  GPSPosString[RoadMapGpsPosition_STRING_MAXSIZE+1];
-
+   
    format_RoadMapGpsPosition_string( GPSPosString, pGPSPosition);
 
    if( packet_only)
    {
-      sprintf( packet_only,
+      sprintf( packet_only, 
                RTNET_FORMAT_NETPACKET_3At,
                   GPSPosString,
                   from_node,
-                  to_node);
+                  to_node);         
       return TRUE;
    }
-
+   
    // Else:
    return wst_start_session_trans(  general_parser,
                                     sizeof(general_parser)/sizeof(wst_parser),
                                     pfnOnCompleted,
                                     pCI,
-                                    RTNET_FORMAT_NETPACKET_3At,// Custom data for the HTTP request
-                                       GPSPosString,
-                                       from_node,
-                                       to_node);
+         RTNET_FORMAT_NETPACKET_3At,// Custom data for the HTTP request
+            GPSPosString,
+            from_node,
+            to_node);         
 }
 
 BOOL RTNet_NavigateTo(  LPRTConnectionInfo   pCI,
@@ -558,17 +558,17 @@ BOOL RTNet_NavigateTo(  LPRTConnectionInfo   pCI,
                         CB_OnWSTCompleted pfnOnCompleted)
 {
    char  gps_point[RoadMapPosition_STRING_MAXSIZE+1];
-
+   
    format_RoadMapPosition_string( gps_point, cordinates);
 
    return wst_start_session_trans(  general_parser,
                                     sizeof(general_parser)/sizeof(wst_parser),
                                     pfnOnCompleted,
                                     pCI,
-                                    RTNET_FORMAT_NETPACKET_4NavigateTo, // Custom data for the HTTP request
-                                       gps_point,
-                                       ai->city,
-                                       ai->street,
+         RTNET_FORMAT_NETPACKET_4NavigateTo, // Custom data for the HTTP request
+            gps_point,
+            ai->city,
+            ai->street,
                                        ""); // Avi removed ai->house
 }
 BOOL RTNet_MapDisplyed( LPRTConnectionInfo   pCI,
@@ -578,7 +578,7 @@ BOOL RTNet_MapDisplyed( LPRTConnectionInfo   pCI,
                         char*                packet_only)
 {
    char  MapArea[RoadMapArea_STRING_MAXSIZE+1];
-
+   
    format_RoadMapArea_string( MapArea, pRoadMapArea);
 
    if( packet_only)
@@ -586,30 +586,30 @@ BOOL RTNet_MapDisplyed( LPRTConnectionInfo   pCI,
       sprintf( packet_only, RTNET_FORMAT_NETPACKET_2MapDisplayed, MapArea, scale);
       return TRUE;
    }
-
+   
    // Else:
    return wst_start_session_trans(
                general_parser,
                sizeof(general_parser)/sizeof(wst_parser),
                pfnOnCompleted,
                pCI,
-               RTNET_FORMAT_NETPACKET_2MapDisplayed,
-                  MapArea, scale);
+         RTNET_FORMAT_NETPACKET_2MapDisplayed, 
+            MapArea, scale);
 }
 
 BOOL RTNet_CreateNewRoads( LPRTConnectionInfo   pCI,
                            int                  nToggles,
-                           const time_t*        toggle_time,
-                           BOOL                 bStatusFirst,
+                           const time_t*         toggle_time,
+                           BOOL                  bStatusFirst,
                            CB_OnWSTCompleted    pfnOnCompleted,
                            char*                packet_only)
 {
    ebuffer  Packet;
-   char*    CreateNewRoadsBuffer = NULL;
-   int      i;
-   BOOL     bStatus;
-   BOOL     bRes;
-
+   char*       CreateNewRoadsBuffer = NULL;
+   int          i;
+   BOOL          bStatus;
+   BOOL         bRes;
+   
    ebuffer_init( &Packet);
 
    CreateNewRoadsBuffer = ebuffer_alloc( &Packet, RTNET_CREATENEWROADS_BUFFERSIZE__dynamic(nToggles));
@@ -622,9 +622,9 @@ BOOL RTNet_CreateNewRoads( LPRTConnectionInfo   pCI,
       sprintf (buffer, RTNET_FORMAT_NETPACKET_2CreateNewRoads,
                (unsigned int)toggle_time[i],
                bStatus ? "T" : "F");
-      bStatus = !bStatus;
+      bStatus = !bStatus; 
    }
-
+   
    assert(*CreateNewRoadsBuffer);
    roadmap_log(ROADMAP_DEBUG, "RTNet_CreateNewRoads() - Output command: '%s'", CreateNewRoadsBuffer);
 
@@ -640,7 +640,7 @@ BOOL RTNet_CreateNewRoads( LPRTConnectionInfo   pCI,
                               sizeof(general_parser)/sizeof(wst_parser),
                               pfnOnCompleted,
                               pCI,
-                              CreateNewRoadsBuffer);      //   Custom data
+                                    CreateNewRoadsBuffer);      //   Custom data
    }
 
    ebuffer_free( &Packet);
@@ -659,30 +659,30 @@ void RTNet_GPSPath_BuildCommand( char*             Packet,
    if( (count >= 2) && (RTTRK_GPSPATH_MAX_POINTS >= count))
    {
 	   sprintf( Packet, "GPSPath,%u,%u", (uint32_t)points->GPS_time, (3 * count));
-
+	   
 	   for( i=0; i<count; i++)
 	   {
 	      char  gps_point[RoadMapPosition_STRING_MAXSIZE+1];
 	      int   seconds_gap = 0;
-
+	      
 	      if( i)
 	         seconds_gap = (int)(points[i].GPS_time - points[i-1].GPS_time);
-
+	   
 	      assert( !GPSPOINTINTIME_IS_INVALID(points[i]));
-/*
+/*	      
 	      if (points[i].Position.longitude < 20000000 ||
 	      	 points[i].Position.longitude > 40000000 ||
 	      	 points[i].Position.latitude < 20000000 ||
 	      	 points[i].Position.latitude > 40000000 ||
 	      	 seconds_gap < 0 ||
 	      	 seconds_gap > 1000) {
-
-	      	roadmap_log (ROADMAP_ERROR, "Invalid GPS sequence: %d,%d,%d",
+	      
+	      	roadmap_log (ROADMAP_ERROR, "Invalid GPS sequence: %d,%d,%d", 
 	      					 points[i].Position.longitude,
 	      					 points[i].Position.latitude,
-	      					 seconds_gap);
+	      					 seconds_gap); 	
 	      }
-*/
+*/	      	 
 	      format_RoadMapPosition_string( gps_point, &(points[i].Position));
 	      sprintf( temp, ",%s,%d", gps_point, seconds_gap);
 	      strcat( Packet, temp);
@@ -690,7 +690,7 @@ void RTNet_GPSPath_BuildCommand( char*             Packet,
 	   strcat( Packet, "\n");
    }
 
-   if (end_track)
+   if (end_track) 
    {
    	strcat( Packet, "GPSDisconnect\n");
    }
@@ -708,7 +708,7 @@ BOOL RTNet_GPSPath(  LPRTConnectionInfo   pCI,
    int      iRangeBegin;
    BOOL     bRes;
    int      i;
-
+   
    if( count < 2)
       return FALSE;
 
@@ -722,7 +722,7 @@ BOOL RTNet_GPSPath(  LPRTConnectionInfo   pCI,
    	points[0].GPS_time = 0;
       count = RTTRK_GPSPATH_MAX_POINTS;
    }
-
+   
    GPSPathBuffer = ebuffer_alloc( &Packet, RTNET_GPSPATH_BUFFERSIZE__dynamic(count));
    memset( GPSPathBuffer, 0, RTNET_GPSPATH_BUFFERSIZE__dynamic(count));
 
@@ -734,9 +734,9 @@ BOOL RTNet_GPSPath(  LPRTConnectionInfo   pCI,
          int               iPointsCount= i - iRangeBegin;
          LPGPSPointInTime  FirstPoint  = points + iRangeBegin;
          char* Buffer = GPSPathBuffer + strlen(GPSPathBuffer);
-
-         roadmap_log(ROADMAP_DEBUG,
-                     "RTNet_GPSPath(GPS-DISCONNECTION TAG) - Adding %d points to packet. Range offset: %d",
+         
+         roadmap_log(ROADMAP_DEBUG, 
+                     "RTNet_GPSPath(GPS-DISCONNECTION TAG) - Adding %d points to packet. Range offset: %d", 
                      iPointsCount, iRangeBegin);
          RTNet_GPSPath_BuildCommand( Buffer, FirstPoint, iPointsCount, TRUE);
          iRangeBegin = i+1;
@@ -748,19 +748,19 @@ BOOL RTNet_GPSPath(  LPRTConnectionInfo   pCI,
       LPGPSPointInTime  FirstPoint  = points + iRangeBegin;
       int               iPointsCount= count - iRangeBegin;
       char*             Buffer      = GPSPathBuffer + strlen(GPSPathBuffer);
-
-      roadmap_log(ROADMAP_DEBUG,
-                  "RTNet_GPSPath() - Adding range to packet. Range begin: %d; Range end: %d (count-1)",
+      
+      roadmap_log(ROADMAP_DEBUG, 
+                  "RTNet_GPSPath() - Adding range to packet. Range begin: %d; Range end: %d (count-1)", 
                   iRangeBegin, (count - 1));
       RTNet_GPSPath_BuildCommand( Buffer, FirstPoint, iPointsCount, FALSE);
    }
-
+   
    assert(*GPSPathBuffer);
    roadmap_log(ROADMAP_DEBUG, "RTNet_GPSPath() - Output command: '%s'", GPSPathBuffer);
 
    if( packet_only)
    {
-      sprintf( packet_only, "%s", GPSPathBuffer);
+      sprintf( packet_only, "%s", GPSPathBuffer);         
       bRes = TRUE;
    }
    else
@@ -769,7 +769,7 @@ BOOL RTNet_GPSPath(  LPRTConnectionInfo   pCI,
                               sizeof(general_parser)/sizeof(wst_parser),
                               pfnOnCompleted,
                               pCI,
-                              GPSPathBuffer);      //   Custom data
+                                    GPSPathBuffer);      //   Custom data
 
    ebuffer_free( &Packet);
    return bRes;
@@ -787,10 +787,10 @@ BOOL RTNet_NodePath( LPRTConnectionInfo   pCI,
    int      i;
    char     temp[RTNET_NODEPATH_BUFFERSIZE_temp+1];
    BOOL     bRes;
-
+   
    if( count < 1)
       return FALSE;
-
+   
    ebuffer_init( &Packet);
 
    if( RTTRK_NODEPATH_MAX_POINTS < count) {
@@ -806,31 +806,31 @@ BOOL RTNet_NodePath( LPRTConnectionInfo   pCI,
    sprintf( NodePathBuffer, "NodePath,%d,", (unsigned int)period_begin);//(period_end-period_begin));
    sprintf( temp, "%d", 2 * count);
    strcat( NodePathBuffer, temp);
-
+   
    for( i=0; i<count; i++)
    {
       int   seconds_gap = 0;
-
+      
       if( i)
          seconds_gap = (int)(nodes[i].GPS_time - nodes[i-1].GPS_time);
-/*
+/*   
    	if (nodes[i].node < -2 ||
    		 nodes[i].node > 1000000 ||
    		 seconds_gap < 0 ||
    		 seconds_gap > 1000000) {
-
-      	roadmap_log (ROADMAP_ERROR, "Invalid Node sequence: %d,%d",
+   		 	
+      	roadmap_log (ROADMAP_ERROR, "Invalid Node sequence: %d,%d", 
       					 nodes[i].node,
-      					 seconds_gap);
+      					 seconds_gap); 	
    	}
-*/
+*/   	
       sprintf( temp, ",%d,%d", nodes[i].node, seconds_gap);
       strcat( NodePathBuffer, temp);
    }
 
    if( packet_only)
    {
-      sprintf( packet_only, "%s\n", NodePathBuffer);
+      sprintf( packet_only, "%s\n", NodePathBuffer); 
       bRes = TRUE;
    }
    else
@@ -839,7 +839,7 @@ BOOL RTNet_NodePath( LPRTConnectionInfo   pCI,
                               sizeof(general_parser)/sizeof(wst_parser),
                               pfnOnCompleted,
                               pCI,
-                              NodePathBuffer);     //   Custom data
+                                    NodePathBuffer);     //   Custom data
 
    ebuffer_free( &Packet);
    return bRes;
@@ -861,7 +861,7 @@ BOOL RTNet_ReportAlert( LPRTConnectionInfo   pCI,
    {
  		roadmap_messagebox ("Error", "Can't find alert position.");
  		return FALSE;
-   }
+    }
    else
    {
 	   roadmap_trip_get_nodes( "AlertSelection", &from_node, &to_node );
@@ -880,7 +880,7 @@ BOOL RTNet_SendSMS( LPRTConnectionInfo   pCI,
                            sizeof(general_parser)/sizeof(wst_parser),
                            pfnOnCompleted,
                            pCI,
-                           RTNET_FORMAT_NETPACKET_1SendSMS,// Custom data for the HTTP request
+         RTNET_FORMAT_NETPACKET_1SendSMS,// Custom data for the HTTP request
                            szPhoneNumber);
 }
 
@@ -912,26 +912,26 @@ BOOL RTNet_PostAlertComment( LPRTConnectionInfo   pCI,
 
    char        PackedString[(RT_ALERT_DESCRIPTION_MAXSIZE*2)+1];
    const char* szPackedString = "";
-
+   
    if( szDescription && (*szDescription))
-   {
+   {  
       if(!PackNetworkString( szDescription, PackedString, sizeof(PackedString)))
       {
          roadmap_log( ROADMAP_ERROR, "RTNet_PostAlertComment() - Failed to pack network string");
          roadmap_messagebox ("Error", "Sending Comment failed");
          return FALSE;
       }
-
+      
       szPackedString = PackedString;
    }
 
    return wst_start_session_trans(
                            general_parser,
                            sizeof(general_parser)/sizeof(wst_parser),
-                           pfnOnCompleted,
+                                       pfnOnCompleted,
                            pCI,
                            "PostAlertComment,%d,%s,%s", // Custom data for the HTTP request
-                           iAlertId,
+                                          iAlertId,
                            szPackedString,
                            bForwardToTwitter ? "T" : "F");
 }
@@ -939,7 +939,7 @@ BOOL RTNet_PostAlertComment( LPRTConnectionInfo   pCI,
 
 BOOL RTNet_ReportAlertAtPosition( LPRTConnectionInfo   pCI,
                         int                  iType,
-                        const char*          szDescription,
+                        const char*     szDescription,
                         int                  iDirection,
                         const char*          szImageId,
                         BOOL						bForwardToTwitter,
@@ -951,9 +951,9 @@ BOOL RTNet_ReportAlertAtPosition( LPRTConnectionInfo   pCI,
    char  GPSPosString[RoadMapGpsPosition_STRING_MAXSIZE+1];
    char        PackedString[(RT_ALERT_DESCRIPTION_MAXSIZE*2)+1];
    const char* szPackedString = "";
-
+   
    if( szDescription && (*szDescription))
-   {
+   {  
       if(!PackNetworkString( szDescription, PackedString, sizeof(PackedString)))
       {
          roadmap_log( ROADMAP_ERROR, "RTNet_ReportAlertAtPosition() - Failed to pack network string");
@@ -967,18 +967,18 @@ BOOL RTNet_ReportAlertAtPosition( LPRTConnectionInfo   pCI,
        szImageId = "";
 
    format_RoadMapGpsPosition_string( GPSPosString, MyLocation);
-
+   
    return wst_start_session_trans(
                            general_parser,
                            sizeof(general_parser)/sizeof(wst_parser),
-                           pfnOnCompleted,
+                  pfnOnCompleted,
                            pCI,
                            "At,%s,%d,%d\r\nReportAlert,%d,%s,%d,%s,%s", // Custom data for the HTTP request
-                              GPSPosString,
+                     GPSPosString,
                               from_node,
                               to_node,
-                              iType,
-                              szPackedString,
+                     iType,
+                     szPackedString,
                               iDirection,
                               szImageId,
                               bForwardToTwitter ? "T" : "F");
@@ -992,10 +992,10 @@ BOOL RTNet_RemoveAlert( LPRTConnectionInfo   pCI,
    return wst_start_session_trans(
                            general_parser,
                            sizeof(general_parser)/sizeof(wst_parser),
-                           pfnOnCompleted,
+                                       pfnOnCompleted,
                            pCI,
-                           "ReportRmAlert,%d",  // Custom data for the HTTP request
-                              iAlertId);
+                                       "ReportRmAlert,%d",  // Custom data for the HTTP request
+                                          iAlertId);       
 }
 
 BOOL RTNet_ReportMapProblem( LPRTConnectionInfo   pCI,
@@ -1053,33 +1053,33 @@ BOOL  RTNet_ReportMarker(  LPRTConnectionInfo   pCI,
    const char* szPackedString = "";
    char        float_string_longitude[COORDINATE_VALUE_STRING_MAXSIZE+1];
    char        float_string_latitude [COORDINATE_VALUE_STRING_MAXSIZE+1];
-
+   
    convert_int_coordinate_to_float_string( float_string_longitude, iLongitude);
    convert_int_coordinate_to_float_string( float_string_latitude , iLatitude);
 
    if( szDescription && (*szDescription))
-   {
+   {  
       if(!PackNetworkString( szDescription, PackedString, sizeof(PackedString)))
       {
          roadmap_log( ROADMAP_ERROR, "RTNet_ReportMarker() - Failed to pack network string");
          roadmap_messagebox ("Error", "Sending Report failed");
          return FALSE;
       }
-
+      
       szPackedString = PackedString;
    }
 
-   if (!format_ParamPair_string(AttrString,
-                                sizeof(AttrString),
-                                nParams,
-                                szParamKey,
+   if (!format_ParamPair_string(AttrString, 
+                                sizeof(AttrString), 
+                                nParams, 
+                                szParamKey, 
                                 szParamVal))
-   {
+   { 
       roadmap_log( ROADMAP_ERROR, "RTNet_ReportMarker() - Failed to serialize attributes");
       roadmap_messagebox ("Error", "Sending Report failed");
       return FALSE;
    }
-
+   
    if (packet_only)
    {
       sprintf( packet_only,
@@ -1092,48 +1092,48 @@ BOOL  RTNet_ReportMarker(  LPRTConnectionInfo   pCI,
                AttrString);
       return TRUE;
    }
-
+   
    return wst_start_session_trans(
                            general_parser,
                            sizeof(general_parser)/sizeof(wst_parser),
-                           pfnOnCompleted,
+                  pfnOnCompleted,
                            pCI,
-                           RTNET_FORMAT_NETPACKET_6ReportMarker, // Custom data for the HTTP request
-                              szType,
-                              float_string_longitude,
-                              float_string_latitude,
-                              iAzimuth,
-                              szPackedString,
-                              AttrString);
+                  RTNET_FORMAT_NETPACKET_6ReportMarker, // Custom data for the HTTP request
+                     szType,
+                     float_string_longitude,
+                     float_string_latitude,
+                     iAzimuth,
+                     szPackedString,
+                     AttrString);
 }
 
-BOOL RTNet_StartFollowUsers(  LPRTConnectionInfo   pCI,
+BOOL RTNet_StartFollowUsers(  LPRTConnectionInfo   pCI, 
                               CB_OnWSTCompleted pfnOnCompleted,
                               char*                packet_only)
 { return FALSE;}
 
-BOOL RTNet_StopFollowUsers(   LPRTConnectionInfo   pCI,
+BOOL RTNet_StopFollowUsers(   LPRTConnectionInfo   pCI, 
                               CB_OnWSTCompleted pfnOnCompleted,
                               char*                packet_only)
 { return FALSE;}
-
-BOOL RTNet_SetMyVisability(LPRTConnectionInfo   pCI,
-                           ERTVisabilityGroup   eVisability,
+ 
+BOOL RTNet_SetMyVisability(LPRTConnectionInfo   pCI, 
+                           ERTVisabilityGroup   eVisability, 
                            ERTVisabilityReport  eVisabilityReport,
                            CB_OnWSTCompleted pfnOnCompleted,
                            char*                packet_only)
 {
    if( packet_only)
    {
-      sprintf( packet_only, "SeeMe,%d,%d\n", eVisability,eVisabilityReport);
+      sprintf( packet_only, "SeeMe,%d,%d\n", eVisability,eVisabilityReport);         
       return TRUE;
    }
-
+   
    // Else:
    return wst_start_session_trans(
                            general_parser,
                            sizeof(general_parser)/sizeof(wst_parser),
-                           pfnOnCompleted,
+                                       pfnOnCompleted,
                            pCI,
                            "SeeMe,%d,%d",          //   Custom data for the HTTP request
                               eVisability,eVisabilityReport);
@@ -1145,11 +1145,11 @@ BOOL RTNet_SetMood(LPRTConnectionInfo   pCI,
                    char*                packet_only)
 {
    if( packet_only)
-   {
+{
       sprintf( packet_only, "SetMood,%d\n", iMood);
       return TRUE;
    }
-
+   
    // Else:
    return wst_start_session_trans(
                            general_parser,
@@ -1163,7 +1163,7 @@ BOOL RTNet_SetMood(LPRTConnectionInfo   pCI,
 BOOL RTNet_SendTrafficInfo ( LPRTConnectionInfo   pCI,
                                                               int mode,
                                                                CB_OnWSTCompleted pfnOnCompleted){
-
+   
    return wst_start_session_trans(
                            general_parser,
                            sizeof(general_parser)/sizeof(wst_parser),
@@ -1171,13 +1171,13 @@ BOOL RTNet_SendTrafficInfo ( LPRTConnectionInfo   pCI,
                            pCI,
                            "SendRoadInfo,%d",   // Custom data for the HTTP request
                               mode);
-}
-
+   }
+   
 BOOL RTNet_TrafficAlertFeedback( LPRTConnectionInfo   pCI,
                         int                  iTrafficInfoId,
                         int                  iValidity,
                         CB_OnWSTCompleted pfnOnCompleted)
-{
+   {
    return wst_start_session_trans(
                            general_parser,
                            sizeof(general_parser)/sizeof(wst_parser),
@@ -1185,8 +1185,8 @@ BOOL RTNet_TrafficAlertFeedback( LPRTConnectionInfo   pCI,
                            pCI,
                            "TrafficAlertFeedback,%d,%d",  // Custom data for the HTTP request
                            iTrafficInfoId, iValidity);
-}
-
+   }
+   
 BOOL  RTNet_CreateAccount (
                    LPRTConnectionInfo   pCI,
                    const char*          userName,
@@ -1194,7 +1194,7 @@ BOOL  RTNet_CreateAccount (
                    const char*          email,
                    BOOL                 send_updates,
                    CB_OnWSTCompleted pfnOnCompleted){
-
+   
    return wst_start_trans( gs_WST,
             "createaccount",
             general_parser,
@@ -1216,7 +1216,7 @@ BOOL  RTNet_UpdateProfile (
                    const char*          email,
                    BOOL                 send_updates,
                    CB_OnWSTCompleted pfnOnCompleted){
-
+   
    roadmap_log( ROADMAP_DEBUG, "RTNet_UpdateProfile() - username=%s, password=%s,email=%s, send_updates=%d", userName, passWord,email, send_updates);
 
    return wst_start_session_trans( general_parser,
@@ -1228,8 +1228,8 @@ BOOL  RTNet_UpdateProfile (
                                    passWord,
                                    email,
                                    send_updates ? "true" : "false");
-
-}
+   
+   }
 BOOL RTNet_GeneralPacket(  LPRTConnectionInfo   pCI,
                            const char*          Packet,
                            CB_OnWSTCompleted    pfnOnCompleted)
@@ -1241,7 +1241,7 @@ BOOL RTNet_GeneralPacket(  LPRTConnectionInfo   pCI,
                            pfnOnCompleted,
                            pCI,
                            Packet);             //   Custom data for the HTTP request
-}
+      }
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -1272,38 +1272,38 @@ BOOL   RTNet_ReportOneSegment_Encode (char *packet, int iSegment)
    char name_string[513];
    char t2s_string[513];
    char city_string[513];
-
-   if (editor_line_committed (iSegment))
+   
+   if (editor_line_committed (iSegment)) 
    {
       *packet = '\0';
       return TRUE;
    }
-
+   
    editor_line_get (iSegment, &from, &to, &trkseg, &cfcc, &line_flags);
    if (!(line_flags & ED_LINE_DIRTY))
    {
       *packet = '\0';
       return TRUE;
    }
-
+   
    editor_trkseg_get (trkseg, NULL, &first_shape, &last_shape, &trkseg_flags);
    if (first_shape >= 0) num_shapes = last_shape - first_shape + 1;
    else                   num_shapes = 0;
-
+   
    editor_trkseg_get_time (trkseg, &start_time, &end_time);
-
+   
    editor_line_get_points (iSegment, &from_point, &to_point);
    from_id = editor_point_db_id (from_point);
    to_id = editor_point_db_id (to_point);
-
+   
    format_DB_point_string (from_string, from.longitude, from.latitude, start_time, from_id);
    format_DB_point_string (to_string, to.longitude, to.latitude, end_time, to_id);
 
    if (line_flags & ED_LINE_DELETED) action = "delete";
    else                               action = "update";
-
+   
    status = "fake"; // should be omitted from command line
-
+   
    sprintf (packet,
             RTNET_FORMAT_NETPACKET_5ReportSegment,
             action,
@@ -1311,15 +1311,15 @@ BOOL   RTNet_ReportOneSegment_Encode (char *packet, int iSegment)
             from_string,
             to_string,
             num_shapes * 3);
-
+            
    if (num_shapes)
    {
       char shape_string[Point_STRING_MAXSIZE];
       int shape;
-
+      
       RoadMapPosition curr_position = from;
       time_t curr_time = start_time;
-
+      
       for (shape = first_shape; shape <= last_shape; shape++)
       {
          editor_shape_position (shape, &curr_position);
@@ -1328,7 +1328,7 @@ BOOL   RTNet_ReportOneSegment_Encode (char *packet, int iSegment)
          strcat (packet, shape_string);
       }
    }
-
+   
    num_attr = 0;
    if ((line_flags & ED_LINE_DELETED) == 0)
    {
@@ -1340,7 +1340,7 @@ BOOL   RTNet_ReportOneSegment_Encode (char *packet, int iSegment)
          PackNetworkString (editor_street_get_street_name (street), name_string, sizeof (name_string) - 1);
          PackNetworkString (editor_street_get_street_t2s (street),  t2s_string,  sizeof (t2s_string)  - 1);
          PackNetworkString (editor_street_get_street_city (street), city_string, sizeof (city_string) - 1);
-
+         
          sprintf (packet + strlen (packet),
                   RTNET_FORMAT_NETPACKET_5ReportSegmentAttr,
                   num_attr * 2,
@@ -1352,14 +1352,14 @@ BOOL   RTNet_ReportOneSegment_Encode (char *packet, int iSegment)
    }
 
    if (num_attr == 0)
-   {
+   {   
       sprintf (packet + strlen (packet),
-               RTNET_FORMAT_NETPACKET_1ReportSegmentNoAttr,
+               RTNET_FORMAT_NETPACKET_1ReportSegmentNoAttr, 
                num_attr * 2);
    }
-
-
-   return TRUE;
+   
+            
+   return TRUE;   
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1371,17 +1371,17 @@ int   RTNet_ReportOneSegment_MaxLength (int iSegment)
    int first_shape;
    int last_shape;
    int num_bytes;
-
+   
    if (editor_line_committed (iSegment)) return 0;
-
+   
    editor_line_get (iSegment, NULL, NULL, &trkseg, NULL, &flags);
    if (!(flags & ED_LINE_DIRTY)) return 0;
-
+   
    editor_trkseg_get (trkseg, NULL, &first_shape, &last_shape, NULL);
    if (first_shape >= 0) num_shapes = last_shape - first_shape + 1;
    else                   num_shapes = 0;
-
-   num_bytes =
+   
+   num_bytes = 
       + 14                           // command
       + 7                           // action
       + 13                           // status
@@ -1389,15 +1389,15 @@ int   RTNet_ReportOneSegment_MaxLength (int iSegment)
       + 12                           // num points
       + (12 + 12 + 12) * num_shapes // shape points
       + 12;                           // num attributes
-
+      
    if ((flags & ED_LINE_DELETED) == 0)
    {
       num_bytes +=
          4 * (256 * 2 + 2);         // street attributes
-   }
-
+   } 
+   
    num_bytes += 1024;               // just in case
-
+      
    return num_bytes;
 }
 
@@ -1410,9 +1410,9 @@ void	RTNet_Auth_BuildCommand (	char*				Command,
 {
 
 	sprintf (Command, RTNET_FORMAT_NETPACKET_5Auth,
-				ServerId, ServerCookie, UserName, DeviceId, Version);
+				ServerId, ServerCookie, UserName, DeviceId, Version);	
 }
-
+											
 //////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL  RTNet_TripServer_CreatePOI  (LPRTConnectionInfo   pCI,
 											 const char*          name,
@@ -1583,7 +1583,7 @@ void RTNet_AbortTransaction( ETransactionStatus* new_state)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+											                           
 //////////////////////////////////////////////////////////////////////////////////////////////////
 BOOL RTNet_RequestRoute(LPRTConnectionInfo   pCI,
 								int						iRoute,

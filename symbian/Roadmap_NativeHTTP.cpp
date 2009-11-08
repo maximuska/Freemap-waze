@@ -2,6 +2,7 @@
  *
  * LICENSE:
  *
+ *   Copyright 2009 Maxim Kalaev
  *   Copyright 2008 Giant Steps Ltd.
  *   Copyright 2008 Ehud Shabtai
  *
@@ -27,10 +28,10 @@
 
 #include <Uri8.h>
 #include <UriUtils.h>
-#include <httpstringconstants.h>
 #include <http/RHTTPHeaders.h>
 #include <string.h>
 #include <stdlib.h>
+#include <e32cmn.h> // Min(x,y)
 
 #include "GSConvert.h"
 #include "Roadmap_NativeHTTP.h"
@@ -41,55 +42,66 @@ extern "C" {
 }
 
 CRoadMapNativeHTTP::CRoadMapNativeHTTP(const char *http_type, const char *apHostname, int aPort, time_t tUpdate)
-  : CActive(EPriorityNormal), CRoadMapNativeNet(apHostname, aPort), m_httpType(http_type), m_tModifiedSince(tUpdate)
+  : CActive(EPriorityNormal),
+    CRoadMapNativeNet(apHostname, aPort),
+    m_eConnStatus(EConnStatusNotStarted),
+    m_ContentLength(-1),
+    m_Status(0),
+	m_tModifiedSince(tUpdate)
 {
-  m_isHttp = 1;
-  m_IsLastChunk = false;
-  m_NumWriteBuffers = 0;
-  m_AccumWriteBuffer = NULL;
-  m_NumWriteSent = 0;
-  m_ReadBuffer = NULL;
-  m_Status = 0;
-  m_eConnStatus = EConnStatusNotStarted;
-  m_pUri8 = NULL;
+    m_isHttp = 1,
+    m_pUri8 = NULL;
+    m_pBodySup = NULL;
+
+    // We only support GET and POST
+    m_HttpMethod = (strcmp(http_type, "GET") == 0 ? HTTP::EGET : HTTP::EPOST ); 
+    
+    memset( &m_DeflateCtxt, 0x00, sizeof(m_DeflateCtxt) );
 }
 
 CRoadMapNativeHTTP::~CRoadMapNativeHTTP()
 {
+    inflateEnd( &m_DeflateCtxt.stream );
+
+    m_Transaction.Close();
 	m_Session.Close();
-	while (m_NumWriteBuffers > 0) {
-		m_NumWriteBuffers--;
-		delete m_WriteBuffers[m_NumWriteBuffers];
-	}
 	
-	if (m_AccumWriteBuffer) delete m_AccumWriteBuffer;
-	if (m_ReadBuffer) delete m_ReadBuffer;
+    // Sanity
+    m_pBodySup = NULL;
+    m_RecvCallback = NULL;
+    m_apIO = NULL;
 }
 
-CRoadMapNativeHTTP* CRoadMapNativeHTTP::NewL(const char *http_type, const char *apHostname, int aPort, time_t tUpdate, RoadMapNetConnectCallback apCallback, void* apContext)
+CRoadMapNativeHTTP* CRoadMapNativeHTTP::NewL( const char *http_type,
+                                              const char *apHostname,
+                                              int aPort,
+											  time_t tUpdate,
+                                              RoadMapNetConnectCallback apCallback,
+                                              void* apContext )
 {
-  CRoadMapNativeHTTP* self = CRoadMapNativeHTTP::NewLC(http_type, apHostname, aPort, tUpdate, apCallback, apContext);
-  CleanupStack::Pop(self);
-  return self;
+    CRoadMapNativeHTTP* self = new ( ELeave ) CRoadMapNativeHTTP(http_type, apHostname, aPort, tUpdate);
+    self->ConstructL(apCallback, apContext);
+    return self;
 }
 
-CRoadMapNativeHTTP* CRoadMapNativeHTTP::NewLC(const char *http_type, const char *apHostname, int aPort, time_t tUpdate, RoadMapNetConnectCallback apCallback, void* apContext)
+void CRoadMapNativeHTTP::deflate_ctx_t::InitL( void )
 {
-  CRoadMapNativeHTTP* self = new ( ELeave ) CRoadMapNativeHTTP(http_type, apHostname, aPort, tUpdate);
-  CleanupStack::PushL(self);
-  self->ConstructL(apCallback, apContext);
-//TODO use TRAPD with  User::LeaveIfError(aErrorCode);
-  return self;
+    const TInt ZLIB_WIN_SIZE = 15;
+    if( inflateInit2( &stream, -1 * ZLIB_WIN_SIZE ) != Z_OK ) {
+        inflateEnd(&stream);
+        User::LeaveNoMemory();
+    }
+
+    gotHeaders = false;
+    crc        = 0x0;
 }
 
 void CRoadMapNativeHTTP::ConstructL(RoadMapNetConnectCallback apCallback, void* apContext)
 {
   CRoadMapNativeNet::ConstructL(apCallback, apContext);  
-  if ( OfflineProfileSwitch() )
-  {//TODO is this necessary here? We're ConstructLing....
-    roadmap_log(ROADMAP_DEBUG, "CLOSING SESSION");
-    m_Session.Close();
-  }
+
+    // Prepare decompressor, just in case..
+    m_DeflateCtxt.InitL();
 
   CActiveScheduler::Add(this);  
   
@@ -98,17 +110,8 @@ void CRoadMapNativeHTTP::ConstructL(RoadMapNetConnectCallback apCallback, void* 
 
 void CRoadMapNativeHTTP::OpenL(ENativeSockType aSockType)
 {
-  if ( aSockType != ESockTypeHttp )
-  {
-    //roadmap_log(ROADMAP_ERROR, "Wrong protocol");
-    return;
-  }
-  /*
-  TUriParser8 uri; 
-  uri.Parse(aUri);
-  m_Transaction = m_Session.OpenTransactionL(uri, *this, aMethod);
-  RHTTPHeaders hdr = iTrans.Request().GetHeaderCollection();
-*/
+    if( aSockType != ESockTypeHttp )
+        User::Panic( _L("Unsupported protocol type"), aSockType );
 }
 
 void CRoadMapNativeHTTP::ConnectWithParamsL()
@@ -116,45 +119,39 @@ void CRoadMapNativeHTTP::ConnectWithParamsL()
   TBuf<256> hostName;
   GSConvert::CharPtrToTDes16(m_hostname, hostName);
   ConnectL(hostName, m_port);
+
+    m_eConnStatus = EConnStatusConnected; 
 }
 
-void CRoadMapNativeHTTP::ConnectL(const TDesC& aHostname, int aPort)
+void CRoadMapNativeHTTP::ConnectL(const TDesC& aHostname, int)
 {
-  if ( m_pUri8 != NULL )
-  {
     delete m_pUri8;
-    m_pUri8 = NULL;
-  }
   TRAPD(err, m_pUri8 = UriUtils::CreateUriL(aHostname));
-  if ( err != KErrNone || m_pUri8 == NULL )
-  {
+  if ( err != KErrNone || m_pUri8 == NULL ) {
     roadmap_log(ROADMAP_ERROR, "Could not parse URL %s", aHostname.Ptr());
   }
 
-  HTTP::TStrings http_method = HTTP::EPOST;
-  
-  if (!strcmp(m_httpType, "GET")) http_method = HTTP::EGET;
-  RStringF method = m_Session.StringPool().StringF(http_method, RHTTPSession::GetTable());
+  RStringF method = m_Session.StringPool().StringF(m_HttpMethod, RHTTPSession::GetTable());
   SetConnectionParams();
-  SetModifiedSince();
+  SetModifiedSinceL();
   
   m_Transaction = m_Session.OpenTransactionL(m_pUri8->Uri(), *this, method);
-  if ( m_pConnectCallback != NULL )
-  {// since we got here it's obviously not null, but checking anyway
-    //  Set up the IO object
+  
+  m_PostData.InitL( m_Transaction );
+  
     //  Inform our client that we have a connection
-   // roadmap_log(ROADMAP_DEBUG, "callback %x", m_context);
-    (*m_pConnectCallback)(dynamic_cast<CRoadMapNativeNet*>(this), m_context, succeeded);
+  if( m_pConnectCallback != NULL ) {
+      m_pConnectCallback( dynamic_cast<CRoadMapNativeNet*>(this), m_context, succeeded );
   }
 }
 
 void CRoadMapNativeHTTP::SetReadyToSendData(bool aIsReady)
 {
-	MHTTPDataSupplier* dataSupplier = this;
 	m_IsReadyToSendData = aIsReady;
-	if (!strcmp(m_httpType, "POST")) {
-		m_Transaction.Request().SetBody(*dataSupplier);
+    if( m_HttpMethod == HTTP::EPOST ) {
+        m_Transaction.Request().SetBody( m_PostData );
 	}
+
 	// Submit the transaction. After this the framework will give transaction
 	// events via MHFRunL and MHFRunError.
 	m_Transaction.SubmitL();
@@ -162,43 +159,77 @@ void CRoadMapNativeHTTP::SetReadyToSendData(bool aIsReady)
 	roadmap_net_mon_connect();
 }
 
-int CRoadMapNativeHTTP::Read(void *data, int length)
+int CRoadMapNativeHTTP::Read( void *data, int length )
 {
-  if ((m_DataChunk.Size() == 0) && (!m_RecvCallback)) {
+    if( m_RecvCallback == NULL ) {
+        // Synchronious read mode
+        // If no data is available wait while there is a chance for it to arrive
+        while( m_eConnStatus > 0 &&
+               m_eConnStatus != EConnStatusTransactionDone &&
+               m_CurReplyHttpHeader.Size() == 0 && m_CurBodyChunk.Size() == 0 )
+        {
      iSchedulerWait.Start(); 
   }
-  if (m_DataChunk.Size() == 0) return -1;
+    }
+
+    // Problems?
+    if( m_eConnStatus < 0 )
+        return -1;
+
+    // HTTP headers to return?
+    if( m_CurReplyHttpHeader.Size() > 0 )
+        return ReadHttpHeader( data, length );
   
-  if (length > m_DataChunk.Size()) length = m_DataChunk.Size();
+    // No data and no more expected?
+    if( m_CurBodyChunk.Size() == 0 and m_eConnStatus == EConnStatusTransactionDone ) {
+        return 0;
+    }
   
-  memcpy(data, (char *)m_DataChunk.Ptr(), length);
-  m_DataChunk.Set(m_DataChunk.Right(m_DataChunk.Size() - length));
+    __ASSERT_ALWAYS( m_CurBodyChunk.Size() > 0, User::Panic(_L("CRoadMapNativeHTTP::Read underflow!"), -1) );
+  
+    // Return body chunk (decoded)
+    return ReadHttpBodyChunk( data, length );
+}
+
+int CRoadMapNativeHTTP::Write( const void *data, int length )
+{
+    TRAPD( ret, m_PostData.AddDataL( TPtrC8((TUint8*)data, length) ) );
+    if( ret != KErrNone )
+     return -1;
   
   return length;
 }
 
-int CRoadMapNativeHTTP::Write(const void *data, int length)
-{
-  if (length == 0) return 0;
-  
-  if (m_NumWriteBuffers == MAX_WRITE_BUFFERS) {
-     return -1;
-  }
-  
-  m_WriteBuffers[m_NumWriteBuffers] = HBufC8::NewL(length); 
-  m_WriteBuffers[m_NumWriteBuffers]->Des().Copy((TUint8 *)data, length);
-  m_NumWriteBuffers++;
-//  m_Transaction.NotifyNewRequestBodyPartL();
-  //m_Asw.Start();
-  return length;
-}
+#define SELF_DESTRUCT_STATUS        666
+#define DATA_EVENT_AVAILABLE_STATUS 200
 
 void CRoadMapNativeHTTP::Close()
 {
-  m_Transaction.Close();
   m_eConnStatus = EConnStatusClosed;
-  CDestroyTimer::NewL(*this)->After(1);  
+    
+    m_RecvCallback = NULL; // Sanity
+  
+    TRequestStatus* status = &iStatus;
+    SetActive();
+    User::RequestComplete( status, SELF_DESTRUCT_STATUS );
 }
+
+
+void CRoadMapNativeHTTP::SelfSignalDataEvent()
+{
+    // Synchronous mode, Read() was blocked, - signal data arrival.
+    if( m_RecvCallback == NULL ) {
+        if( iSchedulerWait.IsStarted() )
+            iSchedulerWait.AsyncStop();
+        return;
+    }
+    
+    // Asynchronous mode, Read() is non-blocking.
+    TRequestStatus* status = &iStatus;
+    SetActive();
+    User::RequestComplete( status, DATA_EVENT_AVAILABLE_STATUS );
+}
+
 
 void CRoadMapNativeHTTP::StartPolling(void* apInputCallback, void* apIO)
 {
@@ -208,223 +239,233 @@ void CRoadMapNativeHTTP::StartPolling(void* apInputCallback, void* apIO)
 
 void CRoadMapNativeHTTP::StopPolling() 
 {
-  
 }
 
 extern "C" int SYMBIAN_HACK_NET;
-int CRoadMapNativeHTTP::IssueCallback(TPtrC8 &data)
+void CRoadMapNativeHTTP::IssueCallback()
 {
-
-	if (m_eConnStatus == EConnStatusClosed) return 1;
-	
-    if (!m_RecvCallback) {
-    	/* Synchronous mode */
-    	if (m_ReadBuffer) delete(m_ReadBuffer);
-	    m_ReadBuffer = HBufC8::NewL(data.Size()); 
-	    m_ReadBuffer->Des().Copy(data);
-	    m_DataChunk.Set(m_ReadBuffer->Des());
-
-        iSchedulerWait.AsyncStop();
-        return 1;
-    }
-
     roadmap_main_io *main_io = (roadmap_main_io *) m_apIO;
-	RoadMapIO *io = main_io->io;
+    RoadMapIO *io = main_io->io;        // TODO: test NULL
 
-    m_DataChunk.Set(data);
-	int size = m_DataChunk.Size();
+    // Feed available data
+    if( main_io->is_valid && (io->subsystem != ROADMAP_IO_INVALID) ) {
 	
-	if (global_FreeMapLock() != 0) {
+        if (global_FreeMapLock() != 0) { //TBD: What de hack is this?
 	   SYMBIAN_HACK_NET = 1;
 	}
-	if (size > 0) {		
 	
-		while (main_io->is_valid && (io->subsystem != ROADMAP_IO_INVALID) &&
-				m_DataChunk.Size()) {
-				(*(RoadMapInput)m_RecvCallback) ((RoadMapIO *)io);
-		}
-	} else {
-		(*(RoadMapInput)m_RecvCallback) ((RoadMapIO *)io);
-	}
+        // TODO: test NULL
+        ((RoadMapInput)m_RecvCallback) ((RoadMapIO *)io);
 	
 	if (SYMBIAN_HACK_NET) {
 		SYMBIAN_HACK_NET = 0;
 	} else {
 		global_FreeMapUnlock();
 	}
+
+        // More data available or end of HTTP stream
+        if( m_CurBodyChunk.Size() > 0 || m_eConnStatus == EConnStatusTransactionDone ) { 
+            // Schedule another notification
+            SelfSignalDataEvent();
+            return;
+        }
+    }
+    
 	if ((io->subsystem == ROADMAP_IO_INVALID) || !main_io->is_valid) {
        if (main_io->is_valid) {
           main_io->is_valid = 0;
        } else {
           free (main_io);
        }
-       
-       return 0;
-	} else {
-	   return 1;
 	}
 }
+
 
 void CRoadMapNativeHTTP::MHFRunL(RHTTPTransaction aTransaction, const THTTPEvent &aEvent)
 {
-int i;
-switch (aEvent.iStatus)
-  {
+    switch (aEvent.iStatus) {
   case THTTPEvent::EGotResponseHeaders:
-    {
-    // HTTP response headers have been received. Use
-    // aTransaction.Response() to get the response. However, it's not
-    // necessary to do anything with the response when this event occurs.
+        // Got HTTP response headers
 
-    // Get HTTP status code from header (e.g. 200)
-    RHTTPResponse resp = aTransaction.Response();
-    m_Status = resp.StatusCode();
-    RHTTPHeaders headers = resp.GetHeaderCollection();
-	THTTPHdrVal contentLength;
-	RStringPool pool = m_Session.StringPool();
-	TInt err=headers.GetField(pool.StringF(HTTP::EContentLength, RHTTPSession::GetTable()),0,contentLength);
-	m_ContentLength = 0;
-	if (err==KErrNone)
-	{
-		if (contentLength.Type()==THTTPHdrVal::KTIntVal)
-		{
-			m_ContentLength = contentLength.Int();
-		}
-	}
+        // Update connection state
+        m_eConnStatus = EConnStatusDataReceived;
 
-    char ptr[255];
-    snprintf((char *)ptr, sizeof(ptr), "HTTP/1.1 %d OK\r\nContent-Length: %d\r\n\r\n", m_Status, m_ContentLength);
-
-    TPtrC8 d;
-    d.Set((TUint8 *)ptr, strlen(ptr));
-	IssueCallback(d);
-
-    // Get status text (e.g. "OK")
-    //TBuf<KStatustextBufferSize> statusText;
-    //statusText.Copy(resp.StatusText().DesC());
-
-    //HBufC* resHeaderReceived = StringLoader::LoadLC(R_HTTP_HEADER_RECEIVED, statusText, status);
-    //CleanupStack::PopAndDestroy(resHeaderReceived);
-    }
+        (void)ProcessReceivedHttpHeader( aTransaction );
     break;
 
   case THTTPEvent::EGotResponseBodyData:
-    {
-    // Part (or all) of response's body data received. Use
-    // aTransaction.Response().Body()->GetNextDataPart() to get the actual
-    // body data.
-
-    // Get the body data supplier
-    MHTTPDataSupplier* body = aTransaction.Response().Body();
-
-    // GetNextDataPart() returns ETrue, if the received part is the last
-    // one.
-    TPtrC8 dataChunk;
-    TBool isLast = body->GetNextDataPart(dataChunk);
-    
-    if (IssueCallback(dataChunk)) {
-    	body->ReleaseData();
-    }
-
-    }
+        // Part or entire of response's body data has been received
+        ProcessReceivedHttpBodyChunk( aTransaction );   
     break;
 
-  case THTTPEvent::EResponseComplete:
-    {
-    i = 7;
-    // Indicates that header & body of response is completely received.
-    // No further action here needed.
-    //HBufC* resTxComplete = StringLoader::LoadLC(R_HTTP_TX_COMPLETE);
-    //iObserver.ClientEvent(*resTxComplete);
-    //CleanupStack::PopAndDestroy(resTxComplete);
-    }
-    break;
+    /// One the following two events is always sent.
+    /// The transaction can be closed now.
 
   case THTTPEvent::ESucceeded:
-    {
-    // Indicates that transaction succeeded.
-    // Transaction can be closed now. It's not needed anymore.
-    aTransaction.Close();
-    }
+        roadmap_log(ROADMAP_WARNING, "CRoadMapNativeHTTP: Got THTTPEvent: %d", aEvent.iStatus );
+        m_eConnStatus = EConnStatusTransactionDone;
+        SelfSignalDataEvent();
     break;
 
   case THTTPEvent::EFailed:
-    {
-    // Transaction completed with failure.
-    aTransaction.Close();
-    TPtrC8 null(NULL, 0);
-    IssueCallback(null);
-    }
+        roadmap_log(ROADMAP_WARNING, "CRoadMapNativeHTTP: Got THTTPEvent: %d", aEvent.iStatus );
+        m_eConnStatus = EConnStatusError;
+        SelfSignalDataEvent();
     break;
 
   default:
-    // There are more events in THTTPEvent, but they are not usually
-    // needed. However, event status smaller than zero should be handled
-    // correctly since it's error.
-    {
-    if (aEvent.iStatus < 0)
-      {
-        // Close the transaction on errors
-        //aTransaction.Close();
-        TPtrC8 null(NULL, 0);
-        IssueCallback(null);
-      }
-    else
-      {
-      // Other events are not errors (e.g. permanent and temporary
-      // redirections)
-      i = 8;
-      }
-    }
+        roadmap_log(ROADMAP_WARNING, "CRoadMapNativeHTTP: Ignored event: %d", aEvent.iStatus );
+        // All others are ignored.
     break;
   }  
 }
 
-TInt CRoadMapNativeHTTP::MHFRunError(TInt aError, RHTTPTransaction aTransaction, const THTTPEvent& aEvent)
+
+void CRoadMapNativeHTTP::ProcessReceivedHttpHeader( RHTTPTransaction aTransaction )
 {
-  return KErrNone;
+    // HTTP response headers have been received.
+
+    RHTTPResponse resp = aTransaction.Response();
+    m_Status = resp.StatusCode(); // HTTP status code from header (e.g. 200)
+    
+    // Parse HTTP headers, retrieve content size and content encoding
+    RHTTPHeaders headers = resp.GetHeaderCollection();
+    RStringPool pool = m_Session.StringPool();
+
+    THTTPHdrVal contentLength;
+    RStringF field = pool.StringF(HTTP::EContentLength, RHTTPSession::GetTable());
+    TInt err=headers.GetField( field, 0, contentLength );
+    m_ContentLength = -1;
+    if( err == KErrNone and contentLength.Type() == THTTPHdrVal::KTIntVal ) {
+        m_ContentLength = contentLength.Int();
+    }
+
+    field = m_Session.StringPool().StringF(HTTP::EContentEncoding, RHTTPSession::GetTable());
+    m_contentEncoding.Set( NULL, 0 );
+    (void)headers.GetRawField(field, m_contentEncoding);
+    
+    roadmap_log( ROADMAP_WARNING,
+                 "CRoadMapNativeHTTP: Got HTTP headers. Status=%d Content length=%d TE: %s\n",
+                 m_Status, m_ContentLength, &m_contentEncoding );
+
+    // Hack: sending simulated simplified HTTP headers to RT module.
+    // Since ContentLength of compressed body doesn't reflect real size of content data,
+    //  don't send it in this case.
+    // TODO: fix code networking parsing code to not use "content-length" field.
+    if( m_ContentLength >= 0 &&
+    	m_contentEncoding.Compare(_L8("gzip") ) != 0 &&
+    	m_contentEncoding.Compare(_L8("deflate") ) != 0 )
+    {
+        m_CurReplyHttpHeader.Format( _L8("HTTP/1.1 %d OK\r\n"
+                                         "Content-Length: %d\r\n"
+                                         "\r\n"),
+                                     m_Status,
+                                     m_ContentLength );
+    }else{
+        m_CurReplyHttpHeader.Format( _L8("HTTP/1.1 %d OK\r\n"
+                                         "\r\n"),
+                                     m_Status );
+    }
+
+    SelfSignalDataEvent();
 }
   
-TBool CRoadMapNativeHTTP::GetNextDataPart(TPtrC8& aDataPart)
-{
-  if (m_NumWriteBuffers == 0) return ETrue;
-  
-  if (m_NumWriteBuffers == 1) {
-	  aDataPart.Set(m_WriteBuffers[0]->Des());
-	  return ETrue;
-  }
-  
-  int i;
-  int len = 0;
-  
-  for (i=0; i<m_NumWriteBuffers; i++) {
-	  len += m_WriteBuffers[i]->Length();	  
-  }
-  
-  m_AccumWriteBuffer = HBufC8::NewL(len);
 
-  for (i=0; i<m_NumWriteBuffers; i++) {
-	  m_AccumWriteBuffer->Des().Append(m_WriteBuffers[i]->Des());	  
-  }  
+void CRoadMapNativeHTTP::ProcessReceivedHttpBodyChunk( RHTTPTransaction aTransaction )
+{
+    // Get ptr to the data supplier
+    m_pBodySup = aTransaction.Response().Body();
+
+    (void)m_pBodySup->GetNextDataPart( m_CurBodyChunk );
+
+    // Count bytes received
+    roadmap_net_mon_recv( m_CurBodyChunk.Size() );
   
-  aDataPart.Set(m_AccumWriteBuffer->Des());
+    roadmap_log(ROADMAP_WARNING, "CRoadMapNativeHTTP: Got HTTP body chunk chunk length=%d\n", m_CurBodyChunk.Size() );
   
-  return ETrue;  
+    SelfSignalDataEvent();
 }
 
-void CRoadMapNativeHTTP::ReleaseData()
+
+TInt CRoadMapNativeHTTP::ReadHttpHeader( void* aBuf, TInt aBufSz )
 {
-  //  Let the Write method continue its work
-  int j;
-  j = 5;
+    TInt sz = Min( m_CurReplyHttpHeader.Size(), aBufSz );
+    memcpy( aBuf, m_CurReplyHttpHeader.Ptr(), sz );
+    
+    // Eat consumed data
+    m_CurReplyHttpHeader.Delete( 0, sz );
+
+    return sz;
 }
 
-TInt CRoadMapNativeHTTP::OverallDataSize()
+
+TInt CRoadMapNativeHTTP::ReadHttpBodyChunk( void* aBuf, TInt aBufSz )
 {
-  return m_ContentLength;    //  known data size 
+    if( aBufSz <= 0 or aBuf == NULL )
+        return -1;
+    
+    if( m_CurBodyChunk.Size() == 0 )
+        return 0;
+
+    TInt zRC = Z_OK;
+    TInt consumedBlkSz = 0;
+    TInt returnedBlkSz = 0;
+    if( m_contentEncoding.Compare(_L8("gzip")) == 0 ) {
+        if( !m_DeflateCtxt.gotHeaders ) {
+            static const char deflate_magic[2] = {'\037', '\213' };
+            // Gzip Header size is 10 bytes.
+            // We don'curretnly support replies with header is split across several chunks
+            if( m_CurBodyChunk.Size() < 10 )
+                return -1;
+            
+            // Check Gzip header. We don't support also ext. header.
+            if( memcmp( m_CurBodyChunk.Ptr(), deflate_magic, 2 ) != 0 or m_CurBodyChunk.Ptr()[3] != 0 )
+                return -1;
+            
+            // Ok, eat the header!
+            m_CurBodyChunk.Set( m_CurBodyChunk.Right(m_CurBodyChunk.Size() - 10 ));
+            m_DeflateCtxt.gotHeaders = true;
+        }
+        
+        // Decompress received data
+        m_DeflateCtxt.stream.next_in   = (TUint8*)m_CurBodyChunk.Ptr(); // const_cast..
+        m_DeflateCtxt.stream.avail_in  = m_CurBodyChunk.Size();
+        m_DeflateCtxt.stream.next_out  = (TUint8*)aBuf;
+        m_DeflateCtxt.stream.avail_out = aBufSz;
+        
+        zRC = inflate( &m_DeflateCtxt.stream, Z_SYNC_FLUSH );
+        if( zRC == Z_STREAM_END || zRC == Z_OK ) {
+            // We are not verifying CRC, ignoring data leftovers, etc.
+            // Being lazy saves power :)
+            consumedBlkSz = m_CurBodyChunk.Size() - m_DeflateCtxt.stream.avail_in;
+            returnedBlkSz = aBufSz - m_DeflateCtxt.stream.avail_out;
+        }else{
+            return -1;
+        }
+        
+        // Ignore compressed stream trailer
+        if( zRC == Z_STREAM_END )
+            consumedBlkSz = m_CurBodyChunk.Size();
+    }else{
+        // Assume plain transfer encoding, simply provide the received data
+        returnedBlkSz = consumedBlkSz = Min( m_CurBodyChunk.Size(), aBufSz );
+        memcpy( aBuf, m_CurBodyChunk.Ptr(), consumedBlkSz );
+    }
+
+    // Eat consumed data
+    m_CurBodyChunk.Set( m_CurBodyChunk.Right(m_CurBodyChunk.Size() - consumedBlkSz ));
+
+    // Release HTTP Body supplier if body chunk has been consumed completely 
+    if( m_CurBodyChunk.Size() == 0 and m_pBodySup != NULL ) {
+        m_pBodySup->ReleaseData();
+        m_pBodySup = NULL;  //Safety: avoid double 'free'
+    }
+    
+    return returnedBlkSz;
 }
 
-TInt CRoadMapNativeHTTP::Reset()
+
+TInt CRoadMapNativeHTTP::MHFRunError(TInt, RHTTPTransaction, const THTTPEvent&)
 {
   return KErrNone;
 }
@@ -439,8 +480,6 @@ void CRoadMapNativeHTTP::SetRequestProperty(const char* aKey, const char* aValue
     //roadmap_log(ROADMAP_ERROR, "Header %s not added", aKey);
     return;
   }
-  
-  if (hdrField == HTTP::EContentLength) m_ContentLength = atoi(aValue);
   
   GSConvert::CharPtrToTDes8(aValue, val);
   TRAPD( err, SetHeaderL(hdrs, hdrField, val) );
@@ -473,21 +512,17 @@ TInt CRoadMapNativeHTTP::TranslateToStringField(const char* aField)
   {
     return (TInt)HTTP::EContentLength;
   }
+  else if ( strcasecmp("Accept-encoding", aField) == 0 )
+  {
+    return (TInt)HTTP::EAcceptEncoding;
+  }
+
   else 
   {
     return -1;
   }
+}
     
-}
-/*
-void CRoadMapNativeHTTP::SetHttpVersion(HTTP::TStrings aHttpVersion)
-{
-  RHTTPConnectionInfo connInfo = m_Session.ConnectionInfo();
-  RStringPool strP = m_Session.StringPool();
-  connInfo.SetPropertyL(strP.StringF(HTTP::EHTTPVersion, RHTTPSession::GetTable()), 
-                        THTTPHdrVal(strP.StringF(aHttpVersion)));
-}
-*/
 void CRoadMapNativeHTTP::SetConnectionParams()
 {
   RHTTPConnectionInfo connInfo = m_Session.ConnectionInfo();
@@ -495,14 +530,9 @@ void CRoadMapNativeHTTP::SetConnectionParams()
                         THTTPHdrVal(m_pSocketServer->Handle()));
   connInfo.SetPropertyL(m_Session.StringPool().StringF(HTTP::EHttpSocketConnection, RHTTPSession::GetTable()), 
                         THTTPHdrVal(reinterpret_cast<TInt>(m_pConnection)));
-  //THTTPHdrVal hdrVal;
-  //hdrVal.SetInt((TInt)(HTTP::EHttp10));
-  //connInfo.SetPropertyL(m_Session.StringPool().StringF(HTTP::EHTTPVersion, RHTTPSession::GetTable()), 
-  //                      THTTPHdrVal(hdrVal));  
-//                        THTTPHdrVal(strP.StringF(HTTP::EHttp10)));  
 }
 
-void CRoadMapNativeHTTP::SetModifiedSince()
+void CRoadMapNativeHTTP::SetModifiedSinceL()
 {
   if (m_tModifiedSince == 0) return;
   
@@ -550,15 +580,13 @@ void CRoadMapNativeHTTP::OpenSession()
 
 void CRoadMapNativeHTTP::RunL()
 {
-  roadmap_log(ROADMAP_DEBUG, "CRoadMapNativeHTTP::RunL status=%d connStatus=%d", iStatus.Int() , (int)m_eConnStatus);
-  if ( iStatus == KErrNone )
-  {
-    switch ( m_eConnStatus )
-    {
+    roadmap_log(ROADMAP_WARNING, "CRoadMapNativeHTTP::RunL status=%d connStatus=%d\n", iStatus.Int() , (int)m_eConnStatus);
+    switch( iStatus.Int() ) {
+    case KErrNone:
+        switch ( m_eConnStatus ) {
       case EConnStatusNotStarted:
-        m_eConnStatus = EConnStatusConnected; //  we won't be coming here again anyway... 
         UpdateIAPid();
-        m_Session.OpenL();
+            OpenSession();
         ConnectWithParamsL();
         break;
       case EConnStatusConnected: 
@@ -567,22 +595,29 @@ void CRoadMapNativeHTTP::RunL()
       default:
         break;
     }
-  }
-  else if ( iStatus == KErrCancel )
-	  {
+        return;
+    case KErrCancel:
 	  roadmap_net_mon_offline();
 	  return;
-	  }
-  else if  ( iStatus == KErrNotFound ||
-	  		( iStatus >= -30180 && iStatus <= -30170 ) ) // Exceptional cases. The errors returned in case of access point connection problems
-  	{
+    case KErrNotFound:
+    case -30180: /* TBD: and everething between? */
+    case -30170:
+    // Exceptional cases. The errors returned in case of access point connection problems
   		// In this case let the user to select the access point
   		// last chosen AP has to be replaced
   		SetChosenAP( 0 );
   		StartL();
-  	}
-  else 
-  {
+        return;
+
+    case DATA_EVENT_AVAILABLE_STATUS: /* our internal status code */
+        IssueCallback();
+        return;
+
+    case SELF_DESTRUCT_STATUS:        /* our internal status code */
+        // A special one...
+        delete this;
+        return;
+    default:
     //TODO  keep error code
     m_eConnStatus = EConnStatusError;  
   }
@@ -594,34 +629,72 @@ void CRoadMapNativeHTTP::DoCancel()
   Cancel();
 }
 
-CDestroyTimer::CDestroyTimer() : CTimer(EPriorityHigh)
+PostDataSupplier::PostDataSupplier( void )
+    : m_Data(NULL), m_finalized( ETrue ), m_overAllSize(0), m_Transaction()
 {
-  m_pObj = NULL;
 }
 
-CDestroyTimer::~CDestroyTimer()
+PostDataSupplier::~PostDataSupplier( void )
 {
-  Cancel();
+    delete m_Data;
 }
 
-CDestroyTimer* CDestroyTimer::NewL(CRoadMapNativeHTTP& aTimeoutObserver)
+TBool PostDataSupplier::GetNextDataPart(TPtrC8& aDataPart)
 {
-  CDestroyTimer* self = new (ELeave) CDestroyTimer();
-  CleanupStack::PushL(self);
-  self->ConstructL(aTimeoutObserver);
-  CleanupStack::Pop(self);
-  return self;
+    //mk TODO: add upstream transfer encoding support
+    aDataPart.Set( m_Data->Ptr(0) );
+  
+    // Is the last POST data segment?
+    return (aDataPart.Size() == m_Data->Size());
 }
 
-void CDestroyTimer::ConstructL(CRoadMapNativeHTTP &aTimeoutObserver)
+void PostDataSupplier::ReleaseData()
 {
-  m_pObj = &aTimeoutObserver;
-  CTimer::ConstructL();
-  CActiveScheduler::Add(this);
+    // Deleting the first segment stored in the buffer
+    size_t bytesToRelese = m_Data->Ptr(0).Size();
+    m_Data->Delete( 0, bytesToRelese );
+    
+    // Count bytes sent
+    roadmap_net_mon_send( bytesToRelese );
+
+    // Notify if we still have more data
+    if( m_Data->Size() > 0 ) {
+        TRAPD( ret, m_Transaction.NotifyNewRequestBodyPartL() );
+        (void)ret;
+    }
 }
 
-void CDestroyTimer::RunL()
+TInt PostDataSupplier::OverallDataSize()
 {
-  delete m_pObj;
-  delete this;
+    m_finalized = ETrue; 
+    return m_overAllSize; 
+}
+
+TInt PostDataSupplier::Reset()
+{
+    return KErrNotSupported;
+}
+
+void PostDataSupplier::AddDataL( const TDesC8& aDes )
+{
+    //  Sanity check: has the "overall size" been returned already?
+    if( m_finalized ) {
+        User::Leave( KErrGeneral );
+    }
+    
+    m_Data->InsertL( m_Data->Size(), aDes );
+    m_overAllSize += aDes.Size();
+}
+
+void PostDataSupplier::InitL( RHTTPTransaction& transaction )
+{
+    // Lazy init
+    if( m_Data == NULL ) {
+        m_Data = CBufSeg::NewL(128);
+    }
+    
+    m_Data->Reset();
+    m_finalized   = EFalse;
+    m_overAllSize = 0;
+    m_Transaction = transaction;
 }
