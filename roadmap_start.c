@@ -2632,9 +2632,11 @@ void roadmap_start_continue(void)   {
 
    roadmap_main_set_periodic (200, roadmap_start_periodic);
 
+#if !defined(__WINS__) // Disable on emulator target (annoying)
    if (!roadmap_start_closed_properly ()) {
       StartNextLoginCb = Realtime_NotifyOnLogin (roadmap_start_login_cb);
    }
+#endif
    roadmap_start_set_closed_properly("no");
 
 
