@@ -175,6 +175,7 @@ TKeyResponse roadmap_main_process_key( const TKeyEvent& aKeyEvent, TEventCode aT
 			return EKeyWasConsumed;
 		}
 	}
+	#ifndef __WINS__
 	// Conversions for the not standard codes
 	switch( code )
 	{
@@ -183,6 +184,7 @@ TKeyResponse roadmap_main_process_key( const TKeyEvent& aKeyEvent, TEventCode aT
 		case EStdKeyHash  	: code = '#';        break;
 		default				: break;
 	}
+	#endif
 	// Regular keys - phone or qwerty 
 	if ( USING_PHONE_KEYPAD || ( aKeyEvent.iModifiers & EModifierFunc ) )
 	{

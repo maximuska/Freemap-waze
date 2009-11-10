@@ -64,8 +64,8 @@ CRoadMapNativeHTTP::~CRoadMapNativeHTTP()
     inflateEnd( &m_DeflateCtxt.stream );
 
     m_Transaction.Close();
-	m_Session.Close();
-	
+    m_Session.Close();
+
     // Sanity
     m_pBodySup = NULL;
     m_RecvCallback = NULL;
@@ -80,8 +80,8 @@ CRoadMapNativeHTTP* CRoadMapNativeHTTP::NewL( const char *http_type,
                                               void* apContext )
 {
     CRoadMapNativeHTTP* self = new ( ELeave ) CRoadMapNativeHTTP(http_type, apHostname, aPort, tUpdate);
-    self->ConstructL(apCallback, apContext);
-    return self;
+      self->ConstructL(apCallback, apContext);
+      return self;
 }
 
 void CRoadMapNativeHTTP::deflate_ctx_t::InitL( void )
@@ -98,14 +98,14 @@ void CRoadMapNativeHTTP::deflate_ctx_t::InitL( void )
 
 void CRoadMapNativeHTTP::ConstructL(RoadMapNetConnectCallback apCallback, void* apContext)
 {
-  CRoadMapNativeNet::ConstructL(apCallback, apContext);  
+    CRoadMapNativeNet::ConstructL(apCallback, apContext);
 
     // Prepare decompressor, just in case..
     m_DeflateCtxt.InitL();
 
-  CActiveScheduler::Add(this);  
-  
-  StartL();
+    CActiveScheduler::Add(this);
+
+    StartL();
 }
 
 void CRoadMapNativeHTTP::OpenL(ENativeSockType aSockType)
@@ -116,16 +116,16 @@ void CRoadMapNativeHTTP::OpenL(ENativeSockType aSockType)
 
 void CRoadMapNativeHTTP::ConnectWithParamsL()
 {
-  TBuf<256> hostName;
-  GSConvert::CharPtrToTDes16(m_hostname, hostName);
-  ConnectL(hostName, m_port);
+    TBuf<256> hostName;
+    GSConvert::CharPtrToTDes16(m_hostname, hostName);
+    ConnectL(hostName, m_port);
 
     m_eConnStatus = EConnStatusConnected; 
 }
 
 void CRoadMapNativeHTTP::ConnectL(const TDesC& aHostname, int)
 {
-    delete m_pUri8;
+  delete m_pUri8;
   TRAPD(err, m_pUri8 = UriUtils::CreateUriL(aHostname));
   if ( err != KErrNone || m_pUri8 == NULL ) {
     roadmap_log(ROADMAP_ERROR, "Could not parse URL %s", aHostname.Ptr());
@@ -139,7 +139,7 @@ void CRoadMapNativeHTTP::ConnectL(const TDesC& aHostname, int)
   
   m_PostData.InitL( m_Transaction );
   
-    //  Inform our client that we have a connection
+  //  Inform our client that we have a connection
   if( m_pConnectCallback != NULL ) {
       m_pConnectCallback( dynamic_cast<CRoadMapNativeNet*>(this), m_context, succeeded );
   }
@@ -147,18 +147,32 @@ void CRoadMapNativeHTTP::ConnectL(const TDesC& aHostname, int)
 
 void CRoadMapNativeHTTP::SetReadyToSendData(bool aIsReady)
 {
-	m_IsReadyToSendData = aIsReady;
+    m_IsReadyToSendData = aIsReady;
     if( m_HttpMethod == HTTP::EPOST ) {
         m_Transaction.Request().SetBody( m_PostData );
-	}
+    }
 
-	// Submit the transaction. After this the framework will give transaction
-	// events via MHFRunL and MHFRunError.
-	m_Transaction.SubmitL();
-	
-	roadmap_net_mon_connect();
+    // Submit the transaction. After this the framework will give transaction
+    // events via MHFRunL and MHFRunError.
+    m_Transaction.SubmitL();
+
+    roadmap_net_mon_connect();
 }
 
+/** The function returns data received via HTTP, including HTTP Headers and Body.
+ *  The function can work in both syncronious and asynchronious mode
+ *   (if StartPolling() was called).
+ *
+ *  In either case the function always returns at least 1 byte of data unless
+ *   error has happened or HTTP transaction was ended and end of data was reached.
+ *  If there is no data to return, the function BLOCKS caller if used in syncronous mode
+ *   and panics if asyncronous (is not supposed to be called when no data available in async mode).
+ *
+ *  The function returns:
+ *   >0 - Size of Data returned.
+ *   0  - End of data, HTTP transaction ended.
+ *   <0 - (E.g., negative value) any kind of error has happened.
+ */
 int CRoadMapNativeHTTP::Read( void *data, int length )
 {
     if( m_RecvCallback == NULL ) {
@@ -168,8 +182,8 @@ int CRoadMapNativeHTTP::Read( void *data, int length )
                m_eConnStatus != EConnStatusTransactionDone &&
                m_CurReplyHttpHeader.Size() == 0 && m_CurBodyChunk.Size() == 0 )
         {
-     iSchedulerWait.Start(); 
-  }
+            iSchedulerWait.Start();
+        }
     }
 
     // Problems?
@@ -179,14 +193,14 @@ int CRoadMapNativeHTTP::Read( void *data, int length )
     // HTTP headers to return?
     if( m_CurReplyHttpHeader.Size() > 0 )
         return ReadHttpHeader( data, length );
-  
+
     // No data and no more expected?
     if( m_CurBodyChunk.Size() == 0 and m_eConnStatus == EConnStatusTransactionDone ) {
         return 0;
     }
-  
+    
     __ASSERT_ALWAYS( m_CurBodyChunk.Size() > 0, User::Panic(_L("CRoadMapNativeHTTP::Read underflow!"), -1) );
-  
+
     // Return body chunk (decoded)
     return ReadHttpBodyChunk( data, length );
 }
@@ -195,9 +209,9 @@ int CRoadMapNativeHTTP::Write( const void *data, int length )
 {
     TRAPD( ret, m_PostData.AddDataL( TPtrC8((TUint8*)data, length) ) );
     if( ret != KErrNone )
-     return -1;
-  
-  return length;
+        return -1;
+
+    return length;
 }
 
 #define SELF_DESTRUCT_STATUS        666
@@ -205,7 +219,7 @@ int CRoadMapNativeHTTP::Write( const void *data, int length )
 
 void CRoadMapNativeHTTP::Close()
 {
-  m_eConnStatus = EConnStatusClosed;
+    m_eConnStatus = EConnStatusClosed;
     
     m_RecvCallback = NULL; // Sanity
   
@@ -233,8 +247,8 @@ void CRoadMapNativeHTTP::SelfSignalDataEvent()
 
 void CRoadMapNativeHTTP::StartPolling(void* apInputCallback, void* apIO)
 {
-	m_RecvCallback = apInputCallback;
-	m_apIO = apIO;	
+    m_RecvCallback = apInputCallback;
+    m_apIO = apIO;  
 }
 
 void CRoadMapNativeHTTP::StopPolling() 
@@ -249,19 +263,19 @@ void CRoadMapNativeHTTP::IssueCallback()
 
     // Feed available data
     if( main_io->is_valid && (io->subsystem != ROADMAP_IO_INVALID) ) {
-	
+
         if (global_FreeMapLock() != 0) { //TBD: What de hack is this?
-	   SYMBIAN_HACK_NET = 1;
-	}
-	
+           SYMBIAN_HACK_NET = 1; 
+        }
+
         // TODO: test NULL
         ((RoadMapInput)m_RecvCallback) ((RoadMapIO *)io);
-	
-	if (SYMBIAN_HACK_NET) {
-		SYMBIAN_HACK_NET = 0;
-	} else {
-		global_FreeMapUnlock();
-	}
+
+        if (SYMBIAN_HACK_NET) {
+            SYMBIAN_HACK_NET = 0;
+        } else {
+            global_FreeMapUnlock();
+        }
 
         // More data available or end of HTTP stream
         if( m_CurBodyChunk.Size() > 0 || m_eConnStatus == EConnStatusTransactionDone ) { 
@@ -271,53 +285,53 @@ void CRoadMapNativeHTTP::IssueCallback()
         }
     }
     
-	if ((io->subsystem == ROADMAP_IO_INVALID) || !main_io->is_valid) {
+    if ((io->subsystem == ROADMAP_IO_INVALID) || !main_io->is_valid) {
        if (main_io->is_valid) {
           main_io->is_valid = 0;
        } else {
           free (main_io);
        }
-	}
+    }
 }
 
 
 void CRoadMapNativeHTTP::MHFRunL(RHTTPTransaction aTransaction, const THTTPEvent &aEvent)
 {
     switch (aEvent.iStatus) {
-  case THTTPEvent::EGotResponseHeaders:
+    case THTTPEvent::EGotResponseHeaders:
         // Got HTTP response headers
-
+        
         // Update connection state
         m_eConnStatus = EConnStatusDataReceived;
 
         (void)ProcessReceivedHttpHeader( aTransaction );
-    break;
-
-  case THTTPEvent::EGotResponseBodyData:
+        break;
+    
+    case THTTPEvent::EGotResponseBodyData:
         // Part or entire of response's body data has been received
         ProcessReceivedHttpBodyChunk( aTransaction );   
-    break;
-
+        break;
+        
     /// One the following two events is always sent.
     /// The transaction can be closed now.
 
-  case THTTPEvent::ESucceeded:
+    case THTTPEvent::ESucceeded:
         roadmap_log(ROADMAP_WARNING, "CRoadMapNativeHTTP: Got THTTPEvent: %d", aEvent.iStatus );
         m_eConnStatus = EConnStatusTransactionDone;
         SelfSignalDataEvent();
-    break;
+        break;
 
-  case THTTPEvent::EFailed:
+    case THTTPEvent::EFailed:
         roadmap_log(ROADMAP_WARNING, "CRoadMapNativeHTTP: Got THTTPEvent: %d", aEvent.iStatus );
         m_eConnStatus = EConnStatusError;
         SelfSignalDataEvent();
-    break;
+        break;
 
-  default:
+    default:
         roadmap_log(ROADMAP_WARNING, "CRoadMapNativeHTTP: Ignored event: %d", aEvent.iStatus );
         // All others are ignored.
-    break;
-  }  
+        break;
+    }  
 }
 
 
@@ -369,7 +383,7 @@ void CRoadMapNativeHTTP::ProcessReceivedHttpHeader( RHTTPTransaction aTransactio
 
     SelfSignalDataEvent();
 }
-  
+
 
 void CRoadMapNativeHTTP::ProcessReceivedHttpBodyChunk( RHTTPTransaction aTransaction )
 {
@@ -378,11 +392,18 @@ void CRoadMapNativeHTTP::ProcessReceivedHttpBodyChunk( RHTTPTransaction aTransac
 
     (void)m_pBodySup->GetNextDataPart( m_CurBodyChunk );
 
+    roadmap_log(ROADMAP_WARNING, "CRoadMapNativeHTTP: Got HTTP body chunk chunk length=%d\n", m_CurBodyChunk.Size() );
+
+    // Shit happens.. Symbian HTTP framework could do this check for us, but it doesn't.
+    if( m_CurBodyChunk.Size() == 0 ) {
+        m_pBodySup->ReleaseData();
+        m_pBodySup = NULL;
+        return;
+    }
+
     // Count bytes received
     roadmap_net_mon_recv( m_CurBodyChunk.Size() );
-  
-    roadmap_log(ROADMAP_WARNING, "CRoadMapNativeHTTP: Got HTTP body chunk chunk length=%d\n", m_CurBodyChunk.Size() );
-  
+    
     SelfSignalDataEvent();
 }
 
@@ -469,7 +490,7 @@ TInt CRoadMapNativeHTTP::MHFRunError(TInt, RHTTPTransaction, const THTTPEvent&)
 {
   return KErrNone;
 }
-
+  
 void CRoadMapNativeHTTP::SetRequestProperty(const char* aKey, const char* aValue)
 {
   TBuf8<256> val;
@@ -522,7 +543,7 @@ TInt CRoadMapNativeHTTP::TranslateToStringField(const char* aField)
     return -1;
   }
 }
-    
+
 void CRoadMapNativeHTTP::SetConnectionParams()
 {
   RHTTPConnectionInfo connInfo = m_Session.ConnectionInfo();
@@ -584,29 +605,29 @@ void CRoadMapNativeHTTP::RunL()
     switch( iStatus.Int() ) {
     case KErrNone:
         switch ( m_eConnStatus ) {
-      case EConnStatusNotStarted:
-        UpdateIAPid();
+        case EConnStatusNotStarted:
+            UpdateIAPid();
             OpenSession();
-        ConnectWithParamsL();
-        break;
-      case EConnStatusConnected: 
-        //  this should not happen...
-        break;
-      default:
-        break;
-    }
+            ConnectWithParamsL();
+            break;
+        case EConnStatusConnected: 
+            //  this should not happen...
+            break;
+        default:
+            break;
+        }
         return;
     case KErrCancel:
-	  roadmap_net_mon_offline();
-	  return;
+        roadmap_net_mon_offline();
+        return;
     case KErrNotFound:
     case -30180: /* TBD: and everething between? */
     case -30170:
     // Exceptional cases. The errors returned in case of access point connection problems
-  		// In this case let the user to select the access point
-  		// last chosen AP has to be replaced
-  		SetChosenAP( 0 );
-  		StartL();
+    // In this case let the user to select the access point
+    // last chosen AP has to be replaced
+        SetChosenAP( 0 );
+        StartL();
         return;
 
     case DATA_EVENT_AVAILABLE_STATUS: /* our internal status code */
@@ -618,9 +639,9 @@ void CRoadMapNativeHTTP::RunL()
         delete this;
         return;
     default:
-    //TODO  keep error code
-    m_eConnStatus = EConnStatusError;  
-  }
+        //TODO  keep error code
+        m_eConnStatus = EConnStatusError;  
+    }
 }
 
 void CRoadMapNativeHTTP::DoCancel()
