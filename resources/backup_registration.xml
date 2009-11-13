@@ -5,8 +5,5 @@
   <passive_backup>
    <include_directory name="\" />
   </passive_backup>
-  <public_backup>
-   <include_file name="C:\Data\Others\Maps\usc77001.rdm" />
-   <include_file name="E:\Data\Others\Maps\usc77001.rdm" />
-  </public_backup>
+  <public_backup/>
 </backup_registration>

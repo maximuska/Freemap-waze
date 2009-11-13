@@ -9,8 +9,8 @@
 SOURCEDIR=..\\..\\resources
 
 CDIR=$(EPOCROOT)epoc32\winscw\c
-TARGETDIR=$(CDIR)\private\E001EB29
-FREEMAP_DIR=$(CDIR)\Data\Freemap
+TARGETDIR=$(CDIR)\private\E001EB30
+FREEMAP_DIR=$(CDIR)\Data\Freemap-1.x
 
 do_nothing :
 	@rem do_nothing

@@ -2,7 +2,7 @@
 <!DOCTYPE asptml SYSTEM "/epoc32/tools/cshlpcmp/dtd/asptml.dtd">
 <?xml:stylesheet href="/epoc32/tools/cshlpcmp/xsl/asptml.xsl" title="asptml" type="text/xsl"?>
 <asptml>
-<uid value="0xE001EB29"/>
+<uid value="0xE001EB30"/>
 <topic><category>FreeMap</category><topictitle>General Information</topictitle>
 <synonyms>General Information</synonyms>
 <context contextUID="General_Information"/>

@@ -12,7 +12,7 @@
 //  LOCALISATION STRINGS
 
 // Caption string for app.
-#define qtn_caption_string "Freemap-Waze"
+#define qtn_caption_string "FreeWay-Z 1.2"
 
 // First item in "Options" menu pane
 #define qtn_command1 "Message"
@@ -33,8 +33,8 @@
 
 #define qtn_about_dialog_title "About"
 
-#define qtn_loc_resource_file_1 "\\resource\\apps\\FreeMap"
+#define qtn_loc_resource_file_1 "\\resource\\apps\\FreeMap2"
 
-#define qtn_about_dialog_text "FreeMap Version 0.14.2-mk4A\n\nAuthor: Ehud Shabtai\n\nSupport: your support email here\n\n(c) GPL"
+#define qtn_about_dialog_text "FreeMap-Waze Version 1.2.2.2-mk5\n\nAuthor: Ehud Shabtai\n\n(c) GPL"
 
 // End of File

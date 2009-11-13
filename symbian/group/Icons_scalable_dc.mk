@@ -14,7 +14,7 @@ ZDIR=$(EPOCROOT)epoc32\data\z
 endif
 
 TARGETDIR=$(ZDIR)\resource\apps
-ICONTARGETFILENAME=$(TARGETDIR)\FreeMapWaze_aif.mif
+ICONTARGETFILENAME=$(TARGETDIR)\FreeMap2_aif.mif
 
 ICONDIR=..\gfx
 

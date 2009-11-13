@@ -7,9 +7,9 @@
 ============================================================================
 */
 
-TARGET			FreeMap.exe
+TARGET			FreeMap2.exe
 TARGETTYPE		exe
-UID		  0x100039CE 0xE001EB29
+UID		  0x100039CE 0xE001EB30
 
 SOURCEPATH		..
 SOURCE			FreeMap.cpp
@@ -22,12 +22,12 @@ SOURCEPATH		..\data
 
 START RESOURCE	FreeMap.rss
 HEADER
-TARGET FreeMap.rsc
+TARGET FreeMap2.rsc
 TARGETPATH resource\apps
 END //RESOURCE
 
 START RESOURCE	FreeMap_reg.rss
-TARGET FreeMap_reg.rsc
+TARGET FreeMap2_reg.rsc
 #ifdef WINSCW
 TARGETPATH 	  \private\10003a3f\apps
 #else
@@ -126,7 +126,7 @@ LIBRARY lbs.lib
 LANG SC
 
 VENDORID	  	  0
-SECUREID		  0xE001EB29
+SECUREID		  0xE001EB30
 CAPABILITY	  	  ReadUserData NetworkServices Location SWEvent
 
 SOURCEPATH ..\..

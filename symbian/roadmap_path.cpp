@@ -60,12 +60,11 @@ static RoadMapPathList RoadMapPaths = NULL;
 /* The hardcoded path for configuration files (the "config" path).
 */ 
 static const char *RoadMapPathConfig[] = {
-   "C:\\Data\\Freemap",
-   "E:\\Data\\Freemap",
+   "C:\\Data\\Freemap-1.x",
+   "E:\\Data\\Freemap-1.x",
    "C:\\private\\" _UID3_STR,
    "E:\\private\\" _UID3_STR,
    "Z:\\private\\" _UID3_STR,
-   "C:\\Data\\Others",
    "&",
    NULL
 };
@@ -75,9 +74,9 @@ static const char *RoadMapPathConfigPreferred = "E:\\private\\" _UID3_STR;
 
 /* Skins directories */ 
 static const char *RoadMapPathSkin[] = {
-   "C:\\Data\\Freemap\\skins\\default", //mk: Skins are not yet completely loadable from here.
-   "E:\\Data\\Freemap\\skins\\default", // Some of the files are searched under <roadmap_path_user()>\skins\default
-   "&\\skins\\default",                 // no matter what. TODO later, if will be requested.
+   "C:\\Data\\Freemap-1.x\\skins\\default", //mk: Skins are not yet completely loadable from here.
+   "E:\\Data\\Freemap-1.x\\skins\\default", // Some of the files are searched under <roadmap_path_user()>\skins\default
+   "&\\skins\\default",                     // no matter what. TODO later, if will be requested.
    "&\\skins\\default\\day",
    "&", //fallback
    NULL
@@ -87,10 +86,8 @@ static const char *RoadMapPathSkinPreferred = "&\\skins";
 
 /* The default path for the map files (the "maps" path): */
 static const char *RoadMapPathMaps[] = {
-   "C:\\Data\\Freemap\\maps",
-   "E:\\Data\\Freemap\\maps",
-   "C:\\Data\\Others\\maps",
-   "E:\\Data\\Others\\maps",
+   "C:\\Data\\Freemap-1.x\\maps",
+   "E:\\Data\\Freemap-1.x\\maps",
    "&\\maps",
    "&", //fallback
    NULL
@@ -605,8 +602,8 @@ int roadmap_construct_res_path(
 {
 	/* The path prefix searched for public resources sub-folders */
 	const char *RoadMapPathPubResources[] = {
-		"C:\\Data\\Freemap", // Internal memory goes first to save power.
-		"E:\\Data\\Freemap",
+		"C:\\Data\\Freemap-1.x", // Internal memory goes first to save power.
+		"E:\\Data\\Freemap-1.x",
 		roadmap_path_user()  // Private dir goes last to allow users to override resources easily 
 	};
 

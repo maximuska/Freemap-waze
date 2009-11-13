@@ -320,7 +320,7 @@ static void roadmap_start_about (void) {
 
    sprintf (about, "Release %s\n%s\n%s\n%s",
             roadmap_start_version(),
-            "Freemap-waze\n"
+            "Freemap-waze-1.2\n"
             "(c) waze inc. and others",
             roadmap_lang_get("www.waze.com"),
             roadmap_lang_get("Licensed under the terms of the\nGPL v2"));

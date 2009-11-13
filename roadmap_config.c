@@ -87,7 +87,7 @@ struct RoadMapConfigRecord {
 
 
 static RoadMapConfig RoadMapConfigFiles[] = {
-   {"session",     "config", 0, ROADMAP_CONFIG_CLEAN, NULL, NULL},
+   {"session",     "user", 0, ROADMAP_CONFIG_CLEAN, NULL, NULL},
    {"preferences", "config", 0, ROADMAP_CONFIG_CLEAN, NULL, NULL},
    {"user",        "user", 0, ROADMAP_CONFIG_CLEAN, NULL, NULL},
    {"schema",      "skin",   1, ROADMAP_CONFIG_CLEAN, NULL, NULL},
