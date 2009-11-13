@@ -1,27 +1,3 @@
-N illustrated
-I Top_illustrated
-P 0 0
-C skin_state 0
-C wide_screen 0
-
-N illustrated_night
-I Top_illustrated_night
-P 0 0
-C skin_state 1
-C wide_screen 0
-
-N illustrated
-I Top_illustrated_wide
-P 0 0
-C skin_state 0
-C wide_screen 1
-
-N illustrated_night
-I Top_illustrated_night_wide
-P 0 0
-C skin_state 1
-C wide_screen 1
-
 N logo
 I top_logo
 P 0 0
@@ -33,7 +9,7 @@ I top_satellite_off
 I top_satellite_off
 I top_satellite_on
 I top_satellite_on
-P 40 9
+P 40 5
 S GPS_reception
 
 N privacy
@@ -41,7 +17,7 @@ I top_privacy_offline
 I top_privacy_invisible
 I top_privacy_nickname
 I top_privacy_anonymous
-P 68 9
+P 68 5
 B -4 -4 22 22
 S privacy_state
 A privacy_settings
@@ -75,12 +51,12 @@ I top_mood_LOL
 I top_mood_peaceful
 I top_mood_singing
 I top_mood_wondering
-P 92 5
+P 92 0
 
 N crown
 C user_addon_state 1
 I top_mood_crown
-P 92 5
+P 92 0
 
 N alerts 
 I top_alerts
@@ -88,42 +64,42 @@ I top_alerts
 I top_alerts
 I top_alerts
 I top_alerts
-P 120 8
+P 120 4
 S alerts_state
 C real_time_state 1
 
 N num_alerts
 T num_alerts
-P 134 14
+P 134 10
 F 12
 S alerts_state
 C real_time_state 1
 
 N on_line
 I top_not_connected
-P 125 10
+P 125 6
 C real_time_state 0
 
 N sound
 I top_mute
-P 153 7
+P 153 3
 S navigation_guidance_state
 
 N clock
 T clock
-P -8 10
+P -8 6
 F 14
 C softkeys_state 0
 
 N clock
 T clock
-P -100 10
+P -100 6
 F 14
 C softkeys_state 1
 
 N right_softkey
 T right_softkey
-P -8 10
+P -8 6
 A right_softkey
 F 16
 C softkeys_state 1
