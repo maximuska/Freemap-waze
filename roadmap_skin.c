@@ -160,7 +160,7 @@ static void roadmap_skin_gps_listener
    int timer_t;
    //time_t now = time(NULL);
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__SYMBIAN32__)
    struct tm curtime_gmt;
 #endif
 
@@ -169,7 +169,7 @@ static void roadmap_skin_gps_listener
    else
       now = gps_time;
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__SYMBIAN32__)
    curtime_gmt = *(gmtime(&now));
    now  = mktime(&curtime_gmt);
 #endif
