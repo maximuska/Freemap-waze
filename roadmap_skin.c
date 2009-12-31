@@ -3,6 +3,7 @@
  * LICENSE:
  *
  *   Copyright 2006 Ehud Shabtai
+ *   Copyright 2009 Maxim Kalaev
  *
  *   This file is part of RoadMap.
  *
@@ -46,11 +47,11 @@ static RoadMapCallback RoadMapSkinListeners[MAX_LISTENERS] = {NULL};
 static const char *CurrentSkin = "default";
 static const char *CurrentSubSkin = "day";
 
+static BOOL hasUserToggledSkin = FALSE;
+
 RoadMapConfigDescriptor RoadMapConfigAutoNightMode =
                         ROADMAP_CONFIG_ITEM("Display", "Auto night mode");
 
-
-static void toggle_skin_timer(void);
 
 static void notify_listeners (void) {
    int i;
@@ -103,7 +104,12 @@ void roadmap_skin_set_subskin (const char *sub_skin) {
 }
 
 
-void roadmap_skin_toggle (void) {
+void roadmap_skin_toggle (void)
+{
+   // Note: The function is assumed to be called only due
+   // to user initiative (e.g., not automatically)
+   hasUserToggledSkin = TRUE;
+
    if (!strcmp (CurrentSubSkin, "day")) {
       roadmap_skin_set_subskin ("night");
    } else {
@@ -136,12 +142,7 @@ int roadmap_skin_state(void){
 
 
 void roadmap_skin_auto_night_mode_kill_timer(void){
-   roadmap_main_remove_periodic(toggle_skin_timer);
-}
-
-static void toggle_skin_timer(void){
-   roadmap_skin_toggle();
-   roadmap_skin_auto_night_mode_kill_timer();
+   roadmap_main_remove_periodic(roadmap_skin_auto_night_mode);
 }
 
 static int auto_night_mode_cfg_on (void) {
@@ -153,65 +154,55 @@ static void roadmap_skin_gps_listener
                 const RoadMapGpsPrecision *dilution,
                 const RoadMapGpsPosition *position){
    time_t rawtime_sunset, rawtime_sunrise;
-   struct tm *realtime;
-   struct tm *realtime2;
-   static int has_run = 0;
    time_t now ;
    int timer_t;
-   //time_t now = time(NULL);
+   //struct tm *realtime;
 
+   roadmap_gps_unregister_listener(roadmap_skin_gps_listener);
+
+   // Don't change skin if user has toggled skin manually
+   if( hasUserToggledSkin == TRUE )
+	   return;
+   
 #if defined(_WIN32) || defined(__SYMBIAN32__)
-   struct tm curtime_gmt;
-#endif
-
+   now = time(NULL);				// UTC time, according to POSIX
+#else
    if ((gps_time + (3600 * 24)) < time(NULL))
       now = time(NULL);
    else
       now = gps_time;
-
-#if defined(_WIN32) || defined(__SYMBIAN32__)
-   curtime_gmt = *(gmtime(&now));
-   now  = mktime(&curtime_gmt);
 #endif
-   realtime = localtime (&now);
-//   printf ("gpstime %s", asctime (realtime) );
-
-   roadmap_gps_unregister_listener(roadmap_skin_gps_listener);
-
-   if (has_run)
-      return;
-
-
-   has_run = TRUE;
+//   realtime = localtime (&now);
+//   printf ("current (local) time: %s", asctime (realtime) );
 
    rawtime_sunrise = roadmap_sunrise (position, now);
-   realtime = localtime (&rawtime_sunrise);
-
-//   printf ("sunrise: %d:%d\n", realtime->tm_hour, realtime->tm_min);
-//   printf ("sunrise %s", asctime (realtime) );
+//   realtime = localtime (&rawtime_sunrise);
+//   printf ("sunrise (local) %s", asctime (realtime) );
 
    rawtime_sunset = roadmap_sunset (position, now);
-   realtime2 = localtime (&rawtime_sunset);
+//   realtime = localtime (&rawtime_sunset);
+//   printf ("sunset (local) %s", asctime (realtime) );
 
-//   printf ("sunset:  %d:%d\n", realtime->tm_hour, realtime->tm_min);
-//   printf ("sunset %s", asctime (realtime) );
-
-   if (rawtime_sunset > rawtime_sunrise){
+   if( rawtime_sunset > rawtime_sunrise ) {
       roadmap_skin_set_subskin ("night");
       timer_t = rawtime_sunrise - now;
-      if ((timer_t > 0) && (timer_t < 1800))
-         roadmap_main_set_periodic (timer_t*1000, toggle_skin_timer);
    }
    else{
+      roadmap_skin_set_subskin ("day");
       timer_t = rawtime_sunset - now;
-      if ((timer_t > 0) && (timer_t < 1800))
-         roadmap_main_set_periodic (timer_t*1000, toggle_skin_timer);
    }
 
+   timer_t += 60;       // Give 1 minute grace till the next check
+   if( timer_t > 1800 ) // Max timer period is limited to ~30 min in current implementation..
+	   timer_t = 1800;
+
+   // Schedule next check.
+   roadmap_main_remove_periodic( roadmap_skin_auto_night_mode );
+   roadmap_main_set_periodic( timer_t*1000, roadmap_skin_auto_night_mode );
 }
 
-void roadmap_skin_auto_night_mode(){
-
+void roadmap_skin_auto_night_mode( void )
+{
    roadmap_config_declare_enumeration
       ("user", &RoadMapConfigAutoNightMode, NULL, "yes", "no", NULL);
 
@@ -219,6 +210,5 @@ void roadmap_skin_auto_night_mode(){
       return;
 
    roadmap_gps_register_listener (roadmap_skin_gps_listener);
-
 }
 
