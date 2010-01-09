@@ -24,8 +24,6 @@
 ; Files to install
 "$(EPOCROOT)\epoc32\release\$(PLATFORM)\$(TARGET)\FreeMap2.exe"-"!:\sys\bin\FreeMap2.exe"
 
-"..\..\Maps\77001_index.wdf"-"!:\Data\Freemap-1.x\Maps\77001_index.wdf"
-"..\..\Maps\edt77001.dat"-"!:\Data\Freemap-1.x\Maps\edt77001.dat"
 ;"..\..\Maps\map77001.gzm"-"!:\Data\Freemap-1.x\Maps\map77001.gzm"
 
 "$(EPOCROOT)\epoc32\data\z\resource\apps\FreeMap2.rsc"-"!:\resource\apps\FreeMap2.rsc"
@@ -43,10 +41,7 @@
 "..\..\resources\font.ttf"-"!:\private\E001EB30\font.ttf"
 "..\..\resources\lang.eng"-"!:\private\E001EB30\lang.eng"
 "..\..\resources\lang.heb"-"!:\private\E001EB30\lang.heb"
-"..\..\resources\map_updates.menu"-"!:\private\E001EB30\map_updates.menu"
 "..\..\resources\quick.menu"-"!:\private\E001EB30\quick.menu"
-"..\..\resources\search.menu"-"!:\private\E001EB30\search.menu"
-"..\..\resources\settings.menu"-"!:\private\E001EB30\settings.menu"
 "..\..\resources\sprites"-"!:\private\E001EB30\sprites"
 "..\..\resources\user"-"!:\private\E001EB30\user"
 
