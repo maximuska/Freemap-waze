@@ -24,7 +24,9 @@
 ; Files to install
 "$(EPOCROOT)\epoc32\release\$(PLATFORM)\$(TARGET)\FreeMap2.exe"-"!:\sys\bin\FreeMap2.exe"
 
-;"..\..\Maps\map77001.gzm"-"!:\Data\Freemap-1.x\Maps\map77001.gzm"
+"..\..\Maps\77001_index.wdf"-"!:\Data\Freemap-1.x\Maps\77001_index.wdf" ; Mandatory
+;"..\..\Maps\city_index"-"!:\Data\Freemap-1.x\Maps\city_index"          ; Optional
+;"..\..\Maps\map77001.wzm"-"!:\Data\Freemap-1.x\Maps\map77001.wzm"      ; Optional
 
 "$(EPOCROOT)\epoc32\data\z\resource\apps\FreeMap2.rsc"-"!:\resource\apps\FreeMap2.rsc"
 "$(EPOCROOT)\epoc32\data\z\resource\apps\FreeMap2_aif.mif"-"!:\resource\apps\FreeMap2_aif.mif"
@@ -318,6 +320,7 @@
 "..\..\resources\skins\default\night\schema"-"!:\private\E001EB30\skins\default\night\schema"
 "..\..\resources\skins\default\day\schema"-"!:\private\E001EB30\skins\default\day\schema"
 "..\..\resources\skins\default\search_address.png"-"!:\private\E001EB30\skins\default\search_address.png"
+"..\..\resources\skins\default\search_offline.png"-"!:\private\E001EB30\skins\default\search_offline.png"
 "..\..\resources\skins\default\search_history.png"-"!:\private\E001EB30\skins\default\search_history.png"
 "..\..\resources\skins\default\search_favorites.png"-"!:\private\E001EB30\skins\default\search_favorites.png"
 "..\..\resources\skins\default\search_marked_locations.png"-"!:\private\E001EB30\skins\default\search_marked_locations.png"
