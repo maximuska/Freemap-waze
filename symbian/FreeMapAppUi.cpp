@@ -517,11 +517,13 @@ TBool  CFreeMapAppUi::GetUnicodeForScanCodeNumericL( const TKeyEvent& aKeyEvent,
 			aUnicodeOut = '9';
 			break;
 		}
+		case EStdKeyNkpAsterisk:
 		case EPtiKeyQwertyU:
 		{
 			aUnicodeOut = '*';
 			break;
 		}
+		case EStdKeyHash:
 		case EPtiKeyQwertyJ:
 		{
 			aUnicodeOut = '#';
