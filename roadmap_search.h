@@ -50,6 +50,7 @@ void search_menu_search_history(void);
 void search_menu_search_favorites(void);
 void search_menu_search_address(void);
 void search_menu_search_local(void);
+void search_menu_search_offline(void);
 void search_menu_my_saved_places(void);
 
 #endif /*ROADMAP_SEARCH_H_*/

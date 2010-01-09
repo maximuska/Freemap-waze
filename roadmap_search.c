@@ -836,6 +836,11 @@ void search_menu_search_local(void){
    s_poi_search_is_active = TRUE;
 }
 
+void search_menu_search_offline(void)
+{
+   address_tabcontrol_show( NULL );
+}
+
 /////////////////////////////////////////////////////////////////////
 
 

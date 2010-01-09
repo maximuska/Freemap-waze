@@ -845,6 +845,9 @@ RoadMapAction RoadMapStartActions[MAX_ACTIONS + 1] = {
    {"search_local", "Google local search", "Google local search ", NULL,
          "Google local search", search_menu_search_local},
 
+   {"search_offline", "Offline local search", "Offline local search", NULL,
+         "Offline local search", search_menu_search_offline},
+
    {"search_marked_locations", "Saved locations", "Saved locations", NULL,
          "Saved locations", search_menu_my_saved_places},
 

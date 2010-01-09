@@ -262,7 +262,15 @@ int roadmap_locator_refresh (int fips) {
 	for (i_tile = 0; i_tile < n_tiles; i_tile++) {
 		int tile_id = roadmap_map_get_tile_id (RoadMapActiveMap, i_tile);
 		roadmap_db_remove (fips, tile_id);
+
+		// Updating city index from tiles in the file
+		roadmap_square_set_current(tile_id);
+		roadmap_street_update_city_index ();
 	}
+
+	// Write updated city index to disk.
+	// TODO: store different index file for each country?
+	roadmap_city_write_file (roadmap_db_map_path(), "city_index", 0);
 
    return ROADMAP_US_OK;
 }
@@ -447,11 +455,15 @@ int roadmap_locator_load_tile (int index) {
    if (! rc) {
 
 		if (RoadMapActiveMap >= 0) {
-			void *data;
+			void *data = NULL;
 			int length;
 			
 			if (0 == roadmap_gzm_get_section (RoadMapActiveMap, index, &data, &length)) {
-   			rc = roadmap_db_open_mem (RoadMapActiveCounty, index, RoadMapTileModel, data, length);
+				rc = roadmap_db_open_mem (RoadMapActiveCounty, index, RoadMapTileModel, data, length);
+			}
+
+			if( data ) {
+				free( data );
 			}
 		}
 		

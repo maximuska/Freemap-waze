@@ -441,6 +441,9 @@ static void add_address_to_history( int category,
    else
    	address[ahi_name]	= "";
 
+   address[ahi_latitude]   = "";
+   address[ahi_longtitude] = "";
+
    roadmap_history_add( category, address);
    roadmap_history_save();
 }

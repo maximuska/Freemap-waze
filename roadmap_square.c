@@ -861,23 +861,11 @@ static int roadmap_square_load (int square) {
 void roadmap_square_load_index (void) {   
 
    /* temporary - force load all hi-res tiles */
-//	int i;
 	int rc;
 
    rc = roadmap_city_read_file ("city_index");
 	if (!rc) return;
-/*		
-	for (i = RoadMapSquareActive->SquareScale[0].count_latitude * RoadMapSquareActive->SquareScale[0].count_longitude - 1;
-			i >= 0; i--) {
-		
-		if (RoadMapSquareActive->Square[i] != 	ROADMAP_SQUARE_UNAVAILABLE) {	
-			roadmap_square_set_current (i);
-			roadmap_street_update_city_index ();
-		}
-	}
-*/
 }
-
 
 void roadmap_square_rebuild_index (void) {
 

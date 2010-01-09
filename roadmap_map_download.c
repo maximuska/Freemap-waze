@@ -114,7 +114,7 @@ static void dlmap_update_tiles (void) {
 	roadmap_locator_refresh (DlFips);
 	ssd_progress_msg_dialog_hide ();
 	roadmap_tile_reset_session ();
-	
+
 	roadmap_messagebox_cb ("Map Download Complete", "Please Restart Waze", dl_map_cb);
 }
 

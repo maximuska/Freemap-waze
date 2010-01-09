@@ -583,6 +583,8 @@ void Realtime_Stop(BOOL bEnableLogout)
 
    roadmap_main_remove_periodic( OnTimer_Realtime);
 
+   roadmap_warning_unregister( (RoadMapWarningFn) RealTime_Warning );
+
    if( gs_CI.bLoggedIn)
    {
       VersionUpgradeInfo_Init       ( &gs_VU);
