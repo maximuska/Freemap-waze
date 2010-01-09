@@ -316,7 +316,7 @@ void CRoadMapNativeHTTP::MHFRunL(RHTTPTransaction aTransaction, const THTTPEvent
     /// The transaction can be closed now.
 
     case THTTPEvent::ESucceeded:
-        roadmap_log(ROADMAP_WARNING, "CRoadMapNativeHTTP: Got THTTPEvent: %d", aEvent.iStatus );
+        roadmap_log(ROADMAP_DEBUG, "CRoadMapNativeHTTP: Got THTTPEvent: %d", aEvent.iStatus );
         m_eConnStatus = EConnStatusTransactionDone;
         SelfSignalDataEvent();
         break;
@@ -358,7 +358,7 @@ void CRoadMapNativeHTTP::ProcessReceivedHttpHeader( RHTTPTransaction aTransactio
     m_contentEncoding.Set( NULL, 0 );
     (void)headers.GetRawField(field, m_contentEncoding);
     
-    roadmap_log( ROADMAP_WARNING,
+    roadmap_log( ROADMAP_DEBUG,
                  "CRoadMapNativeHTTP: Got HTTP headers. Status=%d Content length=%d TE: %s\n",
                  m_Status, m_ContentLength, &m_contentEncoding );
 
@@ -392,7 +392,7 @@ void CRoadMapNativeHTTP::ProcessReceivedHttpBodyChunk( RHTTPTransaction aTransac
 
     (void)m_pBodySup->GetNextDataPart( m_CurBodyChunk );
 
-    roadmap_log(ROADMAP_WARNING, "CRoadMapNativeHTTP: Got HTTP body chunk chunk length=%d\n", m_CurBodyChunk.Size() );
+    roadmap_log(ROADMAP_DEBUG, "CRoadMapNativeHTTP: Got HTTP body chunk chunk length=%d\n", m_CurBodyChunk.Size() );
 
     // Shit happens.. Symbian HTTP framework could do this check for us, but it doesn't.
     if( m_CurBodyChunk.Size() == 0 ) {
@@ -601,7 +601,7 @@ void CRoadMapNativeHTTP::OpenSession()
 
 void CRoadMapNativeHTTP::RunL()
 {
-    roadmap_log(ROADMAP_WARNING, "CRoadMapNativeHTTP::RunL status=%d connStatus=%d\n", iStatus.Int() , (int)m_eConnStatus);
+    roadmap_log(ROADMAP_DEBUG, "CRoadMapNativeHTTP::RunL status=%d connStatus=%d\n", iStatus.Int() , (int)m_eConnStatus);
     switch( iStatus.Int() ) {
     case KErrNone:
         switch ( m_eConnStatus ) {
