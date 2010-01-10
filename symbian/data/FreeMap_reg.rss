@@ -10,7 +10,7 @@
 #include "FreeMap.hrh"
 #include "FreeMap.rls"
 #include <appinfo.rh>
-#include <FreeMap.rsg>
+#include <FreeMap2.rsg>
 
 UID2 KUidAppRegistrationResourceFile
 UID3 _UID3

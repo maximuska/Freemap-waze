@@ -28,7 +28,7 @@
 #include <s32file.h>
 #include <hlplch.h>
 
-#include <FreeMap.rsg>
+#include <FreeMap2.rsg>
 
 #include "FreeMap.hrh"
 #include "FreeMap.pan"
